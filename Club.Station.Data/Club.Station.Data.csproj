@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="10.1.1" />
+    <PackageReference Include="AutoMapper.Collection" Version="7.0.1" />
+    <PackageReference Include="EntityFrameworkCore.DataEncryption" Version="3.0.0" />
+    <PackageReference Include="EntityFrameworkCore.Rx" Version="2.0.1" />
+    <PackageReference Include="EventFlow" Version="0.82.4659" />
+    <PackageReference Include="EventFlow.Autofac" Version="0.82.4659" />
+    <PackageReference Include="EventFlow.EntityFramework" Version="0.82.4659" />
+    <PackageReference Include="EventFlow.Hangfire" Version="0.82.4659" />
+    <PackageReference Include="EventFlow.RabbitMQ" Version="0.82.4659" />
+    <PackageReference Include="EventFlow.SQLite" Version="0.82.4659" />
+    <PackageReference Include="Hangfire.Autofac" Version="2.3.1" />
+    <PackageReference Include="Hangfire.Console.Extensions.Serilog" Version="1.0.1.1" />
+    <PackageReference Include="Hangfire.EntityFrameworkCore" Version="0.3.1" />
+    <PackageReference Include="Hangfire.Prometheus.Core" Version="1.0.50" />
+    <PackageReference Include="Hangfire.SQLite" Version="1.4.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="5.0.7" />
+    <PackageReference Include="Autofac" Version="6.2.0" />
+    <PackageReference Include="Dotmim.Sync.Sqlite" Version="0.8.0" />
+    <PackageReference Include="Dotmim.Sync.Core" Version="0.8.0" />
+    <PackageReference Include="Dotmim.Sync.MySql" Version="0.8.0" />
+    <PackageReference Include="Dotmim.Sync.Web.Client" Version="0.8.0" />
+    <PackageReference Include="itext7" Version="7.1.16" />
+    <PackageReference Include="ChangeTracking" Version="2.2.17" />
+    <PackageReference Include="ProgressReporting" Version="2.0.0" />
+    <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="IMemberRepository.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Club.Station.Domain\Club.Station.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Configuration\" />
+    <Folder Include="Mapping" />
+  </ItemGroup>
+</Project>
