@@ -30,7 +30,8 @@
             <TextBox Name="UserName"
                      Text="{Binding UserName}"
                      Classes="form field"
-                     Grid.Row="0" Grid.Column="1" />
+                     Grid.Row="0" Grid.Column="1" 
+                       />
             <TextBlock Text="Password:" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"
                        VerticalAlignment="Center" />
             <TextBox Name="Password"
@@ -38,7 +39,7 @@
                      Classes="form field secret"
                      Grid.Row="1" Grid.Column="1" />
             <Button Command="{Binding Login}"
-                    Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Content="Login" />
+                    Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Content="Login" IsDefault="True"/>
         </Grid>
     </StackPanel>
 </UserControl>

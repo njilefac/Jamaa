@@ -7,8 +7,7 @@ namespace Domain.Services
     public interface IUserSessionService
     {
         Task<UserSession> Authenticate(Credentials credentials);
-        Task<bool> EndSession(UserSession session);
-        
+        Task<bool> EndSession();
         Subject<UserSession> CurrentSession { get; }
     }
 }

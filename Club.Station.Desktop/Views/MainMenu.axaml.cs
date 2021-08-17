@@ -1,4 +1,3 @@
-﻿using Avalonia;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Club.Station.Desktop.ViewModels;
@@ -7,19 +6,17 @@ using Splat;
 
 namespace Club.Station.Desktop.Views
 {
-    public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
+    public class MainMenu : ReactiveUserControl<MainMenuViewModel>
     {
-        public MainWindow()
+        public MainMenu()
         {
+            InitializeComponent();
             this.WhenActivated(disposables =>
             {
             });
-            DataContext = Locator.Current.GetService<MainWindowViewModel>();
-            InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
+            DataContext = Locator.Current.GetService<MainMenuViewModel>();
         }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);

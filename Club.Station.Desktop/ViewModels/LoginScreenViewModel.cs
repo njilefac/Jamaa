@@ -46,7 +46,7 @@ namespace Club.Station.Desktop.ViewModels
             return userSession;
         }
 
-        public string UrlPathSegment => "station.login.screen";
+        public string UrlPathSegment => "login";
         public IScreen HostScreen { get; }
     }
 }

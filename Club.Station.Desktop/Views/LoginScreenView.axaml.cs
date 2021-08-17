@@ -15,11 +15,15 @@ namespace Club.Station.Desktop.Views
             DataContext = Locator.Current.GetService<LoginScreenViewModel>();
             this.WhenActivated(disposables =>
             {
-                ViewModel?.Login.Subscribe(session =>
+                if (ViewModel == null) return;
+                
+                ViewModel.UserName = string.Empty;
+                ViewModel.Password = string.Empty;
+                ViewModel.Login.Subscribe(session =>
                 {
                     if(session is { Authenticated: true })
                         ViewModel.HostScreen.Router.Navigate.Execute(Locator.Current
-                        .GetService<UserManagementViewModel>()!);
+                            .GetService<UserManagementViewModel>()!);
                 });
             });
         }

@@ -7,7 +7,7 @@ namespace Club.Station.Desktop.ViewModels
     {
         private readonly IUserSessionService _userSessionService;
         
-        public string? UrlPathSegment => "club.station.members";
+        public string? UrlPathSegment => "finance";
         public IScreen HostScreen { get; }
 
         public FinanceManagementViewModel(IUserSessionService userSessionService, IScreen screen)

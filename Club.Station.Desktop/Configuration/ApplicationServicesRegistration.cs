@@ -27,6 +27,7 @@ namespace Club.Station.Desktop.Configuration
             builder.RegisterType<MainWindowViewModel>().AsSelf().As<IScreen>().SingleInstance();
             builder.RegisterType<LoginScreenViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MainNavigationViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<MainMenuViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             
             builder.RegisterType<UserManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MemberManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
@@ -38,6 +39,7 @@ namespace Club.Station.Desktop.Configuration
         private static void RegisterViews(ContainerBuilder builder)
         {
             builder.RegisterType<MainWindow>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<MainMenu>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<LoginScreenView>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<MainNavigation>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<UserManagementScreen>().AsSelf().AsImplementedInterfaces();

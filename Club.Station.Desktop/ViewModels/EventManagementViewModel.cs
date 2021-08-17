@@ -7,7 +7,7 @@ namespace Club.Station.Desktop.ViewModels
     {
         private readonly IUserSessionService _userSessionService;
 
-        public string? UrlPathSegment => "club.station.events"; 
+        public string? UrlPathSegment => "events"; 
         public IScreen HostScreen { get; }
 
         public EventManagementViewModel(IScreen screen, IUserSessionService userSessionService)

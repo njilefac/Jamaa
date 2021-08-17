@@ -14,6 +14,9 @@
         WindowStartupLocation="CenterScreen">
 
     <DockPanel Margin="0">
+        <StackPanel DockPanel.Dock="Top">
+            <views:MainMenu/>
+        </StackPanel>
         <StackPanel
             DockPanel.Dock="Left"
             Background="Gray"

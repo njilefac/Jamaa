@@ -9,7 +9,7 @@ namespace Club.Station.Desktop.ViewModels
             HostScreen = screen;
         }
         
-        public string UrlPathSegment => "club.station.usermanagement"; 
+        public string UrlPathSegment => "users"; 
         public IScreen HostScreen { get; }
     }
 }
