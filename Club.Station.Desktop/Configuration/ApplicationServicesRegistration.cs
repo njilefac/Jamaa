@@ -1,6 +1,20 @@
 using Autofac;
-using Club.Station.Desktop.ViewModels;
-using Club.Station.Desktop.Views;
+using AutoMapper.Contrib.Autofac.DependencyInjection;
+using Club.Station.Data.Mapping;
+using Club.Station.Desktop.ViewModels.Events;
+using Club.Station.Desktop.ViewModels.Finances;
+using Club.Station.Desktop.ViewModels.Groups;
+using Club.Station.Desktop.ViewModels.Members;
+using Club.Station.Desktop.ViewModels.Security;
+using Club.Station.Desktop.ViewModels.Shared;
+using Club.Station.Desktop.ViewModels.Users;
+using Club.Station.Desktop.Views.Events;
+using Club.Station.Desktop.Views.Finances;
+using Club.Station.Desktop.Views.Groups;
+using Club.Station.Desktop.Views.Members;
+using Club.Station.Desktop.Views.Security;
+using Club.Station.Desktop.Views.Shared;
+using Club.Station.Desktop.Views.Users;
 using Domain.Services;
 using ReactiveUI;
 
@@ -11,10 +25,18 @@ namespace Club.Station.Desktop.Configuration
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            
+
+            RegisterMappers(builder);
             RegisterViews(builder);
             RegisterViewModels(builder);
             RegisterServices(builder);
+        }
+
+        private void RegisterMappers(ContainerBuilder builder)
+        {
+            builder.RegisterAutoMapper(
+                GetType().Assembly,
+                typeof(EntityMappingProfile).Assembly);
         }
 
         private static void RegisterServices(ContainerBuilder builder)
@@ -26,8 +48,8 @@ namespace Club.Station.Desktop.Configuration
         {
             builder.RegisterType<MainWindowViewModel>().AsSelf().As<IScreen>().SingleInstance();
             builder.RegisterType<LoginScreenViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<MainNavigationViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MainMenuViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<DashboardViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             
             builder.RegisterType<UserManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MemberManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
@@ -40,8 +62,8 @@ namespace Club.Station.Desktop.Configuration
         {
             builder.RegisterType<MainWindow>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MainMenu>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<Dashboard>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<LoginScreenView>().AsSelf().AsImplementedInterfaces();
-            builder.RegisterType<MainNavigation>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<UserManagementScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<MemberManagementScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<GroupManagementScreen>().AsSelf().AsImplementedInterfaces();

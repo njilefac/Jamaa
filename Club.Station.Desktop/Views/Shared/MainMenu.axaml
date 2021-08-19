@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Club.Station.Desktop.Views.Shared.MainMenu">
+    <Menu DockPanel.Dock="Top">
+        <MenuItem Header="_File">
+            <MenuItem Header="_Open..." IsVisible="{Binding Logout.CanExecute}"/>
+            <Separator/>
+            <MenuItem Header="_Logout" Command="{Binding Logout}" IsVisible="{Binding !Logout.CanExecute}"/>
+            <MenuItem Header="E_xit" Command="{Binding Exit}"/>
+        </MenuItem>
+        <MenuItem Header="_Edit" Command="{Binding Edit}">
+            <MenuItem Header="Copy"/>
+            <MenuItem Header="Paste"/>
+        </MenuItem>
+    </Menu>
+</UserControl>

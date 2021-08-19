@@ -1,4 +1,6 @@
 ﻿using Autofac;
+using Club.Station.Data.Repositories;
+using Domain.Repositories;
 
 namespace Club.Station.Data.Configuration
 {
@@ -8,6 +10,7 @@ namespace Club.Station.Data.Configuration
         {
             base.Load(builder);
             builder.RegisterType<DefaultDbContext>().InstancePerLifetimeScope();
+            builder.RegisterType<UsersRepository>().As<IUserRepository>().InstancePerLifetimeScope();
         }
     }
 }

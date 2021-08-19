@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:members="clr-namespace:Club.Station.Desktop.Views.Members"
+             xmlns:events="clr-namespace:Club.Station.Desktop.Views.Events"
+             xmlns:finances="clr-namespace:Club.Station.Desktop.Views.Finances"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Club.Station.Desktop.Views.Shared.Dashboard"
+             HorizontalContentAlignment="Stretch"
+             VerticalContentAlignment="Stretch"
+             >
+    <Border Padding="5">
+    <NavigationView AlwaysOpen="True" DisplayMode="Inline">
+        <NavigationViewItem Header="Members" Title="Manage Members">
+            <NavigationViewItem.Content>
+                <members:MemberManagementScreen />
+            </NavigationViewItem.Content>
+        </NavigationViewItem>
+        <NavigationViewItem Header="Events" Title="Manage Events">
+            <NavigationViewItem.Content>
+                <events:EventManagementScreen />
+            </NavigationViewItem.Content>
+        </NavigationViewItem>
+        <NavigationViewItem Header="Finances" Title="Manage Finances">
+            <NavigationViewItem.Content>
+                <finances:FinanceManagementScreen />
+            </NavigationViewItem.Content>
+        </NavigationViewItem>
+    </NavigationView>
+</Border>
+    
+</UserControl>

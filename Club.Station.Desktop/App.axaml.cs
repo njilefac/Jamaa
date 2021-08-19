@@ -3,8 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using Club.Station.Desktop.ViewModels;
-using Club.Station.Desktop.Views;
+using Club.Station.Desktop.ViewModels.Shared;
+using Club.Station.Desktop.Views.Shared;
 using ReactiveUI;
 using Splat;
 
