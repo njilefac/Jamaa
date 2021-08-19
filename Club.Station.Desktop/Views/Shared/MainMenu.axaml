@@ -11,9 +11,5 @@
             <MenuItem Header="_Logout" Command="{Binding Logout}" IsVisible="{Binding !Logout.CanExecute}"/>
             <MenuItem Header="E_xit" Command="{Binding Exit}"/>
         </MenuItem>
-        <MenuItem Header="_Edit" Command="{Binding Edit}">
-            <MenuItem Header="Copy"/>
-            <MenuItem Header="Paste"/>
-        </MenuItem>
     </Menu>
 </UserControl>

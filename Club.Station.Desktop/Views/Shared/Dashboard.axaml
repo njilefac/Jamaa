@@ -9,9 +9,10 @@
              x:Class="Club.Station.Desktop.Views.Shared.Dashboard"
              HorizontalContentAlignment="Stretch"
              VerticalContentAlignment="Stretch"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
              >
-    <Border Padding="5">
-    <NavigationView AlwaysOpen="True" DisplayMode="Inline">
+    <NavigationView HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <NavigationViewItem Header="Members" Title="Manage Members">
             <NavigationViewItem.Content>
                 <members:MemberManagementScreen />
@@ -28,6 +29,4 @@
             </NavigationViewItem.Content>
         </NavigationViewItem>
     </NavigationView>
-</Border>
-    
 </UserControl>

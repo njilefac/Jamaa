@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:reactiveUi="http://reactiveui.net"
+        xmlns:rxui="http://reactiveui.net"
         xmlns:shared="clr-namespace:Club.Station.Desktop.Views.Shared"
         xmlns:security="clr-namespace:Club.Station.Desktop.Views.Security"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -10,29 +10,23 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="Nubia Club Station"
         WindowState="Maximized"
-        MinWidth="900"
-        MinHeight="750"
         WindowStartupLocation="CenterScreen">
 
-    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
-        <Panel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+    <Grid RowDefinitions="Auto,*,35" ColumnDefinitions="*">
+        <Panel Grid.Row="0">
             <shared:MainMenu/>
         </Panel>
-        <Panel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            >
-            <reactiveUi:RoutedViewHost 
+        <Panel Grid.Row="1">
+            <rxui:RoutedViewHost 
                 Router="{Binding Router}"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch">
-                <reactiveUi:RoutedViewHost.DefaultContent>
-                    <security:LoginScreenView
-                        BorderThickness="5" 
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"/>
-                </reactiveUi:RoutedViewHost.DefaultContent>
-            </reactiveUi:RoutedViewHost>
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                >
+                <rxui:RoutedViewHost.DefaultContent>
+                    <security:LoginScreenView HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </rxui:RoutedViewHost.DefaultContent>
+            </rxui:RoutedViewHost>
         </Panel>
+        <Panel Grid.Row="2" Background="gray"/>
     </Grid>
 </Window>
