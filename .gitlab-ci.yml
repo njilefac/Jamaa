@@ -7,7 +7,7 @@ stages:
 build:
     stage: build
     script:
-        - "dotnet build -c Release Club Station.sln"
+        - "dotnet build -c Release 'Club Station.sln'"
     artifacts:
       paths:
         - bin/
