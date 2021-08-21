@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Entities.Shared;
 using EntityFrameworkCore.Triggers;
 using Microsoft.EntityFrameworkCore;
 

@@ -40,6 +40,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
-    <Folder Include="Mapping" />
   </ItemGroup>
 </Project>

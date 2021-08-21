@@ -1,0 +1,7 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    <avalonia:MaterialIconExt x:Key="Icons.Members"  Kind="PeopleGroup"/>
+    <avalonia:MaterialIconExt x:Key="Icons.Settings" Kind="Settings"/>
+    <avalonia:MaterialIconExt x:Key="Icons.Finances" Kind="Finance"/>
+</ResourceDictionary>

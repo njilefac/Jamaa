@@ -2,6 +2,7 @@
 using System.IO;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using AutoMapper;
 using Avalonia;
 using Avalonia.Dialogs;
 using Avalonia.ReactiveUI;
@@ -70,7 +71,9 @@ namespace Club.Station.Desktop
             containerBuilder.RegisterInstance(resolver);
             resolver.InitializeReactiveUI();
             var container = containerBuilder.Build();
-            
+
+            var mapperConfiguration = container.Resolve<MapperConfiguration>();
+            mapperConfiguration.AssertConfigurationIsValid();
             resolver.SetLifetimeScope(container);
         }
     }

@@ -12,14 +12,11 @@ namespace Domain.Services
         {
             ["admin"] = "Test123#",
         };
-        
         public Subject<UserSession> CurrentSession { get; }
-
         public UserSessionService()
         {
             CurrentSession = new Subject<UserSession>();
         }
-        
         public async Task<UserSession> Authenticate(Credentials credentials)
         {
             var nullSession = new UserSession(false, "none");
@@ -39,8 +36,7 @@ namespace Domain.Services
             CurrentSession.OnNext(userSession);
             return await Task.FromResult(userSession);
         }
-
-        public async Task<bool> EndSession(UserSession session)
+        public async Task<bool> EndSession()
         {
             CurrentSession.OnNext(null);
             return await Task.FromResult(true);
