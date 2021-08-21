@@ -10,7 +10,7 @@ build:
         - "dotnet build -c Release 'Club Station.sln'"
     artifacts:
       paths:
-        - bin/
+        - Club.Station.Desktop/bin/Release/net5.0
 
 test:
     stage: test
