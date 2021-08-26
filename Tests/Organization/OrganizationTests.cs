@@ -1,5 +1,4 @@
 using System;
-using Domain.Entities;
 using Domain.Entities.Members;
 using Domain.Values;
 using FluentAssertions;

@@ -19,59 +19,58 @@
     <PackageReference Include="Autofac" Version="6.2.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
     <PackageReference Include="AutoMapper.Contrib.Autofac.DependencyInjection" Version="5.4.0" />
-    <PackageReference Include="Avalonia" Version="0.10.6" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.6" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.6" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.6" />
-    <PackageReference Include="Avalonia.ReactiveUI.Events" Version="0.10.6" />
-    <PackageReference Include="Avalonia.ThemeManager" Version="0.10.4" />
-    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.6" />
-    <PackageReference Include="Avalonia.Xaml.Interactions" Version="0.10.6" />
+    <PackageReference Include="Avalonia" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.7" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.7" />
+    <PackageReference Include="Avalonia.ReactiveUI.Events" Version="0.10.7" />
+    <PackageReference Include="Avalonia.ThemeManager" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Xaml.Interactions" Version="0.10.7" />
     <PackageReference Include="Avalonia.Xaml.Interactions.Custom" Version="0.10.3" />
     <PackageReference Include="Avalonia.Xaml.Interactions.DragAndDrop" Version="0.10.3" />
     <PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.9.1" />
-    <PackageReference Include="DialogHost.Avalonia" Version="0.2.0" />
-    <PackageReference Include="Dock.Avalonia" Version="0.10.6" />
+    <PackageReference Include="DialogHost.Avalonia" Version="0.3.0" />
+    <PackageReference Include="Dock.Avalonia" Version="0.10.7.1" />
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.10.0" />
     <PackageReference Include="Dock.Model.Avalonia" Version="0.10.0" />
     <PackageReference Include="DynamicData.ReactiveUI" Version="6.11.0.2613" />
     <PackageReference Include="FluentAvaloniaUI" Version="1.1.1" />
     <PackageReference Include="GridExtra.Avalonia" Version="0.9.1" />
-    <PackageReference Include="Material.Icons.Avalonia" Version="1.0.2" />
     <PackageReference Include="MediatR" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Localization" Version="5.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="5.0.9" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
-    <PackageReference Include="Projektanker.Icons.Avalonia" Version="3.1.0" />
-    <PackageReference Include="ReactiveProperty" Version="7.11.0" />
-    <PackageReference Include="ReactiveUI" Version="14.3.1" />
+    <PackageReference Include="ReactiveProperty" Version="7.12.0" />
+    <PackageReference Include="ReactiveUI" Version="16.1.1" />
     <PackageReference Include="ReactiveUI-FluentValidation" Version="1.0.0" />
-    <PackageReference Include="ReactiveUI.Fody" Version="14.1.1" />
-    <PackageReference Include="ReactiveUI.Validation" Version="2.1.1" />
+    <PackageReference Include="ReactiveUI.Fody" Version="16.1.1" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Enrichers.AssemblyName" Version="1.0.9" />
     <PackageReference Include="Serilog.Enrichers.Context" Version="4.2.0" />
-    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.1.3" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
     <PackageReference Include="Serilog.Enrichers.Memory" Version="1.0.4" />
+    <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <PackageReference Include="Serilog.Exceptions" Version="7.0.0" />
     <PackageReference Include="Serilog.Extensions.Autofac.DependencyInjection" Version="4.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.2.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="Serilog.Sinks.Grafana.Loki" Version="6.0.1" />
-    <PackageReference Include="Splat.Autofac" Version="11.1.1" />
+    <PackageReference Include="Splat.Autofac" Version="13.1.1" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
-    <PackageReference Include="WebViewControl-Avalonia" Version="2.85.44" />
+    <PackageReference Include="WebViewControl-Avalonia" Version="2.91.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Club.Station.Data\Club.Station.Data.csproj" />

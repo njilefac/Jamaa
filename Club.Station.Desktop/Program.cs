@@ -6,7 +6,6 @@ using AutoMapper;
 using Avalonia;
 using Avalonia.Dialogs;
 using Avalonia.ReactiveUI;
-using Avalonia.Threading;
 using Club.Station.Data.Configuration;
 using Club.Station.Desktop.Configuration;
 using Microsoft.Extensions.Configuration;

@@ -10,7 +10,9 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="Nubia Club Station"
         WindowState="Maximized"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent">
 
     <Grid RowDefinitions="Auto,*,35" ColumnDefinitions="*">
         <Panel Grid.Row="0">
