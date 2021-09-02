@@ -1,5 +1,7 @@
 using System.Reactive;
 using System.Threading.Tasks;
+using Domain.Services;
+using Domain.Values;
 using Libota.Application;
 using Libota.Desktop.Assets.Resources;
 using Libota.Desktop.ViewModels.Security;
@@ -14,17 +16,20 @@ namespace Libota.Desktop.ViewModels.Setup
     public class CreateSuperUserViewModel : ReactiveValidationObject, IRoutableViewModel
     {
         private readonly IUserManagementFacade _userManagementFacade;
+        private readonly IUserSessionService _userSessionService;
         [Reactive] public string FirstName { get; set; }
         [Reactive] public string LastName { get; set; }
         [Reactive] public string UserName { get; set; }
         [Reactive] public string Email { get; set; }
         [Reactive] public string Password { get; set; }
 
-        public ReactiveCommand<Unit, bool> CreateAccount { get; set; }
+        public ReactiveCommand<Unit, UserSession> CreateAccount { get; set; }
 
-        public CreateSuperUserViewModel(IScreen hostScreen, IUserManagementFacade userManagementFacade)
+        public CreateSuperUserViewModel(IScreen hostScreen, IUserManagementFacade userManagementFacade,
+            IUserSessionService userSessionService)
         {
             _userManagementFacade = userManagementFacade;
+            _userSessionService = userSessionService;
             HostScreen = hostScreen;
 
             UserName = string.Empty;
@@ -41,23 +46,23 @@ namespace Libota.Desktop.ViewModels.Setup
 
             this.ValidationRule(p => p.UserName,
                 v => !string.IsNullOrWhiteSpace(v) && v.Length >= 3, Messages.login_error_username);
-            
+
             this.ValidationRule(p => p.Password,
                 v => !string.IsNullOrWhiteSpace(v) && v.Length >= 6, Messages.login_error_password);
-            
+
             this.ValidationRule(p => p.FirstName,
                 v => !string.IsNullOrWhiteSpace(v), Messages.login_error_username);
-            
+
             this.ValidationRule(p => p.LastName,
                 v => !string.IsNullOrWhiteSpace(v), Messages.login_error_username);
 
             CreateAccount = ReactiveCommand.CreateFromTask(OnCreateAccount, this.IsValid());
         }
 
-        private async Task<bool> OnCreateAccount()
+        private async Task<UserSession> OnCreateAccount()
         {
             var user = await _userManagementFacade.CreateSuperUser(UserName, Email, Password, FirstName, LastName);
-            return user != null;
+            return await _userSessionService.Authenticate(user.Account.Credentials);
         }
 
 

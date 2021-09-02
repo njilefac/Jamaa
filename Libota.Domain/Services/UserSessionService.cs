@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Domain.Repositories;
 using Domain.Values;
 using Microsoft.Extensions.Logging;
 
@@ -9,42 +9,40 @@ namespace Domain.Services
 {
     public class UserSessionService : IUserSessionService
     {
-        private readonly Dictionary<string, string> _knownCredentials = new()
-        {
-            ["admin"] = "Test123#",
-        };
+        private readonly IUserRepository _users;
 
         private readonly ILogger<UserSessionService> _logger;
+        private static readonly UserSession? NullSession = new UserSession(false, "none");
         public Subject<UserSession?> CurrentSession { get; }
-        public UserSessionService(ILogger<UserSessionService> logger)
+
+        public UserSessionService(ILogger<UserSessionService> logger, IUserRepository users)
         {
             _logger = logger;
+            _users = users;
             CurrentSession = new Subject<UserSession?>();
         }
+
         public async Task<UserSession?> Authenticate(Credentials credentials)
         {
-            _logger.LogInformation($"authenticating user...");
-            var nullSession = new UserSession(false, "none");
-            if (credentials.UserName != null && !_knownCredentials.ContainsKey(credentials.UserName))
-            {
-                CurrentSession.OnNext(nullSession);
-                _logger.LogInformation($"authentication failed!");
-                return await Task.FromResult(nullSession);
-            }
+            if (credentials == null) throw new ArgumentNullException(nameof(credentials));
 
-            if (credentials.UserName != null && !_knownCredentials[credentials.UserName].Equals(credentials.Password))
-            {
-                CurrentSession.OnNext(nullSession);
+            _logger.LogInformation($"authenticating user...");
+            var matchingUser = await _users.SingleOrDefault(x =>
+                x.Account.Credentials.Equals(credentials));
+            if (matchingUser == null){
                 _logger.LogInformation($"authentication failed!");
-                return await Task.FromResult(nullSession);
+                return NullSession;
             }
-                
+            _logger.LogInformation($"authenticated!");
+            
+            _logger.LogInformation($"creating user session...");
             var userSession = new UserSession(true, Guid.NewGuid().ToString());
             CurrentSession.OnNext(userSession);
-            _logger.LogInformation($"authenticated!");
-            _logger.LogInformation($"created user session");
+            _logger.LogInformation($"user session created");
+
             return await Task.FromResult(userSession);
         }
+
         public async Task<bool> EndSession()
         {
             CurrentSession.OnNext(null);

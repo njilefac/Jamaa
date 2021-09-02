@@ -12,6 +12,6 @@ namespace Domain.Repositories
         Task<User> Update(User user);
         Task<bool> Delete(User user);
         Task<User> GetById(Guid id);
-        Task<User> SingleOrDefault(Predicate<User> matchesCondition);
+        Task<User?> SingleOrDefault(Predicate<User> matchesCondition);
     }
 }
