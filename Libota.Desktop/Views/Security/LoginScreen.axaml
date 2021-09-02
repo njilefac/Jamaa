@@ -13,14 +13,16 @@
         <Grid ColumnDefinitions="Auto,Auto"
               RowDefinitions="Auto,Auto,Auto">
             <TextBlock Text="User Name:" Grid.Row="0" Grid.Column="0"
-                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                       HorizontalAlignment="Right" VerticalAlignment="Center"
+                       Classes="form label"/>
             <TextBox Name="UserNameField"
                      Text="{Binding UserName, Mode=TwoWay }"
                      Classes="form field"
                      Grid.Row="0" Grid.Column="1"
                      TabIndex="1"/>
             <TextBlock Text="Password:" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"
-                       VerticalAlignment="Center"/>
+                       VerticalAlignment="Center"
+                       Classes="form label"/>
             <TextBox Name="PasswordField"
                      Text="{Binding Password, Mode=TwoWay}"
                      Classes="form field secret"

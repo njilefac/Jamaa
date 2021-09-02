@@ -10,18 +10,33 @@
     <StackPanel>
         <TextBlock Text="Create Super User" HorizontalAlignment="Center" VerticalAlignment="Center"
                    Classes="page title" />
-            <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-                <TextBox UseFloatingWatermark="True" Watermark="User Name" Text="{Binding UserName}"
-                         Grid.Row="0" Grid.Column="0"
+            <Grid ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                <TextBlock Text="User Name:" Grid.Row="0" Grid.Column="0"
+                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Classes="form label"/>
+                <TextBox Text="{Binding UserName}"
+                         Grid.Row="0" Grid.Column="1"
                          Classes="form field"/>
-                <TextBox Grid.Row="1" UseFloatingWatermark="True" Watermark="Email" Text="{Binding Email}"
-                         Classes="form field"/>
-                <TextBox Grid.Row="2" UseFloatingWatermark="True" Watermark="Password" Text="{Binding Password}" Classes="secret"/>
-                <TextBox  Grid.Row="3" UseFloatingWatermark="True" Watermark="First Name" Text="{Binding FirstName}"
+                <TextBlock Text="Email:" Grid.Row="1" Grid.Column="0"
+                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Classes="form label"/>
+                <TextBox Text="{Binding Email}"
+                         Classes="form field" Grid.Row="1" Grid.Column="1"/>
+                <TextBlock Text="Password:" Grid.Row="2" Grid.Column="0"
+                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Classes="form label"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Password}" Classes="form field secret"/>
+                <TextBlock Text="First Name:" Grid.Row="3" Grid.Column="0"
+                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Classes="form label"/>
+                <TextBox  Grid.Row="3" Grid.Column="1" Text="{Binding FirstName}"
                           Classes="form field"/>
-                <TextBox  Grid.Row="4" UseFloatingWatermark="True" Watermark="Last Name" Text="{Binding LastName}"
+                <TextBlock Text="Last Name:" Grid.Row="4" Grid.Column="0"
+                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Classes="form label"/>
+                <TextBox  Grid.Row="4" Grid.Column="1" Text="{Binding LastName}"
                           Classes="form field"/>
-                <Button  Grid.Row="5" Command="{Binding CreateAccount}" Content="Create Account"
+                <Button  Grid.Row="5" Grid.Column="1" Command="{Binding CreateAccount}" Content="Create Account"
                          HorizontalAlignment="Right" IsDefault="True"/>
             </Grid>
     </StackPanel>

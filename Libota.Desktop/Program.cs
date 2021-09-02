@@ -28,7 +28,8 @@ namespace Libota.Desktop
             var app = BuildAvaloniaApp(args);
             app.StartWithClassicDesktopLifetime(args);
         }
-        public static AppBuilder BuildAvaloniaApp(string[] args)
+
+        private static AppBuilder BuildAvaloniaApp(string[] args)
         {
             var appBuilder = AppBuilder.Configure<App>()
                 .UsePlatformDetect()
