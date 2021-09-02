@@ -1,0 +1,30 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:rxui="http://reactiveui.net"
+        xmlns:shared="clr-namespace:Libota.Desktop.Views.Shared"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Libota.Desktop.Views.Shared.MainWindow"
+        Icon="/Assets/Icons/avalonia-logo.ico"
+        Title="Libota Desktop"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent">
+
+    <Grid RowDefinitions="Auto,*,35" ColumnDefinitions="*">
+        <Panel Grid.Row="0">
+            <shared:MainMenu/>
+        </Panel>
+        <Panel Grid.Row="1">
+            <rxui:RoutedViewHost 
+                Router="{Binding Router}"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                x:Name="ContentPageContainer">
+            </rxui:RoutedViewHost>
+        </Panel>
+        <Panel Grid.Row="2" Background="gray"/>
+    </Grid>
+</Window>

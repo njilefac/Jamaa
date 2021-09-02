@@ -1,0 +1,539 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <Company>Nubia Systems</Company>
+    <Product>Libota Desktop</Product>
+    <RootNamespace>Libota.Desktop</RootNamespace>
+    <PackageId>Libota</PackageId>
+    <Authors>Wilfred Azamo</Authors>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <NeutralLanguage>en</NeutralLanguage>
+    <AssemblyName>Libota</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Aura.UI" Version="0.1.3.1" />
+    <PackageReference Include="Aura.UI.Dragging" Version="0.1.3.1" />
+    <PackageReference Include="Autofac" Version="6.2.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
+    <PackageReference Include="AutoMapper.Contrib.Autofac.DependencyInjection" Version="5.4.0" />
+    <PackageReference Include="Avalonia" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.7" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.7" />
+    <PackageReference Include="Avalonia.ReactiveUI.Events" Version="0.10.7" />
+    <PackageReference Include="Avalonia.ThemeManager" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Xaml.Interactions" Version="0.10.7" />
+    <PackageReference Include="Avalonia.Xaml.Interactions.Custom" Version="0.10.3" />
+    <PackageReference Include="Avalonia.Xaml.Interactions.DragAndDrop" Version="0.10.3" />
+    <PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.9.1" />
+    <PackageReference Include="DialogHost.Avalonia" Version="0.3.0" />
+    <PackageReference Include="Dock.Avalonia" Version="0.10.7.1" />
+    <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.10.0" />
+    <PackageReference Include="Dock.Model.Avalonia" Version="0.10.0" />
+    <PackageReference Include="DynamicData.ReactiveUI" Version="6.11.0.2613" />
+    <PackageReference Include="FluentAvaloniaUI" Version="1.1.1" />
+    <PackageReference Include="GridExtra.Avalonia" Version="0.9.1" />
+    <PackageReference Include="MediatR" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="5.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
+    <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="2.0.8" />
+    <PackageReference Include="ReactiveProperty" Version="7.12.0" />
+    <PackageReference Include="ReactiveUI" Version="16.1.1" />
+    <PackageReference Include="ReactiveUI-FluentValidation" Version="1.0.0" />
+    <PackageReference Include="ReactiveUI.Fody" Version="16.1.1" />
+    <PackageReference Include="ReactiveUI.Validation" Version="2.1.1" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Serilog.Enrichers.AssemblyName" Version="1.0.9" />
+    <PackageReference Include="Serilog.Enrichers.Context" Version="4.2.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+    <PackageReference Include="Serilog.Enrichers.Memory" Version="1.0.4" />
+    <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <PackageReference Include="Serilog.Exceptions" Version="7.0.0" />
+    <PackageReference Include="Serilog.Extensions.Autofac.DependencyInjection" Version="4.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
+    <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.2.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Splat.Autofac" Version="13.1.1" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="WebViewControl-Avalonia" Version="2.91.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="FodyWeavers.xml" />
+    <None Remove="Controls\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaXaml Remove="Controls\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Controls\**" />
+    <Compile Update="Views\Users\UserManagementScreen.axaml.cs">
+      <DependentUpon>UserManagementScreen.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Members\MemberManagementScreen.axaml.cs">
+      <DependentUpon>MemberManagementScreen.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Shared\MainMenu.axaml.cs">
+      <DependentUpon>MainMenu.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Events\EventManagementScreen.axaml.cs">
+      <DependentUpon>EventManagementScreen.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Groups\GroupManagementScreen.axaml.cs">
+      <DependentUpon>GroupManagementScreen.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Finances\FinanceManagementScreen.axaml.cs">
+      <DependentUpon>FinanceManagementScreen.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Security\LoginScreen.axaml.cs">
+      <DependentUpon>LoginScreenView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Shared\MainWindow.axaml.cs">
+      <DependentUpon>MainWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Assets\Resources\Messages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Messages.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="Controls\**" />
+    <EmbeddedResource Update="Assets\Resources\Messages.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="app.Development.json" />
+    <Content Include="app.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="app.Production.json" />
+    <Content Include="app.Production.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Assets\attention\ error.png" />
+    <UpToDateCheckInput Remove="Assets\attention\ error_outline.png" />
+    <UpToDateCheckInput Remove="Assets\attention\ info_circle.png" />
+    <UpToDateCheckInput Remove="Assets\attention\ info_circle_outline.png" />
+    <UpToDateCheckInput Remove="Assets\attention\ info_square.png" />
+    <UpToDateCheckInput Remove="Assets\attention\ info_square_outline.png" />
+    <UpToDateCheckInput Remove="Assets\attention\ warning.png" />
+    <UpToDateCheckInput Remove="Assets\attention\ warning_outline.png" />
+    <UpToDateCheckInput Remove="Assets\basic\alarm.png" />
+    <UpToDateCheckInput Remove="Assets\basic\alarm_add.png" />
+    <UpToDateCheckInput Remove="Assets\basic\check.png" />
+    <UpToDateCheckInput Remove="Assets\basic\checkbox.png" />
+    <UpToDateCheckInput Remove="Assets\basic\checkbox_checked.png" />
+    <UpToDateCheckInput Remove="Assets\basic\checkbox_square.png" />
+    <UpToDateCheckInput Remove="Assets\basic\check_all.png" />
+    <UpToDateCheckInput Remove="Assets\basic\check_all_big.png" />
+    <UpToDateCheckInput Remove="Assets\basic\check_big.png" />
+    <UpToDateCheckInput Remove="Assets\basic\check_bold.png" />
+    <UpToDateCheckInput Remove="Assets\basic\circle_check.png" />
+    <UpToDateCheckInput Remove="Assets\basic\circle_check_outline.png" />
+    <UpToDateCheckInput Remove="Assets\basic\clock.png" />
+    <UpToDateCheckInput Remove="Assets\basic\command.png" />
+    <UpToDateCheckInput Remove="Assets\basic\confused.png" />
+    <UpToDateCheckInput Remove="Assets\basic\credit_card.png" />
+    <UpToDateCheckInput Remove="Assets\basic\credit_card_alt.png" />
+    <UpToDateCheckInput Remove="Assets\basic\download.png" />
+    <UpToDateCheckInput Remove="Assets\basic\download_done.png" />
+    <UpToDateCheckInput Remove="Assets\basic\exit.png" />
+    <UpToDateCheckInput Remove="Assets\basic\external_link.png" />
+    <UpToDateCheckInput Remove="Assets\basic\flag_fill.png" />
+    <UpToDateCheckInput Remove="Assets\basic\flag_outline.png" />
+    <UpToDateCheckInput Remove="Assets\basic\heart_fill.png" />
+    <UpToDateCheckInput Remove="Assets\basic\heart_outline.png" />
+    <UpToDateCheckInput Remove="Assets\basic\help_circle.png" />
+    <UpToDateCheckInput Remove="Assets\basic\help_circle_outline.png" />
+    <UpToDateCheckInput Remove="Assets\basic\help_questionmark.png" />
+    <UpToDateCheckInput Remove="Assets\basic\image.png" />
+    <UpToDateCheckInput Remove="Assets\basic\image_alt.png" />
+    <UpToDateCheckInput Remove="Assets\basic\label.png" />
+    <UpToDateCheckInput Remove="Assets\basic\layers.png" />
+    <UpToDateCheckInput Remove="Assets\basic\layers_alt.png" />
+    <UpToDateCheckInput Remove="Assets\basic\link.png" />
+    <UpToDateCheckInput Remove="Assets\basic\link_02.png" />
+    <UpToDateCheckInput Remove="Assets\basic\loading.png" />
+    <UpToDateCheckInput Remove="Assets\basic\location.png" />
+    <UpToDateCheckInput Remove="Assets\basic\location_outline.png" />
+    <UpToDateCheckInput Remove="Assets\basic\log_out.png" />
+    <UpToDateCheckInput Remove="Assets\basic\mail.png" />
+    <UpToDateCheckInput Remove="Assets\basic\mail_open.png" />
+    <UpToDateCheckInput Remove="Assets\basic\map.png" />
+    <UpToDateCheckInput Remove="Assets\basic\path.png" />
+    <UpToDateCheckInput Remove="Assets\basic\phone.png" />
+    <UpToDateCheckInput Remove="Assets\basic\phone_outline.png" />
+    <UpToDateCheckInput Remove="Assets\basic\radio.png" />
+    <UpToDateCheckInput Remove="Assets\basic\radio_filled.png" />
+    <UpToDateCheckInput Remove="Assets\basic\refresh.png" />
+    <UpToDateCheckInput Remove="Assets\basic\refresh_02.png" />
+    <UpToDateCheckInput Remove="Assets\basic\settings.png" />
+    <UpToDateCheckInput Remove="Assets\basic\settings_filled.png" />
+    <UpToDateCheckInput Remove="Assets\basic\settings_future.png" />
+    <UpToDateCheckInput Remove="Assets\basic\share.png" />
+    <UpToDateCheckInput Remove="Assets\basic\share_outline.png" />
+    <UpToDateCheckInput Remove="Assets\basic\slider_01.png" />
+    <UpToDateCheckInput Remove="Assets\basic\slider_02.png" />
+    <UpToDateCheckInput Remove="Assets\basic\slider_03.png" />
+    <UpToDateCheckInput Remove="Assets\basic\stopwatch.png" />
+    <UpToDateCheckInput Remove="Assets\basic\tag-outline.png" />
+    <UpToDateCheckInput Remove="Assets\basic\tag.png" />
+    <UpToDateCheckInput Remove="Assets\basic\trash_empty.png" />
+    <UpToDateCheckInput Remove="Assets\basic\trash_full.png" />
+    <UpToDateCheckInput Remove="Assets\basic\unlink.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ adobe_xd.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ apple.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ app_store.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ behance.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ coolicons.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ css3.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ discord.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ dribbble.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ drive.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ dropbox.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ facebook.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ Figma.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ github.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ google.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ html5.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ instagram.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ invision.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ javascript.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ LinkedIn.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ linkpath.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ messenger.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ patreon.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ paypal.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ play_store.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ reddit.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ Sketch.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ slack.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ snapchat.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ soundcloud.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ spectrum.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ spotify.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ stack_overflow.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ trello.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ twitch.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ twitter.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ unsplash.png" />
+    <UpToDateCheckInput Remove="Assets\brand\ youtube.png" />
+    <UpToDateCheckInput Remove="Assets\calendar\calendar.png" />
+    <UpToDateCheckInput Remove="Assets\calendar\calendar_calendar.png" />
+    <UpToDateCheckInput Remove="Assets\calendar\calendar_check.png" />
+    <UpToDateCheckInput Remove="Assets\calendar\calendar_edit.png" />
+    <UpToDateCheckInput Remove="Assets\calendar\calendar_event.png" />
+    <UpToDateCheckInput Remove="Assets\calendar\calendar_minus.png" />
+    <UpToDateCheckInput Remove="Assets\calendar\calendar_plus.png" />
+    <UpToDateCheckInput Remove="Assets\calendar\calendar_week.png" />
+    <UpToDateCheckInput Remove="Assets\calendar\calendar_x.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ bar_chart.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ bar_chart_alt.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ bar_chart_circle.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ bar_chart_horizontal.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ bar_chart_square.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ doughnut_chart.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ line_chart_down.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ line_chart_up.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ pie_chart_25.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ pie_chart_50.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ pie_chart_75.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ pie_chart_outline.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ pie_chart_outline_25.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ trending_down.png" />
+    <UpToDateCheckInput Remove="Assets\chart\ trending_up.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ chat.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ chat_alt.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ message.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ message_check.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ message_circle.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ message_close.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ message_minus.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ message_plus.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ message_plus_alt.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ message_round.png" />
+    <UpToDateCheckInput Remove="Assets\communication\ message_writing.png" />
+    <UpToDateCheckInput Remove="Assets\device\ devices.png" />
+    <UpToDateCheckInput Remove="Assets\device\ laptop.png" />
+    <UpToDateCheckInput Remove="Assets\device\ mobile.png" />
+    <UpToDateCheckInput Remove="Assets\device\ mobile_alt.png" />
+    <UpToDateCheckInput Remove="Assets\device\ monitor.png" />
+    <UpToDateCheckInput Remove="Assets\device\ tablet.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ add_column.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ add_row.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ add_to_queue.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ bold.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ combine_cells.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ copy.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ delete_column.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ delete_row.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ double_quotes_l.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ double_quotes_r.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ edit.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ heading.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ heading_h1.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ heading_h2.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ heading_h3.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ heading_h4.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ heading_h5.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ heading_h6.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ hide.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ italic.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ line_break.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ list_check.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ list_checklist.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ list_checklist_alt.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ list_minus.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ list_ol.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ list_plus.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ list_ul.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ mention.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ minus.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ minus_circle.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ minus_circle_outline.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ minus_square.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ move.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ move_horizontal.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ move_vertical.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ off_close.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ off_outline_close.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ paragraph.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ plus.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ plus_circle.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ plus_circle_outline.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ plus_square.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ redo.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ search.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ search_small.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ search_small_minus.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ search_small_plus.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ select_multiple.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ show.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ single_quotes_l.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ single_quotes_r.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ strikethrough.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ table.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ table_add.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ table_delete.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ text_align_center.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ text_align_justify.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ text_align_left.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ text_align_right.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ underline.png" />
+    <UpToDateCheckInput Remove="Assets\edit\ undo.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-1.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-10.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-11.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-12.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-13.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-14.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-15.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-16.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-17.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-18.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-2.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-3.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-4.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-5.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-6.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-7.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-8.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons-9.png" />
+    <UpToDateCheckInput Remove="Assets\Element\ Head Icons.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ black_lives_matter.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ bulb.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ coffee-togo.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ color.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ cookie.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ cupcake.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ happy.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ moon.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ sad.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ sun.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ tennis.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ tennis_match.png" />
+    <UpToDateCheckInput Remove="Assets\experimental\ tennis_match_alt.png" />
+    <UpToDateCheckInput Remove="Assets\file\ cloud.png" />
+    <UpToDateCheckInput Remove="Assets\file\ cloud_check.png" />
+    <UpToDateCheckInput Remove="Assets\file\ cloud_close.png" />
+    <UpToDateCheckInput Remove="Assets\file\ cloud_down.png" />
+    <UpToDateCheckInput Remove="Assets\file\ cloud_off.png" />
+    <UpToDateCheckInput Remove="Assets\file\ cloud_outline.png" />
+    <UpToDateCheckInput Remove="Assets\file\ cloud_up.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_archive.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_blank_fill.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_blank_outline.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_css.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_find.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_html.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_image.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_jpg.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_js.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_minus.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_new.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_pdf.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_png.png" />
+    <UpToDateCheckInput Remove="Assets\file\ file_svg.png" />
+    <UpToDateCheckInput Remove="Assets\file\ folder.png" />
+    <UpToDateCheckInput Remove="Assets\file\ folder_minus.png" />
+    <UpToDateCheckInput Remove="Assets\file\ folder_open.png" />
+    <UpToDateCheckInput Remove="Assets\file\ folder_plus.png" />
+    <UpToDateCheckInput Remove="Assets\file\ note.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ dashboard.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ dashboard_02.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ grid.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ grid_big.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ grid_big_round.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ grid_horizontal.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ grid_horizontal_round.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ grid_round.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ grid_small.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ grid_small_round.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ grid_vertical.png" />
+    <UpToDateCheckInput Remove="Assets\grid\ grid_vertical_round.png" />
+    <UpToDateCheckInput Remove="Assets\home\ building.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_alt_check.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_alt_fill.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_alt_minus.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_alt_outline.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_alt_plus.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_alt_x.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_check.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_fill.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_heart-1.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_heart.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_minus.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_outline.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_plus.png" />
+    <UpToDateCheckInput Remove="Assets\home\ home_x.png" />
+    <UpToDateCheckInput Remove="Assets\user\group.png" />
+    <UpToDateCheckInput Remove="Assets\user\group_alt.png" />
+    <UpToDateCheckInput Remove="Assets\user\id_card.png" />
+    <UpToDateCheckInput Remove="Assets\user\user.png" />
+    <UpToDateCheckInput Remove="Assets\user\user_check.png" />
+    <UpToDateCheckInput Remove="Assets\user\user_circle.png" />
+    <UpToDateCheckInput Remove="Assets\user\user_close.png" />
+    <UpToDateCheckInput Remove="Assets\user\user_heart.png" />
+    <UpToDateCheckInput Remove="Assets\user\user_minus.png" />
+    <UpToDateCheckInput Remove="Assets\user\user_pin.png" />
+    <UpToDateCheckInput Remove="Assets\user\user_plus.png" />
+    <UpToDateCheckInput Remove="Assets\user\user_square.png" />
+    <UpToDateCheckInput Remove="Assets\user\user_voice.png" />
+    <UpToDateCheckInput Remove="Assets\system\ barcode.png" />
+    <UpToDateCheckInput Remove="Assets\system\ bar_bottom.png" />
+    <UpToDateCheckInput Remove="Assets\system\ bar_left.png" />
+    <UpToDateCheckInput Remove="Assets\system\ bar_right.png" />
+    <UpToDateCheckInput Remove="Assets\system\ bar_top.png" />
+    <UpToDateCheckInput Remove="Assets\system\ code.png" />
+    <UpToDateCheckInput Remove="Assets\system\ cylinder.png" />
+    <UpToDateCheckInput Remove="Assets\system\ data.png" />
+    <UpToDateCheckInput Remove="Assets\system\ filter.png" />
+    <UpToDateCheckInput Remove="Assets\system\ filter_off.png" />
+    <UpToDateCheckInput Remove="Assets\system\ filter_off_outline.png" />
+    <UpToDateCheckInput Remove="Assets\system\ filter_outline.png" />
+    <UpToDateCheckInput Remove="Assets\system\ qr_code-1.png" />
+    <UpToDateCheckInput Remove="Assets\system\ qr_code.png" />
+    <UpToDateCheckInput Remove="Assets\system\ terminal.png" />
+    <UpToDateCheckInput Remove="Assets\system\ transfer.png" />
+    <UpToDateCheckInput Remove="Assets\system\ window.png" />
+    <UpToDateCheckInput Remove="Assets\system\ window_check.png" />
+    <UpToDateCheckInput Remove="Assets\system\ window_close.png" />
+    <UpToDateCheckInput Remove="Assets\system\ window_code_block.png" />
+    <UpToDateCheckInput Remove="Assets\system\ window_sidebar.png" />
+    <UpToDateCheckInput Remove="Assets\system\ window_terminal.png" />
+    <UpToDateCheckInput Remove="Assets\notification\ notification.png" />
+    <UpToDateCheckInput Remove="Assets\notification\ notification_active.png" />
+    <UpToDateCheckInput Remove="Assets\notification\ notification_deactivated.png" />
+    <UpToDateCheckInput Remove="Assets\notification\ notification_dot.png" />
+    <UpToDateCheckInput Remove="Assets\notification\ notification_minus.png" />
+    <UpToDateCheckInput Remove="Assets\notification\ notification_outline.png" />
+    <UpToDateCheckInput Remove="Assets\notification\ notification_outline_dot.png" />
+    <UpToDateCheckInput Remove="Assets\notification\ notification_outline_minus.png" />
+    <UpToDateCheckInput Remove="Assets\notification\ notification_outline_plus.png" />
+    <UpToDateCheckInput Remove="Assets\notification\ notification_plus.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dot_01_xs.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dot_02_s.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dot_03_m.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dot_04_l.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dot_05_xl.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dummy_icon_lg_fill.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dummy_icon_lg_line.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dummy_icon_md_fill.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dummy_icon_md_line.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dummy_icon_sm_fill.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ dummy_icon_sm_line.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ line_l.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ line_m.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ line_s.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ line_sx.png" />
+    <UpToDateCheckInput Remove="Assets\misc\ line_xl.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ close_big.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ close_small.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ hamburger.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ menu_alt_01.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ menu_alt_02.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ menu_alt_03.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ menu_alt_04.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ menu_alt_05.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ menu_duo.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ menu_duo_alt.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ more_horizontal.png" />
+    <UpToDateCheckInput Remove="Assets\menu\ more_vertical.png" />
+    <UpToDateCheckInput Remove="Assets\media\ airplay.png" />
+    <UpToDateCheckInput Remove="Assets\media\ cast.png" />
+    <UpToDateCheckInput Remove="Assets\media\ fast_forward.png" />
+    <UpToDateCheckInput Remove="Assets\media\ fast_rewind.png" />
+    <UpToDateCheckInput Remove="Assets\media\ pause_circle_filled.png" />
+    <UpToDateCheckInput Remove="Assets\media\ pause_circle_outline.png" />
+    <UpToDateCheckInput Remove="Assets\media\ play_arrow.png" />
+    <UpToDateCheckInput Remove="Assets\media\ play_circle_filled.png" />
+    <UpToDateCheckInput Remove="Assets\media\ play_circle_outline.png" />
+    <UpToDateCheckInput Remove="Assets\media\ repeat.png" />
+    <UpToDateCheckInput Remove="Assets\media\ shuffle.png" />
+    <UpToDateCheckInput Remove="Assets\media\ skip_next.png" />
+    <UpToDateCheckInput Remove="Assets\media\ skip_previous.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Libota.Application\Libota.Application.csproj" />
+    <ProjectReference Include="..\Libota.Data\Libota.Data.csproj" />
+    <ProjectReference Include="..\Libota.Domain\Libota.Domain.csproj" />
+  </ItemGroup>
+</Project>

@@ -27,7 +27,10 @@ namespace UnitTests.Organization
         public void ShouldRegisterNewMember()
         {
             // Arrange
-            var member = new Member();
+            string firstName = "test first name";
+            string middleName = "test middle name";
+            string lastName = "test last name";
+            var member = new Member(firstName, middleName, lastName, Gender.Female, DateTime.Today);
 
             var organization = new Domain.Entities.Shared.Organization("Unity Club", "Test organization");
 

@@ -1,7 +1,0 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <CroppedBitmap x:Key="Icons.Members" Source="Assets/user/group.png"/>
-    <CroppedBitmap x:Key="Icons.Calendar" Source="Assets/calendar/calendar_event.png"/>
-    <CroppedBitmap x:Key="Icons.Finances" Source="Assets/basic/credit_card.png"/>
-    <CroppedBitmap x:Key="Icons.Settings" Source="Assets/basic/settings.png"/>
-</ResourceDictionary>
