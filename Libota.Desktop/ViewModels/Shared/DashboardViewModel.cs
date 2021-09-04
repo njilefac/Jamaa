@@ -1,4 +1,4 @@
-using Domain.Services;
+using Libota.Application.Users.Services;
 using ReactiveUI;
 
 namespace Libota.Desktop.ViewModels.Shared

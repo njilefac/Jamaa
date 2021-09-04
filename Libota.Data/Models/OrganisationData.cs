@@ -1,6 +1,6 @@
 namespace Libota.Data.Models
 {
-    public class OrganizationData
+    public class OrganisationData
     {
         public string Id { get; set; }
         public string Name { get; set; }

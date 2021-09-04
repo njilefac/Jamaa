@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reactive;
 using System.Threading.Tasks;
-using Domain.Services;
 using Domain.Values;
+using Libota.Application.Users.Services;
 using Libota.Desktop.Assets.Resources;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;

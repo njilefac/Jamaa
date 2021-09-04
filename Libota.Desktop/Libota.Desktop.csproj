@@ -41,9 +41,9 @@
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.10.0" />
     <PackageReference Include="Dock.Model.Avalonia" Version="0.10.0" />
     <PackageReference Include="DynamicData.ReactiveUI" Version="6.11.0.2613" />
+    <PackageReference Include="EventFlow.Autofac" Version="0.82.4684" />
     <PackageReference Include="FluentAvaloniaUI" Version="1.1.1" />
     <PackageReference Include="GridExtra.Avalonia" Version="0.9.1" />
-    <PackageReference Include="MediatR" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

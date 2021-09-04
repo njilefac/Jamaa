@@ -9,7 +9,7 @@ namespace Libota.Data.Mapping
     {
         public EntityMappingProfile()
         {
-            CreateMap<OrganizationData, Organization>()
+            CreateMap<OrganisationData, Organisation>()
                 .ForMember(d => d.Fees, opt => opt.Ignore())
                 .ForMember(d => d.Members, opt => opt.Ignore())
                 .ReverseMap();

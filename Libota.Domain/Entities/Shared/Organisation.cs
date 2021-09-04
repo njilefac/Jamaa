@@ -6,7 +6,7 @@ using Domain.Values;
 
 namespace Domain.Entities.Shared
 {
-    public class Organization
+    public class Organisation
     {
         /// <summary>
         /// A uid that uniquely identifies the organization
@@ -35,7 +35,7 @@ namespace Domain.Entities.Shared
         /// </summary>
         /// <param name="name">the name of the organization</param>
         /// <param name="description">a short description of the purpose of the organization</param>
-        public Organization(string name, string description)
+        public Organisation(string name, string description)
         {
             Name = name;
             Description = description;

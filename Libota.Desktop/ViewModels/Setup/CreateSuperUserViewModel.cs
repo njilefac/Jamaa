@@ -1,8 +1,8 @@
 using System.Reactive;
 using System.Threading.Tasks;
-using Domain.Services;
 using Domain.Values;
-using Libota.Application;
+using Libota.Application.Setup;
+using Libota.Application.Users.Services;
 using Libota.Desktop.Assets.Resources;
 using Libota.Desktop.ViewModels.Security;
 using ReactiveUI;
@@ -15,7 +15,7 @@ namespace Libota.Desktop.ViewModels.Setup
 {
     public class CreateSuperUserViewModel : ReactiveValidationObject, IRoutableViewModel
     {
-        private readonly IUserManagementFacade _userManagementFacade;
+        private readonly ISetupService _setupService;
         private readonly IUserSessionService _userSessionService;
         [Reactive] public string FirstName { get; set; }
         [Reactive] public string LastName { get; set; }
@@ -23,12 +23,12 @@ namespace Libota.Desktop.ViewModels.Setup
         [Reactive] public string Email { get; set; }
         [Reactive] public string Password { get; set; }
 
-        public ReactiveCommand<Unit, UserSession> CreateAccount { get; set; }
+        public ReactiveCommand<Unit, UserSession?> CreateAccount { get; set; }
 
-        public CreateSuperUserViewModel(IScreen hostScreen, IUserManagementFacade userManagementFacade,
+        public CreateSuperUserViewModel(IScreen hostScreen, ISetupService userManagementFacade,
             IUserSessionService userSessionService)
         {
-            _userManagementFacade = userManagementFacade;
+            _setupService = userManagementFacade;
             _userSessionService = userSessionService;
             HostScreen = hostScreen;
 
@@ -38,17 +38,17 @@ namespace Libota.Desktop.ViewModels.Setup
             FirstName = string.Empty;
             LastName = string.Empty;
 
-            if (_userManagementFacade.GetSuperUser().Result is { } superUser)
+            if (_setupService.GetSuperUser().Result != null)
             {
                 var loginScreenViewModel = Locator.Current.GetService<LoginScreenViewModel>();
                 if (loginScreenViewModel != null) HostScreen.Router.Navigate.Execute(loginScreenViewModel);
             }
 
             this.ValidationRule(p => p.UserName,
-                v => !string.IsNullOrWhiteSpace(v) && v.Length >= 3, Messages.login_error_username);
+                v => !string.IsNullOrWhiteSpace(v) && v.Length >= 3, string.Format(Messages.login_error_username, 3));
 
             this.ValidationRule(p => p.Password,
-                v => !string.IsNullOrWhiteSpace(v) && v.Length >= 6, Messages.login_error_password);
+                v => !string.IsNullOrWhiteSpace(v) && v.Length >= 6, string.Format(Messages.login_error_password, 6));
 
             this.ValidationRule(p => p.FirstName,
                 v => !string.IsNullOrWhiteSpace(v), Messages.login_error_username);
@@ -59,14 +59,16 @@ namespace Libota.Desktop.ViewModels.Setup
             CreateAccount = ReactiveCommand.CreateFromTask(OnCreateAccount, this.IsValid());
         }
 
-        private async Task<UserSession> OnCreateAccount()
+        private async Task<UserSession?> OnCreateAccount()
         {
-            var user = await _userManagementFacade.CreateSuperUser(UserName, Email, Password, FirstName, LastName);
-            return await _userSessionService.Authenticate(user.Account.Credentials);
+            var user = await _setupService.CreateSuperUser(UserName, Password, Email, FirstName, LastName);
+            if (user?.Account.Credentials != null)
+                return await _userSessionService.Authenticate(user.Account.Credentials);
+            return null;
         }
 
 
-        public string? UrlPathSegment => "setup.create-super-user";
+        public string UrlPathSegment => "setup.create-super-user";
         public IScreen HostScreen { get; }
     }
 }

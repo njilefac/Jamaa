@@ -17,4 +17,13 @@
     <data name="login.error.username" xml:space="preserve">
         <value>nom de l'utilisateur doit etre au moins {0} caracteres</value>
     </data>
+    <data name="setup.error.username" xml:space="preserve">
+        <value>nom de l'utilisateur doit etre au moins {0} caracteres</value>
+    </data>
+    <data name="setup.error.password" xml:space="preserve">
+        <value>mot de passe doit etre au moins {0} caracteres</value>
+    </data>
+    <data name="organisation.name.required" xml:space="preserve">
+        <value>le nom de l'association est obligatoire</value>
+    </data>
 </root>

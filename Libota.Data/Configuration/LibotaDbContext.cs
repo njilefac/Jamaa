@@ -11,6 +11,7 @@ namespace Libota.Data.Configuration
     {
         private readonly DatabaseOptions _dbOptions;
         public DbSet<UserData> Users { get; set; }
+        public DbSet<OrganisationData> Organisations { get; set; }
 
 
         public LibotaDbContext(IOptions<DatabaseOptions> options)
@@ -31,6 +32,25 @@ namespace Libota.Data.Configuration
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            ConfigureOrganisationMapping(modelBuilder);
+            ConfigureUserMapping(modelBuilder);
+        }
+
+        private void ConfigureOrganisationMapping(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<OrganisationData>()
+                .HasKey(e => e.Id);
+            
+            modelBuilder.Entity<OrganisationData>()
+                .Property(e => e.Name).IsRequired();
+            
+            modelBuilder.Entity<OrganisationData>()
+                .Property(e => e.Description).IsRequired(false);
+        }
+        
+
+        private static void ConfigureUserMapping(ModelBuilder modelBuilder)
+        {
             modelBuilder.Entity<UserData>()
                 .HasKey(e => e.Id);
             modelBuilder.Entity<UserData>()

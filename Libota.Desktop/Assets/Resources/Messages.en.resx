@@ -17,4 +17,13 @@
     <data name="login.error.username" xml:space="preserve">
         <value>username must be at least {0} characters long</value>
     </data>
+    <data name="setup.error.username" xml:space="preserve">
+        <value>username must be at least {0} characters long</value>
+    </data>
+    <data name="setup.error.password" xml:space="preserve">
+        <value>password must be at least {0} characters long</value>
+    </data>
+    <data name="organisation.name.required" xml:space="preserve">
+        <value>the organisation name is required</value>
+    </data>
 </root>

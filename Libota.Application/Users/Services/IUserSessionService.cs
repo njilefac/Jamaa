@@ -2,7 +2,7 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Domain.Values;
 
-namespace Domain.Services
+namespace Libota.Application.Users.Services
 {
     public interface IUserSessionService
     {

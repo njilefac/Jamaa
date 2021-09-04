@@ -1,8 +1,8 @@
 using Autofac;
 using AutoMapper.Contrib.Autofac.DependencyInjection;
 using Libota.Data.Mapping;
-using Domain.Services;
 using FluentValidation;
+using Libota.Application.Users.Services;
 using Libota.Desktop.Validators;
 using Libota.Desktop.ViewModels.Events;
 using Libota.Desktop.ViewModels.Finances;

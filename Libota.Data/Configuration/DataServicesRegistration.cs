@@ -10,7 +10,8 @@ namespace Libota.Data.Configuration
         {
             base.Load(builder);
             builder.RegisterType<LibotaDbContext>().InstancePerLifetimeScope();
-            builder.RegisterType<UsersRepository>().As<IUserRepository>().InstancePerLifetimeScope();
+            builder.RegisterType<UsersRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<OrganisationRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }

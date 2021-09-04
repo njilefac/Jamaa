@@ -7,6 +7,9 @@ using Avalonia;
 using Avalonia.Dialogs;
 using Avalonia.ReactiveUI;
 using Domain.Values;
+using EventFlow;
+using EventFlow.Autofac.Extensions;
+using EventFlow.Configuration;
 using Libota.Application.Configuration;
 using Libota.Data.Configuration;
 using Libota.Desktop.Configuration;
@@ -54,6 +57,7 @@ namespace Libota.Desktop
             services.AddObservableDataLayer();
             
             var containerBuilder = new ContainerBuilder();
+            
             containerBuilder.Populate(services);
             
             var loggerConfiguration = new LoggerConfiguration()
@@ -76,6 +80,12 @@ namespace Libota.Desktop
 
             containerBuilder.RegisterInstance(resolver);
             resolver.InitializeReactiveUI();
+            
+            EventFlowOptions.New.
+                UseAutofacContainerBuilder(containerBuilder)
+                .RegisterModule<ApplicationEventingConfigurationModule>()
+                .RegisterModule<DataEventingConfigurationModule>();
+            
             var container = containerBuilder.Build();
 
             var mapperConfiguration = container.Resolve<MapperConfiguration>();
@@ -83,4 +93,6 @@ namespace Libota.Desktop
             resolver.SetLifetimeScope(container);
         }
     }
+
+    
 }

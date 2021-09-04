@@ -5,7 +5,7 @@ using Domain.Repositories;
 using Domain.Values;
 using Microsoft.Extensions.Logging;
 
-namespace Domain.Services
+namespace Libota.Application.Users.Services
 {
     public class UserSessionService : IUserSessionService
     {

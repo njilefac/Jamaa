@@ -8,7 +8,9 @@
     <ItemGroup>
       <PackageReference Include="Autofac" Version="6.2.0" />
       <PackageReference Include="AutoMapper" Version="10.1.1" />
-      <PackageReference Include="EventFlow" Version="0.82.4659" />
+      <PackageReference Include="EventFlow" Version="0.82.4684" />
+      <PackageReference Include="EventFlow.Autofac" Version="0.82.4684" />
+      <PackageReference Include="EventFlow.EntityFramework" Version="0.82.4684" />
       <PackageReference Include="EventFlow.Hangfire" Version="0.82.4659" />
     </ItemGroup>
 
