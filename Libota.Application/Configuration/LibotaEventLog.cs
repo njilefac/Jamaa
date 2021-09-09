@@ -8,7 +8,7 @@ namespace Libota.Application.Configuration
 {
     public class LibotaEventLog : Log
     {
-        private readonly ILogger<LibotaEventLog> _logger;
+        private readonly ILogger _logger;
 
         private static IDictionary<LogLevel, Microsoft.Extensions.Logging.LogLevel> LogLevelMap =
             new Dictionary<LogLevel, Microsoft.Extensions.Logging.LogLevel>
@@ -21,9 +21,9 @@ namespace Libota.Application.Configuration
                 [LogLevel.Warning] = Microsoft.Extensions.Logging.LogLevel.Warning,
             };
 
-        public LibotaEventLog(ILogger<LibotaEventLog> logger)
+        public LibotaEventLog(ILoggerFactory loggerFactory)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger(typeof(LibotaEventLog));
         }
         public override void Write(LogLevel logLevel, string format, params object[] args)
         {

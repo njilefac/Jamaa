@@ -2,7 +2,7 @@ using EventFlow;
 using EventFlow.Configuration;
 using EventFlow.Configuration.Cancellation;
 using EventFlow.Extensions;
-using EventFlow.Hangfire.Extensions;
+using EventFlow.Logs;
 
 namespace Libota.Application.Configuration
 {
@@ -11,9 +11,8 @@ namespace Libota.Application.Configuration
         public void Register(IEventFlowOptions eventFlowOptions)
         {
             var fromAssembly = GetType().Assembly;
-            
+
             eventFlowOptions
-                .UseHangfireJobScheduler()
                 .Configure(c =>
                 {
                     c.IsAsynchronousSubscribersEnabled = true;
@@ -21,13 +20,8 @@ namespace Libota.Application.Configuration
                     c.CancellationBoundary = CancellationBoundary.BeforeNotifyingSubscribers;
                 })
                 .RegisterServices(sr =>
-                {
-                    sr.Register(ctx =>
-                    {
-                        var log = ctx.Resolver.Resolve<LibotaEventLog>();
-                        return log;
-                    });
-                })
+                    sr.Register<ILog, LibotaEventLog>()
+                )
                 .AddDefaults(fromAssembly);
         }
     }

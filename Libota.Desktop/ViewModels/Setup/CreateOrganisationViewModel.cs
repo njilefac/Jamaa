@@ -1,7 +1,7 @@
+using System;
 using System.Reactive;
 using System.Threading.Tasks;
 using Libota.Application.Setup;
-using Libota.Desktop.Assets.Resources;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
@@ -9,25 +9,29 @@ using ReactiveUI.Validation.Helpers;
 
 namespace Libota.Desktop.ViewModels.Setup
 {
-    public class CreateOrganizationViewModel : ReactiveValidationObject, IRoutableViewModel
+    public class CreateOrganisationViewModel : ReactiveValidationObject, IRoutableViewModel
     {
-        public CreateOrganizationViewModel(ISetupService setupService, IScreen hostScreen)
+        public CreateOrganisationViewModel(ISetupService setupService, IScreen hostScreen)
         {
             _setupService = setupService;
             HostScreen = hostScreen;
 
             this.ValidationRule(x => x.Name,
-                v => !string.IsNullOrWhiteSpace(Name), string.Format(Messages.login_error_password));
+                v => !string.IsNullOrWhiteSpace(Name), "name validation error");
             
             this.ValidationRule(x => x.Description,
-                v => !string.IsNullOrWhiteSpace(Description), string.Format(Messages.login_error_password));
+                v => !string.IsNullOrWhiteSpace(Description), "description error message");
 
-            CreateOrganization = ReactiveCommand.CreateFromTask(HandleCreateOrganization, this.IsValid());
+            CreateOrganisation = ReactiveCommand.CreateFromTask(HandleCreateOrganisation, this.IsValid());
+            CreateOrganisation.ThrownExceptions.Subscribe(ex =>
+            {
+                Console.Error.WriteLine(ex);
+            });
         }
 
-        private async Task<bool> HandleCreateOrganization()
+        private async Task<bool> HandleCreateOrganisation()
         {
-            return await _setupService.CreateOrganization(Name.Trim(), Description.Trim());
+            return await _setupService.CreateOrganisation(Name.Trim(), Description.Trim());
         }
 
         [Reactive] public string Name { get; set; } = string.Empty;
@@ -48,7 +52,7 @@ namespace Libota.Desktop.ViewModels.Setup
 
         public string? UrlPathSegment => "setup.organization.create";
 
-        public ReactiveCommand<Unit, bool> CreateOrganization { get; set; }
+        public ReactiveCommand<Unit, bool> CreateOrganisation { get; set; }
 
         public IScreen HostScreen { get; }
 

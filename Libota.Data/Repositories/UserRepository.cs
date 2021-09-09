@@ -12,12 +12,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Libota.Data.Repositories
 {
-    public class UsersRepository: IUserRepository
+    public class UserRepository: IUserRepository
     {
         private readonly LibotaDbContext _dbContext;
         private readonly IMapper _mapper;
 
-        public UsersRepository(LibotaDbContext dbContext, IMapper mapper)
+        public UserRepository(LibotaDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;

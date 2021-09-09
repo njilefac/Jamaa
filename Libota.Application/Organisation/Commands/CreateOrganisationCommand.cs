@@ -1,22 +1,18 @@
 using EventFlow.Aggregates.ExecutionResults;
 using EventFlow.Commands;
-using EventFlow.Core;
+using Libota.Application.Organisation.Aggregates;
 
 namespace Libota.Application.Organisation.Commands
 {
-    public class CreateOrganisationCommand : Command<OrganisationAggregate,OrganisationIdentity, ExecutionResult>
+    public class CreateOrganisationCommand : Command<OrganisationAggregate,OrganisationId, IExecutionResult>
     {
         public string Name { get; }
         public string Description { get; }
 
-        public CreateOrganisationCommand(OrganisationIdentity aggregateId, string name, string description) : base(aggregateId)
+        public CreateOrganisationCommand(OrganisationId aggregateId, string name, string description) : base(aggregateId)
         {
             Name = name;
             Description = description;
-        }
-
-        public CreateOrganisationCommand(OrganisationIdentity aggregateId, ISourceId sourceId) : base(aggregateId, sourceId)
-        {
         }
     }
 }

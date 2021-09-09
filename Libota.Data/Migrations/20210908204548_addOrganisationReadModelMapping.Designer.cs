@@ -3,14 +3,16 @@ using System;
 using Libota.Data.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Libota.Data.Migrations
 {
     [DbContext(typeof(LibotaDbContext))]
-    partial class LibotaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210908204548_addOrganisationReadModelMapping")]
+    partial class addOrganisationReadModelMapping
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

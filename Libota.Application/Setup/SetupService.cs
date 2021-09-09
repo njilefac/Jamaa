@@ -1,12 +1,14 @@
-using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Entities.Users;
 using Domain.Repositories;
 using EventFlow;
 using EventFlow.Queries;
-using Libota.Application.Organisation;
+using Libota.Application.Organisation.Aggregates;
 using Libota.Application.Organisation.Commands;
+using Libota.Application.Organisation.Models;
+using Libota.Application.Organisation.Queries;
 using Libota.Application.Users;
 using Microsoft.Extensions.Logging;
 
@@ -48,13 +50,18 @@ namespace Libota.Application.Setup
             return superUser;
         }
 
-        public async Task<bool> CreateOrganization(string name, string description)
+        public async Task<bool> CreateOrganisation(string name, string description)
         {
             var result = await _commandBus.PublishAsync(
-                new CreateOrganisationCommand(new OrganisationIdentity(Guid.NewGuid()), name, description),
+                new CreateOrganisationCommand(OrganisationId.NewComb(), name, description),
                 CancellationToken.None);
             
             return result.IsSuccess;
+        }
+
+        public async Task<IEnumerable<OrganisationReadModel>> GetOrganisations()
+        {
+            return await _queryProcessor.ProcessAsync(new GetAllOrganisations(), CancellationToken.None);
         }
     }
 }

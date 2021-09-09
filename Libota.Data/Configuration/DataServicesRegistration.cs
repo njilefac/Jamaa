@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using Domain.Repositories;
 using Libota.Data.Repositories;
 
 namespace Libota.Data.Configuration
@@ -10,8 +9,7 @@ namespace Libota.Data.Configuration
         {
             base.Load(builder);
             builder.RegisterType<LibotaDbContext>().InstancePerLifetimeScope();
-            builder.RegisterType<UsersRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<OrganisationRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<UserRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }

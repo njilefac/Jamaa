@@ -4,12 +4,10 @@ using Domain.Values;
 using Libota.Application.Setup;
 using Libota.Application.Users.Services;
 using Libota.Desktop.Assets.Resources;
-using Libota.Desktop.ViewModels.Security;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
 using ReactiveUI.Validation.Helpers;
-using Splat;
 
 namespace Libota.Desktop.ViewModels.Setup
 {
@@ -37,12 +35,6 @@ namespace Libota.Desktop.ViewModels.Setup
             Email = string.Empty;
             FirstName = string.Empty;
             LastName = string.Empty;
-
-            if (_setupService.GetSuperUser().Result != null)
-            {
-                var loginScreenViewModel = Locator.Current.GetService<LoginScreenViewModel>();
-                if (loginScreenViewModel != null) HostScreen.Router.Navigate.Execute(loginScreenViewModel);
-            }
 
             this.ValidationRule(p => p.UserName,
                 v => !string.IsNullOrWhiteSpace(v) && v.Length >= 3, string.Format(Messages.login_error_username, 3));

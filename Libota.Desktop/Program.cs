@@ -9,7 +9,6 @@ using Avalonia.ReactiveUI;
 using Domain.Values;
 using EventFlow;
 using EventFlow.Autofac.Extensions;
-using EventFlow.Configuration;
 using Libota.Application.Configuration;
 using Libota.Data.Configuration;
 using Libota.Desktop.Configuration;

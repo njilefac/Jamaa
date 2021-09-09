@@ -1,7 +1,11 @@
 ﻿using System.Reflection;
 using Domain.Values;
 using EntityFrameworkCore.Triggers;
+using EventFlow.EntityFramework.Extensions;
+using Hangfire.EntityFrameworkCore;
+using Libota.Application.Organisation.Models;
 using Libota.Data.Models;
+using Libota.Data.Models.ReadModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -11,7 +15,7 @@ namespace Libota.Data.Configuration
     {
         private readonly DatabaseOptions _dbOptions;
         public DbSet<UserData> Users { get; set; }
-        public DbSet<OrganisationData> Organisations { get; set; }
+        public DbSet<OrganisationReadModel> Organisations { get; set; }
 
 
         public LibotaDbContext(IOptions<DatabaseOptions> options)
@@ -23,31 +27,25 @@ namespace Libota.Data.Configuration
         {
             optionsBuilder.UseSqlite(
                 $"Filename={_dbOptions.DataFile}",
-                options =>
-                {
-                    options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName);
-                });
+                options => { options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName); });
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            ConfigureOrganisationMapping(modelBuilder);
+
+            modelBuilder.AddEventFlowEvents();
+            modelBuilder.AddEventFlowSnapshots();
+            modelBuilder.OnHangfireModelCreating();
             ConfigureUserMapping(modelBuilder);
+            ConfigureOrganisationMapping(modelBuilder);
         }
 
         private void ConfigureOrganisationMapping(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<OrganisationData>()
-                .HasKey(e => e.Id);
-            
-            modelBuilder.Entity<OrganisationData>()
-                .Property(e => e.Name).IsRequired();
-            
-            modelBuilder.Entity<OrganisationData>()
-                .Property(e => e.Description).IsRequired(false);
+            modelBuilder.Entity<OrganisationReadModel>()
+                .Property(e => e.Id).ValueGeneratedOnAdd();
         }
-        
 
         private static void ConfigureUserMapping(ModelBuilder modelBuilder)
         {

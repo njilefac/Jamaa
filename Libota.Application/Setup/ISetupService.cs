@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Domain.Entities.Users;
+using Libota.Application.Organisation.Models;
 
 namespace Libota.Application.Setup
 {
@@ -8,6 +10,8 @@ namespace Libota.Application.Setup
         Task<User?> GetSuperUser();
         Task<User?> CreateSuperUser(string username, string password, string? email, string? firstName,
             string? lastName);
-        Task<bool> CreateOrganization(string name, string description);
+        Task<bool> CreateOrganisation(string name, string description);
+
+        Task<IEnumerable<OrganisationReadModel>> GetOrganisations();
     }
 }

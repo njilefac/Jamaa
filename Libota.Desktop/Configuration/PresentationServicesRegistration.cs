@@ -54,6 +54,7 @@ namespace Libota.Desktop.Configuration
             builder.RegisterType<MainWindowViewModel>().AsSelf().As<IScreen>().SingleInstance();
             builder.RegisterType<LoginScreenViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<CreateSuperUserViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<CreateOrganisationViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MainMenuViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<DashboardViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             
@@ -70,6 +71,7 @@ namespace Libota.Desktop.Configuration
             builder.RegisterType<MainMenu>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<Dashboard>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<CreateSuperUserScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<CreateOrganisationScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<LoginScreenView>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<UserManagementScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<MemberManagementScreen>().AsSelf().AsImplementedInterfaces();
