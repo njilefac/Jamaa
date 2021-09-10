@@ -7,8 +7,8 @@ using EventFlow;
 using EventFlow.Queries;
 using Libota.Application.Organisation.Aggregates;
 using Libota.Application.Organisation.Commands;
-using Libota.Application.Organisation.Models;
 using Libota.Application.Organisation.Queries;
+using Libota.Application.Organisation.Queries.Models;
 using Libota.Application.Users;
 using Microsoft.Extensions.Logging;
 
@@ -50,7 +50,7 @@ namespace Libota.Application.Setup
             return superUser;
         }
 
-        public async Task<bool> CreateOrganisation(string name, string description)
+        public async Task<bool> CreateOrganisation(string name, string? description)
         {
             var result = await _commandBus.PublishAsync(
                 new CreateOrganisationCommand(OrganisationId.NewComb(), name, description),

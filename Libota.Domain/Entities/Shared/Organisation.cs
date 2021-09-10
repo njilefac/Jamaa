@@ -21,7 +21,7 @@ namespace Domain.Entities.Shared
         /// <summary>
         /// a short description of the organization. 
         /// </summary>
-        public string Description { get; }
+        public string? Description { get; }
 
         public ISet<Member> Members { get; }
 
@@ -35,7 +35,7 @@ namespace Domain.Entities.Shared
         /// </summary>
         /// <param name="name">the name of the organization</param>
         /// <param name="description">a short description of the purpose of the organization</param>
-        public Organisation(string name, string description)
+        public Organisation(string name, string? description)
         {
             Name = name;
             Description = description;

@@ -1,5 +1,7 @@
 using Autofac;
 using AutoMapper.Contrib.Autofac.DependencyInjection;
+using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
 using Libota.Data.Mapping;
 using FluentValidation;
 using Libota.Application.Users.Services;
@@ -47,6 +49,7 @@ namespace Libota.Desktop.Configuration
         private static void RegisterServices(ContainerBuilder builder)
         {
             builder.RegisterType<UserSessionService>().As<IUserSessionService>().SingleInstance();
+            builder.RegisterType<WindowNotificationManager>().AsImplementedInterfaces().SingleInstance();
         }
 
         private static void RegisterViewModels(ContainerBuilder builder)
@@ -67,7 +70,7 @@ namespace Libota.Desktop.Configuration
 
         private static void RegisterViews(ContainerBuilder builder)
         {
-            builder.RegisterType<MainWindow>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<MainWindow>().AsSelf().As<Window>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MainMenu>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<Dashboard>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<CreateSuperUserScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();

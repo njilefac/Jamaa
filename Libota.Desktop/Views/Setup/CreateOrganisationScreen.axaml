@@ -16,7 +16,8 @@
                            Classes="form label"/>
                 <TextBox Text="{Binding Name}"
                          Grid.Row="0" Grid.Column="1"
-                         Classes="form field"/>
+                         Classes="form field"
+                         x:Name="OrganisationNameField"/>
                 <TextBlock Text="Description:" Grid.Row="1" Grid.Column="0"
                            HorizontalAlignment="Right" VerticalAlignment="Center"
                            Classes="form label"/>

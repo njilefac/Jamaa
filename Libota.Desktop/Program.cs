@@ -14,6 +14,7 @@ using Libota.Data.Configuration;
 using Libota.Desktop.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Serilog;
 using Serilog.Extensions.Autofac.DependencyInjection;
@@ -28,7 +29,15 @@ namespace Libota.Desktop
         public static void Main(string[] args)
         {
             var app = BuildAvaloniaApp(args);
-            app.StartWithClassicDesktopLifetime(args);
+            var logger = Locator.Current.GetService<ILogger<Program>>();
+            try
+            {
+                app.StartWithClassicDesktopLifetime(args);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("{Exception}", ex);
+            }
         }
 
         private static AppBuilder BuildAvaloniaApp(string[] args)
@@ -38,8 +47,8 @@ namespace Libota.Desktop
                 .UseManagedSystemDialogs();
             ConfigureServices(args);
             return appBuilder;
-        } 
-        
+        }
+
         private static void ConfigureServices(string[] args)
         {
             var environment = Environment.GetEnvironmentVariable("Environment") ?? "Development";
@@ -54,11 +63,11 @@ namespace Libota.Desktop
             var services = new ServiceCollection();
             services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
             services.AddObservableDataLayer();
-            
+
             var containerBuilder = new ContainerBuilder();
-            
+
             containerBuilder.Populate(services);
-            
+
             var loggerConfiguration = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration, "Serilog");
 
@@ -67,24 +76,24 @@ namespace Libota.Desktop
                 .RegisterModule<ApplicationServicesRegistration>()
                 .RegisterModule<PresentationServicesRegistration>()
                 .RegisterModule<DataServicesRegistration>();
-            
-            
+
+
             var resolver = containerBuilder.UseAutofacDependencyResolver();
-            
+
             Locator.CurrentMutable.InitializeSplat();
             Locator.CurrentMutable.InitializeReactiveUI();
-            Locator.CurrentMutable.RegisterConstant(new AvaloniaActivationForViewFetcher(), typeof(IActivationForViewFetcher));
+            Locator.CurrentMutable.RegisterConstant(new AvaloniaActivationForViewFetcher(),
+                typeof(IActivationForViewFetcher));
             Locator.CurrentMutable.RegisterConstant(new AutoDataTemplateBindingHook(), typeof(IPropertyBindingHook));
-            
+
 
             containerBuilder.RegisterInstance(resolver);
             resolver.InitializeReactiveUI();
-            
-            EventFlowOptions.New.
-                UseAutofacContainerBuilder(containerBuilder)
+
+            EventFlowOptions.New.UseAutofacContainerBuilder(containerBuilder)
                 .RegisterModule<ApplicationEventingConfigurationModule>()
                 .RegisterModule<DataEventingConfigurationModule>();
-            
+
             var container = containerBuilder.Build();
 
             var mapperConfiguration = container.Resolve<MapperConfiguration>();
@@ -92,6 +101,4 @@ namespace Libota.Desktop
             resolver.SetLifetimeScope(container);
         }
     }
-
-    
 }

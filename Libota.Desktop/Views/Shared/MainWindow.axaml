@@ -7,7 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Libota.Desktop.Views.Shared.MainWindow"
         Icon="/Assets/Icons/avalonia-logo.ico"
-        Title="Libota Desktop"
+        Title="{Binding ApplicationTitle}"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         TransparencyLevelHint="AcrylicBlur"

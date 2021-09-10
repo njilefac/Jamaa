@@ -2,8 +2,8 @@ using System;
 using Domain.Entities.Members;
 using EventFlow.Aggregates;
 using EventFlow.Aggregates.ExecutionResults;
+using Libota.Application.Members.Events;
 using Libota.Application.Organisation.Events;
-using Libota.Application.Organisation.Events.Members;
 
 namespace Libota.Application.Organisation.Aggregates
 {
@@ -23,7 +23,7 @@ namespace Libota.Application.Organisation.Aggregates
             Register<MemberRegistrationEnded>(Apply);
         }
 
-        public IExecutionResult CreateOrganisation(string name, string description)
+        public IExecutionResult CreateOrganisation(string name, string? description)
         {
             if (_state != null)
                 return ExecutionResult.Failed("organisation already created");

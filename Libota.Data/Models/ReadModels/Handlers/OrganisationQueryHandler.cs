@@ -4,8 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventFlow.EntityFramework;
 using EventFlow.Queries;
-using Libota.Application.Organisation.Models;
 using Libota.Application.Organisation.Queries;
+using Libota.Application.Organisation.Queries.Models;
 using Libota.Data.Configuration;
 using Microsoft.EntityFrameworkCore;
 

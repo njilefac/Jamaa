@@ -16,7 +16,8 @@
                            Classes="form label"/>
                 <TextBox Text="{Binding UserName}"
                          Grid.Row="0" Grid.Column="1"
-                         Classes="form field"/>
+                         Classes="form field"
+                         x:Name="UserNameField"/>
                 <TextBlock Text="Email:" Grid.Row="1" Grid.Column="0"
                            HorizontalAlignment="Right" VerticalAlignment="Center"
                            Classes="form label"/>

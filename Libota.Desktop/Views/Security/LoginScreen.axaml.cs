@@ -1,6 +1,5 @@
 using System;
 using System.Reactive.Disposables;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
@@ -21,7 +20,6 @@ namespace Libota.Desktop.Views.Security
             this.WhenActivated(disposables =>
             {
                 if (ViewModel == null) return;
-                ViewModel.UserName = string.Empty;
                 ViewModel.Password = string.Empty;
 
                 ViewModel.Login.Subscribe(session =>
@@ -40,13 +38,8 @@ namespace Libota.Desktop.Views.Security
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            AttachedToVisualTree += OnAttachedToVisualTree;
-        }
-
-        private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
-        {
             var userNameField = this.FindControl<TextBox>("UserNameField");
-            userNameField!.Focus();
+            userNameField!.AttachedToVisualTree += (target, _) => (target as TextBox)!.Focus();
         }
     }
 }

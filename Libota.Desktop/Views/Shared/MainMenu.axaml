@@ -6,8 +6,6 @@
              x:Class="Libota.Desktop.Views.Shared.MainMenu">
     <Menu DockPanel.Dock="Top">
         <MenuItem Header="_File">
-            <MenuItem Header="_Open..." IsVisible="{Binding Logout.CanExecute}"/>
-            <Separator/>
             <MenuItem Header="_Logout" Command="{Binding Logout}" IsVisible="{Binding !Logout.CanExecute}"/>
             <MenuItem Header="E_xit" Command="{Binding Exit}"/>
         </MenuItem>

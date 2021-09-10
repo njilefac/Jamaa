@@ -40,6 +40,7 @@
     <PackageReference Include="Dock.Avalonia" Version="0.10.7.1" />
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.10.0" />
     <PackageReference Include="Dock.Model.Avalonia" Version="0.10.0" />
+    <PackageReference Include="Dotnet.Bundle" Version="0.9.13" />
     <PackageReference Include="DynamicData.ReactiveUI" Version="6.11.0.2613" />
     <PackageReference Include="EventFlow.Autofac" Version="0.82.4684" />
     <PackageReference Include="FluentAvaloniaUI" Version="1.1.1" />
@@ -535,5 +536,8 @@
     <ProjectReference Include="..\Libota.Application\Libota.Application.csproj" />
     <ProjectReference Include="..\Libota.Data\Libota.Data.csproj" />
     <ProjectReference Include="..\Libota.Domain\Libota.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Converters" />
   </ItemGroup>
 </Project>

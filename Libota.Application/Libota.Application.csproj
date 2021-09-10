@@ -12,10 +12,15 @@
       <PackageReference Include="EventFlow.Autofac" Version="0.82.4684" />
       <PackageReference Include="EventFlow.EntityFramework" Version="0.82.4684" />
       <PackageReference Include="EventFlow.Hangfire" Version="0.82.4659" />
+      <PackageReference Include="Rhino.Licensing.X" Version="2.0.0.1" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Libota.Domain\Libota.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Members\Commands" />
     </ItemGroup>
 
 </Project>

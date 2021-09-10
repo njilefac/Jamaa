@@ -3,7 +3,7 @@ using Domain.Values;
 using EntityFrameworkCore.Triggers;
 using EventFlow.EntityFramework.Extensions;
 using Hangfire.EntityFrameworkCore;
-using Libota.Application.Organisation.Models;
+using Libota.Application.Organisation.Queries.Models;
 using Libota.Data.Models;
 using Libota.Data.Models.ReadModels;
 using Microsoft.EntityFrameworkCore;

@@ -12,7 +12,7 @@ namespace Libota.Application.Users.Services
         private readonly IUserRepository _users;
 
         private readonly ILogger<UserSessionService> _logger;
-        private static readonly UserSession? NullSession = new UserSession(false, "none");
+        private static readonly UserSession? NullSession = new UserSession(false, "none", "none");
         public Subject<UserSession?> CurrentSession { get; }
 
         public UserSessionService(ILogger<UserSessionService> logger, IUserRepository users)
@@ -29,14 +29,16 @@ namespace Libota.Application.Users.Services
             _logger.LogInformation($"authenticating user...");
             var matchingUser = await _users.SingleOrDefault(x =>
                 x.Account.Credentials.Equals(credentials));
-            if (matchingUser == null){
+            if (matchingUser == null)
+            {
                 _logger.LogInformation($"authentication failed!");
                 return NullSession;
             }
+
             _logger.LogInformation($"authenticated!");
-            
+
             _logger.LogInformation($"creating user session...");
-            var userSession = new UserSession(true, Guid.NewGuid().ToString());
+            var userSession = new UserSession(true, credentials.UserName ?? string.Empty, Guid.NewGuid().ToString());
             CurrentSession.OnNext(userSession);
             _logger.LogInformation($"user session created");
 

@@ -4,7 +4,7 @@ using EventFlow.Aggregates.ExecutionResults;
 using EventFlow.Commands;
 using Libota.Application.Organisation.Aggregates;
 
-namespace Libota.Application.Organisation.Commands
+namespace Libota.Application.Organisation.Commands.Handlers
 {
     public class CreateOrganisationCommandHandler : CommandHandler<OrganisationAggregate, OrganisationId, IExecutionResult, CreateOrganisationCommand>
     {
