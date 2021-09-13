@@ -35,8 +35,7 @@
 ### Member Management
   - Register
   - Unregister
-  - Assign fee
-  - Un-assign fee
+  
   - View member profile
   - Print member profile
   - Send message
@@ -57,6 +56,8 @@
   
 ### Fees Management
   - CRUD
+  - Bill member/group
+  - Cancel member billing
   - Record payments (audit trail)
   - Edit payments (audit trail)
   - List payments from selected member

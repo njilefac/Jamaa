@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Libota.Data.Mapping;
 using FluentValidation;
+using Libota.Application.Organisation;
 using Libota.Application.Users.Services;
 using Libota.Desktop.Validators;
 using Libota.Desktop.ViewModels.Events;
@@ -58,11 +59,13 @@ namespace Libota.Desktop.Configuration
             builder.RegisterType<LoginScreenViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<CreateSuperUserViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<CreateOrganisationViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<OrganisationContactDetailsViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MainMenuViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<DashboardViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             
             builder.RegisterType<UserManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MemberManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<MemberRegistrationViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<GroupManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<EventManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<FinanceManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
@@ -75,12 +78,15 @@ namespace Libota.Desktop.Configuration
             builder.RegisterType<Dashboard>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<CreateSuperUserScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<CreateOrganisationScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<LoginScreenView>().AsSelf().AsImplementedInterfaces();
+            builder.RegisterType<OrganisationContactDetailsScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<LoginScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<UserManagementScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<MemberManagementScreen>().AsSelf().AsImplementedInterfaces();
+            builder.RegisterType<MemberRegistrationDialog>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<GroupManagementScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<EventManagementScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<FinanceManagementScreen>().AsSelf().AsImplementedInterfaces();
+            builder.RegisterType<MembersOverviewPage>().AsSelf().AsImplementedInterfaces();
         }
         
         private static void RegisterValidators(ContainerBuilder builder)

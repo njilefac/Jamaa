@@ -16,7 +16,7 @@ namespace Libota.Desktop.ViewModels.Shared
 
         public MainWindowViewModel(IUserSessionService userSessionService)
         {
-            userSessionService.CurrentSession.Subscribe(x =>
+            userSessionService.UserSessions.Subscribe(x =>
             {
                 ApplicationTitle = x is { IsAuthenticated: true } ? $"{APPLICATION_NAME} -  ({x.UserName})" : APPLICATION_NAME;
             });

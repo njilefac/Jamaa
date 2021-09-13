@@ -12,7 +12,6 @@ namespace Libota.Application.Members.Events
         public string? MiddleName { get; }
         public string LastName { get; }
         public Gender Gender { get; }
-        public string PhoneNumber { get; }
-        public string? Email { get; }
+        public MembershipType MembershipType { get; set; }
     }
 }

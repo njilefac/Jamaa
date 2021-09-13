@@ -11,7 +11,7 @@ namespace Domain.Entities.Shared
         /// <summary>
         /// A uid that uniquely identifies the organization
         /// </summary>
-        public Guid Id { get; }
+        public string Id { get; }
 
         /// <summary>
         /// the name of the organization

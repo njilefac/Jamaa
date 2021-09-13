@@ -1,23 +1,24 @@
 ﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Libota.Desktop.App"
-              Name="Libota Desktop">
+             Name="Libota Desktop">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="/Assets/Resources/Icons.axaml"/>        
+                <ResourceInclude Source="/Assets/Resources/Icons.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
-    
+
     <Application.Styles>
-        <FluentTheme Mode="Light"/>
-        <StyleInclude Source="avares://Aura.UI/AuraUI.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml"/>
-        <StyleInclude Source="/Assets/Styles/FormStyles.axaml"/>
+        <FluentTheme Mode="Light" />
+        <StyleInclude Source="avares://Aura.UI/AuraUI.xaml" />
+        <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml" />
+        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml" />
+        <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml" />
+        <StyleInclude Source="avares://DialogHost.Avalonia/Styles.xaml"/>
+        <StyleInclude Source="/Assets/Styles/FormStyles.axaml" />
+        <StyleInclude Source="/Assets/Styles/PageStyles.axaml" />
     </Application.Styles>
-    
-    
+
 </Application>

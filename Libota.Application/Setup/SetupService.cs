@@ -5,7 +5,6 @@ using Domain.Entities.Users;
 using Domain.Repositories;
 using EventFlow;
 using EventFlow.Queries;
-using Libota.Application.Organisation.Aggregates;
 using Libota.Application.Organisation.Commands;
 using Libota.Application.Organisation.Queries;
 using Libota.Application.Organisation.Queries.Models;
@@ -23,8 +22,8 @@ namespace Libota.Application.Setup
 
         public SetupService(
             IUserRepository users,
-            ILogger<UserManagementFacade> logger, 
-            ICommandBus commandBus, 
+            ILogger<UserManagementFacade> logger,
+            ICommandBus commandBus,
             IQueryProcessor queryProcessor)
         {
             _users = users;
@@ -53,13 +52,12 @@ namespace Libota.Application.Setup
         public async Task<bool> CreateOrganisation(string name, string? description)
         {
             var result = await _commandBus.PublishAsync(
-                new CreateOrganisationCommand(OrganisationId.NewComb(), name, description),
-                CancellationToken.None);
-            
+                new CreateOrganisationCommand(name, description), CancellationToken.None);
+
             return result.IsSuccess;
         }
 
-        public async Task<IEnumerable<OrganisationReadModel>> GetOrganisations()
+        public async Task<IEnumerable<OrganisationReadModel>> ListOrganisations()
         {
             return await _queryProcessor.ProcessAsync(new GetAllOrganisations(), CancellationToken.None);
         }

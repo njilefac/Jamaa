@@ -15,7 +15,7 @@ namespace Libota.Application.Organisation.Queries.Models
         public string? Description { get; private set; }
 
         public string Name { get; private set; } = string.Empty;
-        [Key] public string Id { get; set; }
+        [Key] public string? Id { get; set; }
 
         public void Apply(IReadModelContext context,
             IDomainEvent<OrganisationAggregate, OrganisationId, MemberRegistrationUpdated> domainEvent)

@@ -9,7 +9,7 @@ namespace Libota.Application.Organisation.Commands
         public string Name { get; }
         public string? Description { get; }
 
-        public CreateOrganisationCommand(OrganisationId aggregateId, string name, string? description) : base(aggregateId)
+        public CreateOrganisationCommand(string name, string? description) : base(OrganisationId.NewComb())
         {
             Name = name;
             Description = description;

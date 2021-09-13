@@ -4,7 +4,6 @@ using EventFlow.EntityFramework;
 using EventFlow.EntityFramework.Extensions;
 using EventFlow.Extensions;
 using Libota.Application.Organisation.Queries.Models;
-using Libota.Data.Models.ReadModels;
 
 namespace Libota.Data.Configuration
 {

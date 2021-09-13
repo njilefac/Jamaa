@@ -7,12 +7,16 @@
 
     <ItemGroup>
       <PackageReference Include="Autofac" Version="6.2.0" />
+      <PackageReference Include="Autofac.Extras.DynamicProxy" Version="6.0.0" />
       <PackageReference Include="AutoMapper" Version="10.1.1" />
       <PackageReference Include="EventFlow" Version="0.82.4684" />
       <PackageReference Include="EventFlow.Autofac" Version="0.82.4684" />
       <PackageReference Include="EventFlow.EntityFramework" Version="0.82.4684" />
       <PackageReference Include="EventFlow.Hangfire" Version="0.82.4659" />
       <PackageReference Include="Rhino.Licensing.X" Version="2.0.0.1" />
+      <PackageReference Include="Suplex.Security.Core" Version="1.0.19075" />
+      <PackageReference Include="Suplex.Security.FileSystemDal" Version="1.0.19109" />
+      <PackageReference Include="Suplex.Security.Utilities.Json" Version="1.0.19109" />
     </ItemGroup>
 
     <ItemGroup>
@@ -21,6 +25,7 @@
 
     <ItemGroup>
       <Folder Include="Members\Commands" />
+      <Folder Include="Members\Queries\Handlers" />
     </ItemGroup>
 
 </Project>

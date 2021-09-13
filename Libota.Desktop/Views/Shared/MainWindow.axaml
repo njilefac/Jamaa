@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:rxui="http://reactiveui.net"
         xmlns:shared="clr-namespace:Libota.Desktop.Views.Shared"
+        xmlns:dialogHost="clr-namespace:DialogHost;assembly=DialogHost.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Libota.Desktop.Views.Shared.MainWindow"
         Icon="/Assets/Icons/avalonia-logo.ico"
@@ -15,16 +16,15 @@
 
     <Grid RowDefinitions="Auto,*,35" ColumnDefinitions="*">
         <Panel Grid.Row="0">
-            <shared:MainMenu/>
+            <shared:MainMenu />
         </Panel>
         <Panel Grid.Row="1">
-            <rxui:RoutedViewHost 
+            <rxui:RoutedViewHost
                 Router="{Binding Router}"
                 HorizontalContentAlignment="Stretch"
                 VerticalContentAlignment="Stretch"
-                x:Name="ContentPageContainer">
-            </rxui:RoutedViewHost>
+                x:Name="ContentPageContainer" />
         </Panel>
-        <Panel Grid.Row="2" Background="gray"/>
+        <Panel Grid.Row="2" Background="gray" />
     </Grid>
 </Window>

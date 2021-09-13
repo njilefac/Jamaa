@@ -12,6 +12,6 @@ namespace Libota.Application.Setup
             string? lastName);
         Task<bool> CreateOrganisation(string name, string? description);
 
-        Task<IEnumerable<OrganisationReadModel>> GetOrganisations();
+        Task<IEnumerable<OrganisationReadModel>> ListOrganisations();
     }
 }

@@ -12,17 +12,18 @@ namespace Libota.Application.Users.Services
         private readonly IUserRepository _users;
 
         private readonly ILogger<UserSessionService> _logger;
-        private static readonly UserSession? NullSession = new UserSession(false, "none", "none");
-        public Subject<UserSession?> CurrentSession { get; }
+        private static readonly UserSession? NullSession = new UserSession(false, "none");
+        public Subject<UserSession?> UserSessions { get; }
+        public UserSession? CurrentUserSession { get; private set; }
 
         public UserSessionService(ILogger<UserSessionService> logger, IUserRepository users)
         {
             _logger = logger;
             _users = users;
-            CurrentSession = new Subject<UserSession?>();
+            UserSessions = new Subject<UserSession?>();
         }
 
-        public async Task<UserSession?> Authenticate(Credentials credentials)
+        public async Task<UserSession?> Authenticate(Credentials credentials, string organisationId = "")
         {
             if (credentials == null) throw new ArgumentNullException(nameof(credentials));
 
@@ -38,8 +39,9 @@ namespace Libota.Application.Users.Services
             _logger.LogInformation($"authenticated!");
 
             _logger.LogInformation($"creating user session...");
-            var userSession = new UserSession(true, credentials.UserName ?? string.Empty, Guid.NewGuid().ToString());
-            CurrentSession.OnNext(userSession);
+            var userSession = new UserSession(true, credentials.UserName ?? organisationId);
+            UserSessions.OnNext(userSession);
+            CurrentUserSession = userSession;
             _logger.LogInformation($"user session created");
 
             return await Task.FromResult(userSession);
@@ -47,7 +49,8 @@ namespace Libota.Application.Users.Services
 
         public async Task<bool> EndSession()
         {
-            CurrentSession.OnNext(null);
+            UserSessions.OnNext(null);
+            CurrentUserSession = null;
             _logger.LogInformation($"user session terminated.");
             return await Task.FromResult(true);
         }

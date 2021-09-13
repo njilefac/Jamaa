@@ -3,6 +3,8 @@ using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using Libota.Application.Setup;
+using Libota.Desktop.ViewModels.Security;
 using Libota.Desktop.ViewModels.Setup;
 using ReactiveUI;
 using Splat;
@@ -18,11 +20,17 @@ namespace Libota.Desktop.Views.Setup
             this.WhenActivated(disposables =>
             {
                 DataContext = Locator.Current.GetService<CreateOrganisationViewModel>();
-                ViewModel?.CreateOrganisation.Subscribe(created =>
+                ViewModel?.CreateOrganisation.Subscribe(wasOrganisationCreated =>
                 {
-                    if (created)
-                        ViewModel.HostScreen.Router.Navigate.Execute(
-                            Locator.Current.GetService<CreateSuperUserViewModel>()!);
+                    if (!wasOrganisationCreated) return;
+                    var setupService = Locator.Current.GetService<ISetupService>();
+
+                    IRoutableViewModel? nextViewModel = setupService?.GetSuperUser().Result == null
+                        ? Locator.Current.GetService<CreateSuperUserViewModel>()
+                        : Locator.Current.GetService<LoginScreenViewModel>();
+                    
+                    if (nextViewModel != null)
+                        ViewModel.HostScreen.Router.Navigate.Execute(nextViewModel!);
                 });
 
                 Disposable.Create(() => { }).DisposeWith(disposables);

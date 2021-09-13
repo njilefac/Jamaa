@@ -5,7 +5,6 @@ using EventFlow.EntityFramework.Extensions;
 using Hangfire.EntityFrameworkCore;
 using Libota.Application.Organisation.Queries.Models;
 using Libota.Data.Models;
-using Libota.Data.Models.ReadModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 

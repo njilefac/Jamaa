@@ -2,7 +2,6 @@
 using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Notifications;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Libota.Application.Setup;
@@ -46,7 +45,7 @@ namespace Libota.Desktop.Views.Shared
             var setupService = Locator.Current.GetService<ISetupService>();
             if (setupService == null)
                 return Locator.Current.GetService<CreateOrganisationScreen>();
-            var organisations = setupService.GetOrganisations().Result;
+            var organisations = setupService.ListOrganisations().Result;
 
             if (!organisations.Any())
             {
@@ -57,7 +56,7 @@ namespace Libota.Desktop.Views.Shared
             if(superUser == null)
                 return Locator.Current.GetService<CreateSuperUserScreen>();
             
-            return Locator.Current.GetService<LoginScreenView>();
+            return Locator.Current.GetService<LoginScreen>();
         }
     }
 }

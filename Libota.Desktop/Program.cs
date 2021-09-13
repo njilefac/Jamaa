@@ -45,7 +45,9 @@ namespace Libota.Desktop
             var appBuilder = AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .UseManagedSystemDialogs();
+            
             ConfigureServices(args);
+            
             return appBuilder;
         }
 

@@ -1,5 +1,7 @@
 using Autofac;
-using EventFlow.Logs;
+using Autofac.Extras.DynamicProxy;
+using Libota.Application.Organisation;
+using Libota.Application.Security;
 using Libota.Application.Setup;
 using Libota.Application.Users;
 
@@ -10,8 +12,20 @@ namespace Libota.Application.Configuration
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterType<UserManagementFacade>().AsImplementedInterfaces();
-            builder.RegisterType<SetupService>().AsImplementedInterfaces();
+
+            builder.RegisterType<UserManagementFacade>().AsImplementedInterfaces()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(AuthorizationCheckInterceptor));
+
+            builder.RegisterType<SetupService>().AsImplementedInterfaces()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(AuthorizationCheckInterceptor));
+
+            builder.RegisterType<OrganisationManagementFacade>().AsImplementedInterfaces()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(AuthorizationCheckInterceptor));
+
+            builder.RegisterType<AuthorizationCheckInterceptor>().AsSelf().AsImplementedInterfaces();
         }
     }
 }

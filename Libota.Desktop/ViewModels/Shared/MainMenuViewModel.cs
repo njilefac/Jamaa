@@ -25,7 +25,7 @@ namespace Libota.Desktop.ViewModels.Shared
             _sessionService = sessionService;
             _hostScreen = hostScreen;
             
-            var userIsAuthenticated = _sessionService.CurrentSession.Select(s => s is {IsAuthenticated: true});
+            var userIsAuthenticated = _sessionService.UserSessions.Select(s => s is {IsAuthenticated: true});
 
             Exit = ReactiveCommand.CreateFromTask(ExitApplication);
             Logout = ReactiveCommand.CreateFromTask(EndUserSession, userIsAuthenticated);

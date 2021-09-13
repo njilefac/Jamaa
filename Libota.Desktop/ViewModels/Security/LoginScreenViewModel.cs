@@ -24,9 +24,7 @@ namespace Libota.Desktop.ViewModels.Security
 
         [Reactive] public string? Password { get; set; }
 
-        // ReSharper disable once MemberCanBePrivate.Global
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        [Reactive] public IList<OrganisationReadModel> Organisations { get; set; }
+        [Reactive] public IList<OrganisationReadModel>? Organisations { get; set; }
         
         [Reactive] public OrganisationReadModel? CurrentOrganisation { get; set; }
         public ReactiveCommand<Unit, UserSession> Login { get; }
@@ -42,7 +40,8 @@ namespace Libota.Desktop.ViewModels.Security
             UserName = string.Empty;
             Password = string.Empty;
 
-            Organisations = setupService.GetOrganisations().Result.ToList();
+            Organisations = setupService.ListOrganisations().Result.ToList();
+            
             CurrentOrganisation = Organisations?.FirstOrDefault();
 
             this.ValidationRule(vm => vm.UserName,
@@ -61,7 +60,7 @@ namespace Libota.Desktop.ViewModels.Security
 
         private async Task<UserSession?> AuthenticateUser(Credentials credentials)
         {
-            return await _userSessionService?.Authenticate(credentials)!;
+            return await _userSessionService?.Authenticate(credentials, CurrentOrganisation.Id)!;
         }
 
         public string UrlPathSegment => "login";

@@ -1,5 +1,4 @@
 using AutoMapper;
-using Domain.Entities.Shared;
 using Domain.Entities.Users;
 using Libota.Data.Models;
 
@@ -9,11 +8,6 @@ namespace Libota.Data.Mapping
     {
         public EntityMappingProfile()
         {
-            CreateMap<OrganisationData, Organisation>()
-                .ForMember(d => d.Fees, opt => opt.Ignore())
-                .ForMember(d => d.Members, opt => opt.Ignore())
-                .ReverseMap();
-
             CreateMap<User, UserData>()
                 .ForMember(d => d.Id, opt => opt.MapFrom(s => s.Account.Id))
                 .ForMember(d => d.UserName, opt => opt.MapFrom(s => s.Account.Credentials.UserName))

@@ -11,8 +11,7 @@ namespace Libota.Application.Organisation.Commands.Handlers
         public override async Task<IExecutionResult> ExecuteCommandAsync(OrganisationAggregate aggregate, CreateOrganisationCommand command,
             CancellationToken cancellationToken)
         {
-            var result = aggregate.CreateOrganisation(command.Name, command.Description);
-            return await Task.FromResult(result);
+            return await aggregate.CreateOrganisation(command);
         }
     }
 }
