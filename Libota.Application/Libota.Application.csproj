@@ -9,6 +9,7 @@
       <PackageReference Include="Autofac" Version="6.2.0" />
       <PackageReference Include="Autofac.Extras.DynamicProxy" Version="6.0.0" />
       <PackageReference Include="AutoMapper" Version="10.1.1" />
+      <PackageReference Include="EntityFrameworkCore.Triggers" Version="1.2.1" />
       <PackageReference Include="EventFlow" Version="0.82.4684" />
       <PackageReference Include="EventFlow.Autofac" Version="0.82.4684" />
       <PackageReference Include="EventFlow.EntityFramework" Version="0.82.4684" />

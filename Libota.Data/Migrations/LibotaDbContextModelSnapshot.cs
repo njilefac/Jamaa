@@ -322,7 +322,38 @@ namespace Libota.Data.Migrations
                     b.ToTable("HangfireState");
                 });
 
-            modelBuilder.Entity("Libota.Data.Models.ReadModels.OrganisationReadModel", b =>
+            modelBuilder.Entity("Libota.Application.Members.Queries.Models.Member", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MiddleName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OrganisationId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganisationId");
+
+                    b.ToTable("Members");
+                });
+
+            modelBuilder.Entity("Libota.Application.Organisation.Queries.Models.OrganisationReadModel", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
@@ -332,6 +363,7 @@ namespace Libota.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -422,6 +454,17 @@ namespace Libota.Data.Migrations
                     b.Navigation("Job");
                 });
 
+            modelBuilder.Entity("Libota.Application.Members.Queries.Models.Member", b =>
+                {
+                    b.HasOne("Libota.Application.Organisation.Queries.Models.OrganisationReadModel", "Organisation")
+                        .WithMany("Members")
+                        .HasForeignKey("OrganisationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organisation");
+                });
+
             modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireJob", b =>
                 {
                     b.Navigation("Parameters");
@@ -429,6 +472,11 @@ namespace Libota.Data.Migrations
                     b.Navigation("QueuedJobs");
 
                     b.Navigation("States");
+                });
+
+            modelBuilder.Entity("Libota.Application.Organisation.Queries.Models.OrganisationReadModel", b =>
+                {
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

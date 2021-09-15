@@ -7,7 +7,7 @@ namespace Libota.Application.Users.Services
 {
     public interface IUserSessionService
     {
-        Task<UserSession?> Authenticate(Credentials credentials, string organisationId = "");
+        Task<UserSession?> Authenticate(Credentials credentials, string? organisationId = "");
         Task<bool> EndSession();
         Subject<UserSession?> UserSessions { get; }
         

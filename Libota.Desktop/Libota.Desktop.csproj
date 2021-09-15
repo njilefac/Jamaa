@@ -36,7 +36,6 @@
     <PackageReference Include="Avalonia.Xaml.Interactions.Custom" Version="0.10.3" />
     <PackageReference Include="Avalonia.Xaml.Interactions.DragAndDrop" Version="0.10.3" />
     <PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.9.1" />
-    <PackageReference Include="DialogHost.Avalonia" Version="0.3.1" />
     <PackageReference Include="Dock.Avalonia" Version="0.10.7.1" />
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.10.0" />
     <PackageReference Include="Dock.Model.Avalonia" Version="0.10.0" />

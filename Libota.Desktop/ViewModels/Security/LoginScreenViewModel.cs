@@ -19,6 +19,7 @@ namespace Libota.Desktop.ViewModels.Security
     public class LoginScreenViewModel : ReactiveValidationObject, IRoutableViewModel
     {
         private readonly IUserSessionService? _userSessionService;
+        private readonly ILogger<ILogger<LoginScreenViewModel>> _logger;
 
         [Reactive] public string? UserName { get; set; }
 
@@ -32,10 +33,11 @@ namespace Libota.Desktop.ViewModels.Security
         public LoginScreenViewModel(IScreen screen,
             IUserSessionService userSessionService,
             ISetupService setupService,
-            ILogger<LoginScreenViewModel> logger)
+            ILoggerFactory loggeFactory)
         {
             _userSessionService = userSessionService;
             HostScreen = screen;
+            _logger = loggeFactory.CreateLogger<ILogger<LoginScreenViewModel>>(); 
 
             UserName = string.Empty;
             Password = string.Empty;
@@ -55,12 +57,12 @@ namespace Libota.Desktop.ViewModels.Security
             Login = ReactiveCommand.CreateFromTask<UserSession>(
                 () => AuthenticateUser(new Credentials(UserName, Password))!, this.IsValid());
 
-            Login.ThrownExceptions.Subscribe(ex => { logger.LogError(ex, "login error {Exception}", ex.Message); });
+            Login.ThrownExceptions.Subscribe(ex => { _logger.LogError(ex, "login error {Exception}", ex.Message); });
         }
 
         private async Task<UserSession?> AuthenticateUser(Credentials credentials)
         {
-            return await _userSessionService?.Authenticate(credentials, CurrentOrganisation.Id)!;
+            return await _userSessionService?.Authenticate(credentials, CurrentOrganisation?.Id)!;
         }
 
         public string UrlPathSegment => "login";

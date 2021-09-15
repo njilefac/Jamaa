@@ -1,12 +1,8 @@
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Domain.Entities.Users;
 using Domain.Repositories;
-using EventFlow;
-using EventFlow.Queries;
-using Libota.Application.Organisation.Commands;
-using Libota.Application.Organisation.Queries;
+using Libota.Application.Organisation;
 using Libota.Application.Organisation.Queries.Models;
 using Libota.Application.Users;
 using Microsoft.Extensions.Logging;
@@ -17,19 +13,15 @@ namespace Libota.Application.Setup
     {
         private readonly IUserRepository _users;
         private readonly ILogger<UserManagementFacade> _logger;
-        private readonly ICommandBus _commandBus;
-        private readonly IQueryProcessor _queryProcessor;
+        private readonly IOrganisationManagementFacade _organisationManagementFacade;
 
-        public SetupService(
-            IUserRepository users,
-            ILogger<UserManagementFacade> logger,
-            ICommandBus commandBus,
-            IQueryProcessor queryProcessor)
+        public SetupService(IUserRepository users,
+            IOrganisationManagementFacade organisationManagementFacade,
+            ILogger<UserManagementFacade> logger)
         {
             _users = users;
             _logger = logger;
-            _commandBus = commandBus;
-            _queryProcessor = queryProcessor;
+            _organisationManagementFacade = organisationManagementFacade;
         }
 
         public async Task<User?> GetSuperUser()
@@ -51,15 +43,12 @@ namespace Libota.Application.Setup
 
         public async Task<bool> CreateOrganisation(string name, string? description)
         {
-            var result = await _commandBus.PublishAsync(
-                new CreateOrganisationCommand(name, description), CancellationToken.None);
-
-            return result.IsSuccess;
+            return await _organisationManagementFacade.CreateOrganisation(name, description);
         }
 
         public async Task<IEnumerable<OrganisationReadModel>> ListOrganisations()
         {
-            return await _queryProcessor.ProcessAsync(new GetAllOrganisations(), CancellationToken.None);
+            return await _organisationManagementFacade.ListOrganisations();
         }
     }
 }

@@ -3,6 +3,7 @@ using Domain.Values;
 using EntityFrameworkCore.Triggers;
 using EventFlow.EntityFramework.Extensions;
 using Hangfire.EntityFrameworkCore;
+using Libota.Application.Members.Queries.Models;
 using Libota.Application.Organisation.Queries.Models;
 using Libota.Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -37,12 +38,19 @@ namespace Libota.Data.Configuration
             modelBuilder.AddEventFlowSnapshots();
             modelBuilder.OnHangfireModelCreating();
             ConfigureUserMapping(modelBuilder);
-            ConfigureOrganisationMapping(modelBuilder);
+            MapReadModels(modelBuilder);
         }
 
-        private void ConfigureOrganisationMapping(ModelBuilder modelBuilder)
+        private void MapReadModels(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<OrganisationReadModel>()
+                .Property(e => e.Id).ValueGeneratedOnAdd();
+            
+            modelBuilder.Entity<OrganisationReadModel>()
+                .HasMany<Member>(e => e.Members)
+                .WithOne(e => e.Organisation);
+
+            modelBuilder.Entity<Member>().ToTable("Members")
                 .Property(e => e.Id).ValueGeneratedOnAdd();
         }
 

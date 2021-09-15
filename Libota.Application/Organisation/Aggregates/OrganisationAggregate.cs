@@ -50,16 +50,21 @@ namespace Libota.Application.Organisation.Aggregates
 
         public async Task<IExecutionResult> RegisterMember(RegisterMemberCommand command)
         {
-            if(_state == null)
+            if (_state == null)
                 return await Task.FromResult(ExecutionResult.Failed($"the organisation must be created first"));
             try
             {
                 var request = command.RegistrationRequest;
-                var newMember = new Member(request.FirstName, request.MiddleName, request.LastName, request.Gender, DateTime.MinValue);
-                _state.Register(newMember, request.MembershipType,
-                request.RegistrationBegin.Date);
-
-                Emit(new MemberRegistered());
+                var registeredEvent = new MemberRegistered
+                {
+                    FirstName = request.FirstName,
+                    MiddleName = request.MiddleName,
+                    LastName = request.LastName,
+                    Gender = request.Gender,
+                    RegistrationBegin = request.RegistrationBegin,
+                    MembershipType = request.MembershipType,
+                };
+                Emit(registeredEvent);
                 return await Task.FromResult(ExecutionResult.Success());
             }
             catch (Exception ex)
@@ -70,7 +75,10 @@ namespace Libota.Application.Organisation.Aggregates
 
         public void Apply(MemberRegistered aggregateEvent)
         {
-            throw new NotImplementedException();
+            var newMember = new Member(aggregateEvent.FirstName, aggregateEvent.MiddleName, aggregateEvent.LastName,
+                aggregateEvent.Gender, DateTime.MinValue);
+            var registration = _state?.Register(newMember, aggregateEvent.MembershipType,
+                aggregateEvent.RegistrationBegin);
         }
 
         public void Apply(MemberRegistrationUpdated aggregateEvent)

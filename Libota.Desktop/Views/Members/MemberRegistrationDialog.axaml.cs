@@ -1,3 +1,4 @@
+using System;
 using System.Reactive.Disposables;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
@@ -15,7 +16,7 @@ namespace Libota.Desktop.Views.Members
             this.WhenActivated(disposables =>
             {
                 DataContext = Locator.Current.GetService<MemberRegistrationViewModel>();
-
+                ViewModel!.RegisterMember.Subscribe(Close);
                 Disposable.Create(() => { }).DisposeWith(disposables);
             });
         }

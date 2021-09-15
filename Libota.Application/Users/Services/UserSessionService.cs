@@ -23,7 +23,7 @@ namespace Libota.Application.Users.Services
             UserSessions = new Subject<UserSession?>();
         }
 
-        public async Task<UserSession?> Authenticate(Credentials credentials, string organisationId = "")
+        public async Task<UserSession?> Authenticate(Credentials credentials, string? organisationId = "")
         {
             if (credentials == null) throw new ArgumentNullException(nameof(credentials));
 
@@ -39,7 +39,7 @@ namespace Libota.Application.Users.Services
             _logger.LogInformation($"authenticated!");
 
             _logger.LogInformation($"creating user session...");
-            var userSession = new UserSession(true, credentials.UserName ?? organisationId);
+            var userSession = new UserSession(true, credentials.UserName, organisationId);
             UserSessions.OnNext(userSession);
             CurrentUserSession = userSession;
             _logger.LogInformation($"user session created");

@@ -13,16 +13,18 @@ namespace Libota.Desktop.ViewModels.Members
     public class MemberManagementViewModel : ReactiveValidationObject
     {
         private readonly IOrganisationManagementFacade _organisationManagementFacade;
+
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public ReactiveCommand<object?, Unit> RegisterMember { get; }
 
-        public Interaction<Window, MemberRegistrationRequest> ShowRegistrationPrompt { get; }
+        public Interaction<Window?, MemberRegistrationRequest> ShowRegistrationPrompt { get; }
 
         public MemberManagementViewModel(IOrganisationManagementFacade organisationManagementFacade)
         {
             _organisationManagementFacade = organisationManagementFacade;
             RegisterMember = ReactiveCommand.CreateFromTask<object?>(OnRegisterMember);
-            ShowRegistrationPrompt = new Interaction<Window, MemberRegistrationRequest>();
-            
+            ShowRegistrationPrompt = new Interaction<Window?, MemberRegistrationRequest>();
         }
 
         private Task OnRegisterMember(object? sender)
@@ -31,11 +33,9 @@ namespace Libota.Desktop.ViewModels.Members
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(request =>
                 {
-                    if (request == null)
-                    {
-                        return;
-                    }
-                    _organisationManagementFacade.RegisterMember(request);
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                    if (request != null)
+                        _organisationManagementFacade.RegisterMember(request);
                 });
             return Task.CompletedTask;
         }

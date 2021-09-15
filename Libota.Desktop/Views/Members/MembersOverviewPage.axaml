@@ -13,7 +13,7 @@
                 <TextBlock Text="Statistics" Classes="page box header"/>
                 <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Members:" />
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="92" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Organisations.Members.Count}" />
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Female Members:" />
                     <TextBlock Grid.Row="1" Grid.Column="1" Text="54" />
                 </Grid>
