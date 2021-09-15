@@ -24,6 +24,6 @@
     <Folder Include="Organization\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Club.Station.Domain\Club.Station.Domain.csproj" />
+    <ProjectReference Include="..\Libota.Domain\Libota.Domain.csproj" />
   </ItemGroup>
 </Project>

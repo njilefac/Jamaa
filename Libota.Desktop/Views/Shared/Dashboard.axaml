@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
+             xmlns:events="clr-namespace:Libota.Desktop.Views.Events"
+             xmlns:finances="clr-namespace:Libota.Desktop.Views.Finances"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Libota.Desktop.Views.Shared.Dashboard"
+             HorizontalContentAlignment="Stretch"
+             VerticalContentAlignment="Stretch"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
+    
+    <UserControl.Styles>
+        <Style Selector="NavigationViewItem">
+            <Setter Property="Height" Value="50"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <NavigationView HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Header="Navigation">
+        <NavigationViewItem 
+            Header="Members" 
+            Title="Members"
+            Icon="{DynamicResource Icons.Members}">
+            <NavigationViewItem.Content>
+                <members:MemberManagementScreen />
+            </NavigationViewItem.Content>
+        </NavigationViewItem>
+        <NavigationViewItem Header="Events" Title="Events" Icon="{DynamicResource Icons.Calendar}">
+            <NavigationViewItem.Content>
+                <events:EventManagementScreen />
+            </NavigationViewItem.Content>
+        </NavigationViewItem>
+        <NavigationViewItem Header="Finances" Title="Finances" Icon="{DynamicResource Icons.Finances}">
+            <NavigationViewItem.Content>
+                <finances:FinanceManagementScreen />
+            </NavigationViewItem.Content>
+        </NavigationViewItem>
+        <NavigationViewItem 
+            Header="Settings" 
+            Title="Settings" 
+            VerticalAlignment="Bottom"
+            Icon="{DynamicResource Icons.Settings}">
+            <NavigationViewItem.Content>
+            </NavigationViewItem.Content>
+        </NavigationViewItem>
+    </NavigationView>
+</UserControl>

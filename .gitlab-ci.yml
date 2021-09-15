@@ -7,10 +7,10 @@ stages:
 build:
     stage: build
     script:
-        - "dotnet build -c Release 'Club Station.sln'"
+        - "dotnet build -c Release 'Libota.sln'"
     artifacts:
       paths:
-        - Club.Station.Desktop/bin/Release/net5.0
+        - Libota.Desktop/bin/Release/net5.0
 
 test:
     stage: test
