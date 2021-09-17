@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Libota.Data.Migrations
 {
     [DbContext(typeof(LibotaDbContext))]
-    [Migration("20210915223240_InitialCreate")]
+    [Migration("20210916221653_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -355,6 +355,38 @@ namespace Libota.Data.Migrations
                     b.ToTable("Members");
                 });
 
+            modelBuilder.Entity("Libota.Application.Members.Queries.Models.Registration", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MemberId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MembershipType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("OrganisationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId")
+                        .IsUnique();
+
+                    b.HasIndex("OrganisationId");
+
+                    b.ToTable("Registrations");
+                });
+
             modelBuilder.Entity("Libota.Application.Organisation.Queries.Models.OrganisationReadModel", b =>
                 {
                     b.Property<string>("Id")
@@ -467,6 +499,23 @@ namespace Libota.Data.Migrations
                     b.Navigation("Organisation");
                 });
 
+            modelBuilder.Entity("Libota.Application.Members.Queries.Models.Registration", b =>
+                {
+                    b.HasOne("Libota.Application.Members.Queries.Models.Member", "Member")
+                        .WithOne("Registration")
+                        .HasForeignKey("Libota.Application.Members.Queries.Models.Registration", "MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Libota.Application.Organisation.Queries.Models.OrganisationReadModel", "Organisation")
+                        .WithMany()
+                        .HasForeignKey("OrganisationId");
+
+                    b.Navigation("Member");
+
+                    b.Navigation("Organisation");
+                });
+
             modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireJob", b =>
                 {
                     b.Navigation("Parameters");
@@ -474,6 +523,12 @@ namespace Libota.Data.Migrations
                     b.Navigation("QueuedJobs");
 
                     b.Navigation("States");
+                });
+
+            modelBuilder.Entity("Libota.Application.Members.Queries.Models.Member", b =>
+                {
+                    b.Navigation("Registration")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Libota.Application.Organisation.Queries.Models.OrganisationReadModel", b =>
