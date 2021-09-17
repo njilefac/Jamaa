@@ -48,6 +48,16 @@ namespace Libota.Application.Organisation.Queries.Models
                 Organisation = this,
             };
 
+            var membership = new Registration
+            {
+                StartDate = domainEvent.AggregateEvent.RegistrationBegin,
+                MembershipType = domainEvent.AggregateEvent.MembershipType,
+                Member = newMember,
+                Organisation = this,
+            };
+
+            newMember.Registration = membership;
+
             Members.Add(newMember);
         }
 

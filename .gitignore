@@ -31,3 +31,5 @@ msbuild.err
 msbuild.wrn
 
 .idea/
+
+Libota.Desktop/libota.db

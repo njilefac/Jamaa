@@ -182,6 +182,34 @@ namespace Libota.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Registrations",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    MemberId = table.Column<string>(type: "TEXT", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    MembershipType = table.Column<int>(type: "INTEGER", nullable: false),
+                    OrganisationId = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Registrations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Registrations_Members_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "Members",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Registrations_Organisations_OrganisationId",
+                        column: x => x.OrganisationId,
+                        principalTable: "Organisations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "HangfireJobParameter",
                 columns: table => new
                 {
@@ -326,6 +354,17 @@ namespace Libota.Data.Migrations
                 column: "OrganisationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Registrations_MemberId",
+                table: "Registrations",
+                column: "MemberId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Registrations_OrganisationId",
+                table: "Registrations",
+                column: "OrganisationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SnapshotEntity_AggregateName_AggregateId_AggregateSequenceNumber",
                 table: "SnapshotEntity",
                 columns: new[] { "AggregateName", "AggregateId", "AggregateSequenceNumber" },
@@ -390,13 +429,16 @@ namespace Libota.Data.Migrations
                 name: "HangfireSet");
 
             migrationBuilder.DropTable(
-                name: "Members");
+                name: "Registrations");
 
             migrationBuilder.DropTable(
                 name: "SnapshotEntity");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Members");
 
             migrationBuilder.DropTable(
                 name: "Organisations");

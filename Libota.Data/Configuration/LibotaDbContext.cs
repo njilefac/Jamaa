@@ -45,12 +45,20 @@ namespace Libota.Data.Configuration
         {
             modelBuilder.Entity<OrganisationReadModel>()
                 .Property(e => e.Id).ValueGeneratedOnAdd();
-            
+
             modelBuilder.Entity<OrganisationReadModel>()
                 .HasMany<Member>(e => e.Members)
                 .WithOne(e => e.Organisation);
 
             modelBuilder.Entity<Member>().ToTable("Members")
+                .Property(e => e.Id).ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Member>()
+                .HasOne(x => x.Registration)
+                .WithOne(r => r.Member)
+                .HasForeignKey<Registration>(x => x.MemberId);
+
+            modelBuilder.Entity<Registration>().ToTable("Registrations")
                 .Property(e => e.Id).ValueGeneratedOnAdd();
         }
 
