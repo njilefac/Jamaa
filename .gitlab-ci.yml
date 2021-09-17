@@ -14,5 +14,6 @@ build:
 
 test:
     stage: test
+    needs: [build]
     script: 
         - "dotnet test ./Tests/UnitTests.csproj"
