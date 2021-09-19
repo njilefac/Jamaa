@@ -5,6 +5,7 @@ using Domain.Repositories;
 using Libota.Application.Organisation;
 using Libota.Application.Organisation.Queries.Models;
 using Libota.Application.Users;
+using Libota.Application.Users.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Libota.Application.Setup
@@ -15,7 +16,8 @@ namespace Libota.Application.Setup
         private readonly ILogger<UserManagementFacade> _logger;
         private readonly IOrganisationManagementFacade _organisationManagementFacade;
 
-        public SetupService(IUserRepository users,
+        public SetupService(
+            IUserRepository users,
             IOrganisationManagementFacade organisationManagementFacade,
             ILogger<UserManagementFacade> logger)
         {

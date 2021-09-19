@@ -2,28 +2,35 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MembersOverviewPage"
              HorizontalAlignment="Stretch"
              VerticalAlignment="Stretch">
 
-    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
-        <Border Grid.Row="0" Grid.Column="0" Classes="page box">
-            <StackPanel>
-                <TextBlock Text="Statistics" Classes="page box header"/>
-                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Members:" />
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Organisations.Members.Count}" />
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Female Members:" />
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="54" />
-                </Grid>
-            </StackPanel>
-        </Border>
-        <Border Grid.Row="0" Grid.Column="1" Classes="page box">
-            <StackPanel>
-                <TextBlock Text="Actions" Classes="page box header"/>
-                <Button Content="Register Member" Command="{Binding RegisterMember}" CommandParameter="{Binding $parent[Window]}"/>
-            </StackPanel>
-        </Border>
-    </Grid>
+    <StackPanel>
+        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
+            <Border Grid.Row="0" Grid.Column="0" Classes="page box">
+                <StackPanel>
+                    <TextBlock Text="Statistics" Classes="page box header" />
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Members:" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalMembersCount}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Female Members:" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FemaleMembersCount}" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Male Members:" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MaleMembersCount}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+            <Border Grid.Row="0" Grid.Column="1" Classes="page box">
+                <StackPanel>
+                    <TextBlock Text="Actions" Classes="page box header" />
+                    <Button Content="Register Member" Command="{Binding RegisterMember}"
+                            CommandParameter="{Binding $parent[Window]}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+        <members:MembersList/>
+    </StackPanel>
 </UserControl>

@@ -4,6 +4,7 @@ using Libota.Application.Organisation;
 using Libota.Application.Security;
 using Libota.Application.Setup;
 using Libota.Application.Users;
+using Libota.Application.Users.Services;
 
 namespace Libota.Application.Configuration
 {

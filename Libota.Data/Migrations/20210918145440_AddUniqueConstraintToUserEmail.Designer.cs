@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Libota.Data.Migrations
 {
     [DbContext(typeof(LibotaDbContext))]
-    [Migration("20210916221653_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20210918145440_AddUniqueConstraintToUserEmail")]
+    partial class AddUniqueConstraintToUserEmail
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -438,10 +438,12 @@ namespace Libota.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

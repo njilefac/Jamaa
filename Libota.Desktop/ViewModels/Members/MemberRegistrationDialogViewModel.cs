@@ -16,16 +16,17 @@ using ReactiveUI.Validation.Helpers;
 
 namespace Libota.Desktop.ViewModels.Members
 {
-    public class MemberRegistrationViewModel : ReactiveValidationObject
+    public class MemberRegistrationDialogViewModel : ReactiveValidationObject
     {
         private readonly IUserSessionService _userSessionService;
-        public MemberRegistrationViewModel(IUserSessionService userSessionService, IScheduler? scheduler = null,
+        public MemberRegistrationDialogViewModel(IUserSessionService userSessionService, IScheduler? scheduler = null,
             IValidationTextFormatter<string>? formatter = null) : base(scheduler, formatter)
         {
             _userSessionService = userSessionService;
             GenderChoices = Enum.GetValues<Gender>().ToList();
             SelectedGender = Gender.Unknown;
-            RegistrationBegin = DateTime.Today;
+            RegistrationBegin = DateTime.Today.AddDays(-100);
+            MembershipType = MembershipType.Regular;
 
             this.ValidationRule(x => x.FirstName, v => !string.IsNullOrWhiteSpace(v) && v.Length > 2,
                 "First name must be at least three characters");
@@ -42,7 +43,7 @@ namespace Libota.Desktop.ViewModels.Members
 
         private async Task<MemberRegistrationRequest> GetRegistrationData(Unit arg)
         {
-            var organisationId = _userSessionService!.CurrentUserSession!.OrganisationId;
+            var organisationId = _userSessionService!.CurrentUserSession!.Organisation?.Id;
             
             var request = new MemberRegistrationRequest
             {
@@ -51,6 +52,7 @@ namespace Libota.Desktop.ViewModels.Members
                 LastName = LastName,
                 Gender = SelectedGender,
                 RegistrationBegin = RegistrationBegin,
+                MembershipType = MembershipType,
                 OrganisationId = new OrganisationId(organisationId),
             };
             
@@ -62,8 +64,10 @@ namespace Libota.Desktop.ViewModels.Members
         [Reactive] public string? MiddleName { get; set; }
         [Reactive] public string? LastName { get; set; }
         [Reactive] public Gender SelectedGender { get; set; }
-        [Reactive] public DateTime BirthDate { get; set; }
-        [Reactive] public DateTime RegistrationBegin { get; set; }
+        
+        [Reactive] public DateTime DateOfBirth { get; set; }
+        [Reactive] public DateTime? RegistrationBegin { get; set; }
+        [Reactive] public MembershipType MembershipType { get; set; }
 
         public ReactiveCommand<Unit, MemberRegistrationRequest> RegisterMember { get; set; }
     }

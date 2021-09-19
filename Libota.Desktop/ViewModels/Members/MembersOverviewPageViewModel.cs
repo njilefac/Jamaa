@@ -1,16 +1,21 @@
 using System;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Domain.Values;
 using Libota.Application.Organisation;
+using Libota.Application.Organisation.Aggregates;
 using Libota.Application.Organisation.Requests;
+using Libota.Application.Users.Services;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Helpers;
 
 namespace Libota.Desktop.ViewModels.Members
 {
-    public class MemberManagementViewModel : ReactiveValidationObject
+    public class MembersOverviewPageViewModel : ReactiveValidationObject
     {
         private readonly IOrganisationManagementFacade _organisationManagementFacade;
 
@@ -18,13 +23,29 @@ namespace Libota.Desktop.ViewModels.Members
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public ReactiveCommand<object?, Unit> RegisterMember { get; }
 
+        [Reactive] public int TotalMembersCount { get; set; }
+        [Reactive] public int MaleMembersCount { get; set; }
+        [Reactive] public int FemaleMembersCount { get; set; }
+
         public Interaction<Window?, MemberRegistrationRequest> ShowRegistrationPrompt { get; }
 
-        public MemberManagementViewModel(IOrganisationManagementFacade organisationManagementFacade)
+
+        public MembersOverviewPageViewModel(IOrganisationManagementFacade organisationManagementFacade,
+            IUserSessionService userSessionService)
         {
             _organisationManagementFacade = organisationManagementFacade;
+
             RegisterMember = ReactiveCommand.CreateFromTask<object?>(OnRegisterMember);
+
             ShowRegistrationPrompt = new Interaction<Window?, MemberRegistrationRequest>();
+
+            var currentOrganisation = userSessionService.CurrentUserSession?.Organisation;
+            var members = _organisationManagementFacade
+                .ListMembersByOrganisation(new OrganisationId(currentOrganisation?.Id)).Result;
+
+            TotalMembersCount = members?.Count ?? 0;
+            if (members != null) MaleMembersCount = members.Count(x => x.Gender == Gender.Male);
+            if (members != null) FemaleMembersCount = TotalMembersCount - MaleMembersCount;
         }
 
         private Task OnRegisterMember(object? sender)
@@ -34,8 +55,9 @@ namespace Libota.Desktop.ViewModels.Members
                 .Subscribe(request =>
                 {
                     // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                    if (request != null)
-                        _organisationManagementFacade.RegisterMember(request);
+                    if (request == null)
+                        return;
+                    _organisationManagementFacade.RegisterMember(request);
                 });
             return Task.CompletedTask;
         }

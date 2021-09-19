@@ -61,7 +61,7 @@ namespace Libota.Application.Organisation.Aggregates
                     MiddleName = request.MiddleName,
                     LastName = request.LastName,
                     Gender = request.Gender,
-                    RegistrationBegin = request.RegistrationBegin,
+                    RegistrationBegin = request.RegistrationBegin.GetValueOrDefault(),
                     MembershipType = request.MembershipType,
                 };
                 Emit(registeredEvent);

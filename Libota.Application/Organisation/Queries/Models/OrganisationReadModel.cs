@@ -7,7 +7,6 @@ using Libota.Application.Members.Events;
 using Libota.Application.Members.Queries.Models;
 using Libota.Application.Organisation.Aggregates;
 using Libota.Application.Organisation.Events;
-using Libota.Application.Shared;
 
 namespace Libota.Application.Organisation.Queries.Models
 {
@@ -26,7 +25,7 @@ namespace Libota.Application.Organisation.Queries.Models
         public string Name { get; private set; } = string.Empty;
         [Key] public string? Id { get; set; }
 
-        public IList<Member> Members { get; set; }
+        public IList<Member>? Members { get; set; }
 
 
         public void Apply(IReadModelContext context,
@@ -46,6 +45,7 @@ namespace Libota.Application.Organisation.Queries.Models
                 LastName = domainEvent.AggregateEvent.LastName,
                 Gender = domainEvent.AggregateEvent.Gender,
                 Organisation = this,
+                OrganisationId = Id,
             };
 
             var membership = new Registration

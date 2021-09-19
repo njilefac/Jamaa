@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AutoMapper;
@@ -12,6 +13,7 @@ using EventFlow.Autofac.Extensions;
 using Libota.Application.Configuration;
 using Libota.Data.Configuration;
 using Libota.Desktop.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -32,6 +34,7 @@ namespace Libota.Desktop
             var logger = Locator.Current.GetService<ILogger<Program>>();
             try
             {
+                UpdateDatabase(logger);
                 app.StartWithClassicDesktopLifetime(args);
             }
             catch (Exception ex)
@@ -40,14 +43,34 @@ namespace Libota.Desktop
             }
         }
 
+        private static void UpdateDatabase(ILogger<Program>? logger)
+        {
+            var dataContext = Locator.Current.GetService<LibotaDbContext>();
+            if (dataContext == null) return;
+            
+            var pendingMigrations = dataContext.Database.GetPendingMigrations().ToArray();
+            if (pendingMigrations.Any())
+            {
+                var migrationsList = string.Join(Environment.NewLine, pendingMigrations);
+                logger.LogInformation($"applying pending migrations:{Environment.NewLine}{migrationsList}");
+                dataContext.Database.Migrate();
+                logger.LogInformation("the database was upgraded");
+            }
+            else
+            {
+                logger.LogInformation("database is up-to-date!");
+            }
+        }
+
         private static AppBuilder BuildAvaloniaApp(string[] args)
         {
             var appBuilder = AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .UseManagedSystemDialogs();
-            
+
             ConfigureServices(args);
-            
+
+
             return appBuilder;
         }
 

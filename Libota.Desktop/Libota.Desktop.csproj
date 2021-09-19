@@ -60,6 +60,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
     <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="2.0.9" />
+    <PackageReference Include="Raising.CefGlue.Avalonia" Version="0.7.0.2" />
     <PackageReference Include="ReactiveProperty" Version="7.12.0" />
     <PackageReference Include="ReactiveUI" Version="16.2.6" />
     <PackageReference Include="ReactiveUI-FluentValidation" Version="1.0.0" />

@@ -1,7 +1,10 @@
+using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using Domain.Values;
+using Libota.Application.Organisation;
+using Libota.Application.Security;
 using Libota.Application.Setup;
+using Libota.Application.Users;
 using Libota.Application.Users.Services;
 using Libota.Desktop.Assets.Resources;
 using ReactiveUI;
@@ -54,11 +57,11 @@ namespace Libota.Desktop.ViewModels.Setup
         private async Task<UserSession?> OnCreateAccount()
         {
             var user = await _setupService.CreateSuperUser(UserName, Password, Email, FirstName, LastName);
-            if (user?.Account.Credentials != null)
-                return await _userSessionService.Authenticate(user.Account.Credentials);
-            return null;
-        }
+            if (user?.Account.Credentials == null) return null;
+            var defaultOrganisation = _setupService.ListOrganisations().Result.FirstOrDefault();
+            return await _userSessionService.Authenticate(user.Account.Credentials, defaultOrganisation);
 
+        }
 
         public string UrlPathSegment => "setup.create-super-user";
         public IScreen HostScreen { get; }
