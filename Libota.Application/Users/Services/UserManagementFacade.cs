@@ -3,7 +3,7 @@ using Domain.Entities.Users;
 using Domain.Repositories;
 using Microsoft.Extensions.Logging;
 
-namespace Libota.Application.Users
+namespace Libota.Application.Users.Services
 {
     public class UserManagementFacade : IUserManagementFacade
     {

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Domain.Entities.Users;
 
-namespace Libota.Application.Users
+namespace Libota.Application.Users.Services
 {
     public interface IUserManagementFacade
     {

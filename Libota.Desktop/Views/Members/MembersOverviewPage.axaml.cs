@@ -8,14 +8,14 @@ using Splat;
 
 namespace Libota.Desktop.Views.Members
 {
-    public class MembersOverviewPage : ReactiveUserControl<MemberManagementViewModel>
+    public class MembersOverviewPage : ReactiveUserControl<MembersOverviewPageViewModel>
     {
         public MembersOverviewPage()
         {
             InitializeComponent();
             this.WhenActivated(disposables =>
             {
-                DataContext = Locator.Current.GetService<MemberManagementViewModel>();
+                DataContext = Locator.Current.GetService<MembersOverviewPageViewModel>();
                 ViewModel?.ShowRegistrationPrompt.RegisterHandler(async interaction =>
                 {
                     var dialog = Locator.Current.GetService<MemberRegistrationDialog>();

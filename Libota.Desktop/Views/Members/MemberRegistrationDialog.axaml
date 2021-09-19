@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:members="clr-namespace:Libota.Desktop.ViewModels.Members"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Libota.Desktop.Views.Members.MemberRegistrationDialog"
         Title="Member Registration"
@@ -10,9 +9,10 @@
         VerticalContentAlignment="Stretch"
         HorizontalContentAlignment="Stretch"
         CanResize="False">
-    
+
     <StackPanel>
         <Border CornerRadius="2" Background="LightGray">
+
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="First Name" Classes="form label" />
                 <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FirstName}" Classes="form field" />
@@ -33,13 +33,14 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
                 <TextBlock Grid.Row="4" Grid.Column="0" Text="Registered From" Classes="form label" />
-                <CalendarDatePicker Grid.Row="4" Grid.Column="1"  
-                                    SelectedDate="{Binding RegistrationBegin}"   
+                <CalendarDatePicker Grid.Row="4" Grid.Column="1"
+                                    SelectedDate="{Binding RegistrationBegin}"
                                     DisplayDate="{Binding RegistrationBegin}"
                                     SelectedDateFormat="Custom"
                                     CustomDateFormatString="dd-MMM-yyyy"
                                     Classes="form field" />
-                <Button Grid.Row="5" Grid.Column="1" Content="Register Member" Command="{Binding RegisterMember}" HorizontalAlignment="Right"/>
+                <Button Grid.Row="5" Grid.Column="1" Content="Register Member" Command="{Binding RegisterMember}"
+                        HorizontalAlignment="Right" />
             </Grid>
         </Border>
     </StackPanel>

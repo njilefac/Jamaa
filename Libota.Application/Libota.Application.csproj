@@ -14,6 +14,7 @@
       <PackageReference Include="EventFlow.Autofac" Version="0.82.4684" />
       <PackageReference Include="EventFlow.EntityFramework" Version="0.82.4684" />
       <PackageReference Include="EventFlow.Hangfire" Version="0.82.4659" />
+      <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="2.0.9" />
       <PackageReference Include="Rhino.Licensing.X" Version="2.0.0.1" />
       <PackageReference Include="Suplex.Security.Core" Version="1.0.19075" />
       <PackageReference Include="Suplex.Security.FileSystemDal" Version="1.0.19109" />
@@ -26,7 +27,6 @@
 
     <ItemGroup>
       <Folder Include="Members\Commands" />
-      <Folder Include="Members\Queries\Handlers" />
     </ItemGroup>
 
 </Project>

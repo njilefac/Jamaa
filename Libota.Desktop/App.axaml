@@ -16,6 +16,7 @@
         <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml" />
         <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml" />
         <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml" />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
         <StyleInclude Source="/Assets/Styles/FormStyles.axaml" />
         <StyleInclude Source="/Assets/Styles/PageStyles.axaml" />
     </Application.Styles>

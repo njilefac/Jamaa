@@ -12,6 +12,7 @@ namespace Libota.Application.Members.Queries.Models
         public string FirstName { get; set; }
         public Gender Gender { get; set; }
         public OrganisationReadModel Organisation { get; set; }
+        public string OrganisationId { get; set; }
         public Registration Registration { get; set; }
     }
 }

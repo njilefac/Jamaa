@@ -3,6 +3,9 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Domain.Repositories;
 using Domain.Values;
+using Libota.Application.Organisation;
+using Libota.Application.Organisation.Queries.Models;
+using Libota.Application.Security;
 using Microsoft.Extensions.Logging;
 
 namespace Libota.Application.Users.Services
@@ -12,7 +15,7 @@ namespace Libota.Application.Users.Services
         private readonly IUserRepository _users;
 
         private readonly ILogger<UserSessionService> _logger;
-        private static readonly UserSession? NullSession = new UserSession(false, "none");
+        private static readonly UserSession? NullSession = new UserSession(false, "none", null);
         public Subject<UserSession?> UserSessions { get; }
         public UserSession? CurrentUserSession { get; private set; }
 
@@ -23,7 +26,8 @@ namespace Libota.Application.Users.Services
             UserSessions = new Subject<UserSession?>();
         }
 
-        public async Task<UserSession?> Authenticate(Credentials credentials, string? organisationId = "")
+        public async Task<UserSession?> Authenticate(Credentials credentials,
+            OrganisationReadModel? organisation)
         {
             if (credentials == null) throw new ArgumentNullException(nameof(credentials));
 
@@ -39,7 +43,7 @@ namespace Libota.Application.Users.Services
             _logger.LogInformation($"authenticated!");
 
             _logger.LogInformation($"creating user session...");
-            var userSession = new UserSession(true, credentials.UserName, organisationId);
+            var userSession = new UserSession(true, credentials.UserName, organisation);
             UserSessions.OnNext(userSession);
             CurrentUserSession = userSession;
             _logger.LogInformation($"user session created");

@@ -4,8 +4,11 @@ using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
 using Domain.Values;
+using Libota.Application.Organisation;
 using Libota.Application.Organisation.Queries.Models;
+using Libota.Application.Security;
 using Libota.Application.Setup;
+using Libota.Application.Users;
 using Libota.Application.Users.Services;
 using Libota.Desktop.Assets.Resources;
 using Microsoft.Extensions.Logging;
@@ -62,7 +65,7 @@ namespace Libota.Desktop.ViewModels.Security
 
         private async Task<UserSession?> AuthenticateUser(Credentials credentials)
         {
-            return await _userSessionService?.Authenticate(credentials, CurrentOrganisation?.Id)!;
+            return await _userSessionService?.Authenticate(credentials, CurrentOrganisation)!;
         }
 
         public string UrlPathSegment => "login";

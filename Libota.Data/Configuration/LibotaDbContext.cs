@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.IO;
+using System.Reflection;
 using Domain.Values;
 using EntityFrameworkCore.Triggers;
 using EventFlow.EntityFramework.Extensions;
@@ -7,27 +8,36 @@ using Libota.Application.Members.Queries.Models;
 using Libota.Application.Organisation.Queries.Models;
 using Libota.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Libota.Data.Configuration
 {
     public class LibotaDbContext : DbContextWithTriggers
     {
+        private readonly ILoggerFactory _loggerFactory;
         private readonly DatabaseOptions _dbOptions;
         public DbSet<UserData> Users { get; set; }
         public DbSet<OrganisationReadModel> Organisations { get; set; }
 
 
-        public LibotaDbContext(IOptions<DatabaseOptions> options)
+        public LibotaDbContext(IOptions<DatabaseOptions> options, ILoggerFactory loggerFactory)
         {
+            _loggerFactory = loggerFactory;
             _dbOptions = options.Value;
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            var executingDirectory = Directory.GetCurrentDirectory();
             optionsBuilder.UseSqlite(
-                $"Filename={_dbOptions.DataFile}",
-                options => { options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName); });
+                $"Filename={executingDirectory}{Path.DirectorySeparatorChar}{_dbOptions.DataFile}",
+                options =>
+                {
+                    options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName);
+                });
+            optionsBuilder.UseLoggerFactory(_loggerFactory);
+            optionsBuilder.EnableSensitiveDataLogging(false);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -47,8 +57,9 @@ namespace Libota.Data.Configuration
                 .Property(e => e.Id).ValueGeneratedOnAdd();
 
             modelBuilder.Entity<OrganisationReadModel>()
-                .HasMany<Member>(e => e.Members)
-                .WithOne(e => e.Organisation);
+                .HasMany(e => e.Members)
+                .WithOne(e => e.Organisation)
+                .HasForeignKey(m => m.OrganisationId);
 
             modelBuilder.Entity<Member>().ToTable("Members")
                 .Property(e => e.Id).ValueGeneratedOnAdd();
@@ -69,7 +80,7 @@ namespace Libota.Data.Configuration
             modelBuilder.Entity<UserData>()
                 .Property(e => e.Email).IsRequired(false);
             modelBuilder.Entity<UserData>()
-                .Property(e => e.UserName).IsRequired();
+                .HasIndex(e => e.Email).IsUnique();
             modelBuilder.Entity<UserData>()
                 .Property(e => e.Password).IsRequired();
             modelBuilder.Entity<UserData>()
