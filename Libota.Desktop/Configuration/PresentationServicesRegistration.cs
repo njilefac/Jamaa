@@ -64,7 +64,7 @@ namespace Libota.Desktop.Configuration
             
             builder.RegisterType<UserManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MembersOverviewPageViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<MembersListViewModel>().AsSelf().AsImplementedInterfaces();
+            builder.RegisterType<MembersListViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MemberRegistrationDialogViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<GroupManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<EventManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();

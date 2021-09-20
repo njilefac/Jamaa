@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Reactive.Disposables;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -20,7 +21,6 @@ namespace Libota.Desktop.Views.Shared
             this.WhenActivated(disposables =>
             {
                 DataContext = Locator.Current.GetService<MainWindowViewModel>();
-                
                 Disposable.Create(() => { }).DisposeWith(disposables);
             });
 
@@ -29,33 +29,32 @@ namespace Libota.Desktop.Views.Shared
             this.AttachDevTools();
 #endif
         }
+
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            
+
             var contentPageContainer = this.FindControl<RoutedViewHost>("ContentPageContainer");
             if (contentPageContainer != null)
             {
-                contentPageContainer.DefaultContent = GetStartupScreen();
+                contentPageContainer.DefaultContent = GetStartupScreen().Result;
             }
         }
 
-        private static IViewFor? GetStartupScreen()
+        private static async Task<IViewFor?> GetStartupScreen()
         {
             var setupService = Locator.Current.GetService<ISetupService>();
             if (setupService == null)
                 return Locator.Current.GetService<CreateOrganisationScreen>();
-            var organisations = setupService.ListOrganisations().Result;
 
+            var organisations = await setupService.ListOrganisations();
             if (!organisations.Any())
-            {
                 return Locator.Current.GetService<CreateOrganisationScreen>();
-            }
 
             var superUser = setupService.GetSuperUser().Result;
-            if(superUser == null)
+            if (superUser == null)
                 return Locator.Current.GetService<CreateSuperUserScreen>();
-            
+
             return Locator.Current.GetService<LoginScreen>();
         }
     }
