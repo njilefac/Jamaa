@@ -20,17 +20,17 @@ namespace Libota.Desktop
 
         public override void OnFrameworkInitializationCompleted()
         {
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                Messages.Culture = CultureInfo.CurrentUICulture;
-                RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = Locator.Current.GetService<MainWindowViewModel>(),
-                    WindowState = WindowState.Maximized,
-                };
-            }
             base.OnFrameworkInitializationCompleted();
+
+            if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop) return;
+            
+            Messages.Culture = CultureInfo.CurrentUICulture;
+            RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
+            desktop.MainWindow = new MainWindow
+            {
+                DataContext = Locator.Current.GetService<MainWindowViewModel>(),
+                WindowState = WindowState.Maximized,
+            };
         }
     }
 }

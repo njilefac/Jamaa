@@ -4,9 +4,7 @@ using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
 using Domain.Values;
-using Libota.Application.Organisation;
 using Libota.Application.Organisation.Queries.Models;
-using Libota.Application.Security;
 using Libota.Application.Setup;
 using Libota.Application.Users;
 using Libota.Application.Users.Services;
@@ -22,16 +20,18 @@ namespace Libota.Desktop.ViewModels.Security
     public class LoginScreenViewModel : ReactiveValidationObject, IRoutableViewModel
     {
         private readonly IUserSessionService? _userSessionService;
-        private readonly ILogger<ILogger<LoginScreenViewModel>> _logger;
+        private readonly ILogger<LoginScreenViewModel> _logger;
 
         [Reactive] public string? UserName { get; set; }
 
         [Reactive] public string? Password { get; set; }
 
         [Reactive] public IList<OrganisationReadModel>? Organisations { get; set; }
-        
+
         [Reactive] public OrganisationReadModel? CurrentOrganisation { get; set; }
-        public ReactiveCommand<Unit, UserSession> Login { get; }
+        public ReactiveCommand<Unit, UserSession?> Login { get; }
+
+        public Interaction<UserSession?, Unit> NotifyAuthenticationResult { get; set; }
 
         public LoginScreenViewModel(IScreen screen,
             IUserSessionService userSessionService,
@@ -40,13 +40,13 @@ namespace Libota.Desktop.ViewModels.Security
         {
             _userSessionService = userSessionService;
             HostScreen = screen;
-            _logger = loggeFactory.CreateLogger<ILogger<LoginScreenViewModel>>(); 
+            _logger = loggeFactory.CreateLogger<LoginScreenViewModel>();
 
             UserName = string.Empty;
             Password = string.Empty;
 
             Organisations = setupService.ListOrganisations().Result.ToList();
-            
+
             CurrentOrganisation = Organisations?.FirstOrDefault();
 
             this.ValidationRule(vm => vm.UserName,
@@ -57,15 +57,19 @@ namespace Libota.Desktop.ViewModels.Security
                 x => !string.IsNullOrEmpty(x) && x.Length >= 6,
                 string.Format(Messages.login_error_password, 6));
 
-            Login = ReactiveCommand.CreateFromTask<UserSession>(
-                () => AuthenticateUser(new Credentials(UserName, Password))!, this.IsValid());
+            NotifyAuthenticationResult = new Interaction<UserSession?, Unit>();
+
+            Login = ReactiveCommand.CreateFromTask(AuthenticateUser, this.IsValid());
 
             Login.ThrownExceptions.Subscribe(ex => { _logger.LogError(ex, "login error {Exception}", ex.Message); });
         }
 
-        private async Task<UserSession?> AuthenticateUser(Credentials credentials)
+        private async Task<UserSession?> AuthenticateUser()
         {
-            return await _userSessionService?.Authenticate(credentials, CurrentOrganisation)!;
+            var credentials = new Credentials(UserName, Password);
+            var response = await _userSessionService?.Authenticate(credentials, CurrentOrganisation)!;
+            NotifyAuthenticationResult.Handle(response).Subscribe(x => { });
+            return response;
         }
 
         public string UrlPathSegment => "login";

@@ -28,6 +28,7 @@
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.7" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.7" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.7" />
+    <PackageReference Include="Avalonia.MonoMac" Version="0.6.1" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.7" />
     <PackageReference Include="Avalonia.ReactiveUI.Events" Version="0.10.7" />
     <PackageReference Include="Avalonia.ThemeManager" Version="0.10.7" />
@@ -35,6 +36,7 @@
     <PackageReference Include="Avalonia.Xaml.Interactions" Version="0.10.7.1" />
     <PackageReference Include="Avalonia.Xaml.Interactions.Custom" Version="0.10.3" />
     <PackageReference Include="Avalonia.Xaml.Interactions.DragAndDrop" Version="0.10.3" />
+    <PackageReference Include="AvaloniaAccordion" Version="1.0.0" />
     <PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.9.1" />
     <PackageReference Include="Dock.Avalonia" Version="0.10.7.1" />
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.10.0" />
@@ -60,12 +62,15 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
     <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="2.0.9" />
+    <PackageReference Include="Paginator.Avalonia" Version="1.0.0" />
+    <PackageReference Include="QRCode.Avalonia" Version="1.0.0" />
     <PackageReference Include="Raising.CefGlue.Avalonia" Version="0.7.0.2" />
     <PackageReference Include="ReactiveProperty" Version="7.12.0" />
     <PackageReference Include="ReactiveUI" Version="16.2.6" />
     <PackageReference Include="ReactiveUI-FluentValidation" Version="1.0.0" />
     <PackageReference Include="ReactiveUI.Fody" Version="16.2.6" />
     <PackageReference Include="ReactiveUI.Validation" Version="2.1.1" />
+    <PackageReference Include="ReactViewControl-Avalonia" Version="2.91.2" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Enrichers.AssemblyName" Version="1.0.9" />
     <PackageReference Include="Serilog.Enrichers.Context" Version="4.2.0" />
