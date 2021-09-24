@@ -6,7 +6,7 @@ using LogLevel = EventFlow.Logs.LogLevel;
 
 namespace Libota.Application.Configuration
 {
-    public class LibotaEventLog : Log
+    public class EventFlowLogAdapter : Log
     {
         private readonly ILogger _logger;
 
@@ -21,9 +21,9 @@ namespace Libota.Application.Configuration
                 [LogLevel.Warning] = Microsoft.Extensions.Logging.LogLevel.Warning,
             };
 
-        public LibotaEventLog(ILoggerFactory loggerFactory)
+        public EventFlowLogAdapter(ILoggerFactory loggerFactory)
         {
-            _logger = loggerFactory.CreateLogger(typeof(LibotaEventLog));
+            _logger = loggerFactory.CreateLogger(typeof(EventFlowLogAdapter));
         }
         public override void Write(LogLevel logLevel, string format, params object[] args)
         {

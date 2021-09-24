@@ -20,7 +20,7 @@ namespace Libota.Application.Configuration
                     c.CancellationBoundary = CancellationBoundary.BeforeNotifyingSubscribers;
                 })
                 .RegisterServices(sr =>
-                    sr.Register<ILog, LibotaEventLog>()
+                    sr.Register<ILog, EventFlowLogAdapter>()
                 )
                 .AddDefaults(fromAssembly);
         }

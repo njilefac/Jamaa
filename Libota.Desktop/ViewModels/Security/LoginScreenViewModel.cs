@@ -68,7 +68,6 @@ namespace Libota.Desktop.ViewModels.Security
         {
             var credentials = new Credentials(UserName, Password);
             var response = await _userSessionService?.Authenticate(credentials, CurrentOrganisation)!;
-            NotifyAuthenticationResult.Handle(response).Subscribe(x => { });
             return response;
         }
 

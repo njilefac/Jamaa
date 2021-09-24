@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Autofac;
@@ -12,6 +13,7 @@ using EventFlow;
 using EventFlow.Autofac.Extensions;
 using Libota.Application.Configuration;
 using Libota.Data.Configuration;
+using Libota.Data.Notifiers;
 using Libota.Desktop.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,6 +37,10 @@ namespace Libota.Desktop
             try
             {
                 UpdateDatabase(logger);
+                var diagnosticListener = Locator.Current.GetService<IObserver<DiagnosticListener>>();
+                if(diagnosticListener != null)
+                    DiagnosticListener.AllListeners.Subscribe(diagnosticListener);
+                
                 app.StartWithClassicDesktopLifetime(args);
             }
             catch (Exception ex)
@@ -87,7 +93,7 @@ namespace Libota.Desktop
 
             var services = new ServiceCollection();
             services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
-            services.AddObservableDataLayer();
+            
 
             var containerBuilder = new ContainerBuilder();
 

@@ -38,14 +38,6 @@ namespace Libota.Desktop.ViewModels.Members
             RegisterMember = ReactiveCommand.CreateFromTask<object?>(OnRegisterMember);
 
             ShowRegistrationPrompt = new Interaction<Window?, MemberRegistrationRequest>();
-
-            var currentOrganisation = userSessionService.CurrentUserSession?.Organisation;
-            var members = _organisationManagementFacade
-                .ListMembersByOrganisation(new OrganisationId(currentOrganisation?.Id)).Result;
-
-            TotalMembersCount = members?.Count ?? 0;
-            if (members != null) MaleMembersCount = members.Count(x => x.Gender == Gender.Male);
-            if (members != null) FemaleMembersCount = TotalMembersCount - MaleMembersCount;
         }
 
         private Task OnRegisterMember(object? sender)

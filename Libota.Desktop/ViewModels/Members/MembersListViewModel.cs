@@ -1,4 +1,8 @@
-using System.Collections.Generic;
+using System;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using DynamicData;
+using DynamicData.Binding;
 using Libota.Application.Members.Queries.Models;
 using Libota.Application.Organisation;
 using Libota.Application.Organisation.Aggregates;
@@ -10,20 +14,30 @@ namespace Libota.Desktop.ViewModels.Members
 {
     public class MembersListViewModel : ReactiveObject
     {
-        private readonly IOrganisationManagementFacade _organisationManagementFacade;
-        private readonly IUserSessionService _userSessionService;
-
         public MembersListViewModel(
             IOrganisationManagementFacade organisationManagementFacade,
             IUserSessionService userSessionService)
         {
-            _organisationManagementFacade = organisationManagementFacade;
-            _userSessionService = userSessionService;
+            var membersSourceList = new SourceCache<Member, string>(m => m.Id);
 
-            var currentOrganisation = _userSessionService.CurrentUserSession?.Organisation;
-            Members = _organisationManagementFacade
-                .ListMembersByOrganisation(new OrganisationId(currentOrganisation?.Id)).Result;
+            var currentOrganisation = userSessionService.CurrentUserSession?.Organisation;
+
+            Task.Run(async () =>
+            {
+                var members = await organisationManagementFacade
+                    .ListMembersByOrganisation(new OrganisationId(currentOrganisation?.Id));
+                if (members != null)
+                    membersSourceList.AddOrUpdate(members);
+            });
+
+            membersSourceList.PopulateFrom(organisationManagementFacade.MemberAdded);
+            membersSourceList.Connect()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Bind(Members)
+                .DisposeMany()
+                .Subscribe();
         }
-        [Reactive] public IList<Member>? Members { get; set; }
+
+        [Reactive] public ObservableCollectionExtended<Member> Members { get; set; } = new();
     }
 }

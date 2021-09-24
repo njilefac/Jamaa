@@ -1,7 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using Domain.Values;
-using EntityFrameworkCore.Triggers;
 using EventFlow.EntityFramework.Extensions;
 using Hangfire.EntityFrameworkCore;
 using Libota.Application.Members.Queries.Models;
@@ -13,16 +13,21 @@ using Microsoft.Extensions.Options;
 
 namespace Libota.Data.Configuration
 {
-    public class LibotaDbContext : DbContextWithTriggers
+    public class LibotaDbContext : DbContext
     {
+        private readonly IServiceProvider _serviceProvider;
         private readonly ILoggerFactory _loggerFactory;
         private readonly DatabaseOptions _dbOptions;
         public DbSet<UserData> Users { get; set; }
         public DbSet<OrganisationReadModel> Organisations { get; set; }
 
 
-        public LibotaDbContext(IOptions<DatabaseOptions> options, ILoggerFactory loggerFactory)
+        public LibotaDbContext(
+            IServiceProvider serviceProvider,
+            IOptions<DatabaseOptions> options,
+            ILoggerFactory loggerFactory)
         {
+            _serviceProvider = serviceProvider;
             _loggerFactory = loggerFactory;
             _dbOptions = options.Value;
         }
@@ -32,12 +37,9 @@ namespace Libota.Data.Configuration
             var executingDirectory = Directory.GetCurrentDirectory();
             optionsBuilder.UseSqlite(
                 $"Filename={executingDirectory}{Path.DirectorySeparatorChar}{_dbOptions.DataFile}",
-                options =>
-                {
-                    options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName);
-                });
+                options => { options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName); });
             optionsBuilder.UseLoggerFactory(_loggerFactory);
-            optionsBuilder.EnableSensitiveDataLogging(false);
+            optionsBuilder.UseApplicationServiceProvider(_serviceProvider);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -51,7 +53,7 @@ namespace Libota.Data.Configuration
             MapReadModels(modelBuilder);
         }
 
-        private void MapReadModels(ModelBuilder modelBuilder)
+        private static void MapReadModels(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<OrganisationReadModel>()
                 .Property(e => e.Id).ValueGeneratedOnAdd();

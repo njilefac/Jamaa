@@ -1,3 +1,4 @@
+using System;
 using Domain.Values;
 using EventFlow.EntityFramework;
 using Microsoft.Extensions.Logging;
@@ -7,19 +8,23 @@ namespace Libota.Data.Configuration
 {
     public class LibotaDbContextProvider : IDbContextProvider<LibotaDbContext>
     {
-        private readonly IOptions<DatabaseOptions> _dbOptions;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IOptions<DatabaseOptions> _options;
         private readonly ILoggerFactory _loggerFactory;
 
-        public LibotaDbContextProvider(IOptions<DatabaseOptions> dbOptions, ILoggerFactory loggerFactory)
+        public LibotaDbContextProvider(
+            IServiceProvider serviceProvider,
+            IOptions<DatabaseOptions> options,
+            ILoggerFactory loggerFactory)
         {
-            _dbOptions = dbOptions;
+            _serviceProvider = serviceProvider;
+            _options = options;
             _loggerFactory = loggerFactory;
         }
 
         public LibotaDbContext CreateContext()
         {
-            var context = new LibotaDbContext(_dbOptions, _loggerFactory);
-            return context;
+            return new LibotaDbContext(_serviceProvider, _options, _loggerFactory);
         }
     }
 }
