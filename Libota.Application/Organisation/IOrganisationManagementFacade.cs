@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Libota.Application.Members.Queries.Models;
@@ -13,5 +14,8 @@ namespace Libota.Application.Organisation
         Task RegisterMember(MemberRegistrationRequest request);
         Task<IList<OrganisationReadModel>> ListOrganisations();
         Task<IList<Member>?> ListMembersByOrganisation(OrganisationId organisationId);
+        IObservable<Member> MemberAdded { get; }
+        IObservable<Member> MemberUpdated { get; }
+        IObservable<Member> MemberDeleted { get; }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using Autofac;
-using Libota.Application.Members.Queries.Models;
-using Libota.Application.Shared.Providers;
-using Libota.Data.Providers;
+using Libota.Data.Notifiers;
 using Libota.Data.Repositories;
 
 namespace Libota.Data.Configuration
@@ -11,9 +9,10 @@ namespace Libota.Data.Configuration
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterType<LibotaDbContext>().InstancePerLifetimeScope();
-            builder.RegisterType<UserRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<MembersInsertedProvider>().As<IProvideObservableData<Member>>().SingleInstance();
+            builder.RegisterType<LibotaDbContext>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<UserRepository>().AsImplementedInterfaces();
+            builder.RegisterType<DataChangeNotifier>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<DatabaseEventListener>().AsImplementedInterfaces().SingleInstance();
         }
     }
 }

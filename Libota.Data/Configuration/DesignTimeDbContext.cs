@@ -1,5 +1,6 @@
 using Domain.Values;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -11,10 +12,9 @@ namespace Libota.Data.Configuration
         {
             var dbOptions = new DatabaseOptions { DataFile = "libota.db" };
 
-            return new LibotaDbContext(Options.Create<DatabaseOptions>(dbOptions), LoggerFactory.Create(b =>
-            {
-                b.AddConsole();
-            }));
+            var serviceProvider = new ServiceCollection().BuildServiceProvider();
+            return new LibotaDbContext(serviceProvider, Options.Create(dbOptions),
+                LoggerFactory.Create(b => { b.AddConsole(); }));
         }
     }
 }
