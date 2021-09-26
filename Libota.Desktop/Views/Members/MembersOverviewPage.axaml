@@ -10,19 +10,16 @@
 
     <StackPanel>
         <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
-            <Border Grid.Row="0" Grid.Column="0" Classes="page box">
-                <StackPanel>
-                    <TextBlock Text="Statistics" Classes="page box header" />
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Members:" />
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalMembersCount}" />
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Female Members:" />
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FemaleMembersCount}" />
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Male Members:" />
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MaleMembersCount}" />
-                    </Grid>
-                </StackPanel>
-            </Border>
+            <HeaderedContentControl Header="Statistics" Grid.Row="0" Grid.Column="0">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Members:" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalMembersCount}" />
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Female Members:" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FemaleMembersCount}" />
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Male Members:" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MaleMembersCount}" />
+                </Grid>
+            </HeaderedContentControl>
             <Border Grid.Row="0" Grid.Column="1" Classes="page box">
                 <StackPanel>
                     <TextBlock Text="Actions" Classes="page box header" />
@@ -31,6 +28,6 @@
                 </StackPanel>
             </Border>
         </Grid>
-        <members:MembersList/>
+        <members:MembersList x:Name="MembersList" DataContext="{Binding }"/>
     </StackPanel>
 </UserControl>
