@@ -33,6 +33,22 @@ namespace Libota.Desktop.ViewModels.Members
         {
             _organisationManagementFacade = organisationManagementFacade;
 
+            organisationManagementFacade.MemberAdded.Subscribe(m =>
+            {
+                TotalMembersCount++;
+                if (m.Gender == Gender.Male)
+                    MaleMembersCount++;
+                else FemaleMembersCount++;
+            });
+
+            organisationManagementFacade.MemberDeleted.Subscribe(m =>
+            {
+                TotalMembersCount--;
+                if (m.Gender == Gender.Male)
+                    MaleMembersCount--;
+                else FemaleMembersCount--;
+            });
+
             RegisterMember = ReactiveCommand.CreateFromTask<object?>(OnRegisterMember);
 
             ShowRegistrationPrompt = new Interaction<Window?, MemberRegistrationRequest>();
