@@ -19,7 +19,7 @@
                 <DataGridTextColumn Header="Last Name" Binding="{Binding LastName}"/>
                 <DataGridTextColumn Header="Middle Name" Binding="{Binding MiddleName}"/>
                 <DataGridTextColumn Header="Gender" Binding="{Binding Gender}"/>
-                <DataGridTextColumn Header="Member Since" Binding="{Binding Registration.StartDate}"/>
+                <DataGridTextColumn Header="Member Since" Binding="{Binding Registration.StartDate.Date}"/>
                 <DataGridTextColumn Header="Membership Type" Binding="{Binding Registration.MembershipType}"/>
                 <DataGridTextColumn Header="Registration Status" Binding="{Binding Registration.Status}"/>
             </DataGrid.Columns>

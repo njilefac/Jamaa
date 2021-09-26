@@ -8,7 +8,6 @@ using Domain.Values;
 using Libota.Application.Organisation;
 using Libota.Application.Organisation.Aggregates;
 using Libota.Application.Organisation.Requests;
-using Libota.Application.Users.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Helpers;
@@ -30,8 +29,7 @@ namespace Libota.Desktop.ViewModels.Members
         public Interaction<Window?, MemberRegistrationRequest> ShowRegistrationPrompt { get; }
 
 
-        public MembersOverviewPageViewModel(IOrganisationManagementFacade organisationManagementFacade,
-            IUserSessionService userSessionService)
+        public MembersOverviewPageViewModel(IOrganisationManagementFacade organisationManagementFacade)
         {
             _organisationManagementFacade = organisationManagementFacade;
 

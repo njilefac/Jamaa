@@ -25,8 +25,8 @@ namespace Libota.Desktop.ViewModels.Members
             _userSessionService = userSessionService;
             GenderChoices = Enum.GetValues<Gender>().ToList();
             SelectedGender = Gender.Unknown;
-            RegistrationBegin = DateTime.Today.AddDays(-100);
             MembershipType = MembershipType.Regular;
+            RegistrationBegin = DateTime.Today;
 
             this.ValidationRule(x => x.FirstName, v => !string.IsNullOrWhiteSpace(v) && v.Length > 2,
                 "First name must be at least three characters");
@@ -66,7 +66,7 @@ namespace Libota.Desktop.ViewModels.Members
         [Reactive] public Gender SelectedGender { get; set; }
         
         [Reactive] public DateTime DateOfBirth { get; set; }
-        [Reactive] public DateTime? RegistrationBegin { get; set; }
+        [Reactive] public DateTime RegistrationBegin { get; set; }
         [Reactive] public MembershipType MembershipType { get; set; }
 
         public ReactiveCommand<Unit, MemberRegistrationRequest> RegisterMember { get; set; }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using Domain.Values;
 using EventFlow.EntityFramework.Extensions;
@@ -15,21 +14,16 @@ namespace Libota.Data.Configuration
 {
     public class LibotaDbContext : DbContext
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILoggerFactory _loggerFactory;
         private readonly DatabaseOptions _dbOptions;
         public DbSet<UserData> Users { get; set; }
         public DbSet<OrganisationReadModel> Organisations { get; set; }
 
 
-        public LibotaDbContext(
-            IServiceProvider serviceProvider,
-            IOptions<DatabaseOptions> options,
-            ILoggerFactory loggerFactory)
+        public LibotaDbContext(IOptions<DatabaseOptions> options, ILoggerFactory loggerFactory)
         {
-            _serviceProvider = serviceProvider;
-            _loggerFactory = loggerFactory;
             _dbOptions = options.Value;
+            _loggerFactory = loggerFactory;
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -39,7 +33,6 @@ namespace Libota.Data.Configuration
                 $"Filename={executingDirectory}{Path.DirectorySeparatorChar}{_dbOptions.DataFile}",
                 options => { options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName); });
             optionsBuilder.UseLoggerFactory(_loggerFactory);
-            optionsBuilder.UseApplicationServiceProvider(_serviceProvider);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

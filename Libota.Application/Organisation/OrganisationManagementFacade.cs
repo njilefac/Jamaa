@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,25 +16,30 @@ using Libota.Application.Organisation.Queries.Models;
 using Libota.Application.Organisation.Requests;
 using Libota.Application.Security;
 using Libota.Application.Shared.Providers;
+using Libota.Application.Users.Services;
 
 namespace Libota.Application.Organisation
 {
     public class OrganisationManagementFacade : IOrganisationManagementFacade
     {
+        private readonly IUserSessionService _userSessionService;
         private readonly ICommandBus _commandBus;
         private readonly IQueryProcessor _queryProcessor;
 
         public OrganisationManagementFacade(
             ICommandBus commandBus,
             IQueryProcessor queryProcessor,
-            IDataChangeNotifier dataChangeNotifier)
+            IDataChangeNotifier dataChangeNotifier,
+            IUserSessionService userSessionService)
         {
             _commandBus = commandBus;
             _queryProcessor = queryProcessor;
+            _userSessionService = userSessionService;
 
-            MemberAdded = dataChangeNotifier.Insertions.Where(e => e is Member).Select(e => (Member)e);
-            MemberUpdated = dataChangeNotifier.Updates.Where(e => e is Member).Select(e => (Member)e);
-            MemberDeleted = dataChangeNotifier.Deletions.Where(e => e is Member).Select(e => (Member)e);
+            MemberAdded = CreateMemberAddedObservable();
+            MemberAdded = MemberAdded.Merge(dataChangeNotifier.Insertions.OfType<Member>());
+            MemberUpdated = dataChangeNotifier.Updates.OfType<Member>();
+            MemberDeleted = dataChangeNotifier.Deletions.OfType<Member>();
         }
 
         public async Task<bool> CreateOrganisation(string name, string? description)
@@ -56,9 +62,10 @@ namespace Libota.Application.Organisation
             return result.ToList();
         }
 
-        public async Task<IList<Member>?> ListMembersByOrganisation(OrganisationId organisationId)
+        private async Task<IList<Member>?> ListCurrentMembers()
         {
-            var query = new GetMembersByOrganisation(organisationId);
+            var currentOrganisationId = _userSessionService.CurrentUserSession?.Organisation?.Id;
+            var query = new GetMembersByOrganisation(OrganisationId.With(currentOrganisationId));
             var members = await _queryProcessor.ProcessAsync(query, CancellationToken.None);
             return members.ToList();
         }
@@ -68,5 +75,20 @@ namespace Libota.Application.Organisation
         public IObservable<Member> MemberUpdated { get; }
 
         public IObservable<Member> MemberDeleted { get; }
+
+        private IObservable<Member> CreateMemberAddedObservable()
+        {
+            return Observable.Create<Member>(observer =>
+                {
+                    var seedData = ListCurrentMembers().Result;
+                    if (seedData == null) return Disposable.Empty;
+                    foreach (var member in seedData)
+                    {
+                        observer.OnNext(member);
+                    }
+                    return Disposable.Empty;
+                }
+            );
+        }
     }
 }

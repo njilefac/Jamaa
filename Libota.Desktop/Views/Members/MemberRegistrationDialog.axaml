@@ -11,7 +11,7 @@
         CanResize="False">
 
     <StackPanel>
-        <Border CornerRadius="2" Background="LightGray">
+        <Border Classes="box">
 
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="First Name" Classes="form label" />
@@ -32,12 +32,12 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <TextBlock Grid.Row="4" Grid.Column="0" Text="Registered From" Classes="form label" />
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Member Since" Classes="form label" />
                 <CalendarDatePicker Grid.Row="4" Grid.Column="1"
                                     SelectedDate="{Binding RegistrationBegin}"
-                                    DisplayDate="{Binding RegistrationBegin}"
+                                    DisplayDate="{Binding RegistrationBegin, Mode=TwoWay}"
                                     SelectedDateFormat="Custom"
-                                    CustomDateFormatString="dd-MMM-yyyy"
+                                     CustomDateFormatString="dd.MMM.yyyy"
                                     Classes="form field" />
                 <Button Grid.Row="5" Grid.Column="1" Content="Register Member" Command="{Binding RegisterMember}"
                         HorizontalAlignment="Right" />
