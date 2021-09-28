@@ -15,7 +15,11 @@
 
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="First Name" Classes="form label" />
-                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FirstName}" Classes="form field" />
+                <TextBox x:Name="FirstNameField" 
+                         Grid.Row="0" Grid.Column="1" 
+                         Text="{Binding FirstName}" 
+                         Classes="form field" 
+                         AttachedToVisualTree="OnAttachedToVisualTree"/>
 
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Middle Name" Classes="form label" />
                 <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding MiddleName}" Classes="form field" />

@@ -8,8 +8,8 @@
              HorizontalAlignment="Stretch"
              VerticalAlignment="Stretch">
 
-    <StackPanel>
-        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
+    <DockPanel Background="LightGray" LastChildFill="True">
+        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto" DockPanel.Dock="Top">
             <HeaderedContentControl Header="Statistics" Grid.Row="0" Grid.Column="0">
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Members:" />
@@ -28,6 +28,6 @@
                 </StackPanel>
             </Border>
         </Grid>
-        <members:MembersList x:Name="MembersList" DataContext="{Binding }"/>
-    </StackPanel>
+        <members:MembersList/>
+    </DockPanel>
 </UserControl>
