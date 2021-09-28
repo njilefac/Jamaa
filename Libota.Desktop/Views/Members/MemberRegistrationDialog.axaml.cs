@@ -1,5 +1,7 @@
 using System;
 using System.Reactive.Disposables;
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Libota.Desktop.ViewModels.Members;
@@ -24,6 +26,13 @@ namespace Libota.Desktop.Views.Members
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            var firstNameField = this.FindControl<TextBox>("FirstNameField");
+            
+            firstNameField?.Focus();
         }
     }
 }

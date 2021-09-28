@@ -1,12 +1,10 @@
 using System;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Domain.Values;
 using Libota.Application.Organisation;
-using Libota.Application.Organisation.Aggregates;
 using Libota.Application.Organisation.Requests;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -26,7 +24,7 @@ namespace Libota.Desktop.ViewModels.Members
         [Reactive] public int MaleMembersCount { get; set; }
         [Reactive] public int FemaleMembersCount { get; set; }
 
-        public Interaction<Window?, MemberRegistrationRequest> ShowRegistrationPrompt { get; }
+        public Interaction<Window?, MemberRegistrationRequest?> ShowRegistrationPrompt { get; }
 
 
         public MembersOverviewPageViewModel(IOrganisationManagementFacade organisationManagementFacade)
@@ -51,7 +49,7 @@ namespace Libota.Desktop.ViewModels.Members
 
             RegisterMember = ReactiveCommand.CreateFromTask<object?>(OnRegisterMember);
 
-            ShowRegistrationPrompt = new Interaction<Window?, MemberRegistrationRequest>();
+            ShowRegistrationPrompt = new Interaction<Window?, MemberRegistrationRequest?>();
         }
 
         private Task OnRegisterMember(object? sender)
@@ -60,10 +58,8 @@ namespace Libota.Desktop.ViewModels.Members
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(request =>
                 {
-                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                    if (request == null)
-                        return;
-                    _organisationManagementFacade.RegisterMember(request);
+                    if(request != null)
+                        _organisationManagementFacade.RegisterMember(request);
                 });
             return Task.CompletedTask;
         }

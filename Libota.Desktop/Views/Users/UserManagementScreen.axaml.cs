@@ -1,3 +1,4 @@
+using System.Reactive.Disposables;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Libota.Desktop.ViewModels.Users;
@@ -11,8 +12,12 @@ namespace Libota.Desktop.Views.Users
         public UserManagementScreen()
         {
             InitializeComponent();
-            this.WhenActivated(disposables => {});
-            DataContext = Locator.Current.GetService<UserManagementViewModel>();
+            this.WhenActivated(disposables =>
+            {
+                DataContext = Locator.Current.GetService<UserManagementViewModel>();
+                Disposable.Create(() => { }).DisposeWith(disposables);
+            });
+            
         }
 
         private void InitializeComponent()
