@@ -7,14 +7,15 @@ using Splat;
 
 namespace Libota.Desktop.Views.Members
 {
-    public class MemberManagementScreen : ReactiveUserControl<MembersManagementScreenViewModel>
+    public class MemberProfilePage : ReactiveUserControl<MemberProfileViewModel>
     {
-        public MemberManagementScreen()
+        public MemberProfilePage()
         {
             InitializeComponent();
             this.WhenActivated(disposables =>
             {
-                DataContext = Locator.Current.GetService<MembersManagementScreenViewModel>();
+                DataContext ??= Locator.Current.GetService<MemberProfileViewModel>();
+
                 Disposable.Create(() => { }).DisposeWith(disposables);
             });
         }

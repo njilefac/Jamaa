@@ -2,30 +2,29 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MemberCard">
-    <StackPanel Orientation="Vertical">
-        <CardControl Width="200">
-            <CardControl.Header>
-                <StackPanel>
-                    <TextBlock Text="{Binding FirstName}" />
-                    <TextBlock Text="{Binding LastName}" />
-                </StackPanel>
-            </CardControl.Header>
-            <CardControl.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="View Profile" />
-                    <MenuItem Header="Receive Payment" />
-                    <MenuItem Header="Attendance" />
-                </ContextMenu>
-            </CardControl.ContextMenu>
-            <StackPanel VerticalAlignment="Bottom">
-                <TextBlock Text="{Binding Path=FirstName}" />
-                <TextBlock Text="{Binding Path=LastName}" />
-                <TextBlock Text="{Binding Path=Registration.StartDate.Date}" />
-                <TextBlock Text="{Binding Path=Registration.MembershipType}" />
-                <TextBlock Text="{Binding Path=Registration.Status}" />
+    <CardControl Width="200">
+        <CardControl.Header>
+            <StackPanel>
+                <TextBlock Text="{Binding FirstName}" />
+                <TextBlock Text="{Binding LastName}" />
             </StackPanel>
-        </CardControl>
-    </StackPanel>
+        </CardControl.Header>
+        <StackPanel VerticalAlignment="Bottom">
+            <TextBlock Text="{Binding Path=Registration.StartDate.Date}" />
+            <TextBlock Text="{Binding Path=Registration.MembershipType}" />
+            <TextBlock Text="{Binding Path=Registration.Status}" />
+        </StackPanel>
+        <Interaction.Behaviors>
+            <EventTriggerBehavior EventName="DoubleTapped" SourceObject="{Binding $parent[CardControl]}">
+                <InvokeCommandAction CommandParameter="{Binding}">
+                    <InvokeCommandAction.Command>
+                        <Binding Path="$parent[members:MembersList].DataContext.ShowMemberDetails" />
+                    </InvokeCommandAction.Command>
+                </InvokeCommandAction>
+            </EventTriggerBehavior>
+        </Interaction.Behaviors>
+    </CardControl>
 </UserControl>

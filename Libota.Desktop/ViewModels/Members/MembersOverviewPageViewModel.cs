@@ -12,7 +12,7 @@ using ReactiveUI.Validation.Helpers;
 
 namespace Libota.Desktop.ViewModels.Members
 {
-    public class MembersOverviewPageViewModel : ReactiveValidationObject
+    public class MembersOverviewPageViewModel : ReactiveValidationObject, IRoutableViewModel
     {
         private readonly IOrganisationManagementFacade _organisationManagementFacade;
 
@@ -27,8 +27,12 @@ namespace Libota.Desktop.ViewModels.Members
         public Interaction<Window?, MemberRegistrationRequest?> ShowRegistrationPrompt { get; }
 
 
-        public MembersOverviewPageViewModel(IOrganisationManagementFacade organisationManagementFacade)
+        public MembersOverviewPageViewModel(
+            IOrganisationManagementFacade organisationManagementFacade,
+            IScreen hostScreen
+            )
         {
+            HostScreen = hostScreen;
             _organisationManagementFacade = organisationManagementFacade;
 
             organisationManagementFacade.MemberAdded.Subscribe(m =>
@@ -63,5 +67,8 @@ namespace Libota.Desktop.ViewModels.Members
                 });
             return Task.CompletedTask;
         }
+
+        public string? UrlPathSegment => "members.overview";
+        public IScreen HostScreen { get; }
     }
 }
