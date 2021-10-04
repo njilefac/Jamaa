@@ -28,6 +28,9 @@ namespace Libota.Desktop.Configuration
 {
     public class PresentationServicesRegistration : Module
     {
+        private const string MEMBERS_MANAGEMENT_SCREEN = "MembersManagementScreen";
+        private const string MAIN_WINDOW = "MainWindow";
+
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
@@ -54,21 +57,81 @@ namespace Libota.Desktop.Configuration
 
         private static void RegisterViewModels(ContainerBuilder builder)
         {
-            builder.RegisterType<MainWindowViewModel>().AsSelf().As<IScreen>().SingleInstance();
-            builder.RegisterType<LoginScreenViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<CreateSuperUserViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<CreateOrganisationViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<OrganisationContactDetailsViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<MainMenuViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<DashboardViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            
-            builder.RegisterType<UserManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<MembersOverviewPageViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<MembersListViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<MemberRegistrationDialogViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<GroupManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<EventManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<FinanceManagementViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<MainWindowViewModel>().AsSelf().As<IScreen>()
+                .Named<IScreen>(MAIN_WINDOW)
+                .SingleInstance();
+
+            builder.RegisterType<MembersManagementScreenViewModel>().AsSelf().As<IScreen>()
+                .Named<IScreen>(MEMBERS_MANAGEMENT_SCREEN)
+                .SingleInstance();
+
+            builder.RegisterType<MainMenuViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
+                .SingleInstance();
+
+            builder.RegisterType<MemberRegistrationDialogViewModel>().AsSelf().AsImplementedInterfaces()
+                .SingleInstance();
+
+            builder.RegisterType<LoginScreenViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
+                .SingleInstance();
+
+            builder.RegisterType<CreateSuperUserViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
+                .SingleInstance();
+
+            builder.RegisterType<CreateOrganisationViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
+                .SingleInstance();
+
+            builder.RegisterType<OrganisationContactDetailsViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
+                .SingleInstance();
+
+            builder.RegisterType<DashboardViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
+                .SingleInstance();
+
+            builder.RegisterType<UserManagementViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
+                .SingleInstance();
+
+            builder.RegisterType<MembersOverviewPageViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MEMBERS_MANAGEMENT_SCREEN))
+                .SingleInstance();
+
+            builder.RegisterType<MemberProfileViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MEMBERS_MANAGEMENT_SCREEN));
+
+
+            builder.RegisterType<MembersListViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MEMBERS_MANAGEMENT_SCREEN))
+                .SingleInstance();
+
+            builder.RegisterType<GroupManagementViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
+                .SingleInstance();
+
+            builder.RegisterType<EventManagementViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
+                .SingleInstance();
+
+            builder.RegisterType<FinanceManagementViewModel>().AsSelf().AsImplementedInterfaces()
+                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
+                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
+                .SingleInstance();
         }
 
         private static void RegisterViews(ContainerBuilder builder)
@@ -78,18 +141,20 @@ namespace Libota.Desktop.Configuration
             builder.RegisterType<Dashboard>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<CreateSuperUserScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<CreateOrganisationScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<OrganisationContactDetailsScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<OrganisationContactDetailsScreen>().AsSelf().AsImplementedInterfaces()
+                .SingleInstance();
             builder.RegisterType<LoginScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<UserManagementScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<MemberManagementScreen>().AsSelf().AsImplementedInterfaces();
-            builder.RegisterType<MembersList>().AsSelf().AsImplementedInterfaces();
+            builder.RegisterType<MembersList>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<MemberRegistrationDialog>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<GroupManagementScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<EventManagementScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<FinanceManagementScreen>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<MembersOverviewPage>().AsSelf().AsImplementedInterfaces();
+            builder.RegisterType<MemberProfilePage>().AsSelf().AsImplementedInterfaces();
         }
-        
+
         private static void RegisterValidators(ContainerBuilder builder)
         {
             builder.RegisterType<LoginScreenViewModelValidator>().As<IValidator<LoginScreenViewModel>>();

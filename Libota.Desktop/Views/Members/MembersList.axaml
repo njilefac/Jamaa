@@ -12,22 +12,16 @@
                  Text="{Binding SearchTerm}"
                  MinWidth="800" />
         <ScrollViewer Grid.Row="1" HorizontalContentAlignment="Stretch">
-            <Panel>
-                <ItemsRepeater Items="{Binding Members}">
-                    <ItemsRepeater.Layout>
-                        <UniformGridLayout ItemsJustification="Start"
-                                           MinRowSpacing="10"
-                                           Orientation="Horizontal"
-                                           MaximumRowsOrColumns="6" />
-                    </ItemsRepeater.Layout>
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate>
-                            <members:MemberCard />
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-
-                </ItemsRepeater>
-            </Panel>
+            <ItemsRepeater Items="{Binding Members}">
+                <ItemsRepeater.Layout>
+                    <WrapLayout HorizontalSpacing="15" Orientation="Horizontal" VerticalSpacing="15" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <members:MemberCard />
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
         </ScrollViewer>
     </Grid>
 
