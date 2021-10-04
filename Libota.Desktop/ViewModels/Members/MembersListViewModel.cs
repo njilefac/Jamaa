@@ -17,47 +17,47 @@ namespace Libota.Desktop.ViewModels.Members
     public class MembersListViewModel : ReactiveObject, IRoutableViewModel
     {
         [Reactive] public string? SearchTerm { get; set; }
-        
+
         public ReactiveCommand<Member, Unit> ShowMemberDetails { get; set; }
+
         public MembersListViewModel(
             IOrganisationManagementFacade organisationManagementFacade,
             IScreen hostScreen)
         {
             HostScreen = hostScreen;
 
-            using (var membersSourceList = new SourceCache<Member, string>(m => m.Id))
-            {
-                var members = new ObservableCollectionExtended<Member>();
-                membersSourceList.PopulateFrom(organisationManagementFacade.MemberAdded);
-                membersSourceList.Connect()
-                    .Sort(SortExpressionComparer<Member>.Ascending(m => m.LastName))
-                    .ObserveOn(RxApp.MainThreadScheduler)
-                    .Bind(Members)
-                    .DisposeMany()
-                    .Subscribe(changeSet =>
+            var membersSourceList = new SourceCache<Member, string>(m => m.Id);
+            
+            var members = new ObservableCollectionExtended<Member>();
+            membersSourceList.PopulateFrom(organisationManagementFacade.MemberAdded);
+            membersSourceList.Connect()
+                .Sort(SortExpressionComparer<Member>.Ascending(m => m.LastName))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Bind(Members)
+                .DisposeMany()
+                .Subscribe(changeSet =>
+                {
+                    foreach (var change in changeSet)
                     {
-                        foreach (var change in changeSet)
-                        {
-                            members.Add(change.Current);
-                        }
-                    });
+                        members.Add(change.Current);
+                    }
+                });
 
-                this.WhenValueChanged(x => x.SearchTerm, false)
-                    .Throttle(TimeSpan.FromSeconds(1))
-                    .WhereNotNull()
-                    .Subscribe(term =>
+            this.WhenValueChanged(x => x.SearchTerm, false)
+                .Throttle(TimeSpan.FromSeconds(1))
+                .WhereNotNull()
+                .Subscribe(term =>
+                {
+                    var matchingMembers = string.IsNullOrWhiteSpace(term)
+                        ? members
+                        : members.Where(m => MemberMatches(m, term));
+
+                    membersSourceList.Edit(innerList =>
                     {
-                        var matchingMembers = string.IsNullOrWhiteSpace(term)
-                            ? members
-                            : members.Where(m => MemberMatches(m, term));
-                    
-                        membersSourceList.Edit(innerList =>
-                        {
-                            innerList.Clear();
-                            innerList.AddOrUpdate(matchingMembers);
-                        });
+                        innerList.Clear();
+                        innerList.AddOrUpdate(matchingMembers);
                     });
-            }
+                });
 
             ShowMemberDetails = ReactiveCommand.CreateFromTask<Member, Unit>(ShowMemberProfile);
         }
@@ -66,15 +66,15 @@ namespace Libota.Desktop.ViewModels.Members
         {
             var memberProfileViewModel = Locator.Current.GetService<MemberProfileViewModel>();
             if (memberProfileViewModel == null) return await Task.FromResult(Unit.Default);
-            
+
             memberProfileViewModel.FirstName = member.FirstName;
             memberProfileViewModel.MiddleName = member.MiddleName;
             memberProfileViewModel.LastName = member.LastName;
             memberProfileViewModel.Gender = member.Gender;
             memberProfileViewModel.Registration = member.Registration;
-            
+
             HostScreen.Router.Navigate.Execute(memberProfileViewModel);
-            
+
             return await Task.FromResult(Unit.Default);
         }
 
