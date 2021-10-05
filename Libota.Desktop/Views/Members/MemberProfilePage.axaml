@@ -4,15 +4,29 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MemberProfilePage">
-    <DockPanel LastChildFill="True">
+    <UserControl.Styles>
+        <Style Selector="Border">
+            <Setter Property="Margin" Value="20" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>
+    </UserControl.Styles>
+    <DockPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <Button Content="Back" Command="{Binding GoBack}"></Button>
+            <Button Content="Back" Command="{Binding GoBack}" />
         </StackPanel>
-        <Border CornerRadius="4">
+        <Border>
             <StackPanel>
-                <TextBlock Text="Member Profile" />
                 <TextBlock Text="{Binding FirstName}" />
+                <TextBlock Text="{Binding MiddleName}" />
                 <TextBlock Text="{Binding LastName}" />
+                <TextBlock Text="{Binding Gender}" />
+            </StackPanel>
+        </Border>
+        <Border>
+            <StackPanel>
+                <TextBlock Text="{Binding Registration.StartDate}" />
+                <TextBlock Text="{Binding Registration.Status}" />
+                <TextBlock Text="{Binding Registration.MembershipType}" />
             </StackPanel>
         </Border>
     </DockPanel>

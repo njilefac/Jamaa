@@ -5,8 +5,7 @@
              xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MembersOverviewPage"
-             HorizontalAlignment="Stretch"
-             VerticalAlignment="Stretch">
+             HorizontalAlignment="Stretch">
 
     <DockPanel Background="LightGray" LastChildFill="True">
         <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto" DockPanel.Dock="Top">
