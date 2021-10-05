@@ -15,7 +15,6 @@
       <PackageReference Include="EventFlow.EntityFramework" Version="0.82.4684" />
       <PackageReference Include="EventFlow.Hangfire" Version="0.82.4659" />
       <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="2.0.9" />
-      <PackageReference Include="Portable.Licensing" Version="1.1.0" />
       <PackageReference Include="Rhino.Licensing.X" Version="2.0.0.1" />
       <PackageReference Include="Suplex.Security.Core" Version="1.0.19075" />
       <PackageReference Include="Suplex.Security.FileSystemDal" Version="1.0.19109" />

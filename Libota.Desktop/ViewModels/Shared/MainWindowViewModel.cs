@@ -18,7 +18,7 @@ namespace Libota.Desktop.ViewModels.Shared
         {
             userSessionService.UserSessions.Subscribe(x =>
             {
-                ApplicationTitle = x is { IsAuthenticated: true } ? $"{APPLICATION_NAME} -  ({x.UserName})" : APPLICATION_NAME;
+                ApplicationTitle = x is { IsAuthenticated: true } ? $"{APPLICATION_NAME} -  ({x.Organisation?.Name})" : APPLICATION_NAME;
             });
             Router = new RoutingState();
         }

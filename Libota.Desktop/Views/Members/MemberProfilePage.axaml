@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Libota.Desktop.Views.Members.MemberProfilePage">
+    <UserControl.Styles>
+        <Style Selector="Border">
+            <Setter Property="Margin" Value="20" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>
+    </UserControl.Styles>
+    <DockPanel>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+            <Button Content="Back" Command="{Binding GoBack}" />
+        </StackPanel>
+        <Border>
+            <StackPanel>
+                <TextBlock Text="{Binding FirstName}" />
+                <TextBlock Text="{Binding MiddleName}" />
+                <TextBlock Text="{Binding LastName}" />
+                <TextBlock Text="{Binding Gender}" />
+            </StackPanel>
+        </Border>
+        <Border>
+            <StackPanel>
+                <TextBlock Text="{Binding Registration.StartDate}" />
+                <TextBlock Text="{Binding Registration.Status}" />
+                <TextBlock Text="{Binding Registration.MembershipType}" />
+            </StackPanel>
+        </Border>
+    </DockPanel>
+</UserControl>

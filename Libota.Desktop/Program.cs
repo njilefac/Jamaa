@@ -86,7 +86,7 @@ namespace Libota.Desktop
 
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile($"app.{environment}.json", false, true)
+                .AddJsonFile($"appSettings.{environment}.json", false, true)
                 .AddEnvironmentVariables()
                 .AddCommandLine(args)
                 .Build();

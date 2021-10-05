@@ -3,11 +3,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
+             xmlns:reactiveUi="http://reactiveui.net"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MemberManagementScreen">
-    <AuraTabView HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AdderButtonIsVisible="False">
-        <AuraTabItem Header="Overview" IsClosable="False">
-            <members:MembersOverviewPage/>
-        </AuraTabItem>
-    </AuraTabView>
+    <Panel>
+        <reactiveUi:RoutedViewHost
+            Router="{Binding Router}"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch">
+            <reactiveUi:RoutedViewHost.DefaultContent>
+                <members:MembersOverviewPage />
+            </reactiveUi:RoutedViewHost.DefaultContent>
+        </reactiveUi:RoutedViewHost>
+    </Panel>
+
 </UserControl>

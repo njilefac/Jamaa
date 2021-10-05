@@ -2,27 +2,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MembersList">
-    <StackPanel>
-        <DataGrid Items="{Binding Members}"
-                  AutoGenerateColumns="False"
-                  SelectionMode="Extended"
-                   GridLinesVisibility="All"
-                  CanUserReorderColumns="True"
-                  CanUserResizeColumns="True"
-                  RowHeaderWidth="15"
-                  VerticalScrollBarVisibility="Auto">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="#"  Binding="{Binding Items.CurrentPosition }"/>
-                <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}"/>
-                <DataGridTextColumn Header="Last Name" Binding="{Binding LastName}"/>
-                <DataGridTextColumn Header="Middle Name" Binding="{Binding MiddleName}"/>
-                <DataGridTextColumn Header="Gender" Binding="{Binding Gender}"/>
-                <DataGridTextColumn Header="Member Since" Binding="{Binding Registration.StartDate.Date}"/>
-                <DataGridTextColumn Header="Membership Type" Binding="{Binding Registration.MembershipType}"/>
-                <DataGridTextColumn Header="Registration Status" Binding="{Binding Registration.Status}"/>
-            </DataGrid.Columns>
-        </DataGrid>
-    </StackPanel>
+    <Grid RowDefinitions="60,*">
+        <TextBox Grid.Row="0" Watermark="Search for members"
+                 VerticalAlignment="Top"
+                 HorizontalAlignment="Center"
+                 Text="{Binding SearchTerm}"
+                 MinWidth="800" />
+        <ScrollViewer Grid.Row="1" HorizontalContentAlignment="Stretch" Height="{Binding $parent[Window].ClientSize.Height}">
+            <ItemsRepeater Items="{Binding Members}">
+                <ItemsRepeater.Layout>
+                    <WrapLayout HorizontalSpacing="15" Orientation="Horizontal" VerticalSpacing="15" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <members:MemberCard />
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+    </Grid>
+
 </UserControl>
