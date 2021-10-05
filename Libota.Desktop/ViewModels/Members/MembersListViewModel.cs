@@ -50,7 +50,7 @@ namespace Libota.Desktop.ViewModels.Members
                 {
                     var matchingMembers = string.IsNullOrWhiteSpace(term)
                         ? members
-                        : members.Where(m => MemberMatches(m, term));
+                        : members.Where(m => MemberMatches(m, term.Trim()));
 
                     membersSourceList.Edit(innerList =>
                     {

@@ -5,13 +5,13 @@
              xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MembersList">
-    <Grid RowDefinitions="60,*" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="60,*">
         <TextBox Grid.Row="0" Watermark="Search for members"
                  VerticalAlignment="Top"
                  HorizontalAlignment="Center"
                  Text="{Binding SearchTerm}"
                  MinWidth="800" />
-        <ScrollViewer Grid.Row="1" HorizontalContentAlignment="Stretch">
+        <ScrollViewer Grid.Row="1" HorizontalContentAlignment="Stretch" Height="{Binding $parent[Window].ClientSize.Height}">
             <ItemsRepeater Items="{Binding Members}">
                 <ItemsRepeater.Layout>
                     <WrapLayout HorizontalSpacing="15" Orientation="Horizontal" VerticalSpacing="15" />
