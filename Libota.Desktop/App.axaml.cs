@@ -30,6 +30,7 @@ namespace Libota.Desktop
             {
                 DataContext = Locator.Current.GetService<MainWindowViewModel>(),
                 WindowState = WindowState.Maximized,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
         }
     }

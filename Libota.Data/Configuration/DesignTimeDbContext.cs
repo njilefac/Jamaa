@@ -12,7 +12,7 @@ namespace Libota.Data.Configuration
             var dbOptions = new DatabaseOptions { DataFile = "libota.db" };
 
             return new LibotaDbContext(Options.Create(dbOptions),
-                LoggerFactory.Create(b => { b.AddConsole(); }));
+                LoggerFactory.Create(b => { }));
         }
     }
 }
