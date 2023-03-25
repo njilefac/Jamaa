@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <Company>Nubia Systems</Company>
     <Product>Libota Desktop</Product>
@@ -11,6 +11,7 @@
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <AssemblyName>Libota</AssemblyName>
+    <LangVersion>latestmajor</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <WarningLevel>4</WarningLevel>
@@ -19,72 +20,73 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Aura.UI" Version="0.1.3.1" />
+    <PackageReference Include="Aura.UI" Version="0.1.4.2" />
     <PackageReference Include="Aura.UI.Dragging" Version="0.1.3.1" />
-    <PackageReference Include="Autofac" Version="6.2.0" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
-    <PackageReference Include="AutoMapper.Contrib.Autofac.DependencyInjection" Version="5.4.0" />
-    <PackageReference Include="Avalonia" Version="0.10.13" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
+    <PackageReference Include="Aura.UI.FluentTheme" Version="0.1.4.2" />
+    <PackageReference Include="Autofac" Version="7.0.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="AutoMapper.Contrib.Autofac.DependencyInjection" Version="7.1.0" />
+    <PackageReference Include="Avalonia" Version="0.10.19" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.19" />
     <PackageReference Include="Avalonia.MonoMac" Version="0.6.1" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.13" />
-    <PackageReference Include="Avalonia.ReactiveUI.Events" Version="0.10.13" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.19" />
+    <PackageReference Include="Avalonia.ReactiveUI.Events" Version="0.10.19" />
     <PackageReference Include="Avalonia.ThemeManager" Version="0.10.8" />
-    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.13.3" />
-    <PackageReference Include="Avalonia.Xaml.Interactions" Version="0.10.13.3" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.19" />
+    <PackageReference Include="Avalonia.Xaml.Interactions" Version="0.10.19" />
     <PackageReference Include="Avalonia.Xaml.Interactions.Custom" Version="0.10.3" />
     <PackageReference Include="Avalonia.Xaml.Interactions.DragAndDrop" Version="0.10.3" />
     <PackageReference Include="AvaloniaAccordion" Version="1.0.0" />
-    <PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.9.7" />
-    <PackageReference Include="Dock.Avalonia" Version="0.10.12" />
+    <PackageReference Include="Deadpikle.AvaloniaProgressRing" Version="0.9.8" />
+    <PackageReference Include="Dock.Avalonia" Version="0.10.18.1" />
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.10.0" />
-    <PackageReference Include="Dock.Model.Avalonia" Version="0.10.12" />
+    <PackageReference Include="Dock.Model.Avalonia" Version="0.10.18.1" />
     <PackageReference Include="Dotnet.Bundle" Version="0.9.13" />
     <PackageReference Include="DynamicData.ReactiveUI" Version="6.11.0.2613" />
     <PackageReference Include="EventFlow.Autofac" Version="0.83.4713" />
-    <PackageReference Include="FluentAvaloniaUI" Version="1.3.4" />
+    <PackageReference Include="FluentAvaloniaUI" Version="1.4.5" />
     <PackageReference Include="GridExtra.Avalonia" Version="0.9.1" />
-    <PackageReference Include="LibVLCSharp.Avalonia" Version="3.6.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.10">
+    <PackageReference Include="LibVLCSharp.Avalonia" Version="3.6.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Localization" Version="5.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
-    <PackageReference Include="Nickvision.Avalonia" Version="2022.3.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="7.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
+    <PackageReference Include="Nickvision.Avalonia" Version="2022.4.0" />
     <PackageReference Include="Paginator.Avalonia" Version="1.0.0" />
     <PackageReference Include="QRCode.Avalonia" Version="1.0.0" />
     <PackageReference Include="Raising.CefGlue.Avalonia" Version="0.7.0.2" />
-    <PackageReference Include="ReactiveProperty" Version="7.12.0" />
-    <PackageReference Include="ReactiveUI" Version="17.1.50" />
+    <PackageReference Include="ReactiveProperty" Version="9.1.2" />
+    <PackageReference Include="ReactiveUI" Version="18.4.26" />
     <PackageReference Include="ReactiveUI-FluentValidation" Version="1.0.0" />
-    <PackageReference Include="ReactiveUI.Fody" Version="16.2.6" />
-    <PackageReference Include="ReactiveUI.Validation" Version="2.1.1" />
-    <PackageReference Include="ReactViewControl-Avalonia" Version="2.91.5" />
-    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="ReactiveUI.Fody" Version="18.4.26" />
+    <PackageReference Include="ReactiveUI.Validation" Version="3.1.7" />
+    <PackageReference Include="ReactViewControl-Avalonia" Version="2.106.6" />
+    <PackageReference Include="Serilog" Version="2.12.0" />
     <PackageReference Include="Serilog.Enrichers.AssemblyName" Version="1.0.9" />
-    <PackageReference Include="Serilog.Enrichers.Context" Version="4.2.0" />
+    <PackageReference Include="Serilog.Enrichers.Context" Version="4.6.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
     <PackageReference Include="Serilog.Enrichers.Memory" Version="1.0.4" />
     <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageReference Include="Serilog.Exceptions" Version="7.0.0" />
-    <PackageReference Include="Serilog.Extensions.Autofac.DependencyInjection" Version="4.0.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
+    <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
+    <PackageReference Include="Serilog.Extensions.Autofac.DependencyInjection" Version="5.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="3.2.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="Splat.Autofac" Version="13.1.10" />
+    <PackageReference Include="Splat.Autofac" Version="14.6.8" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>

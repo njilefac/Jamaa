@@ -1,14 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
+        <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Autofac" Version="6.2.0" />
+      <PackageReference Include="Autofac" Version="7.0.0" />
       <PackageReference Include="Autofac.Extras.DynamicProxy" Version="6.0.1" />
-      <PackageReference Include="AutoMapper" Version="10.1.1" />
+      <PackageReference Include="AutoMapper" Version="12.0.1" />
       <PackageReference Include="EntityFrameworkCore.Triggers" Version="1.2.3" />
       <PackageReference Include="EventFlow" Version="0.83.4713" />
       <PackageReference Include="EventFlow.Autofac" Version="0.83.4713" />
