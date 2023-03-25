@@ -44,7 +44,7 @@ namespace Libota.Desktop.Configuration
 
         private void RegisterMappers(ContainerBuilder builder)
         {
-            builder.RegisterAutoMapper(
+            builder.RegisterAutoMapper(false,
                 GetType().Assembly,
                 typeof(EntityMappingProfile).Assembly);
         }
