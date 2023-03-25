@@ -11,14 +11,12 @@
     </Application.Resources>
 
     <Application.Styles>
-        <FluentTheme Mode="Light" />
-        <StyleInclude Source="avares://Aura.UI/AuraUI.xaml" />
-        <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml" />
-        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml" />
-        <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml" />
+        <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml"/>
+        <StyleInclude Source="avares://Aura.UI.FluentTheme/AuraUI.xaml"/>
+        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
+        <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml"/>
         <StyleInclude Source="/Assets/Styles/FormStyles.axaml" />
         <StyleInclude Source="/Assets/Styles/PageStyles.axaml" />
         <StyleInclude Source="/Assets/Styles/ControlStyles.axaml" />
     </Application.Styles>
-
 </Application>

@@ -11,22 +11,34 @@
         </Style>
     </UserControl.Styles>
     <DockPanel>
+        <!-- todo: use a bread crumb here -->
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
             <Button Content="Back" Command="{Binding GoBack}" />
         </StackPanel>
         <Border>
             <StackPanel>
-                <TextBlock Text="{Binding FirstName}" />
-                <TextBlock Text="{Binding MiddleName}" />
-                <TextBlock Text="{Binding LastName}" />
-                <TextBlock Text="{Binding Gender}" />
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="First Name:" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding FirstName}" />
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Middle Name:" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MiddleName}" />
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Last Name:" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding LastName}" />
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Gender:" />
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Gender}" />
+                </Grid>
             </StackPanel>
         </Border>
         <Border>
             <StackPanel>
-                <TextBlock Text="{Binding Registration.StartDate}" />
-                <TextBlock Text="{Binding Registration.Status}" />
-                <TextBlock Text="{Binding Registration.MembershipType}" />
+                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Member Since:"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Registration.StartDate}" />
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Membership Status:"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Registration.Status}" />
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Membership Type:"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Registration.MembershipType}" />
+                </Grid>
             </StackPanel>
         </Border>
     </DockPanel>

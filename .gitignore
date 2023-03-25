@@ -33,3 +33,5 @@ msbuild.wrn
 .idea/
 
 Libota.Desktop/libota.db
+
+Libota.Desktop/Logs/
