@@ -6,7 +6,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Shared
 {
-    public class MainMenu : ReactiveUserControl<MainMenuViewModel>
+    public partial class MainMenu : ReactiveUserControl<MainMenuViewModel>
     {
         public MainMenu()
         {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Domain.Entities.Users;
+using Domain.Users;
 using Libota.Application.Organisation.Queries.Models;
 
 namespace Libota.Application.Setup

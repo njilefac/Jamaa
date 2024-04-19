@@ -1,7 +1,7 @@
 ﻿using System;
 using Domain.Values;
 
-namespace Domain.Entities.Shared
+namespace Domain.Shared
 {
     public abstract class Person
     {

@@ -1,4 +1,4 @@
-﻿namespace Domain.Values
+﻿namespace Domain.Organisation.Values
 {
     public enum MembershipType
     {

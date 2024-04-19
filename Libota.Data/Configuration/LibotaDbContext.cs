@@ -2,7 +2,6 @@
 using System.Reflection;
 using Domain.Values;
 using EventFlow.EntityFramework.Extensions;
-using Hangfire.EntityFrameworkCore;
 using Libota.Application.Members.Queries.Models;
 using Libota.Application.Organisation.Queries.Models;
 using Libota.Data.Models;
@@ -41,7 +40,6 @@ namespace Libota.Data.Configuration
 
             modelBuilder.AddEventFlowEvents();
             modelBuilder.AddEventFlowSnapshots();
-            modelBuilder.OnHangfireModelCreating();
             ConfigureUserMapping(modelBuilder);
             MapReadModels(modelBuilder);
         }

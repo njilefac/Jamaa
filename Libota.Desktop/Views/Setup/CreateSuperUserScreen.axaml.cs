@@ -11,7 +11,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Setup
 {
-    public class CreateSuperUserScreen : ReactiveUserControl<CreateSuperUserViewModel>
+    public partial class CreateSuperUserScreen : ReactiveUserControl<CreateSuperUserViewModel>
     {
         public CreateSuperUserScreen()
         {

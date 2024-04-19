@@ -7,7 +7,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Members
 {
-    public class MemberProfilePage : ReactiveUserControl<MemberProfileViewModel>
+    public partial class MemberProfilePage : ReactiveUserControl<MemberProfileViewModel>
     {
         public MemberProfilePage()
         {

@@ -6,7 +6,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Shared
 {
-    public class Dashboard : ReactiveUserControl<DashboardViewModel>
+    public partial class Dashboard : ReactiveUserControl<DashboardViewModel>
     {
         public Dashboard()
         {

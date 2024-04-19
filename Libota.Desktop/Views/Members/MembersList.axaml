@@ -12,7 +12,7 @@
                  Text="{Binding SearchTerm}"
                  MinWidth="800" />
         <ScrollViewer Grid.Row="1" HorizontalContentAlignment="Stretch" Height="{Binding $parent[Window].ClientSize.Height}">
-            <ItemsRepeater Items="{Binding Members}">
+            <ItemsRepeater ItemsSource="{Binding Members}">
                 <ItemsRepeater.Layout>
                     <WrapLayout HorizontalSpacing="15" Orientation="Horizontal" VerticalSpacing="15" />
                 </ItemsRepeater.Layout>

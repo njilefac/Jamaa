@@ -1,5 +1,7 @@
 using System;
-using Domain.Entities.Members;
+using Domain.Members;
+using Domain.Organisation.Entities;
+using Domain.Organisation.Values;
 using Domain.Values;
 using FluentAssertions;
 using Xunit;
@@ -16,7 +18,7 @@ namespace UnitTests.Organization
             var description = "this is a test organization";
 
             // Act
-            var result = new Domain.Entities.Shared.Organisation(name, description);
+            var result = new Organisation(name, description);
 
             // Assert
             result.Name.Should().Be(name);
@@ -32,7 +34,7 @@ namespace UnitTests.Organization
             string lastName = "test last name";
             var member = new Member(firstName, middleName, lastName, Gender.Female, DateTime.Today);
 
-            var organization = new Domain.Entities.Shared.Organisation("Unity Club", "Test organization");
+            var organization = new Organisation("Unity Club", "Test organization");
 
             // Act
             var registration = organization.Register(member, MembershipType.Regular, DateTime.Today);

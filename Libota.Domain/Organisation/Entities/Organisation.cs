@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Domain.Entities.Finances;
-using Domain.Entities.Members;
+using Domain.Finances;
+using Domain.Members;
+using Domain.Organisation.Values;
 using Domain.Values;
 
-namespace Domain.Entities.Shared
+namespace Domain.Organisation.Entities
 {
     public class Organisation
     {

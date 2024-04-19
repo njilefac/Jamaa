@@ -1,4 +1,4 @@
-using Domain.Entities.Members;
+using Domain.Members;
 using EventFlow.Aggregates;
 using Libota.Application.Members.Events;
 

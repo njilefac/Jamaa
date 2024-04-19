@@ -6,7 +6,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Events
 {
-    public class EventManagementScreen : ReactiveUserControl<EventManagementViewModel>
+    public partial class EventManagementScreen : ReactiveUserControl<EventManagementViewModel>
     {
         public EventManagementScreen()
         {

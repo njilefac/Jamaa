@@ -10,7 +10,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Members
 {
-    public class MemberRegistrationDialog : ReactiveWindow<MemberRegistrationDialogViewModel>
+    public partial class MemberRegistrationDialog : ReactiveWindow<MemberRegistrationDialogViewModel>
     {
         public MemberRegistrationDialog()
         {

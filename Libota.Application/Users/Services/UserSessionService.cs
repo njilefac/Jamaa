@@ -1,7 +1,7 @@
 using System;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Domain.Repositories;
+using Domain.Users;
 using Domain.Values;
 using Libota.Application.Organisation;
 using Libota.Application.Organisation.Queries.Models;

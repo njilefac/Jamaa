@@ -1,5 +1,6 @@
 ﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             RequestedThemeVariant="Light"
              x:Class="Libota.Desktop.App"
              Name="Libota Desktop">
     <Application.Resources>
@@ -11,10 +12,7 @@
     </Application.Resources>
 
     <Application.Styles>
-        <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml"/>
-        <StyleInclude Source="avares://Aura.UI.FluentTheme/AuraUI.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml"/>
+        <FluentTheme/>
         <StyleInclude Source="/Assets/Styles/FormStyles.axaml" />
         <StyleInclude Source="/Assets/Styles/PageStyles.axaml" />
         <StyleInclude Source="/Assets/Styles/ControlStyles.axaml" />
