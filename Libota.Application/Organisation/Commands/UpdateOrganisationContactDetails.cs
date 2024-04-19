@@ -1,4 +1,4 @@
-using Domain.Entities.Shared;
+using Domain.Shared;
 using EventFlow.Aggregates.ExecutionResults;
 using EventFlow.Commands;
 using Libota.Application.Organisation.Aggregates;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Threading.Tasks;
+using Domain.Organisation.Values;
 using Domain.Values;
 using Libota.Application.Organisation.Aggregates;
 using Libota.Application.Organisation.Requests;

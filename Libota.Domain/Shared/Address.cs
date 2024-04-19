@@ -1,6 +1,6 @@
 using System;
 
-namespace Domain.Entities.Shared
+namespace Domain.Shared
 {
     public class Address
     {

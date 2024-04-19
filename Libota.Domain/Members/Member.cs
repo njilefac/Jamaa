@@ -1,8 +1,8 @@
 ﻿using System;
-using Domain.Entities.Shared;
+using Domain.Shared;
 using Domain.Values;
 
-namespace Domain.Entities.Members
+namespace Domain.Members
 {
     public class Member : Person
     {

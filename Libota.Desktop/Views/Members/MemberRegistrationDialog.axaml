@@ -28,7 +28,7 @@
                 <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding LastName}" Classes="form field" />
 
                 <TextBlock Grid.Row="3" Grid.Column="0" Text="Gender" Classes="form label" />
-                <ComboBox Grid.Row="3" Grid.Column="1" Items="{Binding GenderChoices}"
+                <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding GenderChoices}"
                           SelectedItem="{Binding Mode=TwoWay, Path=SelectedGender}" Classes="form field">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>

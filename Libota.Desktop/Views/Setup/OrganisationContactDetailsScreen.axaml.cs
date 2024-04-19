@@ -7,7 +7,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Setup
 {
-    public class OrganisationContactDetailsScreen : ReactiveUserControl<OrganisationContactDetailsViewModel>
+    public partial class OrganisationContactDetailsScreen : ReactiveUserControl<OrganisationContactDetailsViewModel>
     {
         public OrganisationContactDetailsScreen()
         {

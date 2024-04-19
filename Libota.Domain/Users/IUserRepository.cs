@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Domain.Entities.Users;
 
-namespace Domain.Repositories
+namespace Domain.Users
 {
     public interface IUserRepository
     {

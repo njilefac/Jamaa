@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Domain.Entities.Members;
+using Domain.Members;
 using EventFlow.Aggregates;
 using EventFlow.Aggregates.ExecutionResults;
 using EventFlow.Queries;
@@ -18,7 +18,7 @@ namespace Libota.Application.Organisation.Aggregates
         IEmit<MemberRegistrationUpdated>,
         IEmit<MemberRegistrationEnded>
     {
-        private Domain.Entities.Shared.Organisation? _state;
+        private Domain.Organisation.Entities.Organisation? _state;
         private readonly IQueryProcessor _queryProcessor;
 
         public OrganisationAggregate(OrganisationId id, IQueryProcessor queryProcessor) : base(id)
@@ -93,7 +93,7 @@ namespace Libota.Application.Organisation.Aggregates
 
         public void Apply(OrganisationCreated aggregateEvent)
         {
-            _state = new Domain.Entities.Shared.Organisation(aggregateEvent.Name, aggregateEvent.Description);
+            _state = new Domain.Organisation.Entities.Organisation(aggregateEvent.Name, aggregateEvent.Description);
         }
     }
 }

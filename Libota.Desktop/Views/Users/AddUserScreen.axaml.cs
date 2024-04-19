@@ -3,7 +3,7 @@ using Avalonia.Markup.Xaml;
 
 namespace Libota.Desktop.Views.Users
 {
-    public class AddUserScreen : UserControl
+    public partial class AddUserScreen : UserControl
     {
         public AddUserScreen()
         {

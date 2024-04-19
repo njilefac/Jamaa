@@ -6,7 +6,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Finances
 {
-    public class FinanceManagementScreen : ReactiveUserControl<FinanceManagementViewModel>
+    public partial class FinanceManagementScreen : ReactiveUserControl<FinanceManagementViewModel>
     {
         public FinanceManagementScreen()
         {

@@ -10,7 +10,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Security
 {
-    public class LoginScreen : ReactiveUserControl<LoginScreenViewModel>
+    public partial class LoginScreen : ReactiveUserControl<LoginScreenViewModel>
     {
         public LoginScreen()
         {

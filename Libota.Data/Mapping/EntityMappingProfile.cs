@@ -1,5 +1,5 @@
 using AutoMapper;
-using Domain.Entities.Users;
+using Domain.Users;
 using Libota.Data.Models;
 
 namespace Libota.Data.Mapping

@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml;
 
 namespace Libota.Desktop.Views.Members
 {
-    public class MemberCard : UserControl
+    public partial class MemberCard : UserControl
     {
         public MemberCard()
         {

@@ -7,7 +7,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Members
 {
-    public class MemberManagementScreen : ReactiveUserControl<MembersManagementScreenViewModel>
+    public partial class MemberManagementScreen : ReactiveUserControl<MembersManagementScreenViewModel>
     {
         public MemberManagementScreen()
         {

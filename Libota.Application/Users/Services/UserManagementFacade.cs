@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Domain.Entities.Users;
-using Domain.Repositories;
+using Domain.Users;
 using Microsoft.Extensions.Logging;
 
 namespace Libota.Application.Users.Services

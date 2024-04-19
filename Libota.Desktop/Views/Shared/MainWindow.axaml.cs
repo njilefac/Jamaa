@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia;
@@ -9,18 +10,20 @@ using Libota.Application.Setup;
 using Libota.Desktop.ViewModels.Shared;
 using Libota.Desktop.Views.Security;
 using Libota.Desktop.Views.Setup;
+using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Shared
 {
     public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
-        public MainWindow()
+        private readonly IServiceProvider _serviceProvider;
+        public MainWindow(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             this.WhenActivated(disposables =>
             {
-                DataContext = Locator.Current.GetService<MainWindowViewModel>();
+                DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>();
                 Disposable.Create(() => { }).DisposeWith(disposables);
             });
 
@@ -41,21 +44,21 @@ namespace Libota.Desktop.Views.Shared
             }
         }
 
-        private static async Task<IViewFor?> GetStartupScreen()
+        private  async Task<IViewFor?> GetStartupScreen()
         {
-            var setupService = Locator.Current.GetService<ISetupService>();
+            var setupService = _serviceProvider.GetService<ISetupService>();
             if (setupService == null)
-                return Locator.Current.GetService<CreateOrganisationScreen>();
+                return _serviceProvider.GetService<CreateOrganisationScreen>();
 
             var organisations = await setupService.ListOrganisations();
             if (!organisations.Any())
-                return Locator.Current.GetService<CreateOrganisationScreen>();
+                return _serviceProvider.GetService<CreateOrganisationScreen>();
 
             var superUser = setupService.GetSuperUser().Result;
             if (superUser == null)
-                return Locator.Current.GetService<CreateSuperUserScreen>();
+                return _serviceProvider.GetService<CreateSuperUserScreen>();
 
-            return Locator.Current.GetService<LoginScreen>();
+            return _serviceProvider.GetService<LoginScreen>();
         }
     }
 }

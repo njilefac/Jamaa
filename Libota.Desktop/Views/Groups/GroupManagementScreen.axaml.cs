@@ -6,7 +6,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Groups
 {
-    public class GroupManagementScreen : ReactiveUserControl<GroupManagementViewModel>
+    public partial class GroupManagementScreen : ReactiveUserControl<GroupManagementViewModel>
     {
         public GroupManagementScreen()
         {

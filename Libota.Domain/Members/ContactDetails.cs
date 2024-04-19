@@ -1,7 +1,7 @@
 ﻿using System;
-using Domain.Entities.Shared;
+using Domain.Shared;
 
-namespace Domain.Entities.Members
+namespace Domain.Members
 {
     public class ContactDetails
     {

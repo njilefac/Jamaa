@@ -21,7 +21,7 @@
             <EventTriggerBehavior EventName="DoubleTapped" SourceObject="{Binding $parent[CardControl]}">
                 <InvokeCommandAction CommandParameter="{Binding}">
                     <InvokeCommandAction.Command>
-                        <Binding Path="$parent[members:MembersList].DataContext.ShowMemberDetails" />
+                        <Binding Path="$parent[members:MembersList].DataContext?.ShowMemberDetails" />
                     </InvokeCommandAction.Command>
                 </InvokeCommandAction>
             </EventTriggerBehavior>

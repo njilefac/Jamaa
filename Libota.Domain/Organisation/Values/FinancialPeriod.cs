@@ -1,6 +1,7 @@
 ﻿using System;
+using Domain.Values;
 
-namespace Domain.Values
+namespace Domain.Organisation.Values
 {
     public class FinancialPeriod : ITimePeriod
     {

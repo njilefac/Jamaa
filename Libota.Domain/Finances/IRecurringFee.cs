@@ -1,4 +1,4 @@
-﻿namespace Domain.Entities.Finances
+﻿namespace Domain.Finances
 {
     public interface IRecurringFee : IFee
     {

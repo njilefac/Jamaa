@@ -1,4 +1,5 @@
 using System;
+using Domain.Organisation.Values;
 using Domain.Values;
 using Libota.Application.Organisation.Aggregates;
 

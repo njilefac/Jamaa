@@ -1,7 +1,7 @@
 ﻿using System;
 using Domain.Values;
 
-namespace Domain.Entities.Users
+namespace Domain.Users
 {
     public class UserAccount
     {

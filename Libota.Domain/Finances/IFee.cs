@@ -1,7 +1,7 @@
 ﻿using System;
 using Domain.Values;
 
-namespace Domain.Entities.Finances
+namespace Domain.Finances
 {
     public interface IFee
     {

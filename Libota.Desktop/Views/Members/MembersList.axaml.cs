@@ -7,7 +7,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Members
 {
-    public class MembersList : ReactiveUserControl<MembersListViewModel>
+    public partial class MembersList : ReactiveUserControl<MembersListViewModel>
     {
         public MembersList()
         {

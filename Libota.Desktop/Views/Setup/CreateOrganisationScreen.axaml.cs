@@ -11,7 +11,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Setup
 {
-    public class CreateOrganisationScreen : ReactiveUserControl<CreateOrganisationViewModel>
+    public partial class CreateOrganisationScreen : ReactiveUserControl<CreateOrganisationViewModel>
     {
         public CreateOrganisationScreen()
         {

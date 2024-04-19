@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Domain.Entities.Events
+namespace Domain.Events
 {
     public interface IEvent
     {

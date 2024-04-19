@@ -1,6 +1,6 @@
-using Domain.Entities.Shared;
+using Domain.Shared;
 
-namespace Domain.Entities.Users
+namespace Domain.Users
 {
     public class User : Person
     {

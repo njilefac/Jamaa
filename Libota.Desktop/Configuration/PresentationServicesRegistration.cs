@@ -1,9 +1,8 @@
-using Autofac;
-using AutoMapper.Contrib.Autofac.DependencyInjection;
-using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Libota.Data.Mapping;
 using FluentValidation;
+using Libota.Application.Organisation;
+using Libota.Application.Setup;
 using Libota.Application.Users.Services;
 using Libota.Desktop.Validators;
 using Libota.Desktop.ViewModels.Events;
@@ -14,150 +13,107 @@ using Libota.Desktop.ViewModels.Security;
 using Libota.Desktop.ViewModels.Setup;
 using Libota.Desktop.ViewModels.Shared;
 using Libota.Desktop.ViewModels.Users;
-using Libota.Desktop.Views.Events;
-using Libota.Desktop.Views.Finances;
-using Libota.Desktop.Views.Groups;
-using Libota.Desktop.Views.Members;
-using Libota.Desktop.Views.Security;
-using Libota.Desktop.Views.Setup;
 using Libota.Desktop.Views.Shared;
-using Libota.Desktop.Views.Users;
+using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
 namespace Libota.Desktop.Configuration
 {
-    public class PresentationServicesRegistration : Module
+    public static class PresentationServicesRegistration
     {
-        private const string MEMBERS_MANAGEMENT_SCREEN = "MembersManagementScreen";
-        private const string MAIN_WINDOW = "MainWindow";
+        private const string MembersManagementScreen = "MembersManagementScreen";
+        private const string MainWindow = "MainWindow";
 
-        protected override void Load(ContainerBuilder builder)
+        public static IServiceCollection RegisterPresentationServices(this IServiceCollection services)
         {
-            base.Load(builder);
+            services.RegisterMappers()
+                .RegisterViews()
+                .RegisterServices()
+                .RegisterViewModels()
+                .RegisterValidators();
 
-            RegisterMappers(builder);
-            RegisterViews(builder);
-            RegisterViewModels(builder);
-            RegisterServices(builder);
-            RegisterValidators(builder);
+            return services;
         }
 
-        private void RegisterMappers(ContainerBuilder builder)
+        private static IServiceCollection RegisterMappers(this IServiceCollection services)
         {
-            builder.RegisterAutoMapper(false,
-                GetType().Assembly,
-                typeof(EntityMappingProfile).Assembly);
+            services.AddAutoMapper(typeof(EntityMappingProfile).Assembly);
+            return services;
         }
 
-        private static void RegisterServices(ContainerBuilder builder)
+        private static IServiceCollection RegisterServices(this IServiceCollection services)
         {
-            builder.RegisterType<UserSessionService>().As<IUserSessionService>().SingleInstance();
-            builder.RegisterType<WindowNotificationManager>().AsImplementedInterfaces().SingleInstance();
+            services.AddSingleton<IUserSessionService, UserSessionService>();
+            services.AddScoped<WindowNotificationManager>();
+
+            return services;
         }
 
-        private static void RegisterViewModels(ContainerBuilder builder)
+        private static IServiceCollection RegisterViewModels(this IServiceCollection services)
         {
-            builder.RegisterType<MainWindowViewModel>().AsSelf().As<IScreen>()
-                .Named<IScreen>(MAIN_WINDOW)
-                .SingleInstance();
+            services.AddKeyedSingleton<IScreen, MainWindowViewModel>(MainWindow);
+            services.AddKeyedSingleton<IScreen, MembersManagementScreenViewModel>(MembersManagementScreen);
 
-            builder.RegisterType<MembersManagementScreenViewModel>().AsSelf().As<IScreen>()
-                .Named<IScreen>(MEMBERS_MANAGEMENT_SCREEN)
-                .SingleInstance();
+            services.AddSingleton<MainMenuViewModel>(r =>
+                new MainMenuViewModel(r.GetRequiredService<IUserSessionService>(),
+                    r.GetRequiredKeyedService<IScreen>(MainWindow)));
 
-            builder.RegisterType<MainMenuViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
-                .SingleInstance();
+            services.AddSingleton<MemberRegistrationDialogViewModel>();
 
-            builder.RegisterType<MemberRegistrationDialogViewModel>().AsSelf().AsImplementedInterfaces()
-                .SingleInstance();
+            services.AddSingleton<LoginScreenViewModel>();
 
-            builder.RegisterType<LoginScreenViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
-                .SingleInstance();
+            services.AddSingleton<CreateSuperUserViewModel>(r =>
+                new CreateSuperUserViewModel(r.GetRequiredKeyedService<IScreen>(MainWindow),
+                    r.GetRequiredService<ISetupService>(),
+                    r.GetRequiredService<IUserSessionService>()));
 
-            builder.RegisterType<CreateSuperUserViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
-                .SingleInstance();
+            services.AddSingleton<CreateOrganisationViewModel>(r =>
+                new CreateOrganisationViewModel(r.GetRequiredService<ISetupService>(), r.GetRequiredKeyedService<IScreen>(MainWindow)));
 
-            builder.RegisterType<CreateOrganisationViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
-                .SingleInstance();
+            services.AddSingleton<OrganisationContactDetailsViewModel>(r =>
+                new OrganisationContactDetailsViewModel(r.GetRequiredKeyedService<IScreen>(MainWindow)));
 
-            builder.RegisterType<OrganisationContactDetailsViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
-                .SingleInstance();
+            services.AddSingleton<DashboardViewModel>(r =>
+                new DashboardViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<IScreen>(MainWindow)));
 
-            builder.RegisterType<DashboardViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
-                .SingleInstance();
+            services.AddSingleton<UserManagementViewModel>(r =>
+                new UserManagementViewModel(r.GetRequiredKeyedService<IScreen>(MainWindow)));
 
-            builder.RegisterType<UserManagementViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
-                .SingleInstance();
+            services.AddSingleton<GroupManagementViewModel>(r =>
+                new GroupManagementViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<IScreen>(MainWindow)));
 
-            builder.RegisterType<MembersOverviewPageViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MEMBERS_MANAGEMENT_SCREEN))
-                .SingleInstance();
+            services.AddSingleton<EventManagementViewModel>(r =>
+                new EventManagementViewModel(r.GetRequiredKeyedService<IScreen>(MainWindow), r.GetRequiredService<IUserSessionService>()));
 
-            builder.RegisterType<MemberProfileViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MEMBERS_MANAGEMENT_SCREEN));
+            services.AddSingleton<FinanceManagementViewModel>(r =>
+                new FinanceManagementViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<IScreen>(MainWindow)));
 
+            services.AddSingleton<MembersOverviewPageViewModel>(r =>
+                new MembersOverviewPageViewModel(r.GetRequiredService<IOrganisationManagementFacade>(), r.GetRequiredKeyedService<IScreen>(MembersManagementScreen)));
 
-            builder.RegisterType<MembersListViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MEMBERS_MANAGEMENT_SCREEN))
-                .SingleInstance();
+            services.AddSingleton<MemberProfileViewModel>(r => new MemberProfileViewModel(r.GetRequiredKeyedService<IScreen>(MembersManagementScreen)));
 
-            builder.RegisterType<GroupManagementViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
-                .SingleInstance();
+            services.AddSingleton<MembersListViewModel>(r =>
+                new MembersListViewModel(r.GetRequiredService<IOrganisationManagementFacade>(), r.GetRequiredKeyedService<IScreen>(MembersManagementScreen)));
 
-            builder.RegisterType<EventManagementViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
-                .SingleInstance();
-
-            builder.RegisterType<FinanceManagementViewModel>().AsSelf().AsImplementedInterfaces()
-                .WithParameter((pi, ctx) => pi.ParameterType == typeof(IScreen),
-                    (pi, ctx) => ctx.ResolveNamed<IScreen>(MAIN_WINDOW))
-                .SingleInstance();
+            return services;
         }
 
-        private static void RegisterViews(ContainerBuilder builder)
+        private static IServiceCollection RegisterViews(this IServiceCollection services)
         {
-            builder.RegisterType<MainWindow>().AsSelf().As<Window>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<MainMenu>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<Dashboard>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<CreateSuperUserScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<CreateOrganisationScreen>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<OrganisationContactDetailsScreen>().AsSelf().AsImplementedInterfaces()
-                .SingleInstance();
-            builder.RegisterType<LoginScreen>().AsSelf().AsImplementedInterfaces();
-            builder.RegisterType<UserManagementScreen>().AsSelf().AsImplementedInterfaces();
-            builder.RegisterType<MemberManagementScreen>().AsSelf().AsImplementedInterfaces();
-            builder.RegisterType<MembersList>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<MemberRegistrationDialog>().AsSelf().AsImplementedInterfaces();
-            builder.RegisterType<GroupManagementScreen>().AsSelf().AsImplementedInterfaces();
-            builder.RegisterType<EventManagementScreen>().AsSelf().AsImplementedInterfaces();
-            builder.RegisterType<FinanceManagementScreen>().AsSelf().AsImplementedInterfaces();
-            builder.RegisterType<MembersOverviewPage>().AsSelf().AsImplementedInterfaces();
-            builder.RegisterType<MemberProfilePage>().AsSelf().AsImplementedInterfaces();
+            services.Scan(scan => scan.FromAssemblyOf<MainWindow>()
+                .AddClasses(x => x.AssignableTo(typeof(IViewFor<>)))
+                .AsSelf()
+                .AsSelfWithInterfaces()
+                .WithScopedLifetime());
+
+            return services;
         }
 
-        private static void RegisterValidators(ContainerBuilder builder)
+        private static IServiceCollection RegisterValidators(this IServiceCollection services)
         {
-            builder.RegisterType<LoginScreenViewModelValidator>().As<IValidator<LoginScreenViewModel>>();
+            services.AddScoped<IValidator<LoginScreenViewModel>, LoginScreenViewModelValidator>();
+            return services;
         }
     }
 }

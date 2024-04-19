@@ -1,7 +1,8 @@
 ﻿using System;
+using Domain.Organisation.Values;
 using Domain.Values;
 
-namespace Domain.Entities.Members
+namespace Domain.Members
 {
     public class Registration
     {
