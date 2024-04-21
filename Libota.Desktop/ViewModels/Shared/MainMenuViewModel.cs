@@ -1,4 +1,3 @@
-using System;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -6,46 +5,48 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Libota.Application.Users.Services;
 using Libota.Desktop.ViewModels.Security;
 using ReactiveUI;
-using Splat;
 using static System.Threading.Tasks.Task;
 
-namespace Libota.Desktop.ViewModels.Shared
+namespace Libota.Desktop.ViewModels.Shared;
+
+public class MainMenuViewModel : ReactiveObject
 {
-    public class MainMenuViewModel : ReactiveObject
+    private readonly IUserSessionService _sessionService;
+    private readonly LoginScreenViewModel _loginScreenViewModel;
+    private readonly IScreen _hostScreen;
+
+    public ReactiveCommand<Unit, Unit> Exit { get; }
+    public ReactiveCommand<Unit, Unit> Logout { get; }
+    public ReactiveCommand<Unit, Unit> Edit { get; }
+
+    public MainMenuViewModel(IUserSessionService sessionService, IScreen hostScreen, LoginScreenViewModel loginScreenViewModel)
     {
-        private readonly IUserSessionService _sessionService;
-        private readonly IScreen _hostScreen;
+        _sessionService = sessionService;
+        _hostScreen = hostScreen;
+        _loginScreenViewModel = loginScreenViewModel;
 
-        public ReactiveCommand<Unit, Unit> Exit { get; }
-        public ReactiveCommand<Unit, Unit> Logout { get; }
-        public ReactiveCommand<Unit, Unit> Edit { get; }
+        var userIsAuthenticated = _sessionService.UserSessions.Select(s => s is {IsAuthenticated: true});
 
-        public MainMenuViewModel(IUserSessionService sessionService, IScreen hostScreen)
-        {
-            _sessionService = sessionService;
-            _hostScreen = hostScreen;
-            
-            var userIsAuthenticated = _sessionService.UserSessions.Select(s => s is {IsAuthenticated: true});
+        Exit = ReactiveCommand.CreateFromTask(ExitApplication);
+        Logout = ReactiveCommand.CreateFromTask(EndUserSession, userIsAuthenticated);
+        Edit = ReactiveCommand.CreateFromObservable<Unit>(() => null!, userIsAuthenticated);
+    }
 
-            Exit = ReactiveCommand.CreateFromTask(ExitApplication);
-            Logout = ReactiveCommand.CreateFromTask(EndUserSession, userIsAuthenticated);
-            Edit = ReactiveCommand.CreateFromObservable<Unit>(() => null!, userIsAuthenticated);
-        }
-
-        private Task EndUserSession()
+    private Task EndUserSession()
+    {
+        return Run(() =>
         {
             _sessionService.EndSession();
-            _hostScreen.Router.Navigate.Execute(Locator.Current.GetService<LoginScreenViewModel>() ?? throw new InvalidOperationException());
-            return CompletedTask;
-        }
+            _hostScreen.Router.Navigate.Execute(_loginScreenViewModel);
+        });
+    }
 
-        private static Task ExitApplication()
+    private static Task ExitApplication()
+    {
+        return Run(() =>
         {
-            if (Avalonia.Application.Current.ApplicationLifetime is ClassicDesktopStyleApplicationLifetime desktop)
-            {
+            if (Avalonia.Application.Current?.ApplicationLifetime is ClassicDesktopStyleApplicationLifetime desktop)
                 desktop.Shutdown();
-            }
-            return CompletedTask;
-        }
+        });
     }
 }

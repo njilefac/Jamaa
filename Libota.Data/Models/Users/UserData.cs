@@ -1,7 +1,7 @@
 using System;
 using Domain.Values;
 
-namespace Libota.Data.Models
+namespace Libota.Data.Models.Users
 {
     public class UserData
     {

@@ -13,6 +13,8 @@ namespace Libota.Application.Configuration
         
         public static ServiceCollection RegisterApplicationServices(this ServiceCollection services)
         {
+            services.AddSingleton(new ProxyGenerator());
+            
             services.AddProxiedScoped<IUserManagementFacade, UserManagementFacade>();
 
             services.AddProxiedScoped<ISetupService, SetupService>();

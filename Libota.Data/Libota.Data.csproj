@@ -3,21 +3,20 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latestmajor</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Akka.Persistence.Query" Version="1.5.19" />
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="AutoMapper.Collection" Version="10.0.0" />
+    <PackageReference Include="Castle.Core" Version="5.1.1" />
     <PackageReference Include="EntityFrameworkCore.DataEncryption" Version="5.0.0" />
     <PackageReference Include="EntityFrameworkCore.Rx" Version="2.0.1" />
     <PackageReference Include="EntityFrameworkPaginateCore" Version="2.1.0" />
-    <PackageReference Include="EventFlow" Version="0.83.4713" />
-    <PackageReference Include="EventFlow.EntityFramework" Version="0.83.4713" />
-    <PackageReference Include="EventFlow.Hangfire" Version="0.83.4713" />
     <PackageReference Include="Hangfire.SQLite" Version="1.4.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.3" />
-    <PackageReference Include="Autofac" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.4" />
     <PackageReference Include="Dotmim.Sync.Sqlite" Version="0.9.8" />
     <PackageReference Include="Dotmim.Sync.Core" Version="0.9.8" />
     <PackageReference Include="Dotmim.Sync.MySql" Version="0.9.8" />
@@ -35,7 +34,6 @@
     <Compile Remove="IMemberRepository.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Libota.Application\Libota.Application.csproj" />
     <ProjectReference Include="..\Libota.Domain\Libota.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>

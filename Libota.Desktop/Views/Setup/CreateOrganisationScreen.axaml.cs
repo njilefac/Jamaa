@@ -7,41 +7,40 @@ using Libota.Application.Setup;
 using Libota.Desktop.ViewModels.Security;
 using Libota.Desktop.ViewModels.Setup;
 using ReactiveUI;
-using Splat;
 
-namespace Libota.Desktop.Views.Setup
+namespace Libota.Desktop.Views.Setup;
+
+public partial class CreateOrganisationScreen : ReactiveUserControl<CreateOrganisationViewModel>
 {
-    public partial class CreateOrganisationScreen : ReactiveUserControl<CreateOrganisationViewModel>
+    public CreateOrganisationScreen(CreateOrganisationViewModel createOrganisationViewModel,
+        ISetupService setupService, CreateSuperUserViewModel createSuperUserViewModel,
+        LoginScreenViewModel loginScreenViewModel)
     {
-        public CreateOrganisationScreen()
-        {
-            InitializeComponent();
+        InitializeComponent();
 
-            this.WhenActivated(disposables =>
+        this.WhenActivated(disposables =>
+        {
+            DataContext = createOrganisationViewModel;
+            ViewModel?.CreateOrganisation.Subscribe(organisationWasCreated =>
             {
-                DataContext = Locator.Current.GetService<CreateOrganisationViewModel>();
-                ViewModel?.CreateOrganisation.Subscribe(wasOrganisationCreated =>
+                if (!organisationWasCreated) return;
+
+                setupService.GetSuperUser().ContinueWith(response =>
                 {
-                    if (!wasOrganisationCreated) return;
-                    var setupService = Locator.Current.GetService<ISetupService>();
+                    IRoutableViewModel nextViewModel = response.Result == null ? createSuperUserViewModel : loginScreenViewModel;
 
-                    IRoutableViewModel? nextViewModel = setupService?.GetSuperUser().Result == null
-                        ? Locator.Current.GetService<CreateSuperUserViewModel>()
-                        : Locator.Current.GetService<LoginScreenViewModel>();
-                    
-                    if (nextViewModel != null)
-                        ViewModel.HostScreen.Router.Navigate.Execute(nextViewModel!);
+                    ViewModel.HostScreen.Router.Navigate.Execute(nextViewModel);
                 });
-
-                Disposable.Create(() => { }).DisposeWith(disposables);
             });
-        }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-            var nameField = this.FindControl<TextBox>("OrganisationNameField");
-            nameField!.AttachedToVisualTree += (target, _) => (target as TextBox)!.Focus();
-        }
+            Disposable.Create(() => { }).DisposeWith(disposables);
+        });
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+        var nameField = this.FindControl<TextBox>("OrganisationNameField");
+        nameField!.AttachedToVisualTree += (target, _) => (target as TextBox)!.Focus();
     }
 }

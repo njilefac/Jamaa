@@ -7,7 +7,7 @@ namespace Libota.Application.Shared.Logging
     {
         private LogEventProperty? _cachedProperty;
 
-        public const string PropertyName = "SessionUserName";
+        private const string PROPERTY_NAME = "SessionUserName";
 
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
@@ -19,10 +19,10 @@ namespace Libota.Application.Shared.Logging
             return _cachedProperty ??= CreateProperty(propertyFactory);
         }
 
-        private LogEventProperty CreateProperty(ILogEventPropertyFactory propertyFactory)
+        private static LogEventProperty CreateProperty(ILogEventPropertyFactory propertyFactory)
         {
             var currentUserName = "Test User";
-            return propertyFactory.CreateProperty(PropertyName, currentUserName);
+            return propertyFactory.CreateProperty(PROPERTY_NAME, currentUserName);
         }
     }
 }

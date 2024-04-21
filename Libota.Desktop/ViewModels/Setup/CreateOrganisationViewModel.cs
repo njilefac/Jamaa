@@ -29,10 +29,8 @@ namespace Libota.Desktop.ViewModels.Setup
             });
         }
 
-        private async Task<bool> HandleCreateOrganisation()
-        {
-            return await _setupService.CreateOrganisation(Name.Trim(), Description.Trim());
-        }
+        private async Task<bool> HandleCreateOrganisation() => 
+            await _setupService.CreateOrganisation(Name.Trim(), Description.Trim());
 
         [Reactive] public string Name { get; set; } = string.Empty;
 

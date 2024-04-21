@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Domain.Finances;
 using Domain.Members;
 using Domain.Organisation.Values;
-using Domain.Values;
 
 namespace Domain.Organisation.Entities
 {

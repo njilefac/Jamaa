@@ -1,6 +1,7 @@
 using AutoMapper;
 using Domain.Users;
 using Libota.Data.Models;
+using Libota.Data.Models.Users;
 
 namespace Libota.Data.Mapping
 {

@@ -2,7 +2,7 @@ using System;
 using System.Reactive;
 using System.Threading.Tasks;
 using Domain.Values;
-using Libota.Application.Members.Queries.Models;
+using Libota.Data.Models.Members;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveCommand = ReactiveUI.ReactiveCommand;

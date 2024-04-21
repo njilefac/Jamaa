@@ -1,17 +1,12 @@
+using Domain.Organisation.Values;
 using Domain.Shared;
-using EventFlow.Aggregates.ExecutionResults;
-using EventFlow.Commands;
 using Libota.Application.Organisation.Aggregates;
 
 namespace Libota.Application.Organisation.Commands
 {
-    public class UpdateOrganisationContactDetails : Command<OrganisationAggregate, OrganisationId, IExecutionResult>
+    public class UpdateOrganisationContactDetails(OrganisationId organisationId, Address address)
     {
-        public Address Address { get; }
-
-        public UpdateOrganisationContactDetails(OrganisationId aggregateId, Address address) : base(aggregateId)
-        {
-            Address = address;
-        }
+        public OrganisationId OrganisationId { get; } = organisationId;
+        public Address Address { get; } = address;
     }
 }

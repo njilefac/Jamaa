@@ -7,15 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Autofac" Version="8.0.0" />
-      <PackageReference Include="Autofac.Extras.DynamicProxy" Version="7.1.0" />
+      <PackageReference Include="Akka.Hosting" Version="1.5.19" />
+      <PackageReference Include="Akka.Logger.Serilog" Version="1.5.12.1" />
+      <PackageReference Include="Akka.Persistence" Version="1.5.19" />
+      <PackageReference Include="Akka.Remote.Hosting" Version="1.5.19" />
       <PackageReference Include="AutoMapper" Version="13.0.1" />
       <PackageReference Include="EntityFrameworkCore.Triggers" Version="1.2.3" />
-      <PackageReference Include="EventFlow" Version="0.83.4713" />
-      <PackageReference Include="EventFlow.Autofac" Version="0.83.4713" />
-      <PackageReference Include="EventFlow.EntityFramework" Version="0.83.4713" />
-      <PackageReference Include="EventFlow.Hangfire" Version="0.83.4713" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
       <PackageReference Include="Nickvision.Aura" Version="2023.11.4" />
       <PackageReference Include="Rhino.Licensing.X" Version="2.0.0.1" />
       <PackageReference Include="Suplex.Security.Core" Version="1.0.19075" />
@@ -24,11 +22,14 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Libota.Data\Libota.Data.csproj" />
       <ProjectReference Include="..\Libota.Domain\Libota.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Members\Commands" />
+      <Folder Include="Organisation\Queries\" />
+      <Folder Include="Organisation\Queries\Models\" />
+      <Folder Include="Shared\Providers\" />
     </ItemGroup>
 
 </Project>

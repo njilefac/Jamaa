@@ -1,9 +1,8 @@
 using System;
 using Domain.Organisation.Values;
 using Domain.Values;
-using Libota.Application.Organisation.Aggregates;
 
-namespace Libota.Application.Organisation.Requests
+namespace Domain.Organisation.Requests
 {
     public class MemberRegistrationRequest
     {

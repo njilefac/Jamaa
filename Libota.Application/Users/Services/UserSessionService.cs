@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Domain.Users;
 using Domain.Values;
 using Libota.Application.Organisation;
-using Libota.Application.Organisation.Queries.Models;
 using Libota.Application.Security;
+using Libota.Data.Models.Organisation;
 using Microsoft.Extensions.Logging;
 
 namespace Libota.Application.Users.Services

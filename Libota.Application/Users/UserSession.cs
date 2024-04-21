@@ -1,5 +1,5 @@
 using System;
-using Libota.Application.Organisation.Queries.Models;
+using Libota.Data.Models.Organisation;
 
 namespace Libota.Application.Users
 {
