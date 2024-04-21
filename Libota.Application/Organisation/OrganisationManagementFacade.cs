@@ -1,94 +1,88 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using EventFlow;
-using EventFlow.Queries;
-using Libota.Application.Members.Queries;
-using Libota.Application.Members.Queries.Models;
-using Libota.Application.Organisation.Aggregates;
+using Akka.Actor;
+using Akka.Hosting;
+using Domain.Members.Queries;
+using Domain.Organisation.Queries;
+using Domain.Organisation.Requests;
+using Domain.Organisation.Values;
 using Libota.Application.Organisation.Commands;
-using Libota.Application.Organisation.Queries;
-using Libota.Application.Organisation.Queries.Models;
-using Libota.Application.Organisation.Requests;
 using Libota.Application.Security;
-using Libota.Application.Shared.Providers;
+using Libota.Application.Shared;
 using Libota.Application.Users.Services;
+using Libota.Data.Models.Members;
+using Libota.Data.Models.Organisation;
+using Libota.Data.Notifiers;
 
-namespace Libota.Application.Organisation
+namespace Libota.Application.Organisation;
+
+public class OrganisationManagementFacade : IOrganisationManagementFacade
 {
-    public class OrganisationManagementFacade : IOrganisationManagementFacade
+    private readonly IUserSessionService _userSessionService;
+    private readonly IActorRef _commandProcessor;
+    private readonly IActorRef _queryProcessor;
+
+    public OrganisationManagementFacade(IRequiredActor<CommandProcessor> commandProcessorProvider,
+        IRequiredActor<QueryProcessor> queryProcessorProvider,
+        IDataChangeNotifier dataChangeNotifier,
+        IUserSessionService userSessionService)
     {
-        private readonly IUserSessionService _userSessionService;
-        private readonly ICommandBus _commandBus;
-        private readonly IQueryProcessor _queryProcessor;
+        _userSessionService = userSessionService;
+        _commandProcessor = commandProcessorProvider.ActorRef;
+        _queryProcessor = queryProcessorProvider.ActorRef;
 
-        public OrganisationManagementFacade(
-            ICommandBus commandBus,
-            IQueryProcessor queryProcessor,
-            IDataChangeNotifier dataChangeNotifier,
-            IUserSessionService userSessionService)
-        {
-            _commandBus = commandBus;
-            _queryProcessor = queryProcessor;
-            _userSessionService = userSessionService;
+        MemberAdded = CreateMemberAddedObservable().Merge(dataChangeNotifier.Insertions.OfType<Member>());
+        MemberUpdated = dataChangeNotifier.Updates.OfType<Member>();
+        MemberDeleted = dataChangeNotifier.Deletions.OfType<Member>();
+    }
 
-            MemberAdded = CreateMemberAddedObservable();
-            MemberAdded = MemberAdded.Merge(dataChangeNotifier.Insertions.OfType<Member>());
-            MemberUpdated = dataChangeNotifier.Updates.OfType<Member>();
-            MemberDeleted = dataChangeNotifier.Deletions.OfType<Member>();
-        }
+       
 
-        public async Task<bool> CreateOrganisation(string name, string? description)
-        {
-            var result = await _commandBus.PublishAsync(
-                new CreateOrganisationCommand(name, description), CancellationToken.None);
+    public Task CreateOrganisation(string name, string? description)
+    {
+        return Task.Run(() => _commandProcessor.Tell(new CreateOrganisation(name, description)));
+    }
 
-            return result.IsSuccess;
-        }
+    [Authorize(Operation = "member.registration")]
+    public Task RegisterMember(MemberRegistrationRequest request)
+    {
+        return Task.Run(() =>  _commandProcessor.Tell(new RegisterMember(request)));
+    }
 
-        [Authorize(Operation = "member.registration")]
-        public async Task RegisterMember(MemberRegistrationRequest request)
-        {
-            await _commandBus.PublishAsync(new RegisterMemberCommand(request), CancellationToken.None);
-        }
+    public async Task<IList<OrganisationReadModel>> ListOrganisations()
+    {
+        return await _queryProcessor.Ask<IList<OrganisationReadModel>>(new GetAllOrganisations());
+    }
 
-        public async Task<IList<OrganisationReadModel>> ListOrganisations()
-        {
-            var result = await _queryProcessor.ProcessAsync(new GetAllOrganisations(), CancellationToken.None);
-            return result.ToList();
-        }
+    private async Task<IList<Member>?> ListCurrentMembers()
+    {
+        var currentOrganisationId = _userSessionService.CurrentUserSession?.Organisation?.Id;
+        var query = new GetMembersByOrganisation(OrganisationId.With(currentOrganisationId ?? throw new InvalidOperationException()));
+        return await _queryProcessor.Ask<IList<Member>?>(query);
+    }
 
-        private async Task<IList<Member>?> ListCurrentMembers()
-        {
-            var currentOrganisationId = _userSessionService.CurrentUserSession?.Organisation?.Id;
-            var query = new GetMembersByOrganisation(OrganisationId.With(currentOrganisationId));
-            var members = await _queryProcessor.ProcessAsync(query, CancellationToken.None);
-            return members.ToList();
-        }
+    public IObservable<Member> MemberAdded { get; }
 
-        public IObservable<Member> MemberAdded { get; }
+    public IObservable<Member> MemberUpdated { get; }
 
-        public IObservable<Member> MemberUpdated { get; }
+    public IObservable<Member> MemberDeleted { get; }
 
-        public IObservable<Member> MemberDeleted { get; }
-
-        private IObservable<Member> CreateMemberAddedObservable()
-        {
-            return Observable.Create<Member>(observer =>
+    private IObservable<Member> CreateMemberAddedObservable()
+    {
+        return Observable.Create<Member>(observer =>
+            {
+                var seedData = ListCurrentMembers().Result;
+                if (seedData == null) return Disposable.Empty;
+                foreach (var member in seedData)
                 {
-                    var seedData = ListCurrentMembers().Result;
-                    if (seedData == null) return Disposable.Empty;
-                    foreach (var member in seedData)
-                    {
-                        observer.OnNext(member);
-                    }
-                    return Disposable.Empty;
+                    observer.OnNext(member);
                 }
-            );
-        }
+
+                return Disposable.Empty;
+            }
+        );
     }
 }

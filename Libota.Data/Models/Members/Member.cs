@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using Domain.Values;
-using Libota.Application.Organisation.Queries.Models;
+using Libota.Data.Models.Organisation;
 
-namespace Libota.Application.Members.Queries.Models
+namespace Libota.Data.Models.Members
 {
     public class Member
     {

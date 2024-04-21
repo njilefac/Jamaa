@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Domain.Users;
-using Libota.Application.Organisation.Queries.Models;
+using Libota.Data.Models.Organisation;
 
 namespace Libota.Application.Setup
 {

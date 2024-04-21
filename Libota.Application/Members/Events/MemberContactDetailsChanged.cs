@@ -1,9 +1,6 @@
-using EventFlow.Aggregates;
-using Libota.Application.Members.Aggregates;
-
 namespace Libota.Application.Members.Events
 {
-    public class MemberContactDetailsChanged : AggregateEvent<MemberAggregate, MemberId>
+    public record MemberContactDetailsChanged
     {
         public string Email { get; set; }
         public string PhoneNumber { get; set; }

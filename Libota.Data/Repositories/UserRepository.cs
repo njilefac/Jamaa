@@ -7,6 +7,7 @@ using AutoMapper;
 using Domain.Users;
 using Libota.Data.Configuration;
 using Libota.Data.Models;
+using Libota.Data.Models.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace Libota.Data.Repositories

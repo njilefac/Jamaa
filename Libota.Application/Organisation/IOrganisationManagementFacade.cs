@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Libota.Application.Members.Queries.Models;
-using Libota.Application.Organisation.Queries.Models;
-using Libota.Application.Organisation.Requests;
+using Domain.Organisation.Requests;
+using Libota.Data.Models.Members;
+using Libota.Data.Models.Organisation;
 
 namespace Libota.Application.Organisation
 {
     public interface IOrganisationManagementFacade
     {
-        Task<bool> CreateOrganisation(string name, string? description);
+        Task CreateOrganisation(string name, string? description);
         Task RegisterMember(MemberRegistrationRequest request);
         Task<IList<OrganisationReadModel>> ListOrganisations();
         IObservable<Member> MemberAdded { get; }

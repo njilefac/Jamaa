@@ -1,41 +1,41 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using EventFlow.EntityFramework;
-using EventFlow.Queries;
-using Libota.Application.Organisation.Queries;
-using Libota.Application.Organisation.Queries.Models;
+using Akka.Actor;
+using Domain.Organisation.Queries;
 using Libota.Data.Configuration;
+using Libota.Data.Models.Organisation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Libota.Data.Queries.Organisation.Handlers
+namespace Libota.Data.Queries.Organisation.Handlers;
+
+public class OrganisationQueryHandler : ReceiveActor
 {
-    public class OrganisationQueryHandler :
-        IQueryHandler<GetAllOrganisations, IEnumerable<OrganisationReadModel>>,
-        IQueryHandler<GetOrganisationByName, OrganisationReadModel>
+    private readonly LibotaDbContext _dbContext;
+
+    public OrganisationQueryHandler(LibotaDbContext dbContext)
     {
-        private readonly LibotaDbContext _dbContext;
+        _dbContext = dbContext;
 
-        public OrganisationQueryHandler(IDbContextProvider<LibotaDbContext> dbContextProvider)
-        {
-            _dbContext = dbContextProvider.CreateContext();
-        }
+        ReceiveAsync<GetAllOrganisations>(HandleMessage);
+        ReceiveAsync<GetOrganisationByName>(HandleMessage);
+    }
 
-        public async Task<IEnumerable<OrganisationReadModel>> ExecuteQueryAsync(GetAllOrganisations query,
-            CancellationToken cancellationToken)
-        {
-            return await _dbContext.Organisations
-                .ToListAsync(cancellationToken: cancellationToken);
-        }
+    private async Task<IEnumerable<OrganisationReadModel?>> HandleMessage(GetAllOrganisations query)
+    {
+        var result = await _dbContext.Organisations.ToListAsync();
+        return result;
+    }
 
-        public async Task<OrganisationReadModel> ExecuteQueryAsync(GetOrganisationByName query,
-            CancellationToken cancellationToken)
-        {
-            var matches = await _dbContext.Organisations
-                .ToListAsync(cancellationToken: cancellationToken);
-            return matches.SingleOrDefault(x => x.Name.Equals(query.Name, StringComparison.InvariantCultureIgnoreCase));
-        }
+    private async Task<OrganisationReadModel?> HandleMessage(GetOrganisationByName query)
+    {
+        var result =  await _dbContext.Organisations.SingleOrDefaultAsync(x => x.Name.Equals(query.Name, StringComparison.InvariantCultureIgnoreCase));
+        return result;
+    }
+
+    public static Props Props(IServiceProvider sp)
+    {
+        return new Props(typeof(OrganisationQueryHandler), [sp.GetRequiredService<LibotaDbContext>()]);
     }
 }

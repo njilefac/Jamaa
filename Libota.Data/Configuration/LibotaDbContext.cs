@@ -1,29 +1,21 @@
 ﻿using System.IO;
 using System.Reflection;
 using Domain.Values;
-using EventFlow.EntityFramework.Extensions;
-using Libota.Application.Members.Queries.Models;
-using Libota.Application.Organisation.Queries.Models;
-using Libota.Data.Models;
+using Libota.Data.Models.Members;
+using Libota.Data.Models.Organisation;
+using Libota.Data.Models.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Libota.Data.Configuration
 {
-    public class LibotaDbContext : DbContext
+    public class LibotaDbContext(IOptions<DatabaseOptions> options, ILoggerFactory loggerFactory) : DbContext
     {
-        private readonly ILoggerFactory _loggerFactory;
-        private readonly DatabaseOptions _dbOptions;
+        private readonly DatabaseOptions _dbOptions = options.Value;
         public DbSet<UserData> Users { get; set; }
         public DbSet<OrganisationReadModel> Organisations { get; set; }
 
-
-        public LibotaDbContext(IOptions<DatabaseOptions> options, ILoggerFactory loggerFactory)
-        {
-            _dbOptions = options.Value;
-            _loggerFactory = loggerFactory;
-        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -31,15 +23,13 @@ namespace Libota.Data.Configuration
             optionsBuilder.UseSqlite(
                 $"Filename={executingDirectory}{Path.DirectorySeparatorChar}{_dbOptions.DataFile}",
                 options => { options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName); });
-            optionsBuilder.UseLoggerFactory(_loggerFactory);
+            optionsBuilder.UseLoggerFactory(loggerFactory);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.AddEventFlowEvents();
-            modelBuilder.AddEventFlowSnapshots();
             ConfigureUserMapping(modelBuilder);
             MapReadModels(modelBuilder);
         }

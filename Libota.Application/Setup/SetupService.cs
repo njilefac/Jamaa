@@ -2,9 +2,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Domain.Users;
 using Libota.Application.Organisation;
-using Libota.Application.Organisation.Queries.Models;
-using Libota.Application.Users;
 using Libota.Application.Users.Services;
+using Libota.Data.Models.Organisation;
 using Microsoft.Extensions.Logging;
 
 namespace Libota.Application.Setup
@@ -44,7 +43,8 @@ namespace Libota.Application.Setup
 
         public async Task<bool> CreateOrganisation(string name, string? description)
         {
-            return await _organisationManagementFacade.CreateOrganisation(name, description);
+            await _organisationManagementFacade.CreateOrganisation(name, description);
+            return true;
         }
 
         public async Task<IEnumerable<OrganisationReadModel>> ListOrganisations()

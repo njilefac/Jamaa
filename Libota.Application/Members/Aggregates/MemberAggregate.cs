@@ -1,17 +1,14 @@
+using Akka.Actor;
 using Domain.Members;
-using EventFlow.Aggregates;
 using Libota.Application.Members.Events;
 
 namespace Libota.Application.Members.Aggregates
 {
-    public class MemberAggregate : AggregateRoot<MemberAggregate, MemberId>,
-        IEmit<MemberRegistered>,
-        IEmit<MemberRegistrationUpdated>,
-        IEmit<MemberContactDetailsChanged>
+    public class MemberAggregate : ReceiveActor
     {
         private Member _state;
 
-        public MemberAggregate(MemberId id) : base(id)
+        public MemberAggregate(MemberId id)
         {
         }
 
