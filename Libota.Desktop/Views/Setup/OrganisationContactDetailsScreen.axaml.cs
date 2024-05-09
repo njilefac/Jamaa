@@ -14,7 +14,7 @@ namespace Libota.Desktop.Views.Setup
             InitializeComponent();
             this.WhenActivated(disposables =>
             {
-                DataContext = Locator.Current.GetService<OrganisationContactDetailsViewModel>();
+                ViewModel = Locator.Current.GetService<OrganisationContactDetailsViewModel>();
                 Disposable.Create(() => { }).DisposeWith(disposables);
             });
         }

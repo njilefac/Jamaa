@@ -1,8 +1,6 @@
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using Libota.Application.Organisation;
-using Libota.Application.Security;
 using Libota.Application.Setup;
 using Libota.Application.Users;
 using Libota.Application.Users.Services;
@@ -26,8 +24,7 @@ namespace Libota.Desktop.ViewModels.Setup
 
         public ReactiveCommand<Unit, UserSession?> CreateAccount { get; set; }
 
-        public CreateSuperUserViewModel(IScreen hostScreen, ISetupService userManagementFacade,
-            IUserSessionService userSessionService)
+        public CreateSuperUserViewModel(IScreen hostScreen, ISetupService userManagementFacade, IUserSessionService userSessionService)
         {
             _setupService = userManagementFacade;
             _userSessionService = userSessionService;

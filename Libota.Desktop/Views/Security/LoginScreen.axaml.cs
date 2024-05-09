@@ -16,7 +16,10 @@ namespace Libota.Desktop.Views.Security
         {
             InitializeComponent();
 
-            DataContext = Locator.Current.GetService<LoginScreenViewModel>();
+            var vm = Locator.Current.GetService<LoginScreenViewModel>();
+            var dashboardVm = Locator.Current.GetService<DashboardViewModel>();
+
+            DataContext = vm;
             this.WhenActivated(disposables =>
             {
                 if (ViewModel == null) return;
@@ -25,8 +28,7 @@ namespace Libota.Desktop.Views.Security
                 ViewModel.Login.Subscribe(session =>
                 {
                     if (session is { IsAuthenticated: true })
-                        ViewModel.HostScreen.Router.Navigate.Execute(Locator.Current
-                            .GetService<DashboardViewModel>()!);
+                        ViewModel.HostScreen.Router.Navigate.Execute(dashboardVm ?? throw new InvalidOperationException());
                 });
 
                 Disposable.Create(() => { }).DisposeWith(disposables);

@@ -5,10 +5,10 @@ using Libota.Data.Models.Organisation;
 
 namespace Libota.Data.Models.Members
 {
-    public class Registration
+    public class RegistrationData
     {
         [Key] public string Id { get; set; }
-        public Member Member { get; set; }
+        public MemberData Member { get; set; }
         public string MemberId { get; set; }
         public DateTime StartDate { get; set; }
         
@@ -16,6 +16,6 @@ namespace Libota.Data.Models.Members
         public MembershipType MembershipType { get; set; }
 
         public RegistrationStatus Status { get; set; }
-        public OrganisationReadModel Organisation { get; set; }
+        public OrganisationData Organisation { get; set; }
     }
 }

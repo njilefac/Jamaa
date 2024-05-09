@@ -7,7 +7,7 @@ namespace Libota.Desktop.ViewModels.Shared
     {
         private readonly IUserSessionService _userSessionService;
 
-        public DashboardViewModel(IUserSessionService userSessionService, IScreen hostScreen)
+        public DashboardViewModel(IUserSessionService userSessionService, MainWindowViewModel hostScreen)
         {
             _userSessionService = userSessionService;
             HostScreen = hostScreen;

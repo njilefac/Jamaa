@@ -12,12 +12,12 @@ namespace Libota.Application.Shared;
 public class QueryProcessor(IOrganisationQueryHandler organisationQueryHandler, IMembersQueryHandler membersQueryHandler)
     : IQueryProcessor
 {
-    public Task<List<OrganisationReadModel>> Get(GetAllOrganisations query) =>
+    public Task<List<OrganisationData>> Get(GetAllOrganisations query) =>
         organisationQueryHandler.HandleQuery(query);
 
-    public Task<OrganisationReadModel?> Get(GetOrganisationByName query) =>
+    public Task<OrganisationData?> Get(GetOrganisationByName query) =>
         organisationQueryHandler.HandleQuery(query);
 
-    public Task<IList<Member>> Get(GetMembersByOrganisation query) =>
+    public Task<IList<MemberData>> Get(GetMembersByOrganisation query) =>
         membersQueryHandler.Get(query);
 }

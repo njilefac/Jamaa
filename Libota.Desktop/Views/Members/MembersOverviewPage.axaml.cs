@@ -4,14 +4,19 @@ using Avalonia.ReactiveUI;
 using Domain.Organisation.Requests;
 using Libota.Desktop.ViewModels.Members;
 using ReactiveUI;
+using Splat;
 
 namespace Libota.Desktop.Views.Members
 {
     public partial class MembersOverviewPage : ReactiveUserControl<MembersOverviewPageViewModel>
     {
-        public MembersOverviewPage(MembersOverviewPageViewModel membersOverviewPageViewModel, MemberRegistrationDialog memberRegistrationDialog)
+        public MembersOverviewPage()
         {
             InitializeComponent();
+            
+            var membersOverviewPageViewModel = Locator.Current.GetService<MembersOverviewPageViewModel>();
+            var memberRegistrationDialog = Locator.Current.GetService<MemberRegistrationDialog>();
+            
             this.WhenActivated(disposables =>
             {
                 DataContext = membersOverviewPageViewModel;
@@ -19,7 +24,7 @@ namespace Libota.Desktop.Views.Members
                 {
                     if (interaction.Input != null)
                     {
-                        var request = await memberRegistrationDialog.ShowDialog<MemberRegistrationRequest>(interaction.Input);
+                        var request = await memberRegistrationDialog?.ShowDialog<MemberRegistrationRequest>(interaction.Input)!;
                         interaction.SetOutput(request);
                     }
                 });

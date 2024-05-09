@@ -47,7 +47,7 @@ namespace Libota.Application.Setup
             return true;
         }
 
-        public async Task<IEnumerable<OrganisationReadModel>> ListOrganisations()
+        public async Task<IEnumerable<OrganisationData>> ListOrganisations()
         {
             return await _organisationManagementFacade.ListOrganisations();
         }

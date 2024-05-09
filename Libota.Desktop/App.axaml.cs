@@ -8,10 +8,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using Libota.Application.Shared.Logging;
 using Libota.Data.Configuration;
 using Libota.Desktop.Assets.Resources;
-using Libota.Desktop.Configuration;
 using Libota.Desktop.Configuration.Extensions;
+using Libota.Desktop.ViewModels.Shared;
 using Libota.Desktop.Views.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Serilog;
+using Splat;
+using Splat.Microsoft.Extensions.DependencyInjection;
 
 namespace Libota.Desktop
 {
@@ -38,6 +41,7 @@ namespace Libota.Desktop
             
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
+                .Enrich.With<SessionUserNameEnricher>()
                 .WriteTo.Console()
                 .CreateLogger();
             
@@ -53,6 +57,8 @@ namespace Libota.Desktop
                 .ConfigureServices(configuration)
                 .ConfigureAkka(lifeTime, configuration)
                 .BuildServiceProvider();
+
+            serviceProvider.UseMicrosoftDependencyResolver();
 
             var akkaService = serviceProvider.GetRequiredService<IHostedService>();
             akkaService.StartAsync(CancellationToken.None);
@@ -72,11 +78,11 @@ namespace Libota.Desktop
             
             Messages.Culture = CultureInfo.CurrentUICulture;
             RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
-            lifeTime.MainWindow = new MainWindow(serviceProvider)
-            {
-                WindowState = WindowState.Maximized,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
+            var mainWindow = Locator.Current.GetService<IViewFor<MainWindowViewModel>>() as MainWindow;
+            if (mainWindow == null) return;
+            mainWindow.WindowState = WindowState.Maximized;
+            mainWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            lifeTime.MainWindow = mainWindow;
         }
         
         

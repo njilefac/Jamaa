@@ -1,4 +1,5 @@
 using Libota.Application.Users.Services;
+using Libota.Desktop.ViewModels.Shared;
 using ReactiveUI;
 
 namespace Libota.Desktop.ViewModels.Groups
@@ -7,7 +8,7 @@ namespace Libota.Desktop.ViewModels.Groups
     {
         private readonly IUserSessionService _userSessionService;
 
-        public GroupManagementViewModel(IUserSessionService userSessionService, IScreen hostScreen)
+        public GroupManagementViewModel(IUserSessionService userSessionService, MainWindowViewModel hostScreen)
         {
             _userSessionService = userSessionService;
             HostScreen = hostScreen;

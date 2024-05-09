@@ -9,6 +9,7 @@ using Libota.Application.Users;
 using Libota.Application.Users.Services;
 using Libota.Data.Models.Organisation;
 using Libota.Desktop.Assets.Resources;
+using Libota.Desktop.ViewModels.Shared;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -25,14 +26,14 @@ namespace Libota.Desktop.ViewModels.Security
 
         [Reactive] public string? Password { get; set; }
 
-        [Reactive] public IList<OrganisationReadModel>? Organisations { get; set; }
+        [Reactive] public IList<OrganisationData>? Organisations { get; set; }
 
-        [Reactive] public OrganisationReadModel? CurrentOrganisation { get; set; }
+        [Reactive] public OrganisationData? CurrentOrganisation { get; set; }
         public ReactiveCommand<Unit, UserSession?> Login { get; }
 
         public Interaction<UserSession?, Unit> NotifyAuthenticationResult { get; set; }
 
-        public LoginScreenViewModel(IScreen screen,
+        public LoginScreenViewModel(MainWindowViewModel screen,
             IUserSessionService userSessionService,
             ISetupService setupService,
             ILogger<LoginScreenViewModel> logger)

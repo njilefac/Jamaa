@@ -1,7 +1,5 @@
 using System;
-using System.Threading.Tasks;
 using Akka.Actor;
-using Akka.Hosting;
 using Akka.Persistence;
 using Domain.Members;
 using Domain.Organisation.Queries;
@@ -13,17 +11,10 @@ using Libota.Application.Shared;
 
 namespace Libota.Application.Organisation.Aggregates
 {
-    public class OrganisationAggregate : ReceivePersistentActor
+    public class OrganisationAggregate(OrganisationId id, IQueryProcessor queryProcessor) : ReceivePersistentActor
     {
         private Domain.Organisation.Entities.Organisation? _state;
-        private readonly IQueryProcessor _queryProcessor;
 
-        public OrganisationAggregate(OrganisationId id, IQueryProcessor queryProcessor)
-        {
-            _queryProcessor = queryProcessor;
-            PersistenceId = $"organisation-{id.Value}";
-        }
-        
         protected override bool Receive(object message)
         {
             switch (message)
@@ -71,7 +62,7 @@ namespace Libota.Application.Organisation.Aggregates
                 return false;
             }
 
-            var conflictingOrganisation = _queryProcessor.Get(new GetOrganisationByName(command.Name)).Result;
+            var conflictingOrganisation = queryProcessor.Get(new GetOrganisationByName(command.Name)).Result;
             if (conflictingOrganisation == null) return true;
 
             Context.Sender.Tell($"an organisation with the name {command.Name} already exists", Self);
@@ -80,11 +71,9 @@ namespace Libota.Application.Organisation.Aggregates
 
         private void ApplyEvent(MemberRegistered registered)
         {
-            var newMember = new Member(registered.FirstName, registered.MiddleName, registered.LastName,
-                registered.Gender, DateTime.MinValue);
+            var newMember = new Member(registered.FirstName, registered.MiddleName, registered.LastName, registered.Gender, DateTime.MinValue);
             
-            _state?.Register(newMember, registered.MembershipType,
-                registered.RegistrationBegin);
+            _state?.Register(newMember, registered.MembershipType, registered.RegistrationBegin);
         }
         
         private void ApplyEvent(OrganisationCreated created)
@@ -92,7 +81,7 @@ namespace Libota.Application.Organisation.Aggregates
             _state = new Domain.Organisation.Entities.Organisation(created.Name, created.Description);
         }
 
-        public override string PersistenceId { get; }
+        public override string PersistenceId { get; } = $"organisation-{id.Value}";
 
         public static Props Props(OrganisationId id, IQueryProcessor queryProcessor)
         {
