@@ -1,6 +1,6 @@
 ﻿using System;
 using Domain.Shared;
-using Domain.Values;
+using Domain.Shared.Values;
 
 namespace Domain.Members
 {

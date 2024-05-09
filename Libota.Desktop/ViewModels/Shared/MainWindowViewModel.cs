@@ -9,8 +9,6 @@ namespace Libota.Desktop.ViewModels.Shared
     {
         private const string APPLICATION_NAME = "Libota Desktop";
 
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        // ReSharper disable once MemberCanBePrivate.Global
         [Reactive] public string? ApplicationTitle { get; set; } = APPLICATION_NAME;
         public RoutingState Router { get; }
 

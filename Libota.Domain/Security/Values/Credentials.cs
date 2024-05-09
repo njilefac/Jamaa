@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Domain.Values
+namespace Domain.Security.Values
 {
     public class Credentials
     {

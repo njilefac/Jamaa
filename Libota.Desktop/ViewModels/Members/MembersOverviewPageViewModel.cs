@@ -4,7 +4,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Domain.Organisation.Requests;
-using Domain.Values;
+using Domain.Shared.Values;
 using Libota.Application.Organisation;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

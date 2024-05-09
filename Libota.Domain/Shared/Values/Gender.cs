@@ -1,4 +1,4 @@
-﻿namespace Domain.Values
+﻿namespace Domain.Shared.Values
 {
     public enum Gender
     {

@@ -1,5 +1,5 @@
 ﻿using System;
-using Domain.Values;
+using Domain.Finances.Values;
 
 namespace Domain.Finances
 {

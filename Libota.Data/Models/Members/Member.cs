@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Domain.Values;
+using Domain.Shared.Values;
 using Libota.Data.Models.Organisation;
 
 namespace Libota.Data.Models.Members

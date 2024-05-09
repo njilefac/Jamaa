@@ -3,6 +3,7 @@ using Castle.DynamicProxy;
 using Libota.Application.Organisation;
 using Libota.Application.Security;
 using Libota.Application.Setup;
+using Libota.Application.Shared;
 using Libota.Application.Users.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,8 @@ namespace Libota.Application.Configuration
             services.AddProxiedScoped<ISetupService, SetupService>();
 
             services.AddProxiedSingleton<IOrganisationManagementFacade, OrganisationManagementFacade>();
+
+            services.AddSingleton<IQueryProcessor, QueryProcessor>();
 
             services.AddScoped<IInterceptor, AuthorizationCheckInterceptor>();
 

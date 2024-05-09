@@ -25,12 +25,9 @@ public partial class CreateOrganisationScreen : ReactiveUserControl<CreateOrgani
             {
                 if (!organisationWasCreated) return;
 
-                setupService.GetSuperUser().ContinueWith(response =>
-                {
-                    IRoutableViewModel nextViewModel = response.Result == null ? createSuperUserViewModel : loginScreenViewModel;
-
-                    ViewModel.HostScreen.Router.Navigate.Execute(nextViewModel);
-                });
+                var superUser = setupService.GetSuperUser().Result;
+                IRoutableViewModel nextViewModel = superUser == null ? createSuperUserViewModel : loginScreenViewModel;
+                ViewModel.HostScreen.Router.Navigate.Execute(nextViewModel);
             });
 
             Disposable.Create(() => { }).DisposeWith(disposables);

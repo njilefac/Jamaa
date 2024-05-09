@@ -1,6 +1,6 @@
 using System;
 using Domain.Organisation.Values;
-using Domain.Values;
+using Domain.Shared.Values;
 
 namespace Domain.Organisation.Requests
 {

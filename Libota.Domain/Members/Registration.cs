@@ -1,6 +1,5 @@
 ﻿using System;
 using Domain.Organisation.Values;
-using Domain.Values;
 
 namespace Domain.Members
 {

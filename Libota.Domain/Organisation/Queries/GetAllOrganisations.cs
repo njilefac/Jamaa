@@ -1,4 +1,3 @@
-namespace Domain.Organisation.Queries
-{
-    public record GetAllOrganisations;
-}
+namespace Domain.Organisation.Queries;
+
+public record GetAllOrganisations;

@@ -8,15 +8,15 @@ namespace Libota.Data.Notifiers
 {
     public class DataChangeNotifier : IDataChangeNotifier
     {
-        private readonly ReplaySubject<object?> _insertions;
-        private readonly ReplaySubject<object?> _updates;
-        private readonly ReplaySubject<object?> _deletions;
+        private readonly ReplaySubject<object> _insertions;
+        private readonly ReplaySubject<object> _updates;
+        private readonly ReplaySubject<object> _deletions;
 
         public DataChangeNotifier()
         {
-            _insertions = new ReplaySubject<object?>();
-            _updates = new ReplaySubject<object?>();
-            _deletions = new ReplaySubject<object?>();
+            _insertions = new ReplaySubject<object>();
+            _updates = new ReplaySubject<object>();
+            _deletions = new ReplaySubject<object>();
         }
         public void OnCompleted()
         {
@@ -37,17 +37,17 @@ namespace Libota.Data.Notifiers
                 {
                     case EntityState.Unchanged:
                     {
-                        _insertions.OnNext(changedEntity);
+                        _insertions.OnNext(changedEntity ?? throw new InvalidOperationException());
                         break;
                     }
                     case EntityState.Modified:
                     {
-                        _updates.OnNext(changedEntity);
+                        _updates.OnNext(changedEntity ?? throw new InvalidOperationException());
                         break;
                     }
                     case EntityState.Deleted:
                     {
-                        _deletions.OnNext(changedEntity);
+                        _deletions.OnNext(changedEntity ?? throw new InvalidOperationException());
                         break;
                     }
                     case EntityState.Detached:
@@ -60,8 +60,8 @@ namespace Libota.Data.Notifiers
             }
         }
 
-        public IObservable<object?> Insertions => _insertions;
-        public IObservable<object?> Updates => _updates;
-        public IObservable<object?> Deletions => _deletions;
+        public IObservable<object> Insertions => _insertions;
+        public IObservable<object> Updates => _updates;
+        public IObservable<object> Deletions => _deletions;
     }
 }

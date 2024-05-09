@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
-using Akka.Hosting;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -11,12 +11,15 @@ using Avalonia.ReactiveUI;
 using Libota.Data.Configuration;
 using Libota.Desktop.Assets.Resources;
 using Libota.Desktop.Configuration;
+using Libota.Desktop.Configuration.Extensions;
 using Libota.Desktop.Views.Shared;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Serilog;
 
 namespace Libota.Desktop
 {
@@ -33,9 +36,22 @@ namespace Libota.Desktop
 
             if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime lifeTime) return;
             
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
+            
+            var environment = Environment.GetEnvironmentVariable("Environment") ?? "Development";
+
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile($"appSettings.{environment}.json", false, true)
+                .AddEnvironmentVariables()
+                .Build();
+            
             var serviceProvider = new ServiceCollection()
-                .ConfigureAkka(lifeTime)
-                .ConfigureServices()
+                .ConfigureServices(configuration)
+                .ConfigureAkka(lifeTime, configuration)
                 .BuildServiceProvider();
 
             var akkaService = serviceProvider.GetRequiredService<IHostedService>();

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using Domain.Values;
+using Domain.Security.Values;
 using Libota.Application.Setup;
 using Libota.Application.Users;
 using Libota.Application.Users.Services;
@@ -20,7 +20,6 @@ namespace Libota.Desktop.ViewModels.Security
     public class LoginScreenViewModel : ReactiveValidationObject, IRoutableViewModel
     {
         private readonly IUserSessionService? _userSessionService;
-        private readonly ILogger<LoginScreenViewModel> _logger;
 
         [Reactive] public string? UserName { get; set; }
 
@@ -36,16 +35,18 @@ namespace Libota.Desktop.ViewModels.Security
         public LoginScreenViewModel(IScreen screen,
             IUserSessionService userSessionService,
             ISetupService setupService,
-            ILoggerFactory loggeFactory)
+            ILogger<LoginScreenViewModel> logger)
         {
             _userSessionService = userSessionService;
             HostScreen = screen;
-            _logger = loggeFactory.CreateLogger<LoginScreenViewModel>();
 
             UserName = string.Empty;
             Password = string.Empty;
 
-            Organisations = setupService.ListOrganisations().Result.ToList();
+            setupService.ListOrganisations().ContinueWith(task =>
+            {
+                Organisations = task.Result.ToList();
+            });
 
             CurrentOrganisation = Organisations?.FirstOrDefault();
 
@@ -61,7 +62,7 @@ namespace Libota.Desktop.ViewModels.Security
 
             Login = ReactiveCommand.CreateFromTask(AuthenticateUser, this.IsValid());
 
-            Login.ThrownExceptions.Subscribe(ex => { _logger.LogError(ex, "login error {Exception}", ex.Message); });
+            Login.ThrownExceptions.Subscribe(ex => { logger.LogError(ex, "login error {Exception}", ex.Message); });
         }
 
         private async Task<UserSession?> AuthenticateUser()

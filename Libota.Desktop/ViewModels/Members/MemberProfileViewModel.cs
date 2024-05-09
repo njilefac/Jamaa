@@ -1,7 +1,7 @@
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
-using Domain.Values;
+using Domain.Shared.Values;
 using Libota.Data.Models.Members;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

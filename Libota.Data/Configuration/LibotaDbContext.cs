@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
-using Domain.Values;
+using Domain.Shared.Values;
 using Libota.Data.Models.Members;
 using Libota.Data.Models.Organisation;
 using Libota.Data.Models.Users;
@@ -21,7 +21,7 @@ namespace Libota.Data.Configuration
         {
             var executingDirectory = Directory.GetCurrentDirectory();
             optionsBuilder.UseSqlite(
-                $"Filename={executingDirectory}{Path.DirectorySeparatorChar}{_dbOptions.DataFile}",
+                $"Filename={_dbOptions.DataFile}",
                 options => { options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName); });
             optionsBuilder.UseLoggerFactory(loggerFactory);
         }

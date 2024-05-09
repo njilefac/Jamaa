@@ -1,24 +1,27 @@
 using System;
 using System.IO;
 using Akka.Hosting;
-using Akka.Persistence.Sqlite;
+using Akka.Logger.Serilog;
+using Akka.Persistence.Sql.Config;
+using Akka.Persistence.Sql.Hosting;
 using Avalonia.Controls.ApplicationLifetimes;
-using Domain.Values;
+using Domain.Shared.Values;
 using Libota.Application.Configuration;
 using Libota.Application.Shared;
 using Libota.Data.Configuration;
 using Libota.Desktop.Configuration.Hosting;
+using LinqToDB;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Settings.Configuration;
 
-namespace Libota.Desktop.Configuration;
+namespace Libota.Desktop.Configuration.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static ServiceCollection ConfigureAkka(this ServiceCollection services, IClassicDesktopStyleApplicationLifetime applicationLifetime)
+    public static ServiceCollection ConfigureAkka(this ServiceCollection services, IClassicDesktopStyleApplicationLifetime applicationLifetime, IConfigurationRoot configuration)
     {
         services.AddSingleton<IHostApplicationLifetime>(new AvaloniaApplicationLifeTime(applicationLifetime));
         
@@ -27,30 +30,34 @@ public static class ServiceCollectionExtensions
             builder.WithActors((system, registry, resolver) =>
             {
                 var commandProcessor = system.ActorOf(resolver.Props<CommandProcessor>(), "command-processor");
-                var queryProcessor = system.ActorOf(resolver.Props<QueryProcessor>(), "query-processor");
 
                 registry.Register<CommandProcessor>(commandProcessor);
-                registry.Register<QueryProcessor>(queryProcessor);
-
-                SqlitePersistence.Get(system);
 
                 system.WhenTerminated.ContinueWith(_ => applicationLifetime.Shutdown());
             });
+
+            builder.ConfigureLoggers(b =>
+            {
+                b.AddLogger<SerilogLogger>();
+            });
+
+            var dataFile = configuration.GetSection("Database:DataFile").Value ?? throw new InvalidOperationException();
+            var connectionString = $"Data Source={Path.Combine(Directory.GetCurrentDirectory(), dataFile)};";
+            
+            builder.WithSqlPersistence(
+                connectionString: connectionString,
+                providerName:ProviderName.SQLite, 
+                autoInitialize:true, 
+                isDefaultPlugin:true,
+                pluginIdentifier:"sqlite", 
+                tagStorageMode:TagMode.TagTable);
         });
             
         return services;
     }
     
-    public static ServiceCollection ConfigureServices(this ServiceCollection services)
+    public static ServiceCollection ConfigureServices(this ServiceCollection services, IConfigurationRoot configuration)
     {
-        var environment = Environment.GetEnvironmentVariable("Environment") ?? "Development";
-
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile($"appSettings.{environment}.json", false, true)
-            .AddEnvironmentVariables()
-            .Build();
-
         services.AddLogging();
             
         services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
