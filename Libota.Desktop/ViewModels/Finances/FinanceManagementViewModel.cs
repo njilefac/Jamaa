@@ -1,4 +1,5 @@
 using Libota.Application.Users.Services;
+using Libota.Desktop.ViewModels.Shared;
 using ReactiveUI;
 
 namespace Libota.Desktop.ViewModels.Finances
@@ -10,7 +11,7 @@ namespace Libota.Desktop.ViewModels.Finances
         public string? UrlPathSegment => "finance";
         public IScreen HostScreen { get; }
 
-        public FinanceManagementViewModel(IUserSessionService userSessionService, IScreen screen)
+        public FinanceManagementViewModel(IUserSessionService userSessionService, MainWindowViewModel screen)
         {
             _userSessionService = userSessionService;
             HostScreen = screen;

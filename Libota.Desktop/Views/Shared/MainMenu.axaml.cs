@@ -14,7 +14,7 @@ namespace Libota.Desktop.Views.Shared
             this.WhenActivated(disposables =>
             {
             });
-            DataContext = Locator.Current.GetService<MainMenuViewModel>();
+            ViewModel = Locator.Current.GetService<MainMenuViewModel>();
         }
 
         private void InitializeComponent()

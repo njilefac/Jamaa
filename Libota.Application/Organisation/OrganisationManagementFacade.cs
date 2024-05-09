@@ -33,9 +33,9 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         _commandProcessor = commandProcessorProvider.ActorRef;
         _queryProcessor = queryProcessor;
 
-        MemberAdded = CreateMemberAddedObservable().Merge(dataChangeNotifier.Insertions.OfType<Member>());
-        MemberUpdated = dataChangeNotifier.Updates.OfType<Member>();
-        MemberDeleted = dataChangeNotifier.Deletions.OfType<Member>();
+        MemberAdded = CreateMemberAddedObservable().Merge(dataChangeNotifier.Insertions.OfType<MemberData>());
+        MemberUpdated = dataChangeNotifier.Updates.OfType<MemberData>();
+        MemberDeleted = dataChangeNotifier.Deletions.OfType<MemberData>();
     }
 
     public Task CreateOrganisation(string name, string? description)
@@ -49,25 +49,25 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         return Task.Run(() =>  _commandProcessor.Tell(new RegisterMember(request)));
     }
 
-    public async Task<IEnumerable<OrganisationReadModel>> ListOrganisations()
+    public async Task<IEnumerable<OrganisationData>> ListOrganisations()
     {
         return  await _queryProcessor.Get(new GetAllOrganisations());
     }
 
-    private async Task<IList<Member>?> ListCurrentMembers()
+    private async Task<IList<MemberData>?> ListCurrentMembers()
     {
         var currentOrganisationId = _userSessionService.CurrentUserSession?.Organisation?.Id;
         var query = new GetMembersByOrganisation(OrganisationId.With(currentOrganisationId ?? Guid.NewGuid().ToString()));
         return await _queryProcessor.Get(query);
     }
 
-    public IObservable<Member> MemberAdded { get; }
+    public IObservable<MemberData> MemberAdded { get; }
 
-    public IObservable<Member> MemberUpdated { get; }
+    public IObservable<MemberData> MemberUpdated { get; }
 
-    public IObservable<Member> MemberDeleted { get; }
+    public IObservable<MemberData> MemberDeleted { get; }
 
-    private IObservable<Member> CreateMemberAddedObservable()
+    private IObservable<MemberData> CreateMemberAddedObservable()
     {
         return (ListCurrentMembers().Result ?? throw new InvalidOperationException()).ToObservable();
     }

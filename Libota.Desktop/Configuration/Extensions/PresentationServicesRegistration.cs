@@ -1,9 +1,8 @@
 using Avalonia.Controls.Notifications;
 using FluentValidation;
-using Libota.Application.Organisation;
-using Libota.Application.Setup;
 using Libota.Application.Users.Services;
 using Libota.Data.Mapping;
+using Libota.Desktop.Services;
 using Libota.Desktop.Validators;
 using Libota.Desktop.ViewModels.Events;
 using Libota.Desktop.ViewModels.Finances;
@@ -13,10 +12,10 @@ using Libota.Desktop.ViewModels.Security;
 using Libota.Desktop.ViewModels.Setup;
 using Libota.Desktop.ViewModels.Shared;
 using Libota.Desktop.ViewModels.Users;
-using Libota.Desktop.Views.Shared;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Splat;
+using Splat.Microsoft.Extensions.DependencyInjection;
 
 namespace Libota.Desktop.Configuration.Extensions
 {
@@ -27,12 +26,19 @@ namespace Libota.Desktop.Configuration.Extensions
 
         public static IServiceCollection RegisterPresentationServices(this IServiceCollection services)
         {
+            services.UseMicrosoftDependencyResolver();
+            var resolver = Locator.CurrentMutable;
+            resolver.InitializeSplat();
+            resolver.InitializeReactiveUI();
+            
             services.RegisterMappers()
                 .RegisterServices()
                 .RegisterValidators()
                 .RegisterViewModels()
                 .RegisterViews();
 
+            
+            
             return services;
         }
 
@@ -46,72 +52,38 @@ namespace Libota.Desktop.Configuration.Extensions
         {
             services.AddSingleton<IUserSessionService, UserSessionService>();
             services.AddScoped<WindowNotificationManager>();
+            services.AddScoped<IViewLocator,LibotaViewLocator>();
 
             return services;
         }
 
         private static IServiceCollection RegisterViewModels(this IServiceCollection services)
         {
-            services.AddKeyedSingleton<MainWindowViewModel>(MAIN_WINDOW);
-            services.AddKeyedSingleton<MembersManagementScreenViewModel>(MEMBERS_MANAGEMENT_SCREEN);
-
-            services.AddSingleton<MainMenuViewModel>(r =>
-                new MainMenuViewModel(r.GetRequiredService<IUserSessionService>(),
-                    r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW),
-                    r.GetRequiredService<LoginScreenViewModel>()));
-
-            services.AddSingleton<MemberRegistrationDialogViewModel>();
-
-            services.AddSingleton<LoginScreenViewModel>(r => new LoginScreenViewModel(
-                r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW),
-                r.GetRequiredService<IUserSessionService>(),
-                r.GetRequiredService<ISetupService>(),
-                r.GetRequiredService<ILogger<LoginScreenViewModel>>()));
-
-            services.AddSingleton<CreateSuperUserViewModel>(r =>
-                new CreateSuperUserViewModel(r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW),
-                    r.GetRequiredService<ISetupService>(),
-                    r.GetRequiredService<IUserSessionService>()));
-
-            services.AddSingleton<CreateOrganisationViewModel>(r =>
-                new CreateOrganisationViewModel(r.GetRequiredService<ISetupService>(), r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
-
-            services.AddSingleton<OrganisationContactDetailsViewModel>(r =>
-                new OrganisationContactDetailsViewModel(r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
-
-            services.AddSingleton<DashboardViewModel>(r =>
-                new DashboardViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
-
-            services.AddSingleton<UserManagementViewModel>(r =>
-                new UserManagementViewModel(r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
-
-            services.AddSingleton<GroupManagementViewModel>(r =>
-                new GroupManagementViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
-
-            services.AddSingleton<EventManagementViewModel>(r =>
-                new EventManagementViewModel(r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW), r.GetRequiredService<IUserSessionService>()));
-
-            services.AddSingleton<FinanceManagementViewModel>(r =>
-                new FinanceManagementViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
-
-            services.AddSingleton<MembersOverviewPageViewModel>(r =>
-                new MembersOverviewPageViewModel(r.GetRequiredService<IOrganisationManagementFacade>(), r.GetRequiredKeyedService<MembersManagementScreenViewModel>(MEMBERS_MANAGEMENT_SCREEN)));
-
-            services.AddSingleton<MemberProfileViewModel>(r => new MemberProfileViewModel(r.GetRequiredKeyedService<MembersManagementScreenViewModel>(MEMBERS_MANAGEMENT_SCREEN)));
-
-            services.AddSingleton<MembersListViewModel>(r =>
-                new MembersListViewModel(r.GetRequiredService<IOrganisationManagementFacade>(), r.GetRequiredKeyedService<MembersManagementScreenViewModel>(MEMBERS_MANAGEMENT_SCREEN)));
+            services.AddSingleton<MainWindowViewModel>();
+            services.AddSingleton<IScreen, MainWindowViewModel>(sp => sp.GetRequiredService<MainWindowViewModel>());
+            
+            services.AddTransient<MembersManagementScreenViewModel>();
+            services.AddTransient<MainMenuViewModel>();
+            services.AddTransient<MemberRegistrationDialogViewModel>();
+            services.AddTransient<LoginScreenViewModel>();
+            services.AddTransient<CreateSuperUserViewModel>();
+            services.AddTransient<CreateOrganisationViewModel>();
+            services.AddTransient<OrganisationContactDetailsViewModel>();
+            services.AddTransient<DashboardViewModel>();
+            services.AddTransient<UserManagementViewModel>();
+            services.AddTransient<GroupManagementViewModel>();
+            services.AddTransient<EventManagementViewModel>();
+            services.AddTransient<FinanceManagementViewModel>();
+            services.AddTransient<MembersOverviewPageViewModel>();
+            services.AddTransient<MemberProfileViewModel>();
+            services.AddTransient<MembersListViewModel>();
 
             return services;
         }
 
         private static IServiceCollection RegisterViews(this IServiceCollection services)
         {
-            services.Scan(scan => scan.FromAssemblyOf<MainWindow>()
-                .AddClasses(x => x.AssignableTo(typeof(IViewFor<>)))
-                .AsSelfWithInterfaces()
-                .WithScopedLifetime());
-
+            Locator.CurrentMutable.RegisterViewsForViewModels(typeof(MainWindowViewModel).Assembly);
             return services;
         }
 

@@ -19,13 +19,13 @@ public class MainMenuViewModel : ReactiveObject
     public ReactiveCommand<Unit, Unit> Logout { get; }
     public ReactiveCommand<Unit, Unit> Edit { get; }
 
-    public MainMenuViewModel(IUserSessionService sessionService, IScreen hostScreen, LoginScreenViewModel loginScreenViewModel)
+    public MainMenuViewModel(IUserSessionService sessionService, MainWindowViewModel hostScreen, LoginScreenViewModel loginScreenViewModel)
     {
         _sessionService = sessionService;
         _hostScreen = hostScreen;
         _loginScreenViewModel = loginScreenViewModel;
 
-        var userIsAuthenticated = _sessionService.UserSessions.Select(s => s is {IsAuthenticated: true});
+        var userIsAuthenticated = _sessionService.UserSessions.Select(s => s is { IsAuthenticated: true });
 
         Exit = ReactiveCommand.CreateFromTask(ExitApplication);
         Logout = ReactiveCommand.CreateFromTask(EndUserSession, userIsAuthenticated);
@@ -34,19 +34,15 @@ public class MainMenuViewModel : ReactiveObject
 
     private Task EndUserSession()
     {
-        return Run(() =>
-        {
-            _sessionService.EndSession();
-            _hostScreen.Router.Navigate.Execute(_loginScreenViewModel);
-        });
+        _sessionService.EndSession();
+        _hostScreen.Router.Navigate.Execute(_loginScreenViewModel);
+        return CompletedTask;
     }
 
     private static Task ExitApplication()
     {
-        return Run(() =>
-        {
-            if (Avalonia.Application.Current?.ApplicationLifetime is ClassicDesktopStyleApplicationLifetime desktop)
-                desktop.Shutdown();
-        });
+        if (Avalonia.Application.Current?.ApplicationLifetime is ClassicDesktopStyleApplicationLifetime desktop)
+            desktop.Shutdown();
+        return CompletedTask;
     }
 }

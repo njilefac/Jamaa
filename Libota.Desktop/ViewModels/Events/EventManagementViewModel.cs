@@ -1,4 +1,5 @@
 using Libota.Application.Users.Services;
+using Libota.Desktop.ViewModels.Shared;
 using ReactiveUI;
 
 namespace Libota.Desktop.ViewModels.Events
@@ -10,7 +11,7 @@ namespace Libota.Desktop.ViewModels.Events
         public string? UrlPathSegment => "events"; 
         public IScreen HostScreen { get; }
 
-        public EventManagementViewModel(IScreen screen, IUserSessionService userSessionService)
+        public EventManagementViewModel(MainWindowViewModel screen, IUserSessionService userSessionService)
         {
             HostScreen = screen;
             _userSessionService = userSessionService;

@@ -18,20 +18,20 @@ namespace Libota.Desktop.ViewModels.Members
     {
         [Reactive] public string? SearchTerm { get; set; }
 
-        public ReactiveCommand<Member, Unit> ShowMemberDetails { get; set; }
+        public ReactiveCommand<MemberData, Unit> ShowMemberDetails { get; set; }
 
         public MembersListViewModel(
             IOrganisationManagementFacade organisationManagementFacade,
-            IScreen hostScreen)
+            MembersManagementScreenViewModel hostScreen)
         {
             HostScreen = hostScreen;
 
-            var membersSourceList = new SourceCache<Member, string>(m => m.Id);
+            var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
             
-            var members = new ObservableCollectionExtended<Member>();
+            var members = new ObservableCollectionExtended<MemberData>();
             membersSourceList.PopulateFrom(organisationManagementFacade.MemberAdded);
             membersSourceList.Connect()
-                .Sort(SortExpressionComparer<Member>.Ascending(m => m.LastName))
+                .Sort(SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(Members)
                 .DisposeMany()
@@ -59,10 +59,10 @@ namespace Libota.Desktop.ViewModels.Members
                     });
                 });
 
-            ShowMemberDetails = ReactiveCommand.CreateFromTask<Member, Unit>(ShowMemberProfile);
+            ShowMemberDetails = ReactiveCommand.CreateFromTask<MemberData, Unit>(ShowMemberProfile);
         }
 
-        private async Task<Unit> ShowMemberProfile(Member member)
+        private async Task<Unit> ShowMemberProfile(MemberData member)
         {
             var memberProfileViewModel = Locator.Current.GetService<MemberProfileViewModel>();
             if (memberProfileViewModel == null) return await Task.FromResult(Unit.Default);
@@ -78,7 +78,7 @@ namespace Libota.Desktop.ViewModels.Members
             return await Task.FromResult(Unit.Default);
         }
 
-        private static bool MemberMatches(Member member, string? searchTerm)
+        private static bool MemberMatches(MemberData member, string? searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return true;
@@ -88,7 +88,7 @@ namespace Libota.Desktop.ViewModels.Members
                    member.MiddleName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        [Reactive] public ObservableCollectionExtended<Member> Members { get; set; } = new();
+        [Reactive] public ObservableCollectionExtended<MemberData> Members { get; set; } = new();
         public string? UrlPathSegment => "members.list";
         public IScreen HostScreen { get; }
     }

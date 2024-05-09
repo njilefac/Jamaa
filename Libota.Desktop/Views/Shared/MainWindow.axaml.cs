@@ -1,41 +1,39 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Libota.Application.Setup;
+using Libota.Desktop.ViewModels.Security;
+using Libota.Desktop.ViewModels.Setup;
 using Libota.Desktop.ViewModels.Shared;
-using Libota.Desktop.Views.Security;
-using Libota.Desktop.Views.Setup;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
+using Splat;
 
 namespace Libota.Desktop.Views.Shared
 {
     public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
-        private readonly IServiceProvider _serviceProvider;
-        public MainWindow(IServiceProvider serviceProvider)
+        public MainWindow()
         {
-            _serviceProvider = serviceProvider;
             this.WhenActivated(disposables =>
             {
-                DataContext = serviceProvider.GetRequiredKeyedService<MainWindowViewModel>("MainWindow");
+                DataContext = Locator.Current.GetService<MainWindowViewModel>();
+
                 Disposable.Create(() => { }).DisposeWith(disposables);
             });
 
             InitializeComponent();
-//#if DEBUG
-//            this.AttachDevTools();
-//#endif
+#if DEBUG
+            this.AttachDevTools();
+#endif
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-
             var contentPageContainer = this.FindControl<RoutedViewHost>("ContentContainer");
             if (contentPageContainer != null)
             {
@@ -43,19 +41,19 @@ namespace Libota.Desktop.Views.Shared
             }
         }
 
-        private  async Task<IViewFor?> GetStartupScreen()
+        private static async Task<IViewFor?> GetStartupScreen()
         {
-            var setupService = _serviceProvider.GetRequiredService<ISetupService>();
-            var existingOrganisations = await setupService.ListOrganisations();
-            
-            if(existingOrganisations.Any() == false)
-                return _serviceProvider.GetRequiredService<CreateOrganisationScreen>();
+            var setupService = Locator.Current.GetService<ISetupService>();
+            var existingOrganisations = await setupService?.ListOrganisations()!;
+
+            if (existingOrganisations.Any() == false)
+                return Locator.Current.GetService<IViewFor<CreateOrganisationViewModel>>();
 
             var superUser = await setupService.GetSuperUser();
             if (superUser == null)
-                return _serviceProvider.GetRequiredService<CreateSuperUserScreen>();
+                return Locator.Current.GetService<IViewFor<CreateSuperUserViewModel>>();
 
-            return _serviceProvider.GetRequiredService<LoginScreen>();
+            return Locator.Current.GetService<IViewFor<LoginScreenViewModel>>();
         }
     }
 }

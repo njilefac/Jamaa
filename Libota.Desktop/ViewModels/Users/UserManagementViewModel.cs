@@ -1,10 +1,11 @@
+using Libota.Desktop.ViewModels.Shared;
 using ReactiveUI;
 
 namespace Libota.Desktop.ViewModels.Users
 {
     public class UserManagementViewModel: ReactiveObject, IRoutableViewModel
     {
-        public UserManagementViewModel(IScreen screen)
+        public UserManagementViewModel(MainWindowViewModel screen)
         {
             HostScreen = screen;
         }

@@ -21,11 +21,11 @@ namespace Libota.Desktop.ViewModels.Members
         
         [Reactive] public DateTime BirthDate { get; set; }
         
-        [Reactive] public Registration Registration { get; set; }
+        [Reactive] public RegistrationData Registration { get; set; }
 
         public ReactiveCommand<Unit, Unit> GoBack { get; set; }
 
-        public MemberProfileViewModel(IScreen hostScreen)
+        public MemberProfileViewModel(MembersManagementScreenViewModel hostScreen)
         {
             HostScreen = hostScreen;
             GoBack = ReactiveCommand.CreateFromTask(GoToPreviousPage);

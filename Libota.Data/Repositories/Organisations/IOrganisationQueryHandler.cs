@@ -7,6 +7,6 @@ namespace Libota.Data.Repositories.Organisations;
 
 public interface IOrganisationQueryHandler
 {
-    Task<List<OrganisationReadModel>> HandleQuery(GetAllOrganisations query);
-    Task<OrganisationReadModel?> HandleQuery(GetOrganisationByName query);
+    Task<List<OrganisationData>> HandleQuery(GetAllOrganisations query);
+    Task<OrganisationData?> HandleQuery(GetOrganisationByName query);
 }

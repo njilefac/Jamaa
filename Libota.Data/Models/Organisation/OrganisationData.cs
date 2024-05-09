@@ -4,11 +4,11 @@ using Libota.Data.Models.Members;
 
 namespace Libota.Data.Models.Organisation;
 
-public class OrganisationReadModel
+public class OrganisationData
 {
-    public OrganisationReadModel()
+    public OrganisationData()
     {
-        Members = new List<Member>();
+        Members = new List<MemberData>();
     }
 
     public string? Description { get; }
@@ -16,5 +16,5 @@ public class OrganisationReadModel
     public string Name { get; private set; } = string.Empty;
     [Key] public string? Id { get; set; }
 
-    public IList<Member> Members { get; set; }
+    public IList<MemberData> Members { get; set; }
 }

@@ -11,7 +11,7 @@ namespace Libota.Desktop.Views.Shared
         public Dashboard()
         {
             InitializeComponent();
-            DataContext = Locator.Current.GetService<DashboardViewModel>();
+            ViewModel = Locator.Current.GetService<DashboardViewModel>();
             this.WhenActivated(disposables => { });
         }
 

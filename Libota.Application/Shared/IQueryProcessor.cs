@@ -9,8 +9,8 @@ namespace Libota.Application.Shared;
 
 public interface IQueryProcessor
 {
-    Task<List<OrganisationReadModel>> Get(GetAllOrganisations query);
-    Task<OrganisationReadModel?> Get(GetOrganisationByName query);
+    Task<List<OrganisationData>> Get(GetAllOrganisations query);
+    Task<OrganisationData?> Get(GetOrganisationByName query);
 
-    Task<IList<Member>> Get(GetMembersByOrganisation query);
+    Task<IList<MemberData>> Get(GetMembersByOrganisation query);
 }

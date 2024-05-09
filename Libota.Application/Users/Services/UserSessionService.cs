@@ -14,7 +14,7 @@ namespace Libota.Application.Users.Services
         public Subject<UserSession?> UserSessions { get; } = new();
         public UserSession? CurrentUserSession { get; private set; }
 
-        public async Task<UserSession?> Authenticate(Credentials credentials, OrganisationReadModel? organisation)
+        public async Task<UserSession?> Authenticate(Credentials credentials, OrganisationData? organisation)
         {
             ArgumentNullException.ThrowIfNull(credentials);
 
