@@ -2,7 +2,7 @@ using System;
 using Domain.Members;
 using Domain.Organisation.Entities;
 using Domain.Organisation.Values;
-using Domain.Values;
+using Domain.Shared.Values;
 using FluentAssertions;
 using Xunit;
 

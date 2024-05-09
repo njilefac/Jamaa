@@ -58,7 +58,7 @@ namespace Libota.Desktop.ViewModels.Setup
         {
             var user = await _setupService.CreateSuperUser(UserName, Password, Email, FirstName, LastName);
             if (user?.Account.Credentials == null) return null;
-            var defaultOrganisation = _setupService.ListOrganisations().Result.FirstOrDefault();
+            var defaultOrganisation = (await _setupService.ListOrganisations()).FirstOrDefault();
             return await _userSessionService.Authenticate(user.Account.Credentials, defaultOrganisation);
 
         }

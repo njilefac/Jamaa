@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Hosting;
 using Akka.Persistence;
@@ -15,11 +16,11 @@ namespace Libota.Application.Organisation.Aggregates
     public class OrganisationAggregate : ReceivePersistentActor
     {
         private Domain.Organisation.Entities.Organisation? _state;
-        private readonly IActorRef _queryProcessor;
+        private readonly IQueryProcessor _queryProcessor;
 
-        public OrganisationAggregate(OrganisationId id, IRequiredActor<QueryProcessor> queryProcessor)
+        public OrganisationAggregate(OrganisationId id, IQueryProcessor queryProcessor)
         {
-            _queryProcessor = queryProcessor.ActorRef;
+            _queryProcessor = queryProcessor;
             PersistenceId = $"organisation-{id.Value}";
         }
         
@@ -70,10 +71,10 @@ namespace Libota.Application.Organisation.Aggregates
                 return false;
             }
 
-            var conflictingOrganisation = _queryProcessor.Ask<Domain.Organisation.Entities.Organisation>(new GetOrganisationByName(command.Name)).Result;
+            var conflictingOrganisation = _queryProcessor.Get(new GetOrganisationByName(command.Name)).Result;
             if (conflictingOrganisation == null) return true;
 
-            Context.Sender.Tell($"an organisation with the name {command.Name} exists already", Self);
+            Context.Sender.Tell($"an organisation with the name {command.Name} already exists", Self);
             return false;
         }
 
@@ -93,7 +94,7 @@ namespace Libota.Application.Organisation.Aggregates
 
         public override string PersistenceId { get; }
 
-        public static Props Props(OrganisationId id, IActorRef queryProcessor)
+        public static Props Props(OrganisationId id, IQueryProcessor queryProcessor)
         {
             return new Props(typeof(OrganisationAggregate), [id, queryProcessor]);
         }

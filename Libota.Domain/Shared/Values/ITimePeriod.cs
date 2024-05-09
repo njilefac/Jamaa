@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Domain.Values
+namespace Domain.Shared.Values
 {
     public interface ITimePeriod
     {

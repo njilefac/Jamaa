@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
@@ -23,21 +22,21 @@ namespace Libota.Desktop.Views.Shared
             _serviceProvider = serviceProvider;
             this.WhenActivated(disposables =>
             {
-                DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>();
+                DataContext = serviceProvider.GetRequiredKeyedService<MainWindowViewModel>("MainWindow");
                 Disposable.Create(() => { }).DisposeWith(disposables);
             });
 
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
+//#if DEBUG
+//            this.AttachDevTools();
+//#endif
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
 
-            var contentPageContainer = this.FindControl<RoutedViewHost>("ContentPageContainer");
+            var contentPageContainer = this.FindControl<RoutedViewHost>("ContentContainer");
             if (contentPageContainer != null)
             {
                 contentPageContainer.DefaultContent = GetStartupScreen().Result;
@@ -46,19 +45,17 @@ namespace Libota.Desktop.Views.Shared
 
         private  async Task<IViewFor?> GetStartupScreen()
         {
-            var setupService = _serviceProvider.GetService<ISetupService>();
-            if (setupService == null)
-                return _serviceProvider.GetService<CreateOrganisationScreen>();
+            var setupService = _serviceProvider.GetRequiredService<ISetupService>();
+            var existingOrganisations = await setupService.ListOrganisations();
+            
+            if(existingOrganisations.Any() == false)
+                return _serviceProvider.GetRequiredService<CreateOrganisationScreen>();
 
-            var organisations = await setupService.ListOrganisations();
-            if (!organisations.Any())
-                return _serviceProvider.GetService<CreateOrganisationScreen>();
-
-            var superUser = setupService.GetSuperUser().Result;
+            var superUser = await setupService.GetSuperUser();
             if (superUser == null)
-                return _serviceProvider.GetService<CreateSuperUserScreen>();
+                return _serviceProvider.GetRequiredService<CreateSuperUserScreen>();
 
-            return _serviceProvider.GetService<LoginScreen>();
+            return _serviceProvider.GetRequiredService<LoginScreen>();
         }
     }
 }

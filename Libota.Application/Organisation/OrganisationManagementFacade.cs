@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Akka.Actor;
@@ -23,23 +22,21 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
 {
     private readonly IUserSessionService _userSessionService;
     private readonly IActorRef _commandProcessor;
-    private readonly IActorRef _queryProcessor;
+    private readonly IQueryProcessor _queryProcessor;
 
     public OrganisationManagementFacade(IRequiredActor<CommandProcessor> commandProcessorProvider,
-        IRequiredActor<QueryProcessor> queryProcessorProvider,
+        IQueryProcessor queryProcessor,
         IDataChangeNotifier dataChangeNotifier,
         IUserSessionService userSessionService)
     {
         _userSessionService = userSessionService;
         _commandProcessor = commandProcessorProvider.ActorRef;
-        _queryProcessor = queryProcessorProvider.ActorRef;
+        _queryProcessor = queryProcessor;
 
         MemberAdded = CreateMemberAddedObservable().Merge(dataChangeNotifier.Insertions.OfType<Member>());
         MemberUpdated = dataChangeNotifier.Updates.OfType<Member>();
         MemberDeleted = dataChangeNotifier.Deletions.OfType<Member>();
     }
-
-       
 
     public Task CreateOrganisation(string name, string? description)
     {
@@ -52,16 +49,16 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         return Task.Run(() =>  _commandProcessor.Tell(new RegisterMember(request)));
     }
 
-    public async Task<IList<OrganisationReadModel>> ListOrganisations()
+    public async Task<IEnumerable<OrganisationReadModel>> ListOrganisations()
     {
-        return await _queryProcessor.Ask<IList<OrganisationReadModel>>(new GetAllOrganisations());
+        return  await _queryProcessor.Get(new GetAllOrganisations());
     }
 
     private async Task<IList<Member>?> ListCurrentMembers()
     {
         var currentOrganisationId = _userSessionService.CurrentUserSession?.Organisation?.Id;
-        var query = new GetMembersByOrganisation(OrganisationId.With(currentOrganisationId ?? throw new InvalidOperationException()));
-        return await _queryProcessor.Ask<IList<Member>?>(query);
+        var query = new GetMembersByOrganisation(OrganisationId.With(currentOrganisationId ?? Guid.NewGuid().ToString()));
+        return await _queryProcessor.Get(query);
     }
 
     public IObservable<Member> MemberAdded { get; }
@@ -72,17 +69,6 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
 
     private IObservable<Member> CreateMemberAddedObservable()
     {
-        return Observable.Create<Member>(observer =>
-            {
-                var seedData = ListCurrentMembers().Result;
-                if (seedData == null) return Disposable.Empty;
-                foreach (var member in seedData)
-                {
-                    observer.OnNext(member);
-                }
-
-                return Disposable.Empty;
-            }
-        );
+        return (ListCurrentMembers().Result ?? throw new InvalidOperationException()).ToObservable();
     }
 }

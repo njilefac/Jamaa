@@ -1,4 +1,4 @@
-﻿namespace Domain.Values
+﻿namespace Domain.Finances.Values
 {
     public class MoneyAmount
     {

@@ -10,5 +10,6 @@ public class Program
         AppBuilder.Configure<App>()
             .UseReactiveUI()
             .UsePlatformDetect()
-            .UseManagedSystemDialogs().StartWithClassicDesktopLifetime(args);
+            .UseManagedSystemDialogs()
+            .StartWithClassicDesktopLifetime(args);
 }

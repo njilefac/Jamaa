@@ -1,5 +1,4 @@
-﻿using System;
-namespace Domain.Values
+﻿namespace Domain.Finances.Values
 {
     public class Currency
     {

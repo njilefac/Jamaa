@@ -1,9 +1,9 @@
 using Avalonia.Controls.Notifications;
-using Libota.Data.Mapping;
 using FluentValidation;
 using Libota.Application.Organisation;
 using Libota.Application.Setup;
 using Libota.Application.Users.Services;
+using Libota.Data.Mapping;
 using Libota.Desktop.Validators;
 using Libota.Desktop.ViewModels.Events;
 using Libota.Desktop.ViewModels.Finances;
@@ -15,9 +15,10 @@ using Libota.Desktop.ViewModels.Shared;
 using Libota.Desktop.ViewModels.Users;
 using Libota.Desktop.Views.Shared;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
-namespace Libota.Desktop.Configuration
+namespace Libota.Desktop.Configuration.Extensions
 {
     public static class PresentationServicesRegistration
     {
@@ -27,10 +28,10 @@ namespace Libota.Desktop.Configuration
         public static IServiceCollection RegisterPresentationServices(this IServiceCollection services)
         {
             services.RegisterMappers()
-                .RegisterViews()
                 .RegisterServices()
+                .RegisterValidators()
                 .RegisterViewModels()
-                .RegisterValidators();
+                .RegisterViews();
 
             return services;
         }
@@ -51,51 +52,55 @@ namespace Libota.Desktop.Configuration
 
         private static IServiceCollection RegisterViewModels(this IServiceCollection services)
         {
-            services.AddKeyedSingleton<IScreen, MainWindowViewModel>(MAIN_WINDOW);
-            services.AddKeyedSingleton<IScreen, MembersManagementScreenViewModel>(MEMBERS_MANAGEMENT_SCREEN);
+            services.AddKeyedSingleton<MainWindowViewModel>(MAIN_WINDOW);
+            services.AddKeyedSingleton<MembersManagementScreenViewModel>(MEMBERS_MANAGEMENT_SCREEN);
 
             services.AddSingleton<MainMenuViewModel>(r =>
                 new MainMenuViewModel(r.GetRequiredService<IUserSessionService>(),
-                    r.GetRequiredKeyedService<IScreen>(MAIN_WINDOW),
+                    r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW),
                     r.GetRequiredService<LoginScreenViewModel>()));
 
             services.AddSingleton<MemberRegistrationDialogViewModel>();
 
-            services.AddSingleton<LoginScreenViewModel>();
+            services.AddSingleton<LoginScreenViewModel>(r => new LoginScreenViewModel(
+                r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW),
+                r.GetRequiredService<IUserSessionService>(),
+                r.GetRequiredService<ISetupService>(),
+                r.GetRequiredService<ILogger<LoginScreenViewModel>>()));
 
             services.AddSingleton<CreateSuperUserViewModel>(r =>
-                new CreateSuperUserViewModel(r.GetRequiredKeyedService<IScreen>(MAIN_WINDOW),
+                new CreateSuperUserViewModel(r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW),
                     r.GetRequiredService<ISetupService>(),
                     r.GetRequiredService<IUserSessionService>()));
 
             services.AddSingleton<CreateOrganisationViewModel>(r =>
-                new CreateOrganisationViewModel(r.GetRequiredService<ISetupService>(), r.GetRequiredKeyedService<IScreen>(MAIN_WINDOW)));
+                new CreateOrganisationViewModel(r.GetRequiredService<ISetupService>(), r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
 
             services.AddSingleton<OrganisationContactDetailsViewModel>(r =>
-                new OrganisationContactDetailsViewModel(r.GetRequiredKeyedService<IScreen>(MAIN_WINDOW)));
+                new OrganisationContactDetailsViewModel(r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
 
             services.AddSingleton<DashboardViewModel>(r =>
-                new DashboardViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<IScreen>(MAIN_WINDOW)));
+                new DashboardViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
 
             services.AddSingleton<UserManagementViewModel>(r =>
-                new UserManagementViewModel(r.GetRequiredKeyedService<IScreen>(MAIN_WINDOW)));
+                new UserManagementViewModel(r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
 
             services.AddSingleton<GroupManagementViewModel>(r =>
-                new GroupManagementViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<IScreen>(MAIN_WINDOW)));
+                new GroupManagementViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
 
             services.AddSingleton<EventManagementViewModel>(r =>
-                new EventManagementViewModel(r.GetRequiredKeyedService<IScreen>(MAIN_WINDOW), r.GetRequiredService<IUserSessionService>()));
+                new EventManagementViewModel(r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW), r.GetRequiredService<IUserSessionService>()));
 
             services.AddSingleton<FinanceManagementViewModel>(r =>
-                new FinanceManagementViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<IScreen>(MAIN_WINDOW)));
+                new FinanceManagementViewModel(r.GetRequiredService<IUserSessionService>(), r.GetRequiredKeyedService<MainWindowViewModel>(MAIN_WINDOW)));
 
             services.AddSingleton<MembersOverviewPageViewModel>(r =>
-                new MembersOverviewPageViewModel(r.GetRequiredService<IOrganisationManagementFacade>(), r.GetRequiredKeyedService<IScreen>(MEMBERS_MANAGEMENT_SCREEN)));
+                new MembersOverviewPageViewModel(r.GetRequiredService<IOrganisationManagementFacade>(), r.GetRequiredKeyedService<MembersManagementScreenViewModel>(MEMBERS_MANAGEMENT_SCREEN)));
 
-            services.AddSingleton<MemberProfileViewModel>(r => new MemberProfileViewModel(r.GetRequiredKeyedService<IScreen>(MEMBERS_MANAGEMENT_SCREEN)));
+            services.AddSingleton<MemberProfileViewModel>(r => new MemberProfileViewModel(r.GetRequiredKeyedService<MembersManagementScreenViewModel>(MEMBERS_MANAGEMENT_SCREEN)));
 
             services.AddSingleton<MembersListViewModel>(r =>
-                new MembersListViewModel(r.GetRequiredService<IOrganisationManagementFacade>(), r.GetRequiredKeyedService<IScreen>(MEMBERS_MANAGEMENT_SCREEN)));
+                new MembersListViewModel(r.GetRequiredService<IOrganisationManagementFacade>(), r.GetRequiredKeyedService<MembersManagementScreenViewModel>(MEMBERS_MANAGEMENT_SCREEN)));
 
             return services;
         }
@@ -104,7 +109,6 @@ namespace Libota.Desktop.Configuration
         {
             services.Scan(scan => scan.FromAssemblyOf<MainWindow>()
                 .AddClasses(x => x.AssignableTo(typeof(IViewFor<>)))
-                .AsSelf()
                 .AsSelfWithInterfaces()
                 .WithScopedLifetime());
 

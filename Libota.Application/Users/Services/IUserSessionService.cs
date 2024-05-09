@@ -1,6 +1,6 @@
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Domain.Values;
+using Domain.Security.Values;
 using Libota.Application.Organisation;
 using Libota.Application.Security;
 using Libota.Data.Models.Organisation;

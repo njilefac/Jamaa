@@ -9,21 +9,18 @@ namespace Libota.Application.Shared;
 
 public class CommandProcessor : ReceiveActor
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IQueryProcessor _queryProcessor;
 
-    public CommandProcessor(IServiceProvider sp)
+    public CommandProcessor(IQueryProcessor queryProcessor)
     {
-        _serviceProvider = sp;
+        _queryProcessor = queryProcessor;
         ReceiveAsync<CreateOrganisation>(OnCreateOrganisation);
     }
 
     private Task OnCreateOrganisation(CreateOrganisation createCommand)
     {
-        return Task.Run(() =>
-        {
-            var queryProcessor = Context.ActorOf(QueryProcessor.Props(_serviceProvider));
-            var organisation = Context.ActorOf(OrganisationAggregate.Props(OrganisationId.With(Guid.NewGuid()), queryProcessor));
-            organisation.Tell(createCommand);
-        });
+        var organisation = Context.ActorOf(OrganisationAggregate.Props(OrganisationId.With(Guid.NewGuid()), _queryProcessor));
+        organisation.Tell(createCommand);
+        return Task.CompletedTask;
     }
 }

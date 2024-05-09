@@ -6,7 +6,7 @@ using System.Reactive.Concurrency;
 using System.Threading.Tasks;
 using Domain.Organisation.Requests;
 using Domain.Organisation.Values;
-using Domain.Values;
+using Domain.Shared.Values;
 using Libota.Application.Users.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

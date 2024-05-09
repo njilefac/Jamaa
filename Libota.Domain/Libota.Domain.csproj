@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Values\" />
+    <Folder Include="Security\" />
   </ItemGroup>
 
   <ItemGroup>
