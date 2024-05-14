@@ -6,15 +6,8 @@ namespace Libota.Data.Models.Organisation;
 
 public class OrganisationData
 {
-    public OrganisationData()
-    {
-        Members = new List<MemberData>();
-    }
-
+    [Key] public required string Id { get; set; }
+    public required string Name { get; set; }
     public string? Description { get; set; }
-
-    public string Name { get; set; }
-    [Key] public string? Id { get; set; }
-
-    public IList<MemberData> Members { get; set; }
+    public IList<MemberData> Members { get; set; } = new List<MemberData>();
 }

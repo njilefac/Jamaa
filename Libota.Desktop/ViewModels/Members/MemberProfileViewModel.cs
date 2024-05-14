@@ -25,7 +25,7 @@ namespace Libota.Desktop.ViewModels.Members
 
         public ReactiveCommand<Unit, Unit> GoBack { get; set; }
 
-        public MemberProfileViewModel(MembersManagementScreenViewModel hostScreen)
+        public MemberProfileViewModel(IScreen hostScreen)
         {
             HostScreen = hostScreen;
             GoBack = ReactiveCommand.CreateFromTask(GoToPreviousPage);

@@ -12,7 +12,7 @@ namespace Libota.Desktop.Views.Finances
         {
             InitializeComponent();
             this.WhenActivated(disposables => { });
-            DataContext = Locator.Current.GetService<FinanceManagementViewModel>();
+            ViewModel = Locator.Current.GetService<FinanceManagementViewModel>();
         }
 
         private void InitializeComponent()

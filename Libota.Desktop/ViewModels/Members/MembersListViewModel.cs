@@ -22,7 +22,7 @@ namespace Libota.Desktop.ViewModels.Members
 
         public MembersListViewModel(
             IOrganisationManagementFacade organisationManagementFacade,
-            MembersManagementScreenViewModel hostScreen)
+            IScreen hostScreen)
         {
             HostScreen = hostScreen;
 

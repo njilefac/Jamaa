@@ -28,8 +28,4 @@
       <ProjectReference Include="..\Libota.Domain\Libota.Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Organisation\Queries\" />
-    </ItemGroup>
-
 </Project>

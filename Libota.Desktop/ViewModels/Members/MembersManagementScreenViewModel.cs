@@ -1,14 +1,12 @@
+using System;
 using ReactiveUI;
+using Splat;
 
 namespace Libota.Desktop.ViewModels.Members
 {
-    public class MembersManagementScreenViewModel : ReactiveObject, IScreen
+    public class MembersManagementScreenViewModel : ReactiveObject, IRoutableViewModel
     {
-        public RoutingState Router { get; } = new RoutingState();
-
-        public MembersManagementScreenViewModel()
-        {
-            
-        }
+        public string UrlPathSegment => "members.home";
+        public IScreen HostScreen  => Locator.Current.GetService<IScreen>() ?? throw new InvalidOperationException();
     }
 }

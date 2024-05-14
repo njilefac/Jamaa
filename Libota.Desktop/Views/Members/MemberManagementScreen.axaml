@@ -13,6 +13,9 @@
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch">
             <reactiveUi:RoutedViewHost.DefaultContent>
+                <TextBlock>
+                    <Run>Member Management</Run>
+                </TextBlock>
             </reactiveUi:RoutedViewHost.DefaultContent>
         </reactiveUi:RoutedViewHost>
     </Panel>

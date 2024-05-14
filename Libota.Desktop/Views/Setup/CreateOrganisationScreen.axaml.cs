@@ -13,15 +13,16 @@ public partial class CreateOrganisationScreen : ReactiveUserControl<CreateOrgani
     public CreateOrganisationScreen()
     {
         InitializeComponent();
-        this.WhenActivated(disposables => { Disposable.Create(() => { }).DisposeWith(disposables); });
+        this.WhenActivated(disposables =>
+        {
+            ViewModel = Locator.Current.GetService<CreateOrganisationViewModel>();
+            Disposable.Create(() => { }).DisposeWith(disposables);
+        });
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
-
-        ViewModel = Locator.Current.GetService<CreateOrganisationViewModel>();
-
         var nameField = this.FindControl<TextBox>("OrganisationNameField");
         nameField!.AttachedToVisualTree += (target, _) => (target as TextBox)!.Focus();
     }
