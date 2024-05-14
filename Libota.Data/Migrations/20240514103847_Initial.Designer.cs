@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Libota.Data.Migrations
 {
     [DbContext(typeof(LibotaDbContext))]
-    [Migration("20240508170730_Initial")]
+    [Migration("20240514103847_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace Libota.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
 
-            modelBuilder.Entity("Libota.Data.Models.Members.Member", b =>
+            modelBuilder.Entity("Libota.Data.Models.Members.MemberData", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
@@ -51,7 +51,7 @@ namespace Libota.Data.Migrations
                     b.ToTable("Members", (string)null);
                 });
 
-            modelBuilder.Entity("Libota.Data.Models.Members.Registration", b =>
+            modelBuilder.Entity("Libota.Data.Models.Members.RegistrationData", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
@@ -87,10 +87,12 @@ namespace Libota.Data.Migrations
                     b.ToTable("Registrations", (string)null);
                 });
 
-            modelBuilder.Entity("Libota.Data.Models.Organisation.OrganisationReadModel", b =>
+            modelBuilder.Entity("Libota.Data.Models.Organisation.OrganisationData", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -147,9 +149,9 @@ namespace Libota.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Libota.Data.Models.Members.Member", b =>
+            modelBuilder.Entity("Libota.Data.Models.Members.MemberData", b =>
                 {
-                    b.HasOne("Libota.Data.Models.Organisation.OrganisationReadModel", "Organisation")
+                    b.HasOne("Libota.Data.Models.Organisation.OrganisationData", "Organisation")
                         .WithMany("Members")
                         .HasForeignKey("OrganisationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -158,15 +160,15 @@ namespace Libota.Data.Migrations
                     b.Navigation("Organisation");
                 });
 
-            modelBuilder.Entity("Libota.Data.Models.Members.Registration", b =>
+            modelBuilder.Entity("Libota.Data.Models.Members.RegistrationData", b =>
                 {
-                    b.HasOne("Libota.Data.Models.Members.Member", "Member")
+                    b.HasOne("Libota.Data.Models.Members.MemberData", "Member")
                         .WithOne("Registration")
-                        .HasForeignKey("Libota.Data.Models.Members.Registration", "MemberId")
+                        .HasForeignKey("Libota.Data.Models.Members.RegistrationData", "MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Libota.Data.Models.Organisation.OrganisationReadModel", "Organisation")
+                    b.HasOne("Libota.Data.Models.Organisation.OrganisationData", "Organisation")
                         .WithMany()
                         .HasForeignKey("OrganisationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -177,13 +179,13 @@ namespace Libota.Data.Migrations
                     b.Navigation("Organisation");
                 });
 
-            modelBuilder.Entity("Libota.Data.Models.Members.Member", b =>
+            modelBuilder.Entity("Libota.Data.Models.Members.MemberData", b =>
                 {
                     b.Navigation("Registration")
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Libota.Data.Models.Organisation.OrganisationReadModel", b =>
+            modelBuilder.Entity("Libota.Data.Models.Organisation.OrganisationData", b =>
                 {
                     b.Navigation("Members");
                 });

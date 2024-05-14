@@ -1,14 +1,15 @@
-using Domain.Organisation.Requests;
+using System;
+using Domain.Organisation.Values;
+using Domain.Shared.Values;
 
 namespace Libota.Application.Organisation.Commands
 {
-    public class RegisterMember
-    {
-        public MemberRegistrationRequest RegistrationRequest { get; }
-
-        public RegisterMember(MemberRegistrationRequest registrationRequest)
-        {
-            RegistrationRequest = registrationRequest;
-        }
-    }
+    public record RegisterMember(
+        OrganisationId OrganisationId,
+        string FirstName,
+        string? MiddleName,
+        string LastName,
+        Gender Gender,
+        MembershipType MembershipType,
+        DateTime RegistrationBegin);
 }

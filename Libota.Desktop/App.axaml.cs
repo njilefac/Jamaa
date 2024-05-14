@@ -78,10 +78,9 @@ namespace Libota.Desktop
             
             Messages.Culture = CultureInfo.CurrentUICulture;
             RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
-            var mainWindow = Locator.Current.GetService<IViewFor<MainWindowViewModel>>() as MainWindow;
-            if (mainWindow == null) return;
+            if (Locator.Current.GetService<IViewFor<MainWindowViewModel>>() is not MainWindow mainWindow) return;
             mainWindow.WindowState = WindowState.Maximized;
-            mainWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            mainWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             lifeTime.MainWindow = mainWindow;
         }
         

@@ -29,7 +29,7 @@ namespace Libota.Desktop.ViewModels.Members
 
         public MembersOverviewPageViewModel(
             IOrganisationManagementFacade organisationManagementFacade,
-            MembersManagementScreenViewModel hostScreen
+            IScreen hostScreen
             )
         {
             HostScreen = hostScreen;

@@ -46,12 +46,23 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
     [Authorize(Operation = "member.registration")]
     public Task RegisterMember(MemberRegistrationRequest request)
     {
-        return Task.Run(() =>  _commandProcessor.Tell(new RegisterMember(request)));
+        return Task.Run(() =>
+        {
+            var message = new RegisterMember(request.OrganisationId, 
+                request.FirstName, 
+                request.MiddleName, 
+                request.LastName, 
+                request.Gender,
+                request.MembershipType, 
+                request.RegistrationBegin);
+            
+            _commandProcessor.Tell(message);
+        });
     }
 
     public async Task<IEnumerable<OrganisationData>> ListOrganisations()
     {
-        return  await _queryProcessor.Get(new GetAllOrganisations());
+        return await _queryProcessor.Get(new GetAllOrganisations());
     }
 
     private async Task<IList<MemberData>?> ListCurrentMembers()

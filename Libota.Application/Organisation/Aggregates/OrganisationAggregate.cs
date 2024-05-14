@@ -52,17 +52,16 @@ namespace Libota.Application.Organisation.Aggregates
             {
                 if (!IsValid(command)) return;
 
-                var request = command.RegistrationRequest;
                 var registeredEvent = new MemberRegistered
                 (
                     new MemberId(Guid.NewGuid().ToString()),
-                    request.FirstName,
-                    request.MiddleName,
-                    request.LastName,
-                    request.Gender,
+                    command.FirstName,
+                    command.MiddleName,
+                    command.LastName,
+                    command.Gender,
                     BirthDate: null,
-                    request.RegistrationBegin.GetValueOrDefault(),
-                    request.MembershipType
+                    command.RegistrationBegin,
+                    command.MembershipType
                 );
                 Persist(registeredEvent, ApplyEvent);
                 if(LastSequenceNr % 5 == 0)
@@ -73,8 +72,8 @@ namespace Libota.Application.Organisation.Aggregates
         private bool IsValid(RegisterMember command)
         {
             return _state != null &&
-                   !_state.Members.Any(x => x.FirstName == command.RegistrationRequest.FirstName &&
-                                            x.LastName == command.RegistrationRequest.LastName);
+                   !_state.Members.Any(x => x.FirstName == command.FirstName &&
+                                            x.LastName == command.LastName);
         }
 
         private bool IsValid(CreateOrganisation command)

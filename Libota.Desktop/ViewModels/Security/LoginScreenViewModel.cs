@@ -15,6 +15,7 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
 using ReactiveUI.Validation.Helpers;
+using Splat;
 
 namespace Libota.Desktop.ViewModels.Security
 {
@@ -33,13 +34,17 @@ namespace Libota.Desktop.ViewModels.Security
 
         public Interaction<UserSession?, Unit> NotifyAuthenticationResult { get; set; }
 
-        public LoginScreenViewModel(MainWindowViewModel screen,
-            IUserSessionService userSessionService,
-            ISetupService setupService,
-            ILogger<LoginScreenViewModel> logger)
+        public LoginScreenViewModel(IScreen screen, IUserSessionService userSessionService, ISetupService setupService, ILogger<LoginScreenViewModel> logger)
         {
-            _userSessionService = userSessionService;
             HostScreen = screen;
+            _userSessionService = userSessionService;
+            
+            _userSessionService.UserSessions.Subscribe(x =>
+            {
+                if (x is not { IsAuthenticated: true }) return;
+                var nextViewModel = Locator.Current.GetService<DashboardViewModel>();
+                HostScreen.Router.Navigate.Execute(nextViewModel!);
+            });
 
             UserName = string.Empty;
             Password = string.Empty;
@@ -47,9 +52,8 @@ namespace Libota.Desktop.ViewModels.Security
             setupService.ListOrganisations().ContinueWith(task =>
             {
                 Organisations = task.Result.ToList();
+                CurrentOrganisation = Organisations?.FirstOrDefault();
             });
-
-            CurrentOrganisation = Organisations?.FirstOrDefault();
 
             this.ValidationRule(vm => vm.UserName,
                 x => !string.IsNullOrEmpty(x) && x.Length >= 3,

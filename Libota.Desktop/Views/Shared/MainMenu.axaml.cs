@@ -1,3 +1,4 @@
+using System.Reactive.Disposables;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Libota.Desktop.ViewModels.Shared;
@@ -13,8 +14,10 @@ namespace Libota.Desktop.Views.Shared
             InitializeComponent();
             this.WhenActivated(disposables =>
             {
+                ViewModel = Locator.Current.GetService<MainMenuViewModel>();
+                Disposable.Create(() => { }).DisposeWith(disposables);
             });
-            ViewModel = Locator.Current.GetService<MainMenuViewModel>();
+            
         }
 
         private void InitializeComponent()
