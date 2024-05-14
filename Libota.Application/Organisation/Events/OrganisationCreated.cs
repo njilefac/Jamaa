@@ -1,14 +1,10 @@
+using Domain.Organisation.Values;
+using Libota.Application.Shared;
+
 namespace Libota.Application.Organisation.Events
 {
-    public class OrganisationCreated
+    public record OrganisationCreated(OrganisationId Id, string Name, string? Description) : ILibotaEvent
     {
-        public string Name { get; }
-        public string? Description { get; }
-
-        public OrganisationCreated(string name, string? description)
-        {
-            Name = name;
-            Description = description;
-        }
+        public string EntityId => Id.Value;
     }
 }

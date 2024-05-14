@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using Akka.Actor;
 using Akka.Persistence;
 using Domain.Members;
 using Domain.Organisation.Queries;
 using Domain.Organisation.Values;
+using Libota.Application.Members.Aggregates;
 using Libota.Application.Members.Events;
 using Libota.Application.Organisation.Commands;
 using Libota.Application.Organisation.Events;
@@ -11,47 +13,68 @@ using Libota.Application.Shared;
 
 namespace Libota.Application.Organisation.Aggregates
 {
-    public class OrganisationAggregate(OrganisationId id, IQueryProcessor queryProcessor) : ReceivePersistentActor
+    public class OrganisationAggregate : ReceivePersistentActor
     {
         private Domain.Organisation.Entities.Organisation? _state;
+        private readonly IQueryProcessor _queryProcessor;
 
-        protected override bool Receive(object message)
+        public OrganisationAggregate(OrganisationId id, IQueryProcessor queryProcessor)
         {
-            switch (message)
+            _queryProcessor = queryProcessor;
+            PersistenceId = $"organisation-{id.Value}";
+
+            RegisterCommandHandlers();
+            RegisterEventHandlers();
+        }
+
+        private void RegisterEventHandlers()
+        {
+            Recover<SnapshotOffer>(offer =>
             {
-                case CreateOrganisation command:
-                    if (IsValid(command))
-                        Persist(new OrganisationCreated(command.Name, command.Description), ApplyEvent);
+                if (offer.Snapshot is Domain.Organisation.Entities.Organisation state)
+                    _state = state;
+            });
+            
+            Recover<OrganisationCreated>(msg =>
+            {
+                Console.WriteLine(msg);
+            });
+        }
 
-                    break;
-                case RegisterMember command:
-                    if (IsValid(command))
-                    {
-                        var request = command.RegistrationRequest;
-                        var registeredEvent = new MemberRegistered
-                        {
-                            FirstName = request.FirstName,
-                            MiddleName = request.MiddleName,
-                            LastName = request.LastName,
-                            Gender = request.Gender,
-                            RegistrationBegin = request.RegistrationBegin.GetValueOrDefault(),
-                            MembershipType = request.MembershipType,
-                        };
-                        Persist(registeredEvent, ApplyEvent);
-                    }
-                    break;
-                default:
-                    return false;
-            }
+        private void RegisterCommandHandlers()
+        {
+            Command<CreateOrganisation>(command =>
+            {
+                if (IsValid(command))
+                    Persist(new OrganisationCreated(OrganisationId.With(PersistenceId), command.Name, command.Description), ApplyEvent);
+            });
+            Command<RegisterMember>(command =>
+            {
+                if (!IsValid(command)) return;
 
-            return true;
+                var request = command.RegistrationRequest;
+                var registeredEvent = new MemberRegistered
+                (
+                    new MemberId(Guid.NewGuid().ToString()),
+                    request.FirstName,
+                    request.MiddleName,
+                    request.LastName,
+                    request.Gender,
+                    BirthDate: null,
+                    request.RegistrationBegin.GetValueOrDefault(),
+                    request.MembershipType
+                );
+                Persist(registeredEvent, ApplyEvent);
+                if(LastSequenceNr % 5 == 0)
+                    SaveSnapshot(_state);
+            });
         }
 
         private bool IsValid(RegisterMember command)
         {
-            if (_state != null) return true;
-            Context.Sender.Tell($"the organisation must be created first");
-            return false;
+            return _state != null &&
+                   !_state.Members.Any(x => x.FirstName == command.RegistrationRequest.FirstName &&
+                                            x.LastName == command.RegistrationRequest.LastName);
         }
 
         private bool IsValid(CreateOrganisation command)
@@ -62,7 +85,7 @@ namespace Libota.Application.Organisation.Aggregates
                 return false;
             }
 
-            var conflictingOrganisation = queryProcessor.Get(new GetOrganisationByName(command.Name)).Result;
+            var conflictingOrganisation = _queryProcessor.Get(new GetOrganisationByName(command.Name)).Result;
             if (conflictingOrganisation == null) return true;
 
             Context.Sender.Tell($"an organisation with the name {command.Name} already exists", Self);
@@ -72,16 +95,16 @@ namespace Libota.Application.Organisation.Aggregates
         private void ApplyEvent(MemberRegistered registered)
         {
             var newMember = new Member(registered.FirstName, registered.MiddleName, registered.LastName, registered.Gender, DateTime.MinValue);
-            
+
             _state?.Register(newMember, registered.MembershipType, registered.RegistrationBegin);
         }
-        
+
         private void ApplyEvent(OrganisationCreated created)
         {
             _state = new Domain.Organisation.Entities.Organisation(created.Name, created.Description);
         }
 
-        public override string PersistenceId { get; } = $"organisation-{id.Value}";
+        public override string PersistenceId { get; }
 
         public static Props Props(OrganisationId id, IQueryProcessor queryProcessor)
         {

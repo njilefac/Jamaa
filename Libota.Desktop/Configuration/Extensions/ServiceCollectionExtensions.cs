@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using Akka.Hosting;
 using Akka.Logger.Serilog;
+using Akka.Persistence.Hosting;
 using Akka.Persistence.Sql.Config;
 using Akka.Persistence.Sql.Hosting;
+using Akka.Persistence.Sqlite;
 using Avalonia.Controls.ApplicationLifetimes;
 using Domain.Shared.Values;
 using Libota.Application.Configuration;
@@ -16,6 +18,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Settings.Configuration;
+using SqlJournalOptions = Akka.Persistence.Sql.Hosting.SqlJournalOptions;
+using SqlSnapshotOptions = Akka.Persistence.Sql.Hosting.SqlSnapshotOptions;
 
 namespace Libota.Desktop.Configuration.Extensions;
 
@@ -24,42 +28,50 @@ public static class ServiceCollectionExtensions
     public static ServiceCollection ConfigureAkka(this ServiceCollection services, IClassicDesktopStyleApplicationLifetime applicationLifetime, IConfigurationRoot configuration)
     {
         services.AddSingleton<IHostApplicationLifetime>(new AvaloniaApplicationLifeTime(applicationLifetime));
-        
+
         services.AddAkka("Libota-Akka", builder =>
         {
             builder.WithActors((system, registry, resolver) =>
             {
                 var commandProcessor = system.ActorOf(resolver.Props<CommandProcessor>(), "command-processor");
 
+                var organisationEventsProjector = system.ActorOf(resolver.Props<OrganisationProjection>(), "organisation-events-projector");
+
+
                 registry.Register<CommandProcessor>(commandProcessor);
+                registry.Register<OrganisationProjection>(organisationEventsProjector);
 
                 system.WhenTerminated.ContinueWith(_ => applicationLifetime.Shutdown());
             });
 
             builder.ConfigureLoggers(b =>
             {
+                b.ClearLoggers();
                 b.AddLogger<SerilogLogger>();
             });
 
-            var dataFile = configuration.GetSection("Database:DataFile").Value ?? throw new InvalidOperationException();
-            var connectionString = $"Data Source={Path.Combine(Directory.GetCurrentDirectory(), dataFile)};";
+            var connectionString = $"Data Source={Path.Combine(Directory.GetCurrentDirectory(),
+                configuration.GetSection("Database:DataFile").Value ?? throw new InvalidOperationException())};";
+
             
-            builder.WithSqlPersistence(
-                connectionString: connectionString,
-                providerName:ProviderName.SQLite, 
-                autoInitialize:true, 
-                isDefaultPlugin:true,
-                pluginIdentifier:"sqlite", 
-                tagStorageMode:TagMode.TagTable);
+            
+            builder.WithSqlPersistence(connectionString,
+                ProviderName.SQLiteMS,
+                journalBuilder:b =>
+                {
+                    b.AddWriteEventAdapter<LibotaEventTagger>("organisation-event-tagger", new[] { typeof(ILibotaEvent) });
+                },
+                autoInitialize: true,
+                useWriterUuidColumn: true);
         });
-            
+
         return services;
     }
-    
+
     public static ServiceCollection ConfigureServices(this ServiceCollection services, IConfigurationRoot configuration)
     {
         services.AddLogging();
-            
+
         services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
 
         services
@@ -73,7 +85,7 @@ public static class ServiceCollectionExtensions
                     SectionName = "Serilog"
                 });
             });
-            
+
         return services;
     }
 }

@@ -37,7 +37,13 @@ public class LibotaDbContext(IOptions<DatabaseOptions> options, ILoggerFactory l
     private static void MapReadModels(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<OrganisationData>()
-            .Property(e => e.Id).ValueGeneratedOnAdd();
+            .Property(e => e.Id).IsRequired();
+
+        modelBuilder.Entity<OrganisationData>()
+            .Property(e => e.Name).IsRequired();
+        
+        modelBuilder.Entity<OrganisationData>()
+            .Property(e => e.Description);
 
         modelBuilder.Entity<OrganisationData>()
             .HasMany(e => e.Members)
