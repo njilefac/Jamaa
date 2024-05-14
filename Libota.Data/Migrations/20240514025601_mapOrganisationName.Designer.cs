@@ -3,6 +3,7 @@ using System;
 using Libota.Data.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Libota.Data.Migrations
 {
     [DbContext(typeof(LibotaDbContext))]
-    partial class LibotaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240514025601_mapOrganisationName")]
+    partial class mapOrganisationName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
@@ -95,7 +98,7 @@ namespace Libota.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Organisations", (string)null);
+                    b.ToTable("Organisations");
                 });
 
             modelBuilder.Entity("Libota.Data.Models.Users.UserData", b =>
@@ -140,7 +143,7 @@ namespace Libota.Data.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Libota.Data.Models.Members.MemberData", b =>

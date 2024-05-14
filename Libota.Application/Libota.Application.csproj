@@ -9,7 +9,9 @@
     <ItemGroup>
       <PackageReference Include="Akka.Hosting" Version="1.5.20" />
       <PackageReference Include="Akka.Logger.Serilog" Version="1.5.12.1" />
-      <PackageReference Include="Akka.Persistence" Version="1.5.20" />
+      <PackageReference Include="Akka.Persistence.Query" Version="1.5.20" />
+      <PackageReference Include="Akka.Persistence.Sql" Version="1.5.20" />
+      <PackageReference Include="Akka.Persistence.Sqlite" Version="1.5.20" />
       <PackageReference Include="Akka.Remote.Hosting" Version="1.5.20" />
       <PackageReference Include="AutoMapper" Version="13.0.1" />
       <PackageReference Include="EntityFrameworkCore.Triggers" Version="1.2.3" />
