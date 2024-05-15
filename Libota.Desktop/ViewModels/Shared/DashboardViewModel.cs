@@ -15,8 +15,8 @@ namespace Libota.Desktop.ViewModels.Shared
     {
         public DashboardViewModel()
         {
+            HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
             _userSessionService = Locator.Current.GetService<IUserSessionService>() ?? throw new InvalidOperationException();
-            HostScreen = Locator.Current.GetService<IScreen>() ?? throw new InvalidOperationException();
             MenuItems = new[]
             {
                 new NavigationItemViewModel("Home", "Icons.Home", typeof(DashboardViewModel)),
@@ -27,7 +27,7 @@ namespace Libota.Desktop.ViewModels.Shared
         }
 
         [Reactive] public IEnumerable<NavigationItemViewModel> MenuItems { get; private set; }
-        public string? UrlPathSegment => "Home";
+        public string UrlPathSegment => "Home";
         public IScreen HostScreen { get; }
 
         private readonly IUserSessionService _userSessionService;

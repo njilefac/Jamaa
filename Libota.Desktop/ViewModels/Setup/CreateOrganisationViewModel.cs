@@ -3,6 +3,7 @@ using System.Reactive;
 using System.Threading.Tasks;
 using Libota.Application.Setup;
 using Libota.Desktop.ViewModels.Security;
+using Libota.Desktop.ViewModels.Shared;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
@@ -13,13 +14,13 @@ namespace Libota.Desktop.ViewModels.Setup
 {
     public class CreateOrganisationViewModel : ReactiveValidationObject, IRoutableViewModel
     {
-        public CreateOrganisationViewModel(ISetupService setupService, IScreen hostScreen)
+        public CreateOrganisationViewModel()
         {
-            _setupService = setupService;
-            HostScreen = hostScreen;
+            HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
 
-            this.ValidationRule(x => x.Name,
-                v => !string.IsNullOrWhiteSpace(Name), "name validation error");
+            _setupService = Locator.Current.GetService<ISetupService>() ?? throw new InvalidOperationException();
+
+            this.ValidationRule(x => x.Name, _ => !string.IsNullOrWhiteSpace(Name), "name validation error");
 
             this.ValidationRule(x => x.Description, _ => !string.IsNullOrWhiteSpace(Description), "description error message");
 
@@ -31,7 +32,7 @@ namespace Libota.Desktop.ViewModels.Setup
 
                 var superUserViewModel = Locator.Current.GetService<CreateSuperUserViewModel>();
                 var loginScreenViewModel = Locator.Current.GetService<LoginScreenViewModel>();
-                var superUser = setupService.GetSuperUser().Result;
+                var superUser = _setupService.GetSuperUser().Result;
                 IRoutableViewModel? nextViewModel = superUser == null ? superUserViewModel : loginScreenViewModel;
                 HostScreen.Router.Navigate.Execute(nextViewModel ?? throw new InvalidOperationException());
             });

@@ -9,6 +9,7 @@ using Libota.Application.Organisation;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Helpers;
+using Splat;
 
 namespace Libota.Desktop.ViewModels.Members
 {
@@ -27,15 +28,12 @@ namespace Libota.Desktop.ViewModels.Members
         public Interaction<Window?, MemberRegistrationRequest?> ShowRegistrationPrompt { get; }
 
 
-        public MembersOverviewPageViewModel(
-            IOrganisationManagementFacade organisationManagementFacade,
-            IScreen hostScreen
-            )
+        public MembersOverviewPageViewModel()
         {
-            HostScreen = hostScreen;
-            _organisationManagementFacade = organisationManagementFacade;
+            HostScreen = Locator.Current.GetService<MembersManagementScreenViewModel>() ?? throw new InvalidOperationException();;
+            _organisationManagementFacade = Locator.Current.GetService<IOrganisationManagementFacade>() ?? throw new InvalidOperationException();
 
-            organisationManagementFacade.MemberAdded.Subscribe(m =>
+            _organisationManagementFacade.MemberAdded.Subscribe(m =>
             {
                 TotalMembersCount++;
                 if (m.Gender == Gender.Male)
@@ -43,7 +41,7 @@ namespace Libota.Desktop.ViewModels.Members
                 else FemaleMembersCount++;
             });
 
-            organisationManagementFacade.MemberDeleted.Subscribe(m =>
+            _organisationManagementFacade.MemberDeleted.Subscribe(m =>
             {
                 TotalMembersCount--;
                 if (m.Gender == Gender.Male)

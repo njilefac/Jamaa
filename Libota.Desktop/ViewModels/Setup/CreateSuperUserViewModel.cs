@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -5,30 +6,25 @@ using Libota.Application.Setup;
 using Libota.Application.Users;
 using Libota.Application.Users.Services;
 using Libota.Desktop.Assets.Resources;
+using Libota.Desktop.ViewModels.Shared;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
 using ReactiveUI.Validation.Helpers;
+using Splat;
 
 namespace Libota.Desktop.ViewModels.Setup
 {
     public class CreateSuperUserViewModel : ReactiveValidationObject, IRoutableViewModel
     {
-        private readonly ISetupService _setupService;
-        private readonly IUserSessionService _userSessionService;
-        [Reactive] public string FirstName { get; set; }
-        [Reactive] public string LastName { get; set; }
-        [Reactive] public string UserName { get; set; }
-        [Reactive] public string Email { get; set; }
-        [Reactive] public string Password { get; set; }
-
         public ReactiveCommand<Unit, UserSession?> CreateAccount { get; set; }
 
-        public CreateSuperUserViewModel(IScreen hostScreen, ISetupService userManagementFacade, IUserSessionService userSessionService)
+        public CreateSuperUserViewModel()
         {
-            _setupService = userManagementFacade;
-            _userSessionService = userSessionService;
-            HostScreen = hostScreen;
+            HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
+
+            _setupService = Locator.Current.GetService<ISetupService>() ?? throw new InvalidOperationException();
+            _userSessionService = Locator.Current.GetService<IUserSessionService>() ?? throw new InvalidOperationException();
 
             UserName = string.Empty;
             Password = string.Empty;
@@ -51,6 +47,14 @@ namespace Libota.Desktop.ViewModels.Setup
             CreateAccount = ReactiveCommand.CreateFromTask(OnCreateAccount, this.IsValid());
         }
 
+        [Reactive] public string FirstName { get; set; }
+        [Reactive] public string LastName { get; set; }
+        [Reactive] public string UserName { get; set; }
+        [Reactive] public string Email { get; set; }
+        [Reactive] public string Password { get; set; }
+        public string UrlPathSegment => "setup.create-super-user";
+        public IScreen HostScreen { get; }
+        
         private async Task<UserSession?> OnCreateAccount()
         {
             var user = await _setupService.CreateSuperUser(UserName, Password, Email, FirstName, LastName);
@@ -59,8 +63,8 @@ namespace Libota.Desktop.ViewModels.Setup
             return await _userSessionService.Authenticate(user.Account.Credentials, defaultOrganisation);
 
         }
-
-        public string UrlPathSegment => "setup.create-super-user";
-        public IScreen HostScreen { get; }
+        
+        private readonly ISetupService _setupService;
+        private readonly IUserSessionService _userSessionService;
     }
 }
