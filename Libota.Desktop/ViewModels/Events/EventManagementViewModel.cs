@@ -1,20 +1,22 @@
+using System;
 using Libota.Application.Users.Services;
 using Libota.Desktop.ViewModels.Shared;
 using ReactiveUI;
+using Splat;
 
 namespace Libota.Desktop.ViewModels.Events
 {
     public class EventManagementViewModel : ReactiveObject, IRoutableViewModel
     {
-        private readonly IUserSessionService _userSessionService;
+        public EventManagementViewModel()
+        {
+            HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();;
+            _userSessionService = Locator.Current.GetService<IUserSessionService>()!;
+        }
 
-        public string? UrlPathSegment => "events"; 
+        public string UrlPathSegment => "events"; 
         public IScreen HostScreen { get; }
 
-        public EventManagementViewModel(MainWindowViewModel screen, IUserSessionService userSessionService)
-        {
-            HostScreen = screen;
-            _userSessionService = userSessionService;
-        }
+        private readonly IUserSessionService _userSessionService;
     }
 }

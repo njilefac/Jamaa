@@ -3,7 +3,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
-             xmlns:shared="clr-namespace:Libota.Desktop.ViewModels.Shared"
              xmlns:navigation="clr-namespace:Libota.Desktop.ViewModels.Navigation"
              xmlns:services="clr-namespace:Libota.Desktop.Services"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -13,12 +12,8 @@
              HorizontalAlignment="Stretch"
              VerticalAlignment="Stretch">
 
-    <UserControl.DataContext>
-        <shared:DashboardViewModel />
-    </UserControl.DataContext>
-    
     <UserControl.Resources>
-        <services:LibotaIconSourceConverter x:Key="IconSourceConverter"/>
+        <services:LibotaIconSourceConverter x:Key="IconSourceConverter" />
     </UserControl.Resources>
 
     <UserControl.Styles>

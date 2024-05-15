@@ -17,80 +17,77 @@ using ReactiveUI;
 using Splat;
 using Splat.Microsoft.Extensions.DependencyInjection;
 
-namespace Libota.Desktop.Configuration.Extensions
+namespace Libota.Desktop.Configuration.Extensions;
+
+public static class PresentationServicesRegistration
 {
-    public static class PresentationServicesRegistration
+    public static IServiceCollection RegisterPresentationServices(this IServiceCollection services)
     {
-        private const string MEMBERS_MANAGEMENT_SCREEN = "MembersManagementScreen";
-        private const string MAIN_WINDOW = "MainWindow";
+        services.UseMicrosoftDependencyResolver();
+        var resolver = Locator.CurrentMutable;
+        resolver.InitializeSplat();
+        resolver.InitializeReactiveUI();
 
-        public static IServiceCollection RegisterPresentationServices(this IServiceCollection services)
-        {
-            services.UseMicrosoftDependencyResolver();
-            var resolver = Locator.CurrentMutable;
-            resolver.InitializeSplat();
-            resolver.InitializeReactiveUI();
+        services.RegisterMappers()
+            .RegisterServices()
+            .RegisterValidators()
+            .RegisterViewModels()
+            .RegisterViews();
+
+
+        return services;
+    }
+
+    private static IServiceCollection RegisterMappers(this IServiceCollection services)
+    {
+        services.AddAutoMapper(typeof(EntityMappingProfile).Assembly);
+        return services;
+    }
+
+    private static IServiceCollection RegisterServices(this IServiceCollection services)
+    {
+        services.AddSingleton<IUserSessionService, UserSessionService>();
+        services.AddScoped<WindowNotificationManager>();
+        services.AddScoped<IViewLocator, LibotaViewLocator>();
+
+        return services;
+    }
+
+    private static IServiceCollection RegisterViewModels(this IServiceCollection services)
+    {
+        services.AddSingleton<MainWindowViewModel>();
+
+        services.AddSingleton<MembersManagementScreenViewModel>();
+
             
-            services.RegisterMappers()
-                .RegisterServices()
-                .RegisterValidators()
-                .RegisterViewModels()
-                .RegisterViews();
-
+        services.AddTransient<MainMenuViewModel>();
+        services.AddTransient<MemberRegistrationDialogViewModel>();
+        services.AddTransient<LoginScreenViewModel>();
+        services.AddTransient<CreateSuperUserViewModel>();
+        services.AddTransient<CreateOrganisationViewModel>();
+        services.AddTransient<OrganisationContactDetailsViewModel>();
+        services.AddTransient<DashboardViewModel>();
+        services.AddTransient<UserManagementViewModel>();
+        services.AddTransient<GroupManagementViewModel>();
+        services.AddTransient<EventManagementViewModel>();
+        services.AddTransient<FinanceManagementViewModel>();
             
-            
-            return services;
-        }
+        services.AddTransient<MembersOverviewPageViewModel>();
+        services.AddTransient<MemberProfileViewModel>();
+        services.AddTransient<MembersListViewModel>();
 
-        private static IServiceCollection RegisterMappers(this IServiceCollection services)
-        {
-            services.AddAutoMapper(typeof(EntityMappingProfile).Assembly);
-            return services;
-        }
+        return services;
+    }
 
-        private static IServiceCollection RegisterServices(this IServiceCollection services)
-        {
-            services.AddSingleton<IUserSessionService, UserSessionService>();
-            services.AddScoped<WindowNotificationManager>();
-            services.AddScoped<IViewLocator,LibotaViewLocator>();
+    private static IServiceCollection RegisterViews(this IServiceCollection services)
+    {
+        Locator.CurrentMutable.RegisterViewsForViewModels(typeof(MainWindowViewModel).Assembly);
+        return services;
+    }
 
-            return services;
-        }
-
-        private static IServiceCollection RegisterViewModels(this IServiceCollection services)
-        {
-            services.AddSingleton<MainWindowViewModel>();
-            services.AddSingleton<IScreen, MainWindowViewModel>(sp => sp.GetRequiredService<MainWindowViewModel>());
-            
-            services.AddTransient<MembersManagementScreenViewModel>();
-            services.AddTransient<MainMenuViewModel>();
-            services.AddTransient<MemberRegistrationDialogViewModel>();
-            services.AddTransient<LoginScreenViewModel>();
-            services.AddTransient<CreateSuperUserViewModel>();
-            services.AddTransient<CreateOrganisationViewModel>();
-            services.AddTransient<OrganisationContactDetailsViewModel>();
-            services.AddTransient<DashboardViewModel>();
-            services.AddTransient<UserManagementViewModel>();
-            services.AddTransient<GroupManagementViewModel>();
-            services.AddTransient<EventManagementViewModel>();
-            services.AddTransient<FinanceManagementViewModel>();
-            services.AddTransient<MembersOverviewPageViewModel>();
-            services.AddTransient<MemberProfileViewModel>();
-            services.AddTransient<MembersListViewModel>();
-
-            return services;
-        }
-
-        private static IServiceCollection RegisterViews(this IServiceCollection services)
-        {
-            Locator.CurrentMutable.RegisterViewsForViewModels(typeof(MainWindowViewModel).Assembly);
-            return services;
-        }
-
-        private static IServiceCollection RegisterValidators(this IServiceCollection services)
-        {
-            services.AddScoped<IValidator<LoginScreenViewModel>, LoginScreenViewModelValidator>();
-            return services;
-        }
+    private static IServiceCollection RegisterValidators(this IServiceCollection services)
+    {
+        services.AddScoped<IValidator<LoginScreenViewModel>, LoginScreenViewModelValidator>();
+        return services;
     }
 }
