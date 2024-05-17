@@ -24,16 +24,16 @@ public static class PresentationServicesRegistration
     public static IServiceCollection RegisterPresentationServices(this IServiceCollection services)
     {
         services.UseMicrosoftDependencyResolver();
+        
         var resolver = Locator.CurrentMutable;
         resolver.InitializeSplat();
-        resolver.InitializeReactiveUI();
-
+        resolver.InitializeReactiveUI(RegistrationNamespace.Avalonia);
+        
         services.RegisterMappers()
             .RegisterServices()
             .RegisterValidators()
             .RegisterViewModels()
             .RegisterViews();
-
 
         return services;
     }
@@ -59,7 +59,7 @@ public static class PresentationServicesRegistration
 
         services.AddSingleton<MembersManagementScreenViewModel>();
 
-            
+
         services.AddTransient<MainMenuViewModel>();
         services.AddTransient<MemberRegistrationDialogViewModel>();
         services.AddTransient<LoginScreenViewModel>();
@@ -71,7 +71,7 @@ public static class PresentationServicesRegistration
         services.AddTransient<GroupManagementViewModel>();
         services.AddTransient<EventManagementViewModel>();
         services.AddTransient<FinanceManagementViewModel>();
-            
+
         services.AddTransient<MembersOverviewPageViewModel>();
         services.AddTransient<MemberProfileViewModel>();
         services.AddTransient<MembersListViewModel>();

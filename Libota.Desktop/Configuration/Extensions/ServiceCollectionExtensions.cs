@@ -2,10 +2,7 @@ using System;
 using System.IO;
 using Akka.Hosting;
 using Akka.Logger.Serilog;
-using Akka.Persistence.Hosting;
-using Akka.Persistence.Sql.Config;
 using Akka.Persistence.Sql.Hosting;
-using Akka.Persistence.Sqlite;
 using Avalonia.Controls.ApplicationLifetimes;
 using Domain.Shared.Values;
 using Libota.Application.Configuration;
@@ -18,8 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Settings.Configuration;
-using SqlJournalOptions = Akka.Persistence.Sql.Hosting.SqlJournalOptions;
-using SqlSnapshotOptions = Akka.Persistence.Sql.Hosting.SqlSnapshotOptions;
 
 namespace Libota.Desktop.Configuration.Extensions;
 

@@ -4,20 +4,20 @@ using Libota.Desktop.ViewModels.Events;
 using ReactiveUI;
 using Splat;
 
-namespace Libota.Desktop.Views.Events
-{
-    public partial class EventManagementScreen : ReactiveUserControl<EventManagementViewModel>
-    {
-        public EventManagementScreen()
-        {
-            InitializeComponent();
-            DataContext = Locator.Current.GetService<EventManagementViewModel>();
-            this.WhenActivated(disposables => { });
-        }
+namespace Libota.Desktop.Views.Events;
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+[SingleInstanceView]
+public partial class EventManagementScreen : ReactiveUserControl<EventManagementViewModel>
+{
+    public EventManagementScreen()
+    {
+        InitializeComponent();
+        DataContext = Locator.Current.GetService<EventManagementViewModel>();
+        this.WhenActivated(disposables => { });
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }
