@@ -3,21 +3,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:reactiveUi="http://reactiveui.net"
-             xmlns:members="clr-namespace:Libota.Desktop.ViewModels.Members"
+             xmlns:vm="clr-namespace:Libota.Desktop.ViewModels.Members"
+             xmlns:views="clr-namespace:Libota.Desktop.Views.Members"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MemberManagementScreen"
-             x:DataType="members:MembersOverviewPageViewModel">
+             x:DataType="vm:MembersOverviewPageViewModel">
     <Panel>
         <reactiveUi:RoutedViewHost
             Router="{Binding Router}"
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch">
             <reactiveUi:RoutedViewHost.DefaultContent>
-                <TextBlock>
-                    <Run>Member Management</Run>
-                </TextBlock>
+                <views:MembersOverviewPage />
             </reactiveUi:RoutedViewHost.DefaultContent>
         </reactiveUi:RoutedViewHost>
     </Panel>
-
 </UserControl>

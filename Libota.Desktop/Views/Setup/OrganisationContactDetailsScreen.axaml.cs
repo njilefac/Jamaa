@@ -5,23 +5,23 @@ using Libota.Desktop.ViewModels.Setup;
 using ReactiveUI;
 using Splat;
 
-namespace Libota.Desktop.Views.Setup
-{
-    public partial class OrganisationContactDetailsScreen : ReactiveUserControl<OrganisationContactDetailsViewModel>
-    {
-        public OrganisationContactDetailsScreen()
-        {
-            InitializeComponent();
-            this.WhenActivated(disposables =>
-            {
-                ViewModel = Locator.Current.GetService<OrganisationContactDetailsViewModel>();
-                Disposable.Create(() => { }).DisposeWith(disposables);
-            });
-        }
+namespace Libota.Desktop.Views.Setup;
 
-        private void InitializeComponent()
+[SingleInstanceView]
+public partial class OrganisationContactDetailsScreen : ReactiveUserControl<OrganisationContactDetailsViewModel>
+{
+    public OrganisationContactDetailsScreen()
+    {
+        InitializeComponent();
+        this.WhenActivated(disposables =>
         {
-            AvaloniaXamlLoader.Load(this);
-        }
+            ViewModel = Locator.Current.GetService<OrganisationContactDetailsViewModel>();
+            Disposable.Create(() => { }).DisposeWith(disposables);
+        });
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

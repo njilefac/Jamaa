@@ -11,6 +11,8 @@
         Title="{Binding ApplicationTitle}"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
+        ShowActivated="True"
+        Topmost="True"
         TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"
         x:DataType="vm:MainWindowViewModel">

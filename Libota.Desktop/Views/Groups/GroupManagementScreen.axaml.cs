@@ -4,20 +4,20 @@ using Libota.Desktop.ViewModels.Groups;
 using ReactiveUI;
 using Splat;
 
-namespace Libota.Desktop.Views.Groups
-{
-    public partial class GroupManagementScreen : ReactiveUserControl<GroupManagementViewModel>
-    {
-        public GroupManagementScreen()
-        {
-            InitializeComponent();
-            this.WhenActivated(disposables => { });
-            DataContext = Locator.Current.GetService<GroupManagementViewModel>();
-        }
+namespace Libota.Desktop.Views.Groups;
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+[SingleInstanceView]
+public partial class GroupManagementScreen : ReactiveUserControl<GroupManagementViewModel>
+{
+    public GroupManagementScreen()
+    {
+        InitializeComponent();
+        this.WhenActivated(disposables => { });
+        DataContext = Locator.Current.GetService<GroupManagementViewModel>();
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

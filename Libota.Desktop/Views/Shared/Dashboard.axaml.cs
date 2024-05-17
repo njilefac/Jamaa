@@ -10,6 +10,7 @@ using Splat;
 
 namespace Libota.Desktop.Views.Shared;
 
+[SingleInstanceView]
 public partial class Dashboard : ReactiveUserControl<DashboardViewModel>
 {
     public Dashboard()

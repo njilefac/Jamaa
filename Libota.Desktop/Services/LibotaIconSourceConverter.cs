@@ -26,7 +26,7 @@ public class LibotaIconSourceConverter : IValueConverter
     {   
         try
         {
-            var success = Avalonia.Application.Current.TryGetResource(resourceName, Avalonia.Application.Current.ActualThemeVariant, out var outValue);
+            var success = Avalonia.Application.Current!.TryGetResource(resourceName, Avalonia.Application.Current.ActualThemeVariant, out var outValue);
 
             if(success && outValue is T value)
             {

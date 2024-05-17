@@ -3,6 +3,7 @@ using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Libota.Application.Setup;
@@ -12,48 +13,60 @@ using Libota.Desktop.ViewModels.Shared;
 using ReactiveUI;
 using Splat;
 
-namespace Libota.Desktop.Views.Shared
+namespace Libota.Desktop.Views.Shared;
+
+[SingleInstanceView]
+public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
-    public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
+    public MainWindow()
     {
-        public MainWindow()
+        this.WhenActivated(disposables =>
         {
-            this.WhenActivated(disposables =>
-            {
-                DataContext = Locator.Current.GetService<MainWindowViewModel>();
+            DataContext = Locator.Current.GetService<MainWindowViewModel>();
 
-                Disposable.Create(() => { }).DisposeWith(disposables);
-            });
+            Disposable.Create(() => { }).DisposeWith(disposables);
+        });
 
-            InitializeComponent();
+        InitializeComponent();
 #if DEBUG
-            this.AttachDevTools();
+        this.AttachDevTools();
 #endif
-        }
+    }
 
-        private void InitializeComponent()
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        if (Screens.Primary == null) return;
+        var screenSize = Screens.Primary.WorkingArea.Size;
+        var windowSize = PixelSize.FromSize(ClientSize, Screens.Primary.Scaling);
+
+        Position = new PixelPoint(
+            screenSize.Width - windowSize.Width,
+            screenSize.Height - windowSize.Height);
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+        var contentPageContainer = this.FindControl<RoutedViewHost>("ContentContainer");
+        if (contentPageContainer != null)
         {
-            AvaloniaXamlLoader.Load(this);
-            var contentPageContainer = this.FindControl<RoutedViewHost>("ContentContainer");
-            if (contentPageContainer != null)
-            {
-                contentPageContainer.DefaultContent = GetStartupScreen().Result;
-            }
+            contentPageContainer.DefaultContent = GetStartupScreen().Result;
         }
+    }
 
-        private static async Task<IViewFor?> GetStartupScreen()
-        {
-            var setupService = Locator.Current.GetService<ISetupService>();
-            var existingOrganisations = await setupService?.ListOrganisations()!;
+    private static async Task<IViewFor?> GetStartupScreen()
+    {
+        var setupService = Locator.Current.GetService<ISetupService>();
+        var existingOrganisations = await setupService?.ListOrganisations()!;
 
-            if (existingOrganisations.Any() == false)
-                return Locator.Current.GetService<IViewFor<CreateOrganisationViewModel>>();
+        if (existingOrganisations.Any() == false)
+            return Locator.Current.GetService<IViewFor<CreateOrganisationViewModel>>();
 
-            var superUser = await setupService.GetSuperUser();
-            if (superUser == null)
-                return Locator.Current.GetService<IViewFor<CreateSuperUserViewModel>>();
+        var superUser = await setupService.GetSuperUser();
+        if (superUser == null)
+            return Locator.Current.GetService<IViewFor<CreateSuperUserViewModel>>();
 
-            return Locator.Current.GetService<IViewFor<LoginScreenViewModel>>();
-        }
+        return Locator.Current.GetService<IViewFor<LoginScreenViewModel>>();
     }
 }

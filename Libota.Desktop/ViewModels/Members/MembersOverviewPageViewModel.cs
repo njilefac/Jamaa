@@ -6,10 +6,12 @@ using Avalonia.Controls;
 using Domain.Organisation.Requests;
 using Domain.Shared.Values;
 using Libota.Application.Organisation;
+using Reactive.Bindings;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Helpers;
 using Splat;
+using ReactiveCommand = ReactiveUI.ReactiveCommand;
 
 namespace Libota.Desktop.ViewModels.Members
 {
@@ -19,13 +21,13 @@ namespace Libota.Desktop.ViewModels.Members
 
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public ReactiveCommand<object?, Unit> RegisterMember { get; }
+        public ReactiveCommand<Unit, Unit> RegisterMember { get; }
 
         [Reactive] public int TotalMembersCount { get; set; }
         [Reactive] public int MaleMembersCount { get; set; }
         [Reactive] public int FemaleMembersCount { get; set; }
 
-        public Interaction<Window?, MemberRegistrationRequest?> ShowRegistrationPrompt { get; }
+        public Interaction<Unit, MemberRegistrationRequest?> ShowRegistrationPrompt { get; }
 
 
         public MembersOverviewPageViewModel()
@@ -49,14 +51,14 @@ namespace Libota.Desktop.ViewModels.Members
                 else FemaleMembersCount--;
             });
 
-            RegisterMember = ReactiveCommand.CreateFromTask<object?>(OnRegisterMember);
+            RegisterMember = ReactiveCommand.CreateFromTask(OnRegisterMember);
 
-            ShowRegistrationPrompt = new Interaction<Window?, MemberRegistrationRequest?>();
+            ShowRegistrationPrompt = new Interaction<Unit, MemberRegistrationRequest?>();
         }
 
-        private Task OnRegisterMember(object? sender)
+        private Task OnRegisterMember()
         {
-            ShowRegistrationPrompt.Handle(sender as Window)
+            ShowRegistrationPrompt.Handle(Unit.Default)
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(request =>
                 {
@@ -66,7 +68,7 @@ namespace Libota.Desktop.ViewModels.Members
             return Task.CompletedTask;
         }
 
-        public string? UrlPathSegment => "members.overview";
+        public string UrlPathSegment => "members.overview";
         public IScreen HostScreen { get; }
     }
 }
