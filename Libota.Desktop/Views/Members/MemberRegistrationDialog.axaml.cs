@@ -1,3 +1,4 @@
+using System;
 using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Markup.Xaml;
@@ -8,15 +9,16 @@ using Splat;
 
 namespace Libota.Desktop.Views.Members;
 
-[SingleInstanceView]
-public partial class MemberRegistrationDialog : ReactiveUserControl<MemberRegistrationDialogViewModel>
+public partial class MemberRegistrationDialog : ReactiveWindow<MemberRegistrationDialogViewModel>
 {
     public MemberRegistrationDialog()
     {
         InitializeComponent();
+        ViewModel = Locator.Current.GetService<MemberRegistrationDialogViewModel>();
+
         this.WhenActivated(disposables =>
         {
-            ViewModel = Locator.Current.GetService<MemberRegistrationDialogViewModel>();
+            ViewModel?.RegisterMember.Subscribe(Close);
             Disposable.Create(() => { }).DisposeWith(disposables);
         });
     }
