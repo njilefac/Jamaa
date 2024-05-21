@@ -60,21 +60,21 @@ public static class PresentationServicesRegistration
         services.AddSingleton<MembersManagementScreenViewModel>();
 
 
-        services.AddTransient<MainMenuViewModel>();
-        services.AddTransient<MemberRegistrationDialogViewModel>();
-        services.AddTransient<LoginScreenViewModel>();
-        services.AddTransient<CreateSuperUserViewModel>();
-        services.AddTransient<CreateOrganisationViewModel>();
-        services.AddTransient<OrganisationContactDetailsViewModel>();
-        services.AddTransient<DashboardViewModel>();
-        services.AddTransient<UserManagementViewModel>();
-        services.AddTransient<GroupManagementViewModel>();
-        services.AddTransient<EventManagementViewModel>();
-        services.AddTransient<FinanceManagementViewModel>();
+        services.AddSingleton<MainMenuViewModel>();
+        services.AddSingleton<MemberRegistrationDialogViewModel>();
+        services.AddSingleton<LoginScreenViewModel>();
+        services.AddSingleton<CreateSuperUserViewModel>();
+        services.AddSingleton<CreateOrganisationViewModel>();
+        services.AddSingleton<OrganisationContactDetailsViewModel>();
+        services.AddSingleton<DashboardViewModel>();
+        services.AddSingleton<UserManagementViewModel>();
+        services.AddSingleton<GroupManagementViewModel>();
+        services.AddSingleton<EventManagementViewModel>();
+        services.AddSingleton<FinanceManagementViewModel>();
 
-        services.AddTransient<MembersOverviewPageViewModel>();
-        services.AddTransient<MemberProfileViewModel>();
-        services.AddTransient<MembersListViewModel>();
+        services.AddSingleton<MembersOverviewPageViewModel>();
+        services.AddSingleton<MemberProfileViewModel>();
+        services.AddSingleton<MembersListViewModel>();
 
         return services;
     }
@@ -87,7 +87,7 @@ public static class PresentationServicesRegistration
 
     private static IServiceCollection RegisterValidators(this IServiceCollection services)
     {
-        services.AddScoped<IValidator<LoginScreenViewModel>, LoginScreenViewModelValidator>();
+        services.AddSingleton<IValidator<LoginScreenViewModel>, LoginScreenViewModelValidator>();
         return services;
     }
 }

@@ -13,16 +13,18 @@ using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
 using ReactiveUI.Validation.Formatters.Abstractions;
 using ReactiveUI.Validation.Helpers;
+using Splat;
 
 namespace Libota.Desktop.ViewModels.Members;
 
 public class MemberRegistrationDialogViewModel : ReactiveValidationObject
 {
     private readonly IUserSessionService _userSessionService;
-    public MemberRegistrationDialogViewModel(IUserSessionService userSessionService, IScheduler? scheduler = null,
-        IValidationTextFormatter<string>? formatter = null) : base(scheduler, formatter)
+
+    public MemberRegistrationDialogViewModel() : 
+        base(Locator.Current.GetService<IScheduler?>(), Locator.Current.GetService<IValidationTextFormatter<string>?>())
     {
-        _userSessionService = userSessionService;
+        _userSessionService = Locator.Current.GetService<IUserSessionService>() ?? throw new InvalidOperationException();
         GenderChoices = Enum.GetValues<Gender>().ToList();
         SelectedGender = Gender.Unknown;
         MembershipType = MembershipType.Regular;
@@ -37,8 +39,7 @@ public class MemberRegistrationDialogViewModel : ReactiveValidationObject
         this.ValidationRule(x => x.SelectedGender, v => v != Gender.Unknown,
             "Please select a gender");
             
-        RegisterMember =
-            ReactiveCommand.CreateFromTask<Unit, MemberRegistrationRequest>(GetRegistrationData, this.IsValid());
+        RegisterMember = ReactiveCommand.CreateFromTask<Unit, MemberRegistrationRequest>(GetRegistrationData, this.IsValid());
     }
 
     private async Task<MemberRegistrationRequest> GetRegistrationData(Unit arg)
