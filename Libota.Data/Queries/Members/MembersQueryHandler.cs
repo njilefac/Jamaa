@@ -17,7 +17,7 @@ public class MembersQueryHandler(LibotaDbContext dbContext) : IMembersQueryHandl
             .ThenInclude(member => member.Registration)
             .ToListAsync();
 
-        var matchingOrganisation = organisations.FirstOrDefault(x => x.Id != null && x.Id == query.OrganisationId.Value);
+        var matchingOrganisation = organisations.FirstOrDefault(x => x.Id == query.OrganisationId.Value);
 
         return matchingOrganisation != null ? matchingOrganisation.Members : new List<MemberData>();
     }

@@ -21,9 +21,9 @@ namespace Libota.Application.Organisation.Aggregates
         public OrganisationAggregate(OrganisationId id, IQueryProcessor queryProcessor)
         {
             _queryProcessor = queryProcessor;
-            PersistenceId = $"organisation-{id.Value}";
+            PersistenceId = id.Value;
 
-            RegisterCommandHandlers();
+            RegisterCommandsHandlers();
             RegisterEventHandlers();
         }
 
@@ -35,13 +35,10 @@ namespace Libota.Application.Organisation.Aggregates
                     _state = state;
             });
             
-            Recover<OrganisationCreated>(msg =>
-            {
-                Console.WriteLine(msg);
-            });
+            Recover<OrganisationCreated>(ApplyEvent);
         }
 
-        private void RegisterCommandHandlers()
+        private void RegisterCommandsHandlers()
         {
             Command<CreateOrganisation>(command =>
             {
@@ -61,7 +58,8 @@ namespace Libota.Application.Organisation.Aggregates
                     command.Gender,
                     BirthDate: null,
                     command.RegistrationBegin,
-                    command.MembershipType
+                    command.MembershipType,
+                    OrganisationId.With(PersistenceId)
                 );
                 Persist(registeredEvent, ApplyEvent);
                 if(LastSequenceNr % 5 == 0)
