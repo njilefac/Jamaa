@@ -15,6 +15,14 @@ public class CommandProcessor : ReceiveActor
     {
         _queryProcessor = queryProcessor;
         ReceiveAsync<CreateOrganisation>(OnCreateOrganisation);
+        ReceiveAsync<RegisterMember>(OnRegisterMember);
+    }
+
+    private Task OnRegisterMember(RegisterMember command)
+    {
+        var organisation = Context.ActorOf(OrganisationAggregate.Props(command.OrganisationId, _queryProcessor));
+        organisation.Tell(command);
+        return Task.CompletedTask;
     }
 
     private Task OnCreateOrganisation(CreateOrganisation createCommand)

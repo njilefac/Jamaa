@@ -14,9 +14,10 @@ namespace Libota.Application.Members.Events
         Gender Gender,
         DateTime? BirthDate,
         DateTime RegistrationBegin,
-        MembershipType MembershipType) : ILibotaEvent
+        MembershipType MembershipType,
+        OrganisationId OrganisationId) : ILibotaEvent
 
     {
-        public string EntityId => Id.Value;
+        public string EntityId => OrganisationId.Value;
     }
 }

@@ -6,11 +6,13 @@ using Akka.Persistence.Query;
 using Akka.Persistence.Sql.Query;
 using Akka.Streams;
 using Akka.Streams.Dsl;
+using Domain.Organisation.Values;
 using Libota.Application.Members.Events;
 using Libota.Application.Organisation.Events;
 using Libota.Data.Configuration;
 using Libota.Data.Models.Members;
 using Libota.Data.Models.Organisation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -21,15 +23,15 @@ public class OrganisationProjection : ReceivePersistentActor
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<OrganisationProjection> _logger;
     private MaterializedViewState _state = new(Offset.NoOffset());
-    
+
     public OrganisationProjection(IServiceProvider serviceProvider, ILogger<OrganisationProjection> logger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
         PersistenceId = "organisation-projection";
 
-        Recovers();
-        Commands();
+        RegisterEventHandlers();
+        RegisterCommandHandlers();
     }
 
     protected override void OnReplaySuccess()
@@ -38,12 +40,12 @@ public class OrganisationProjection : ReceivePersistentActor
         var self = Self;
         var sink = Sink.ActorRefWithAck<EventEnvelope>(self, ProjectionStarting.Instance, ProjectionAck.Instance,
             ProjectionCompleted.Instance, ex => new ProjectionFailed(ex));
-        
+
         readJournal.EventsByTag(LibotaEventTagger.OrganisationEvent, _state.LastOffset)
             .RunWith(sink, Context.Materializer());
     }
 
-    private void Commands()
+    private void RegisterCommandHandlers()
     {
         CommandAsync<EventEnvelope>(async e =>
         {
@@ -60,9 +62,9 @@ public class OrganisationProjection : ReceivePersistentActor
             _logger.LogWarning("Unsupported event [{EventType}] at offset [{Offset}] found by projector. Maybe this was tagged incorrectly?", e.Event, e.Offset);
             Sender.Tell(ProjectionAck.Instance, Self);
         });
-        
+
         Command<ProjectionStarting>(_ => Sender.Tell(ProjectionAck.Instance, Self));
-        
+
         Command<ProjectionFailed>(failed =>
         {
             var val = 0L;
@@ -73,7 +75,7 @@ public class OrganisationProjection : ReceivePersistentActor
             throw new ApplicationException("Projection failed due to error. See InnerException for details.",
                 failed.Cause);
         });
-        
+
         Command<SaveSnapshotSuccess>(success =>
         {
             // purge older snapshots and messages
@@ -97,44 +99,68 @@ public class OrganisationProjection : ReceivePersistentActor
         };
     }
 
-    private Task Handle(MemberRegistrationEnded registrationUpdated, LibotaDbContext dbContext)
+    private async Task Handle(MemberRegistrationEnded @event, LibotaDbContext dbContext)
     {
         throw new NotImplementedException();
     }
 
-    private Task Handle(MemberRegistrationUpdated registrationUpdated, LibotaDbContext dbContext)
+    private async Task Handle(MemberRegistrationUpdated @event, LibotaDbContext dbContext)
     {
         throw new NotImplementedException();
     }
 
-    private Task Handle(MemberRegistered organisationCreated, LibotaDbContext dbContext)
+    private async Task Handle(MemberRegistered @event, LibotaDbContext dbContext)
     {
-        throw new NotImplementedException();
+        var matchingOrganisation = await dbContext.Organisations.FirstOrDefaultAsync(x => x.Id == @event.EntityId);
+        if (matchingOrganisation != null)
+        {
+            var registrationData = new RegistrationData
+            {
+                Organisation = matchingOrganisation,
+                MembershipType = @event.MembershipType,
+                StartDate = @event.RegistrationBegin,
+                Status = RegistrationStatus.Full
+            };
+            var memberData = new MemberData
+            {
+                FirstName = @event.FirstName,
+                MiddleName = @event.MiddleName,
+                LastName = @event.LastName,
+                Gender = @event.Gender,
+                OrganisationId = @event.EntityId,
+                Organisation = matchingOrganisation,
+                Registration = registrationData
+            };
+
+            matchingOrganisation.Members.Add(memberData);
+
+            await dbContext.SaveChangesAsync();
+        }
     }
 
-    private async Task Handle(OrganisationCreated organisationCreated, LibotaDbContext dbContext)
+    private async Task Handle(OrganisationCreated @event, LibotaDbContext dbContext)
     {
         dbContext.Organisations.Add(new OrganisationData
         {
-            Id = organisationCreated.Id.Value,
-            Name = organisationCreated.Name,
-            Description = organisationCreated.Description,
+            Id = @event.Id.Value,
+            Name = @event.Name,
+            Description = @event.Description,
             Members = new List<MemberData>()
         });
         await dbContext.SaveChangesAsync();
     }
 
-    private void Recovers()
+    private void RegisterEventHandlers()
     {
         Recover<MaterializedViewState>(s => { _state = s; });
-        
+
         Recover<SnapshotOffer>(offer =>
         {
             if (offer.Snapshot is MaterializedViewState state)
                 _state = state;
         });
     }
-    
+
     private void PersistAndAck(Offset currentOffset, ILibotaEvent evt)
     {
         var nextState = new MaterializedViewState(LastOffset: currentOffset);
@@ -152,9 +178,8 @@ public class OrganisationProjection : ReceivePersistentActor
         });
     }
 
-
     public override string PersistenceId { get; }
-    
+
     public sealed record ProjectionFailed(Exception Cause);
 
     public sealed class ProjectionCompleted
@@ -171,6 +196,6 @@ public class OrganisationProjection : ReceivePersistentActor
     {
         public static readonly ProjectionStarting Instance = new();
     }
-    
+
     public record MaterializedViewState(Offset LastOffset);
 }
