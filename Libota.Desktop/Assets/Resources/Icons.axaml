@@ -6,4 +6,5 @@
     <controls:ImageIconSource x:Key="Icons.Calendar" Source="/Assets/Icons/calendar/calendar_event.png"/>
     <controls:ImageIconSource x:Key="Icons.Finances" Source="/Assets/Icons/basic/credit_card.png"/>
     <controls:ImageIconSource x:Key="Icons.Settings" Source="/Assets/Icons/basic/settings.png"/>
+    <controls:ImageIconSource x:Key="Icons.Search" Source="/Assets/Icons/edit/ search_small.png"/>
 </ResourceDictionary>

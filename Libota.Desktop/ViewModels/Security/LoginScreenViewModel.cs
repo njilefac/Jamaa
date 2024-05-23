@@ -57,7 +57,7 @@ public class LoginScreenViewModel : ReactiveValidationObject, IRoutableViewModel
 
         Login = ReactiveCommand.CreateFromTask(AuthenticateUser, this.IsValid());
 
-        Login.ThrownExceptions.Subscribe(ex => { logger.LogError(ex, "login error {Exception}", ex.Message); });
+        Login.ThrownExceptions.Subscribe(ex => { logger!.LogError(ex, "login error {Exception}", ex.Message); });
     }
         
     [Reactive] public string? UserName { get; set; }

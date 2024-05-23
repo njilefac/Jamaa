@@ -30,7 +30,7 @@ public class MembersListViewModel : ReactiveObject, IRoutableViewModel
         var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
             
         var members = new ObservableCollectionExtended<MemberData>();
-        membersSourceList.PopulateFrom(_organisationManagementFacade.MemberAdded);
+        membersSourceList.PopulateFrom(_organisationManagementFacade.CurrentMembers);
         membersSourceList.Connect()
             .Sort(SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -78,7 +78,7 @@ public class MembersListViewModel : ReactiveObject, IRoutableViewModel
         memberProfileViewModel.Gender = member.Gender;
         memberProfileViewModel.Registration = member.Registration;
 
-        HostScreen.Router.Navigate.Execute(memberProfileViewModel);
+        await HostScreen.Router.Navigate.Execute(memberProfileViewModel);
 
         return await Task.FromResult(Unit.Default);
     }

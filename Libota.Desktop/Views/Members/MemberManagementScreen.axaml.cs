@@ -1,4 +1,5 @@
 using System.Reactive.Disposables;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Libota.Desktop.ViewModels.Members;
@@ -16,8 +17,16 @@ public partial class MemberManagementScreen : ReactiveUserControl<MembersManagem
         this.WhenActivated(disposables =>
         {
             ViewModel = Locator.Current.GetService<MembersManagementScreenViewModel>();
+            var pagesHost = this.FindControl<RoutedViewHost>("PagesHost");
+            if (pagesHost != null) 
+                pagesHost.Content = GetCurrentPage();
             Disposable.Create(() => { }).DisposeWith(disposables);
         });
+    }
+
+    private static object? GetCurrentPage()
+    {
+        return Locator.Current.GetService<IViewFor<MembersOverviewPageViewModel>>();
     }
 
     private void InitializeComponent()
