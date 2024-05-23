@@ -38,13 +38,13 @@ public class App : Avalonia.Application
         base.OnFrameworkInitializationCompleted();
 
         if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime lifeTime) return;
-            
+
         Log.Logger = new LoggerConfiguration()
             .Enrich.FromLogContext()
             .Enrich.With<SessionUserNameEnricher>()
             .WriteTo.Console()
             .CreateLogger();
-            
+
         var environment = Environment.GetEnvironmentVariable("Environment") ?? "Development";
 
         var configuration = new ConfigurationBuilder()
@@ -52,7 +52,7 @@ public class App : Avalonia.Application
             .AddJsonFile($"appSettings.{environment}.json", false, true)
             .AddEnvironmentVariables()
             .Build();
-            
+
         var serviceProvider = new ServiceCollection()
             .ConfigureServices(configuration)
             .ConfigureAkka(lifeTime, configuration)
@@ -75,7 +75,7 @@ public class App : Avalonia.Application
         {
             logger.LogError("{Exception}", ex);
         }
-            
+
         Messages.Culture = CultureInfo.CurrentUICulture;
         RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
         if (Locator.Current.GetService<IViewFor<MainWindowViewModel>>() is not MainWindow mainWindow) return;
@@ -83,8 +83,8 @@ public class App : Avalonia.Application
         mainWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         lifeTime.MainWindow = mainWindow;
     }
-        
-        
+
+
     private static void UpdateDatabase(ILogger<Program>? logger, IServiceProvider serviceProvider)
     {
         var dataContext = serviceProvider.GetService<LibotaDbContext>();

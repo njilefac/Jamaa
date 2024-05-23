@@ -7,7 +7,7 @@
              x:Class="Libota.Desktop.Views.Members.MembersOverviewPage"
              HorizontalAlignment="Stretch">
 
-    <DockPanel Background="LightGray" LastChildFill="True">
+    <DockPanel LastChildFill="True">
         <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto" DockPanel.Dock="Top">
             <HeaderedContentControl Header="Statistics" Grid.Row="0" Grid.Column="0">
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
@@ -26,6 +26,6 @@
                 </StackPanel>
             </Border>
         </Grid>
-        <members:MembersList />
+        <members:MembersList/>
     </DockPanel>
 </UserControl>

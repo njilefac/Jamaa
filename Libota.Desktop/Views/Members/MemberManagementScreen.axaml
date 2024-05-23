@@ -11,6 +11,7 @@
     <Panel>
         <reactiveUi:RoutedViewHost
             Router="{Binding Router}"
+            x:Name="PagesHost"
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch">
             <reactiveUi:RoutedViewHost.DefaultContent>

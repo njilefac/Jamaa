@@ -48,13 +48,13 @@ public class MemberRegistrationDialogViewModel : ReactiveValidationObject
             
         var request = new MemberRegistrationRequest
         {
-            FirstName = FirstName,
+            FirstName = FirstName ?? throw new InvalidOperationException(),
             MiddleName = MiddleName,
-            LastName = LastName,
+            LastName = LastName ?? throw new InvalidOperationException(),
             Gender = SelectedGender,
             RegistrationBegin = RegistrationBegin,
             MembershipType = MembershipType,
-            OrganisationId = OrganisationId.With(organisationId),
+            OrganisationId = OrganisationId.With(organisationId ?? throw new InvalidOperationException())
         };
             
         return await Task.FromResult(request);

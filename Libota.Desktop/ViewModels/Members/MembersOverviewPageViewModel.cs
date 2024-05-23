@@ -32,7 +32,7 @@ public class MembersOverviewPageViewModel : ReactiveValidationObject, IRoutableV
 
         ShowRegistrationPrompt = new Interaction<Unit, MemberRegistrationRequest?>();
             
-        _organisationManagementFacade.MemberAdded.Subscribe(m =>
+        _organisationManagementFacade.CurrentMembers.Subscribe(m =>
         {
             TotalMembersCount++;
             if (m.Gender == Gender.Male)
