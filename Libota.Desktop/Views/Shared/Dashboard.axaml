@@ -34,12 +34,12 @@
             </DataTemplate>
         </controls:NavigationView.MenuItemTemplate>
 
-        <ScrollViewer VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
-            <controls:Frame x:Name="ContentFrame">
-                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Run>No Content</Run>
-                </TextBlock>
-            </controls:Frame>
-        </ScrollViewer>
+        <controls:Frame x:Name="ContentFrame"
+                        VerticalAlignment="Stretch" 
+                        HorizontalAlignment="Stretch">
+            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Run>No Content</Run>
+            </TextBlock>
+        </controls:Frame>
     </controls:NavigationView>
 </UserControl>

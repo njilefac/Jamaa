@@ -61,7 +61,7 @@ public static class PresentationServicesRegistration
 
 
         services.AddSingleton<MainMenuViewModel>();
-        services.AddSingleton<MemberRegistrationDialogViewModel>();
+        services.AddTransient<MemberRegistrationDialogViewModel>();
         services.AddSingleton<LoginScreenViewModel>();
         services.AddSingleton<CreateSuperUserViewModel>();
         services.AddSingleton<CreateOrganisationViewModel>();

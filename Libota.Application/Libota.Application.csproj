@@ -7,15 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Akka.Hosting" Version="1.5.20" />
+      <PackageReference Include="Akka.Hosting" Version="1.5.22" />
       <PackageReference Include="Akka.Logger.Serilog" Version="1.5.12.1" />
-      <PackageReference Include="Akka.Persistence.Query" Version="1.5.20" />
+      <PackageReference Include="Akka.Persistence.Query" Version="1.5.23" />
       <PackageReference Include="Akka.Persistence.Sql" Version="1.5.20" />
-      <PackageReference Include="Akka.Persistence.Sqlite" Version="1.5.20" />
-      <PackageReference Include="Akka.Remote.Hosting" Version="1.5.20" />
+      <PackageReference Include="Akka.Persistence.Sqlite" Version="1.5.23" />
+      <PackageReference Include="Akka.Remote.Hosting" Version="1.5.22" />
       <PackageReference Include="AutoMapper" Version="13.0.1" />
       <PackageReference Include="EntityFrameworkCore.Triggers" Version="1.2.3" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
       <PackageReference Include="Nickvision.Aura" Version="2023.11.4" />
       <PackageReference Include="Rhino.Licensing.X" Version="2.0.0.1" />
       <PackageReference Include="Suplex.Security.Core" Version="1.0.19075" />
