@@ -6,12 +6,6 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MemberCard"
              x:DataType="members:MemberData"
-             Margin="0"
-             Width="220" 
-             Height="170" 
-             CornerRadius="10" 
-             BorderThickness="1" 
-             Padding="2" 
              ClipToBounds="True">
 
     <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,Auto">
