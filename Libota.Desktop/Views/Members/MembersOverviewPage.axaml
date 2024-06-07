@@ -7,7 +7,7 @@
              x:Class="Libota.Desktop.Views.Members.MembersOverviewPage"
              HorizontalAlignment="Stretch">
 
-    <DockPanel Background="LightGray" LastChildFill="True">
+    <DockPanel LastChildFill="True">
         <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto" DockPanel.Dock="Top">
             <HeaderedContentControl Header="Statistics" Grid.Row="0" Grid.Column="0">
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
@@ -22,8 +22,7 @@
             <Border Grid.Row="0" Grid.Column="1" Classes="page box">
                 <StackPanel>
                     <TextBlock Text="Actions" Classes="page box header" />
-                    <Button Content="Register Member" Command="{Binding RegisterMember}"
-                            CommandParameter="{Binding $parent[Window]}" />
+                    <Button Content="Register Member" Command="{Binding RegisterMember}" />
                 </StackPanel>
             </Border>
         </Grid>

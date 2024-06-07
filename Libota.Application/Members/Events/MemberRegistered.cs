@@ -1,21 +1,23 @@
 using System;
-using Domain.Values;
-using EventFlow.Aggregates;
-using EventFlow.EventStores;
-using Libota.Application.Organisation.Aggregates;
+using Domain.Organisation.Values;
+using Domain.Shared.Values;
+using Libota.Application.Members.Aggregates;
+using Libota.Application.Shared;
 
 namespace Libota.Application.Members.Events
 {
-    [EventVersion("member-registered", 1)]
-    public class MemberRegistered : AggregateEvent<OrganisationAggregate, OrganisationId>
+    public record MemberRegistered(
+        MemberId Id,
+        string FirstName,
+        string? MiddleName,
+        string LastName,
+        Gender Gender,
+        DateTime? BirthDate,
+        DateTime RegistrationBegin,
+        MembershipType MembershipType,
+        OrganisationId OrganisationId) : ILibotaEvent
+
     {
-        public string FirstName { get; set; }
-        public string? MiddleName { get; set; }
-        public string LastName { get; set; }
-        public Gender Gender { get; set; }
-        
-        public DateTime BirthDate { get; set; }
-        public DateTime RegistrationBegin { get; set; }
-        public MembershipType MembershipType { get; set; }
+        public string EntityId => OrganisationId.Value;
     }
 }

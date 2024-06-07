@@ -1,93 +1,86 @@
 ﻿using System.IO;
 using System.Reflection;
-using Domain.Values;
-using EventFlow.EntityFramework.Extensions;
-using Hangfire.EntityFrameworkCore;
-using Libota.Application.Members.Queries.Models;
-using Libota.Application.Organisation.Queries.Models;
-using Libota.Data.Models;
+using Domain.Shared.Values;
+using Libota.Data.Models.Members;
+using Libota.Data.Models.Organisation;
+using Libota.Data.Models.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Libota.Data.Configuration
+namespace Libota.Data.Configuration;
+
+public class LibotaDbContext(IOptions<DatabaseOptions> options, ILoggerFactory loggerFactory) : DbContext
 {
-    public class LibotaDbContext : DbContext
+    private readonly DatabaseOptions _dbOptions = options.Value;
+    public DbSet<UserData> Users { get; set; }
+    public DbSet<OrganisationData> Organisations { get; set; }
+
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        private readonly ILoggerFactory _loggerFactory;
-        private readonly DatabaseOptions _dbOptions;
-        public DbSet<UserData> Users { get; set; }
-        public DbSet<OrganisationReadModel> Organisations { get; set; }
+        var executingDirectory = Directory.GetCurrentDirectory();
+        optionsBuilder.UseSqlite(
+            $"Filename={_dbOptions.DataFile}",
+            options => { options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName); });
+        optionsBuilder.UseLoggerFactory(loggerFactory);
+    }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
 
-        public LibotaDbContext(IOptions<DatabaseOptions> options, ILoggerFactory loggerFactory)
-        {
-            _dbOptions = options.Value;
-            _loggerFactory = loggerFactory;
-        }
+        ConfigureUserMapping(modelBuilder);
+        MapReadModels(modelBuilder);
+    }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var executingDirectory = Directory.GetCurrentDirectory();
-            optionsBuilder.UseSqlite(
-                $"Filename={executingDirectory}{Path.DirectorySeparatorChar}{_dbOptions.DataFile}",
-                options => { options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName); });
-            optionsBuilder.UseLoggerFactory(_loggerFactory);
-        }
+    private static void MapReadModels(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<OrganisationData>()
+            .Property(e => e.Id).IsRequired();
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<OrganisationData>()
+            .Property(e => e.Name).IsRequired();
+        
+        modelBuilder.Entity<OrganisationData>()
+            .Property(e => e.Description);
 
-            modelBuilder.AddEventFlowEvents();
-            modelBuilder.AddEventFlowSnapshots();
-            modelBuilder.OnHangfireModelCreating();
-            ConfigureUserMapping(modelBuilder);
-            MapReadModels(modelBuilder);
-        }
+        modelBuilder.Entity<OrganisationData>()
+            .HasMany(e => e.Members)
+            .WithOne(e => e.Organisation)
+            .HasForeignKey(m => m.OrganisationId);
 
-        private static void MapReadModels(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<OrganisationReadModel>()
-                .Property(e => e.Id).ValueGeneratedOnAdd();
+        modelBuilder.Entity<MemberData>().ToTable("Members")
+            .Property(e => e.Id).ValueGeneratedOnAdd();
 
-            modelBuilder.Entity<OrganisationReadModel>()
-                .HasMany(e => e.Members)
-                .WithOne(e => e.Organisation)
-                .HasForeignKey(m => m.OrganisationId);
+        modelBuilder.Entity<MemberData>()
+            .HasOne(x => x.Registration)
+            .WithOne(r => r.Member)
+            .HasForeignKey<RegistrationData>(x => x.MemberId);
 
-            modelBuilder.Entity<Member>().ToTable("Members")
-                .Property(e => e.Id).ValueGeneratedOnAdd();
+        modelBuilder.Entity<RegistrationData>().ToTable("Registrations")
+            .Property(e => e.Id).ValueGeneratedOnAdd();
+    }
 
-            modelBuilder.Entity<Member>()
-                .HasOne(x => x.Registration)
-                .WithOne(r => r.Member)
-                .HasForeignKey<Registration>(x => x.MemberId);
-
-            modelBuilder.Entity<Registration>().ToTable("Registrations")
-                .Property(e => e.Id).ValueGeneratedOnAdd();
-        }
-
-        private static void ConfigureUserMapping(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<UserData>()
-                .HasKey(e => e.Id);
-            modelBuilder.Entity<UserData>()
-                .Property(e => e.Email).IsRequired(false);
-            modelBuilder.Entity<UserData>()
-                .HasIndex(e => e.Email).IsUnique();
-            modelBuilder.Entity<UserData>()
-                .Property(e => e.Password).IsRequired();
-            modelBuilder.Entity<UserData>()
-                .Property(e => e.MiddleName).IsRequired(false);
-            modelBuilder.Entity<UserData>()
-                .Property(e => e.LastName).IsRequired();
-            modelBuilder.Entity<UserData>()
-                .Property(e => e.Gender).IsRequired();
-            modelBuilder.Entity<UserData>()
-                .Property(e => e.IsActive).IsRequired();
-            modelBuilder.Entity<UserData>()
-                .Property(e => e.IsSuperUser).IsRequired();
-        }
+    private static void ConfigureUserMapping(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserData>()
+            .HasKey(e => e.Id);
+        modelBuilder.Entity<UserData>()
+            .Property(e => e.Email).IsRequired(false);
+        modelBuilder.Entity<UserData>()
+            .HasIndex(e => e.Email).IsUnique();
+        modelBuilder.Entity<UserData>()
+            .Property(e => e.Password).IsRequired();
+        modelBuilder.Entity<UserData>()
+            .Property(e => e.MiddleName).IsRequired(false);
+        modelBuilder.Entity<UserData>()
+            .Property(e => e.LastName).IsRequired();
+        modelBuilder.Entity<UserData>()
+            .Property(e => e.Gender).IsRequired();
+        modelBuilder.Entity<UserData>()
+            .Property(e => e.IsActive).IsRequired();
+        modelBuilder.Entity<UserData>()
+            .Property(e => e.IsSuperUser).IsRequired();
     }
 }

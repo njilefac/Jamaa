@@ -1,19 +1,21 @@
+using System;
 using Libota.Application.Users.Services;
+using Libota.Desktop.ViewModels.Shared;
 using ReactiveUI;
+using Splat;
 
-namespace Libota.Desktop.ViewModels.Groups
+namespace Libota.Desktop.ViewModels.Groups;
+
+public class GroupManagementViewModel: ReactiveObject, IRoutableViewModel
 {
-    public class GroupManagementViewModel: ReactiveObject, IRoutableViewModel
+    private readonly IUserSessionService _userSessionService;
+
+    public GroupManagementViewModel()
     {
-        private readonly IUserSessionService _userSessionService;
-
-        public GroupManagementViewModel(IUserSessionService userSessionService, IScreen hostScreen)
-        {
-            _userSessionService = userSessionService;
-            HostScreen = hostScreen;
-        }
-
-        public string? UrlPathSegment => "groups";
-        public IScreen HostScreen { get; }
+        _userSessionService = Locator.Current.GetService<IUserSessionService>() ?? throw new InvalidOperationException();
+        HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();;
     }
+
+    public string? UrlPathSegment => "groups";
+    public IScreen HostScreen { get; }
 }

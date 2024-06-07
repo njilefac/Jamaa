@@ -1,52 +1,39 @@
 using System;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Domain.Repositories;
-using Domain.Values;
-using Libota.Application.Organisation;
-using Libota.Application.Organisation.Queries.Models;
-using Libota.Application.Security;
+using Domain.Security.Values;
+using Domain.Users;
+using Libota.Data.Models.Organisation;
 using Microsoft.Extensions.Logging;
 
 namespace Libota.Application.Users.Services
 {
-    public class UserSessionService : IUserSessionService
+    public class UserSessionService(ILogger<UserSessionService> logger, IUserRepository users) : IUserSessionService
     {
-        private readonly IUserRepository _users;
-
-        private readonly ILogger<UserSessionService> _logger;
-        private static readonly UserSession? NullSession = new UserSession(false, "none", null);
-        public Subject<UserSession?> UserSessions { get; }
+        private static readonly UserSession? NullSession = new(false, "none", null);
+        public Subject<UserSession?> UserSessions { get; } = new();
         public UserSession? CurrentUserSession { get; private set; }
 
-        public UserSessionService(ILogger<UserSessionService> logger, IUserRepository users)
+        public async Task<UserSession?> Authenticate(Credentials credentials, OrganisationData? organisation)
         {
-            _logger = logger;
-            _users = users;
-            UserSessions = new Subject<UserSession?>();
-        }
+            ArgumentNullException.ThrowIfNull(credentials);
 
-        public async Task<UserSession?> Authenticate(Credentials credentials,
-            OrganisationReadModel? organisation)
-        {
-            if (credentials == null) throw new ArgumentNullException(nameof(credentials));
-
-            _logger.LogInformation($"authenticating user...");
-            var matchingUser = await _users.SingleOrDefault(x =>
+            logger.LogInformation("authenticating user...");
+            var matchingUser = await users.SingleOrDefault(x =>
                 x.Account.Credentials.Equals(credentials));
             if (matchingUser == null)
             {
-                _logger.LogInformation($"authentication failed!");
+                logger.LogInformation("authentication failed!");
                 return NullSession;
             }
 
-            _logger.LogInformation($"authenticated!");
+            logger.LogInformation("authenticated!");
 
-            _logger.LogInformation($"creating user session...");
+            logger.LogInformation("creating user session...");
             var userSession = new UserSession(true, credentials.UserName, organisation);
             UserSessions.OnNext(userSession);
             CurrentUserSession = userSession;
-            _logger.LogInformation($"user session created");
+            logger.LogInformation("user session created");
 
             return await Task.FromResult(userSession);
         }
@@ -55,7 +42,7 @@ namespace Libota.Application.Users.Services
         {
             UserSessions.OnNext(null);
             CurrentUserSession = null;
-            _logger.LogInformation($"user session terminated.");
+            logger.LogInformation("user session terminated.");
             return await Task.FromResult(true);
         }
     }

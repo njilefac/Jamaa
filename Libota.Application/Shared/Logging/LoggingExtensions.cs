@@ -9,11 +9,9 @@ namespace Libota.Application.Shared.Logging
         public static LoggerConfiguration WithSessionUserName(
             this LoggerEnrichmentConfiguration enrich)
         {
-            if (enrich == null)
-                throw new ArgumentNullException(nameof(enrich));
+            ArgumentNullException.ThrowIfNull(enrich);
 
-            var enricher = new SessionUserNameEnricher();
-            return enrich.With(enricher);
+            return enrich.With(new SessionUserNameEnricher());
         }
     }
 }

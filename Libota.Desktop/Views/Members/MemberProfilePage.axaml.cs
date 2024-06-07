@@ -5,24 +5,24 @@ using Libota.Desktop.ViewModels.Members;
 using ReactiveUI;
 using Splat;
 
-namespace Libota.Desktop.Views.Members
+namespace Libota.Desktop.Views.Members;
+
+[SingleInstanceView]
+public partial class MemberProfilePage : ReactiveUserControl<MemberProfileViewModel>
 {
-    public class MemberProfilePage : ReactiveUserControl<MemberProfileViewModel>
+    public MemberProfilePage()
     {
-        public MemberProfilePage()
+        InitializeComponent();
+        this.WhenActivated(disposables =>
         {
-            InitializeComponent();
-            this.WhenActivated(disposables =>
-            {
-                DataContext ??= Locator.Current.GetService<MemberProfileViewModel>();
+            DataContext ??= Locator.Current.GetService<MemberProfileViewModel>();
 
-                Disposable.Create(() => { }).DisposeWith(disposables);
-            });
-        }
+            Disposable.Create(() => { }).DisposeWith(disposables);
+        });
+    }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

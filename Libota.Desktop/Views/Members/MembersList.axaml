@@ -2,27 +2,55 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:data="clr-namespace:Libota.Data.Models.Members;assembly=Libota.Data"
              xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Libota.Desktop.Views.Members.MembersList">
+             x:Class="Libota.Desktop.Views.Members.MembersList"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
     <Grid RowDefinitions="60,*">
-        <TextBox Grid.Row="0" Watermark="Search for members"
+        <TextBox Grid.Row="0" Watermark="Find members"
                  VerticalAlignment="Top"
                  HorizontalAlignment="Center"
                  Text="{Binding SearchTerm}"
-                 MinWidth="800" />
-        <ScrollViewer Grid.Row="1" HorizontalContentAlignment="Stretch" Height="{Binding $parent[Window].ClientSize.Height}">
-            <ItemsRepeater Items="{Binding Members}">
-                <ItemsRepeater.Layout>
-                    <WrapLayout HorizontalSpacing="15" Orientation="Horizontal" VerticalSpacing="15" />
-                </ItemsRepeater.Layout>
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate>
-                        <members:MemberCard />
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-            </ItemsRepeater>
-        </ScrollViewer>
+                 HorizontalContentAlignment="Center"
+                 VerticalContentAlignment="Center"
+                 Width="700"
+                 FontSize="14"
+                 CornerRadius="8">
+            <TextBox.InnerLeftContent>
+                <Image Source="avares://Libota/Assets/Icons/edit/ search_small.png" Width="40" Height="40" />
+            </TextBox.InnerLeftContent>
+        </TextBox>
+        <ListBox Grid.Row="1" ItemsSource="{Binding Members}" Margin="10" SelectionMode="Multiple,Toggle">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="Width" Value="220"/>
+                    <Setter Property="Height" Value="150"/>
+                    <Setter Property="VerticalContentAlignment" Value="Top"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                    <Setter Property="Padding" Value="4"/>
+                    <Setter Property="CornerRadius" Value="10"/>
+                </Style>
+                <Style Selector="ListBoxItem:pointerover">
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="BorderBrush" Value="LightBlue"/>
+                </Style>
+                <Style Selector="ListBoxItem:selected">
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="BorderBrush" Value="DarkBlue"/>
+                </Style>
+            </ListBox.Styles>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="data:MemberData">
+                    <members:MemberCard />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
-
 </UserControl>

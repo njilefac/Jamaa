@@ -15,7 +15,7 @@
             
             <TextBlock Grid.Row="0" Grid.Column="0" Text="Organisation" Classes="form label"/>
             <ComboBox Grid.Row="0" Grid.Column="1" Classes="form field"
-                      Items="{Binding Organisations}"
+                      ItemsSource="{Binding Organisations}"
                       SelectedItem="{Binding CurrentOrganisation, Mode=TwoWay}"
                       IsVisible="{Binding Items.Count}">
                     <ComboBox.ItemTemplate>

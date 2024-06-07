@@ -4,22 +4,37 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Libota.Desktop.Views.Members.MemberRegistrationDialog"
-        Title="Member Registration"
-        WindowStartupLocation="CenterOwner"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        Width="850"
+        Height="750"
+        Topmost="True"
         VerticalContentAlignment="Stretch"
         HorizontalContentAlignment="Stretch"
-        CanResize="False">
+        WindowStartupLocation="CenterOwner"
+        WindowState="Normal"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Title="Member Registration">
 
     <StackPanel>
-        <Border Classes="box">
-
+        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="Black"
+                    TintOpacity="1"
+                    MaterialOpacity="0.65" />
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+        <Border Classes="box" Padding="8">
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="First Name" Classes="form label" />
-                <TextBox x:Name="FirstNameField" 
-                         Grid.Row="0" Grid.Column="1" 
-                         Text="{Binding FirstName}" 
-                         Classes="form field" 
-                         AttachedToVisualTree="OnAttachedToVisualTree"/>
+                <TextBox x:Name="FirstNameField"
+                         Grid.Row="0" Grid.Column="1"
+                         Text="{Binding FirstName}"
+                         Classes="form field"
+                         AttachedToVisualTree="OnAttachedToVisualTree" />
 
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Middle Name" Classes="form label" />
                 <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding MiddleName}" Classes="form field" />
@@ -28,7 +43,7 @@
                 <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding LastName}" Classes="form field" />
 
                 <TextBlock Grid.Row="3" Grid.Column="0" Text="Gender" Classes="form label" />
-                <ComboBox Grid.Row="3" Grid.Column="1" Items="{Binding GenderChoices}"
+                <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding GenderChoices}"
                           SelectedItem="{Binding Mode=TwoWay, Path=SelectedGender}" Classes="form field">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
@@ -41,7 +56,7 @@
                                     SelectedDate="{Binding RegistrationBegin}"
                                     DisplayDate="{Binding RegistrationBegin, Mode=TwoWay}"
                                     SelectedDateFormat="Custom"
-                                     CustomDateFormatString="dd.MMM.yyyy"
+                                    CustomDateFormatString="dd.MMM.yyyy"
                                     Classes="form field" />
                 <Button Grid.Row="5" Grid.Column="1" Content="Register Member" Command="{Binding RegisterMember}"
                         HorizontalAlignment="Right" />

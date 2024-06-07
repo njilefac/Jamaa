@@ -4,14 +4,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:rxui="http://reactiveui.net"
         xmlns:shared="clr-namespace:Libota.Desktop.Views.Shared"
+        xmlns:vm="clr-namespace:Libota.Desktop.ViewModels.Shared"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Libota.Desktop.Views.Shared.MainWindow"
+        MinWidth="950"
+        MinHeight="850"
         Icon="/Assets/Icons/avalonia-logo.ico"
         Title="{Binding ApplicationTitle}"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
+        ShowActivated="True"
         TransparencyLevelHint="AcrylicBlur"
-        Background="Transparent">
+        Background="Transparent"
+        x:DataType="vm:MainWindowViewModel">
 
     <Grid RowDefinitions="Auto,*,35" ColumnDefinitions="*">
         <Panel Grid.Row="0">
@@ -22,7 +27,7 @@
                 Router="{Binding Router}"
                 HorizontalContentAlignment="Stretch"
                 VerticalContentAlignment="Stretch"
-                x:Name="ContentPageContainer" />
+                x:Name="ContentContainer" />
         </Panel>
         <Panel Grid.Row="2" Background="gray" />
     </Grid>

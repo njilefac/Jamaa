@@ -1,16 +1,24 @@
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
-using Domain.Values;
-using Libota.Application.Members.Queries.Models;
+using Domain.Shared.Values;
+using Libota.Data.Models.Members;
+using Libota.Desktop.ViewModels.Shared;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using Splat;
 using ReactiveCommand = ReactiveUI.ReactiveCommand;
 
 namespace Libota.Desktop.ViewModels.Members
 {
     public class MemberProfileViewModel: ReactiveObject, IRoutableViewModel
     {
+        public MemberProfileViewModel()
+        {
+            HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();;
+            GoBack = ReactiveCommand.CreateFromTask(GoToPreviousPage);
+        }
+        
         public string? UrlPathSegment => "members.profile";
         public IScreen HostScreen { get; }
         [Reactive] public string FirstName { get; set; } = string.Empty;
@@ -21,15 +29,9 @@ namespace Libota.Desktop.ViewModels.Members
         
         [Reactive] public DateTime BirthDate { get; set; }
         
-        [Reactive] public Registration Registration { get; set; }
+        [Reactive] public required RegistrationData Registration { get; set; }
 
         public ReactiveCommand<Unit, Unit> GoBack { get; set; }
-
-        public MemberProfileViewModel(IScreen hostScreen)
-        {
-            HostScreen = hostScreen;
-            GoBack = ReactiveCommand.CreateFromTask(GoToPreviousPage);
-        }
 
         private async Task GoToPreviousPage()
         {

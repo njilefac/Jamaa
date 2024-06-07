@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Domain.Entities.Users;
+using Domain.Users;
 
 namespace Libota.Application.Users.Services
 {

@@ -3,59 +3,70 @@ using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Libota.Application.Setup;
+using Libota.Desktop.ViewModels.Security;
+using Libota.Desktop.ViewModels.Setup;
 using Libota.Desktop.ViewModels.Shared;
-using Libota.Desktop.Views.Security;
-using Libota.Desktop.Views.Setup;
 using ReactiveUI;
 using Splat;
 
-namespace Libota.Desktop.Views.Shared
+namespace Libota.Desktop.Views.Shared;
+
+[SingleInstanceView]
+public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
-    public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
+    public MainWindow()
     {
-        public MainWindow()
+        this.WhenActivated(disposables =>
         {
-            this.WhenActivated(disposables =>
-            {
-                DataContext = Locator.Current.GetService<MainWindowViewModel>();
-                Disposable.Create(() => { }).DisposeWith(disposables);
-            });
+            DataContext = Locator.Current.GetService<MainWindowViewModel>();
 
-            InitializeComponent();
+            Disposable.Create(() => { }).DisposeWith(disposables);
+        });
+
+        InitializeComponent();
 #if DEBUG
-            this.AttachDevTools();
+        this.AttachDevTools();
 #endif
-        }
+    }
 
-        private void InitializeComponent()
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        if (Screens.Primary == null) return;
+        var screenSize = Screens.Primary.WorkingArea.Size;
+        var windowSize = PixelSize.FromSize(ClientSize, Screens.Primary.Scaling);
+
+        Position = new PixelPoint(
+            screenSize.Width - windowSize.Width,
+            screenSize.Height - windowSize.Height);
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+        var contentPageContainer = this.FindControl<RoutedViewHost>("ContentContainer");
+        if (contentPageContainer != null)
         {
-            AvaloniaXamlLoader.Load(this);
-
-            var contentPageContainer = this.FindControl<RoutedViewHost>("ContentPageContainer");
-            if (contentPageContainer != null)
-            {
-                contentPageContainer.DefaultContent = GetStartupScreen().Result;
-            }
+            contentPageContainer.DefaultContent = GetStartupScreen().Result;
         }
+    }
 
-        private static async Task<IViewFor?> GetStartupScreen()
-        {
-            var setupService = Locator.Current.GetService<ISetupService>();
-            if (setupService == null)
-                return Locator.Current.GetService<CreateOrganisationScreen>();
+    private static async Task<IViewFor?> GetStartupScreen()
+    {
+        var setupService = Locator.Current.GetService<ISetupService>();
+        var existingOrganisations = await setupService?.ListOrganisations()!;
 
-            var organisations = await setupService.ListOrganisations();
-            if (!organisations.Any())
-                return Locator.Current.GetService<CreateOrganisationScreen>();
+        if (existingOrganisations.Any() == false)
+            return Locator.Current.GetService<IViewFor<CreateOrganisationViewModel>>();
 
-            var superUser = setupService.GetSuperUser().Result;
-            if (superUser == null)
-                return Locator.Current.GetService<CreateSuperUserScreen>();
+        var superUser = await setupService.GetSuperUser();
+        if (superUser == null)
+            return Locator.Current.GetService<IViewFor<CreateSuperUserViewModel>>();
 
-            return Locator.Current.GetService<LoginScreen>();
-        }
+        return Locator.Current.GetService<IViewFor<LoginScreenViewModel>>();
     }
 }

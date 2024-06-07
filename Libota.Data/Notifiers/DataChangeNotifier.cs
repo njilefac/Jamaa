@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
-using Libota.Application.Shared.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
@@ -27,28 +26,28 @@ namespace Libota.Data.Notifiers
         {
         }
 
-        public void OnNext(KeyValuePair<string, object> value)
+        public void OnNext(KeyValuePair<string, object?> value)
         {
             if (value.Key != CoreEventId.StateChanged.Name) return;
             try
             {
-                var eventData = (StateChangedEventData)value.Value;
-                var changedEntity = eventData.EntityEntry.Entity;
-                switch (eventData.NewState)
+                var eventData = value.Value as StateChangedEventData;
+                var changedEntity = eventData?.EntityEntry.Entity;
+                switch (eventData?.NewState)
                 {
                     case EntityState.Unchanged:
                     {
-                        _insertions.OnNext(changedEntity);
+                        _insertions.OnNext(changedEntity ?? throw new InvalidOperationException());
                         break;
                     }
                     case EntityState.Modified:
                     {
-                        _updates.OnNext(changedEntity);
+                        _updates.OnNext(changedEntity ?? throw new InvalidOperationException());
                         break;
                     }
                     case EntityState.Deleted:
                     {
-                        _deletions.OnNext(changedEntity);
+                        _deletions.OnNext(changedEntity ?? throw new InvalidOperationException());
                         break;
                     }
                     case EntityState.Detached:

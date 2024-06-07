@@ -21,15 +21,15 @@
      - print (lists and selected)
      - edit credentials (username/password)
      - add to user group
-     - remove from user group
+     - remove from user role
      - Login
      - Logout
-   - User Groups:
+   - User Role:
      - CRUD
      - grant permissions
      - revoke permissions
      - print
-   - User Group Permissions
+   - User Role Permissions
      - CRUD
      
 ### Member Management
@@ -42,11 +42,11 @@
   - view member list
   - print member list
 
-### Sub-Group Management
+### User-Group Management
   - CRUD
   - Add member
   - Remove member
-  - print sub-group
+  - print user-group
   
 ### Event Management (recurrent events can have several instances)
   - CRUD

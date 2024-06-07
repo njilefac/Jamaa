@@ -1,32 +1,69 @@
-using Autofac;
-using Autofac.Extras.DynamicProxy;
+using System.Linq;
+using Castle.DynamicProxy;
 using Libota.Application.Organisation;
 using Libota.Application.Security;
 using Libota.Application.Setup;
+using Libota.Application.Shared;
 using Libota.Application.Users.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Libota.Application.Configuration
 {
-    public class ApplicationServicesRegistration : Module
+    public static class ApplicationServicesRegistration
     {
-        protected override void Load(ContainerBuilder builder)
+        
+        public static ServiceCollection RegisterApplicationServices(this ServiceCollection services)
         {
-            base.Load(builder);
+            services.AddSingleton(new ProxyGenerator());
+            
+            services.AddProxiedScoped<IUserManagementFacade, UserManagementFacade>();
 
-            builder.RegisterType<UserManagementFacade>().AsImplementedInterfaces()
-                .EnableInterfaceInterceptors()
-                .InterceptedBy(typeof(AuthorizationCheckInterceptor));
+            services.AddProxiedScoped<ISetupService, SetupService>();
 
-            builder.RegisterType<SetupService>().AsImplementedInterfaces()
-                .EnableInterfaceInterceptors()
-                .InterceptedBy(typeof(AuthorizationCheckInterceptor));
+            services.AddProxiedSingleton<IOrganisationManagementFacade, OrganisationManagementFacade>();
 
-            builder.RegisterType<OrganisationManagementFacade>().AsImplementedInterfaces()
-                .EnableInterfaceInterceptors()
-                .InterceptedBy(typeof(AuthorizationCheckInterceptor))
-                .SingleInstance();
+            services.AddSingleton<IQueryProcessor, QueryProcessor>();
 
-            builder.RegisterType<AuthorizationCheckInterceptor>().AsSelf().AsImplementedInterfaces();
+            services.AddScoped<IInterceptor, AuthorizationCheckInterceptor>();
+
+            return services;
+        }
+        private static void AddProxiedScoped<TInterface, TImplementation>
+            (this IServiceCollection services)
+            where TInterface : class
+            where TImplementation : class, TInterface
+        {
+            services.AddScoped<TImplementation>();
+            services.AddScoped(typeof(TInterface), serviceProvider =>
+            {
+                var proxyGenerator = serviceProvider
+                    .GetRequiredService<ProxyGenerator>();
+                var actual = serviceProvider
+                    .GetRequiredService<TImplementation>();
+                var interceptors = serviceProvider
+                    .GetServices<IInterceptor>().ToArray();
+                return proxyGenerator.CreateInterfaceProxyWithTarget(
+                    typeof(TInterface), actual, interceptors);
+            });
+        }
+
+        private static void AddProxiedSingleton<TInterface, TImplementation>
+            (this IServiceCollection services)
+            where TInterface : class
+            where TImplementation : class, TInterface
+        {
+            services.AddSingleton<TImplementation>();
+            services.AddSingleton(typeof(TInterface), serviceProvider =>
+            {
+                var proxyGenerator = serviceProvider
+                    .GetRequiredService<ProxyGenerator>();
+                var actual = serviceProvider
+                    .GetRequiredService<TImplementation>();
+                var interceptors = serviceProvider
+                    .GetServices<IInterceptor>().ToArray();
+                return proxyGenerator.CreateInterfaceProxyWithTarget(
+                    typeof(TInterface), actual, interceptors);
+            });
         }
     }
 }

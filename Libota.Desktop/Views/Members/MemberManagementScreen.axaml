@@ -2,19 +2,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
              xmlns:reactiveUi="http://reactiveui.net"
+             xmlns:vm="clr-namespace:Libota.Desktop.ViewModels.Members"
+             xmlns:views="clr-namespace:Libota.Desktop.Views.Members"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Libota.Desktop.Views.Members.MemberManagementScreen">
+             x:Class="Libota.Desktop.Views.Members.MemberManagementScreen"
+             x:DataType="vm:MembersOverviewPageViewModel">
     <Panel>
         <reactiveUi:RoutedViewHost
             Router="{Binding Router}"
+            x:Name="PagesHost"
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch">
             <reactiveUi:RoutedViewHost.DefaultContent>
-                <members:MembersOverviewPage />
+                <views:MembersOverviewPage />
             </reactiveUi:RoutedViewHost.DefaultContent>
         </reactiveUi:RoutedViewHost>
     </Panel>
-
 </UserControl>
