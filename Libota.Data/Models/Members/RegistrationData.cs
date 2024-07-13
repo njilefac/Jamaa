@@ -11,10 +11,9 @@ namespace Libota.Data.Models.Members
         public MemberData Member { get; set; }
         public string MemberId { get; set; }
         public DateTime StartDate { get; set; }
-        
+
         public DateTime? EndDate { get; set; }
         public MembershipType MembershipType { get; set; }
-
         public RegistrationStatus Status { get; set; }
         public OrganisationData Organisation { get; set; }
     }
