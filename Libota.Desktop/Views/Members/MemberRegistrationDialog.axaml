@@ -8,13 +8,12 @@
         Background="Transparent"
         Width="850"
         Height="750"
-        Topmost="True"
         VerticalContentAlignment="Stretch"
         HorizontalContentAlignment="Stretch"
         WindowStartupLocation="CenterOwner"
         WindowState="Normal"
         CanResize="False"
-        ShowInTaskbar="False"
+        ShowInTaskbar="True"
         Title="Member Registration">
 
     <StackPanel>
