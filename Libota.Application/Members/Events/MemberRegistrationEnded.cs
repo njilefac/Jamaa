@@ -1,10 +1,9 @@
 using Libota.Application.Members.Aggregates;
 using Libota.Application.Shared;
 
-namespace Libota.Application.Members.Events
+namespace Libota.Application.Members.Events;
+
+public record MemberRegistrationEnded(MemberId Id) : ILibotaEvent
 {
-    public record MemberRegistrationEnded(MemberId Id) : ILibotaEvent
-    {
-        public string EntityId => Id.Value;
-    }
+    public string EntityId => Id.Value;
 }

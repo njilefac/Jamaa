@@ -1,4 +1,3 @@
-namespace Domain.Organisation.Queries
-{
-    public record GetOrganisationById(string Id);
-}
+namespace Domain.Organisation.Queries;
+
+public record GetOrganisationById(string Id);

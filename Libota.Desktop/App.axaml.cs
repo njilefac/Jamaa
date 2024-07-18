@@ -79,8 +79,8 @@ public class App : Avalonia.Application
         Messages.Culture = CultureInfo.CurrentUICulture;
         RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
         if (Locator.Current.GetService<IViewFor<MainWindowViewModel>>() is not MainWindow mainWindow) return;
-        mainWindow.WindowState = WindowState.Maximized;
-        mainWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        mainWindow.WindowState = WindowState.FullScreen;
+        mainWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         lifeTime.MainWindow = mainWindow;
     }
 

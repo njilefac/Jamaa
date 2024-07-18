@@ -1,7 +1,6 @@
-﻿namespace Domain.Finances
-{
-    public interface IRecurringFee : IFee
-    {
+﻿namespace Domain.Finances;
 
-    }
+public interface IRecurringFee : IFee
+{
+
 }

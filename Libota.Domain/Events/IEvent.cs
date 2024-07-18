@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace Domain.Events
+namespace Domain.Events;
+
+public interface IEvent
 {
-    public interface IEvent
-    {
-        Guid Id { get; }
-        string Name { get; }
-        DateTime Begin { get; }
-        DateTime? End { get; }
-    }
+    Guid Id { get; }
+    string Name { get; }
+    DateTime Begin { get; }
+    DateTime? End { get; }
 }

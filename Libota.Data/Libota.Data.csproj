@@ -14,13 +14,13 @@
     <PackageReference Include="EntityFrameworkCore.Rx" Version="2.0.1" />
     <PackageReference Include="EntityFrameworkPaginateCore" Version="2.1.0" />
     <PackageReference Include="Hangfire.SQLite" Version="1.4.2" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.6" />
-    <PackageReference Include="Dotmim.Sync.Sqlite" Version="0.9.8" />
-    <PackageReference Include="Dotmim.Sync.Core" Version="0.9.8" />
-    <PackageReference Include="Dotmim.Sync.MySql" Version="0.9.8" />
-    <PackageReference Include="Dotmim.Sync.Web.Client" Version="0.9.8" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.7" />
+    <PackageReference Include="Dotmim.Sync.Sqlite" Version="1.0.2" />
+    <PackageReference Include="Dotmim.Sync.Core" Version="1.0.2" />
+    <PackageReference Include="Dotmim.Sync.MySql" Version="1.0.2" />
+    <PackageReference Include="Dotmim.Sync.Web.Client" Version="1.0.2" />
     <PackageReference Include="itext7" Version="8.0.4" />
     <PackageReference Include="ChangeTracking" Version="2.2.17" />
     <PackageReference Include="ProgressReporting" Version="2.2.0" />

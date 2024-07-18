@@ -1,11 +1,10 @@
-﻿namespace Domain.Organisation.Values
+﻿namespace Domain.Organisation.Values;
+
+public enum RegistrationStatus
 {
-    public enum RegistrationStatus
-    {
-        Probation = 0,
-        Rejected,
-        Full,
-        Left,
-        Expelled = 99
-    }
+    Probation = 0,
+    Rejected,
+    Full,
+    Left,
+    Expelled = 99
 }
