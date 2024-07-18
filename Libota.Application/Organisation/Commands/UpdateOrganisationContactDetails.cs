@@ -1,6 +1,5 @@
 using Domain.Organisation.Values;
 using Domain.Shared;
-using Libota.Application.Organisation.Aggregates;
 
 namespace Libota.Application.Organisation.Commands
 {

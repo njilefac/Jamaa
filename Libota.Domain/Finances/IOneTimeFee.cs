@@ -1,7 +1,6 @@
-﻿namespace Domain.Finances
-{
-    public interface IOneTimeFee : IFee
-    {
+﻿namespace Domain.Finances;
 
-    }
+public interface IOneTimeFee : IFee
+{
+
 }

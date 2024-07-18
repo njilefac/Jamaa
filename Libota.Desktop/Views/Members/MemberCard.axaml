@@ -20,10 +20,10 @@
                     </BehaviorCollection>
                 </BehaviorCollectionTemplate>
             </Setter>
-            <Setter Property="Background" Value="Wheat"/>
+            <Setter Property="Background" Value="LightSlateGray" />
             <Style Selector="^:pointerover">
-                <Setter Property="BorderThickness" Value="2" />
-                <Setter Property="BorderBrush" Value="LightBlue" />
+                <Setter Property="BorderThickness" Value="3" />
+                <Setter Property="BorderBrush" Value="DarkGreen" />
             </Style>
             <Style Selector="^:selected">
                 <Setter Property="BorderThickness" Value="2" />
@@ -40,11 +40,16 @@
             Height="150"
             Classes="MemberCard">
         <Grid RowDefinitions="Auto,Auto,Auto,*" ColumnDefinitions="Auto,Auto">
-            <Label Content="{Binding FirstName}" Grid.Row="0" Grid.Column="0" FontWeight="Bold" FontSize="14" />
-            <Label Content="{Binding LastName}" Grid.Row="0" Grid.Column="1" FontWeight="Bold" FontSize="14" />
-            <Label Content="{Binding Registration.MembershipType}" Grid.Row="1" Grid.Column="0" />
-            <Label Content="{Binding Registration.Status}" Grid.Row="2" Grid.Column="0" />
-            <Label Content="{Binding Gender}" Grid.Row="3" Grid.Column="0" />
+            <Label Grid.Row="0" Grid.Column="0" FontWeight="Bold" FontSize="14">
+                <Label.Content>
+                    <MultiBinding StringFormat="{}{0} {1}">
+                        <Binding Path="FirstName" />
+                        <Binding Path="LastName" />
+                    </MultiBinding>
+                </Label.Content>
+            </Label>
+            <Label Content="{Binding Registration.MembershipType, StringFormat='Membership: {0}'}" Grid.Row="1" Grid.Column="0" />
+            <Label Content="{Binding Registration.Status, StringFormat='Registration: {0}'}" Grid.Row="2" Grid.Column="0" />
         </Grid>
     </Border>
 </UserControl>

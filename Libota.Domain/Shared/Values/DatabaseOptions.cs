@@ -1,7 +1,6 @@
-namespace Domain.Shared.Values
+namespace Domain.Shared.Values;
+
+public class DatabaseOptions
 {
-    public class DatabaseOptions
-    {
-        public string DataFile { get; set; } = "libota.db";
-    }
+    public string DataFile { get; set; } = "libota.db";
 }

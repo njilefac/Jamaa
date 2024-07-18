@@ -1,30 +1,36 @@
 using Akka.Actor;
 using Domain.Members;
+using Libota.Application.Members.Commands;
 using Libota.Application.Members.Events;
 
-namespace Libota.Application.Members.Aggregates
+namespace Libota.Application.Members.Aggregates;
+
+public class MemberAggregate : ReceiveActor
 {
-    public class MemberAggregate : ReceiveActor
+    private Member _state;
+
+    public MemberAggregate(MemberId id)
     {
-        private Member _state;
+        Receive<UpdateMemberRegistration>(OnUpdateRegistration);
+    }
 
-        public MemberAggregate(MemberId id)
-        {
-        }
+    private void OnUpdateRegistration(UpdateMemberRegistration command)
+    {
+        throw new System.NotImplementedException();
+    }
 
-        public void Apply(MemberRegistered aggregateEvent)
-        {
-            throw new System.NotImplementedException();
-        }
+    public void Apply(MemberRegistered aggregateEvent)
+    {
+        throw new System.NotImplementedException();
+    }
 
-        public void Apply(MemberRegistrationUpdated aggregateEvent)
-        {
-            throw new System.NotImplementedException();
-        }
+    public void Apply(MemberRegistrationUpdated aggregateEvent)
+    {
+        throw new System.NotImplementedException();
+    }
 
-        public void Apply(MemberContactDetailsChanged aggregateEvent)
-        {
-            throw new System.NotImplementedException();
-        }
+    public void Apply(MemberContactDetailsChanged aggregateEvent)
+    {
+        throw new System.NotImplementedException();
     }
 }
