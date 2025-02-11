@@ -3,12 +3,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
+             xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MembersOverviewPage"
              HorizontalAlignment="Stretch">
 
     <DockPanel LastChildFill="True">
-        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto" DockPanel.Dock="Top">
+        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*" DockPanel.Dock="Top">
             <HeaderedContentControl Header="Statistics" Grid.Row="0" Grid.Column="0">
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Members:" />
@@ -19,13 +20,12 @@
                     <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MaleMembersCount}" />
                 </Grid>
             </HeaderedContentControl>
-            <Border Grid.Row="0" Grid.Column="1" Classes="page box">
-                <StackPanel>
-                    <TextBlock Text="Actions" Classes="page box header" />
-                    <Button Content="Register Member" Command="{Binding RegisterMember}" />
-                </StackPanel>
+            <Border Grid.Row="0" Grid.Column="1">
+                <controls:CommandBar IsOpen="True">
+                    <controls:CommandBarButton Label="Register Member" Command="{Binding RegisterMember}"/>
+                </controls:CommandBar>
             </Border>
         </Grid>
-        <members:MembersList/>
+        <members:MembersList />
     </DockPanel>
 </UserControl>

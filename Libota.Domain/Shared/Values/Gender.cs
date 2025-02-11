@@ -1,9 +1,8 @@
-﻿namespace Domain.Shared.Values
+﻿namespace Domain.Shared.Values;
+
+public enum Gender
 {
-    public enum Gender
-    {
-        Unknown = 1,
-        Male = 2,
-        Female = 3
-    }
+    Unknown = 1,
+    Male = 2,
+    Female = 3
 }

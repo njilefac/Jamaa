@@ -1,9 +1,8 @@
-﻿namespace Domain.Organisation.Values
+﻿namespace Domain.Organisation.Values;
+
+public enum MembershipType
 {
-    public enum MembershipType
-    {
-        Unknown = 0,
-        Regular = 1,
-        Honorary = 2
-    }
+    Unknown = 0,
+    Regular = 1,
+    Honorary = 2
 }

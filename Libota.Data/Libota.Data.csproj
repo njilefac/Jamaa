@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <LangVersion>latestmajor</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -14,21 +14,21 @@
     <PackageReference Include="EntityFrameworkCore.Rx" Version="2.0.1" />
     <PackageReference Include="EntityFrameworkPaginateCore" Version="2.1.0" />
     <PackageReference Include="Hangfire.SQLite" Version="1.4.2" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.6" />
-    <PackageReference Include="Dotmim.Sync.Sqlite" Version="0.9.8" />
-    <PackageReference Include="Dotmim.Sync.Core" Version="0.9.8" />
-    <PackageReference Include="Dotmim.Sync.MySql" Version="0.9.8" />
-    <PackageReference Include="Dotmim.Sync.Web.Client" Version="0.9.8" />
-    <PackageReference Include="itext7" Version="8.0.4" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.10" />
+    <PackageReference Include="Dotmim.Sync.Sqlite" Version="1.2.0" />
+    <PackageReference Include="Dotmim.Sync.Core" Version="1.2.0" />
+    <PackageReference Include="Dotmim.Sync.MySql" Version="1.2.0" />
+    <PackageReference Include="Dotmim.Sync.Web.Client" Version="1.2.0" />
+    <PackageReference Include="itext7" Version="8.0.5" />
     <PackageReference Include="ChangeTracking" Version="2.2.17" />
     <PackageReference Include="ProgressReporting" Version="2.2.0" />
     <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore" Version="8.4.0" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.8" />
-    <PackageReference Include="SQLitePCLRaw.core" Version="2.1.8" />
-    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.8" />
-    <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.8" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="2.1.10" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.10" />
+    <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.10" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="IMemberRepository.cs" />

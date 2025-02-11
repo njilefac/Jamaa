@@ -9,27 +9,26 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using Splat;
 
-namespace Libota.Desktop.ViewModels.Shared
+namespace Libota.Desktop.ViewModels.Shared;
+
+public class DashboardViewModel: ReactiveObject, IRoutableViewModel
 {
-    public class DashboardViewModel: ReactiveObject, IRoutableViewModel
+    public DashboardViewModel()
     {
-        public DashboardViewModel()
-        {
-            HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
-            _userSessionService = Locator.Current.GetService<IUserSessionService>() ?? throw new InvalidOperationException();
-            MenuItems = new[]
-            {
-                new NavigationItemViewModel("Home", "Icons.Home", typeof(DashboardViewModel)),
-                new NavigationItemViewModel("Members", "Icons.Members", typeof(MembersManagementScreenViewModel)),
-                new NavigationItemViewModel("Events", "Icons.Calendar", typeof(EventManagementViewModel)),
-                new NavigationItemViewModel("Finances", "Icons.Finances", typeof(FinanceManagementViewModel))
-            };
-        }
-
-        [Reactive] public IEnumerable<NavigationItemViewModel> MenuItems { get; private set; }
-        public string UrlPathSegment => "Home";
-        public IScreen HostScreen { get; }
-
-        private readonly IUserSessionService _userSessionService;
+        HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
+        _userSessionService = Locator.Current.GetService<IUserSessionService>() ?? throw new InvalidOperationException();
+        MenuItems =
+        [
+            new NavigationItemViewModel("Home", "Icons.Home", typeof(DashboardViewModel)),
+            new NavigationItemViewModel("Members", "Icons.Members", typeof(MembersManagementScreenViewModel)),
+            new NavigationItemViewModel("Events", "Icons.Calendar", typeof(EventManagementViewModel)),
+            new NavigationItemViewModel("Finances", "Icons.Finances", typeof(FinanceManagementViewModel))
+        ];
     }
+
+    [Reactive] public IEnumerable<NavigationItemViewModel> MenuItems { get; private set; }
+    public string UrlPathSegment => "Home";
+    public IScreen HostScreen { get; }
+
+    private readonly IUserSessionService _userSessionService;
 }

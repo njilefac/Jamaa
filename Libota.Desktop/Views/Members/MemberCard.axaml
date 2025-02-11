@@ -2,15 +2,54 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:members="clr-namespace:Libota.Data.Models.Members;assembly=Libota.Data"
+             xmlns:data="clr-namespace:Libota.Data.Models.Members;assembly=Libota.Data"
+             xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Libota.Desktop.Views.Members.MemberCard"
-             x:DataType="members:MemberData"
+             x:DataType="data:MemberData"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
              ClipToBounds="True">
 
-    <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,Auto">
-        <Label Content="{Binding FirstName}" Grid.Row="0" Grid.Column="0" FontWeight="Bold" FontSize="14"/>
-        <Label Content="{Binding LastName}" Grid.Row="0" Grid.Column="1" FontWeight="Bold" FontSize="14"/>
-        <Label Content="{Binding Gender}" Grid.Row="2" Grid.Column="0" />
-    </Grid>
+    <UserControl.Styles>
+        <Style Selector="Border.MemberCard">
+            <Setter Property="(Interaction.Behaviors)">
+                <BehaviorCollectionTemplate>
+                    <BehaviorCollection>
+                        <ExecuteCommandOnDoubleTappedBehavior CommandParameter="{Binding}" Command="{Binding $parent[members:MembersList].ViewModel.ShowMemberDetails}" />
+                    </BehaviorCollection>
+                </BehaviorCollectionTemplate>
+            </Setter>
+            <Setter Property="Background" Value="LightSlateGray" />
+            <Style Selector="^:pointerover">
+                <Setter Property="BorderThickness" Value="3" />
+                <Setter Property="BorderBrush" Value="DarkGreen" />
+            </Style>
+            <Style Selector="^:selected">
+                <Setter Property="BorderThickness" Value="2" />
+                <Setter Property="BorderBrush" Value="DarkBlue" />
+            </Style>
+        </Style>
+    </UserControl.Styles>
+
+    <Border Padding="4"
+            CornerRadius="10"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Width="220"
+            Height="150"
+            Classes="MemberCard">
+        <Grid RowDefinitions="Auto,Auto,Auto,*" ColumnDefinitions="Auto,Auto">
+            <Label Grid.Row="0" Grid.Column="0" FontWeight="Bold" FontSize="14">
+                <Label.Content>
+                    <MultiBinding StringFormat="{}{0} {1}">
+                        <Binding Path="FirstName" />
+                        <Binding Path="LastName" />
+                    </MultiBinding>
+                </Label.Content>
+            </Label>
+            <Label Content="{Binding Registration.MembershipType, StringFormat='Membership: {0}'}" Grid.Row="1" Grid.Column="0" />
+            <Label Content="{Binding Registration.Status, StringFormat='Registration: {0}'}" Grid.Row="2" Grid.Column="0" />
+        </Grid>
+    </Border>
 </UserControl>

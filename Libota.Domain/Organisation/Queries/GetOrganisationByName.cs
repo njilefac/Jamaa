@@ -1,7 +1,6 @@
-namespace Domain.Organisation.Queries
+namespace Domain.Organisation.Queries;
+
+public record GetOrganisationByName(string Name)
 {
-    public record GetOrganisationByName(string Name)
-    {
-        public string Name { get; } = Name;
-    }
+    public string Name { get; } = Name;
 }

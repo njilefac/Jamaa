@@ -1,14 +1,13 @@
-﻿namespace Domain.Finances.Values
-{
-    public class MoneyAmount
-    {
-        public Currency Currency { get; set; }
-        public decimal Value { get; set; }
+﻿namespace Domain.Finances.Values;
 
-        public MoneyAmount(decimal value, Currency currency)
-        {
-            Value = value;
-            Currency = currency;
-        }
+public class MoneyAmount
+{
+    public Currency Currency { get; set; }
+    public decimal Value { get; set; }
+
+    public MoneyAmount(decimal value, Currency currency)
+    {
+        Value = value;
+        Currency = currency;
     }
 }

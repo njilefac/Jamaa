@@ -22,17 +22,16 @@ public class LibotaIconSourceConverter : IValueConverter
         throw new NotImplementedException();
     }
 
-    private static T? Get<T>(string resourceName) 
-    {   
+    private static T? Get<T>(string resourceName)
+    {
         try
         {
             var success = Avalonia.Application.Current!.TryGetResource(resourceName, Avalonia.Application.Current.ActualThemeVariant, out var outValue);
 
-            if(success && outValue is T value)
+            if (success && outValue is T value)
             {
                 return value;
             }
-
             return default;
         }
         catch

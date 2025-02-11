@@ -15,5 +15,8 @@
             <Separator Foreground="DarkGray"/>
             <MenuItem Header="E_xit" Command="{Binding Exit}" />
         </MenuItem>
+        <MenuItem Header="_Edit">
+            <MenuItem Header="_Copy"/>
+        </MenuItem>
     </Menu>
 </UserControl>

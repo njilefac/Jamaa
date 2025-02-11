@@ -1,13 +1,12 @@
 ﻿using System;
 using Domain.Finances.Values;
 
-namespace Domain.Finances
+namespace Domain.Finances;
+
+public interface IFee
 {
-    public interface IFee
-    {
-        Guid Id { get; }
-        string Name { get; }
-        string Description { get; }
-        MoneyAmount Amount { get; }
-    }
+    Guid Id { get; }
+    string Name { get; }
+    string Description { get; }
+    MoneyAmount Amount { get; }
 }
