@@ -8,6 +8,7 @@ using Libota.Data.Repositories.Organisations;
 using Microsoft.Extensions.DependencyInjection;
 using EntityFrameworkCore.Rx;
 using EntityFrameworkCore.Triggers;
+using Libota.Data.Repositories.Users;
 
 namespace Libota.Data.Configuration;
 

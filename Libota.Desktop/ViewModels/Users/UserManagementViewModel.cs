@@ -1,15 +1,10 @@
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Libota.Desktop.Navigation;
 
 namespace Libota.Desktop.ViewModels.Users
 {
-    public class UserManagementViewModel: ReactiveObject, IRoutableViewModel
+    public class UserManagementViewModel(INavigationService navigationService): ObservableObject
     {
-        public UserManagementViewModel(IScreen screen)
-        {
-            HostScreen = screen;
-        }
-        
         public string UrlPathSegment => "users"; 
-        public IScreen HostScreen { get; }
     }
 }

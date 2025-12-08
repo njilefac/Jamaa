@@ -1,27 +1,23 @@
-using System.Reactive.Disposables;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Members;
-using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Members;
 
 [SingleInstanceView]
-public partial class MembersList : ReactiveUserControl<MembersListViewModel>
+public partial class MembersList : UserControl, IViewFor<MembersListViewModel>
 {
     public MembersList()
     {
         InitializeComponent();
-        this.WhenActivated(disposables =>
-        {
-            DataContext = Locator.Current.GetService<MembersListViewModel>();
-            Disposable.Create(() => { }).DisposeWith(disposables);
-        });
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
     }
+
+    public new MembersListViewModel? DataContext { get; set; }
 }

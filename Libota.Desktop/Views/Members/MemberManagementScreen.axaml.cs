@@ -1,36 +1,24 @@
-using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Members;
-using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Members;
 
 [SingleInstanceView]
-public partial class MemberManagementScreen : ReactiveUserControl<MembersManagementScreenViewModel>
+public partial class MemberManagementScreen : UserControl, IViewFor<MembersManagementScreenViewModel>
 {
-    public MemberManagementScreen()
+    public MemberManagementScreen(MembersManagementScreenViewModel viewModel)
     {
         InitializeComponent();
-        this.WhenActivated(disposables =>
-        {
-            ViewModel = Locator.Current.GetService<MembersManagementScreenViewModel>();
-            var pagesHost = this.FindControl<RoutedViewHost>("PagesHost");
-            if (pagesHost != null) 
-                pagesHost.Content = GetCurrentPage();
-            Disposable.Create(() => { }).DisposeWith(disposables);
-        });
-    }
-
-    private static object? GetCurrentPage()
-    {
-        return Locator.Current.GetService<IViewFor<MembersOverviewPageViewModel>>();
+        DataContext = viewModel;
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
     }
+
+    public new MembersManagementScreenViewModel? DataContext { get; set; }
 }

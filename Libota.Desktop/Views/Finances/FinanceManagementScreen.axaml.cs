@@ -1,23 +1,24 @@
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Finances;
-using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Finances;
 
 [SingleInstanceView]
-public partial class FinanceManagementScreen : ReactiveUserControl<FinanceManagementViewModel>
+public partial class FinanceManagementScreen : UserControl, IViewFor<FinanceManagementViewModel>
 {
-    public FinanceManagementScreen()
+    public FinanceManagementScreen(FinanceManagementViewModel viewModel)
     {
+        DataContext = viewModel;
         InitializeComponent();
-        this.WhenActivated(disposables => { });
-        ViewModel = Locator.Current.GetService<FinanceManagementViewModel>();
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
     }
+
+    public new FinanceManagementViewModel? DataContext { get; set; }
 }

@@ -7,7 +7,7 @@ public class SessionUserNameEnricher : ILogEventEnricher
 {
     private LogEventProperty? _cachedProperty;
 
-    private const string PROPERTY_NAME = "UserName";
+    private const string PropertyName = "UserName";
 
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
@@ -21,7 +21,7 @@ public class SessionUserNameEnricher : ILogEventEnricher
 
     private static LogEventProperty CreateProperty(ILogEventPropertyFactory propertyFactory)
     {
-        var currentUserName = "Test User";
-        return propertyFactory.CreateProperty(PROPERTY_NAME, currentUserName);
+        const string currentUserName = "Test User";
+        return propertyFactory.CreateProperty(PropertyName, currentUserName);
     }
 }

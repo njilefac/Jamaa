@@ -1,44 +1,90 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Libota.Desktop.Views.Setup.CreateSuperUserScreen"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center">
-    
+<UserControl
+    x:Class="Libota.Desktop.Views.Setup.CreateSuperUserScreen"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    HorizontalAlignment="Center"
+    VerticalAlignment="Center"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+
     <StackPanel>
-        <TextBlock Text="Create Super User" HorizontalAlignment="Center" VerticalAlignment="Center"
-                   Classes="page title" />
-            <Grid ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-                <TextBlock Text="User Name:" Grid.Row="0" Grid.Column="0"
-                           HorizontalAlignment="Right" VerticalAlignment="Center"
-                           Classes="form label"/>
-                <TextBox Text="{Binding UserName}"
-                         Grid.Row="0" Grid.Column="1"
-                         Classes="form field"
-                         x:Name="UserNameField"/>
-                <TextBlock Text="Email:" Grid.Row="1" Grid.Column="0"
-                           HorizontalAlignment="Right" VerticalAlignment="Center"
-                           Classes="form label"/>
-                <TextBox Text="{Binding Email}"
-                         Classes="form field" Grid.Row="1" Grid.Column="1"/>
-                <TextBlock Text="Password:" Grid.Row="2" Grid.Column="0"
-                           HorizontalAlignment="Right" VerticalAlignment="Center"
-                           Classes="form label"/>
-                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Password}" Classes="form field secret"/>
-                <TextBlock Text="First Name:" Grid.Row="3" Grid.Column="0"
-                           HorizontalAlignment="Right" VerticalAlignment="Center"
-                           Classes="form label"/>
-                <TextBox  Grid.Row="3" Grid.Column="1" Text="{Binding FirstName}"
-                          Classes="form field"/>
-                <TextBlock Text="Last Name:" Grid.Row="4" Grid.Column="0"
-                           HorizontalAlignment="Right" VerticalAlignment="Center"
-                           Classes="form label"/>
-                <TextBox  Grid.Row="4" Grid.Column="1" Text="{Binding LastName}"
-                          Classes="form field"/>
-                <Button  Grid.Row="5" Grid.Column="1" Command="{Binding CreateAccount}" Content="Create Account"
-                         HorizontalAlignment="Right" IsDefault="True"/>
-            </Grid>
+        <TextBlock
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Classes="page title"
+            Text="Create Super User" />
+        <Grid ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Classes="form label"
+                Text="User Name:" />
+            <TextBox
+                x:Name="UserNameField"
+                Grid.Row="0"
+                Grid.Column="1"
+                Classes="form field"
+                Text="{Binding UserName}" />
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Classes="form label"
+                Text="Email:" />
+            <TextBox
+                Grid.Row="1"
+                Grid.Column="1"
+                Classes="form field"
+                Text="{Binding Email}" />
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Classes="form label"
+                Text="Password:" />
+            <TextBox
+                Grid.Row="2"
+                Grid.Column="1"
+                Classes="form field secret"
+                Text="{Binding _password}" />
+            <TextBlock
+                Grid.Row="3"
+                Grid.Column="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Classes="form label"
+                Text="First Name:" />
+            <TextBox
+                Grid.Row="3"
+                Grid.Column="1"
+                Classes="form field"
+                Text="{Binding FirstName}" />
+            <TextBlock
+                Grid.Row="4"
+                Grid.Column="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Classes="form label"
+                Text="Last Name:" />
+            <TextBox
+                Grid.Row="4"
+                Grid.Column="1"
+                Classes="form field"
+                Text="{Binding LastName}" />
+            <Button
+                Grid.Row="5"
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                Command="{Binding CreateAccount}"
+                Content="Create Account"
+                IsDefault="True" />
+        </Grid>
     </StackPanel>
 </UserControl>

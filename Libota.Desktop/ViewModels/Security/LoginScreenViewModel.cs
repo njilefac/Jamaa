@@ -3,83 +3,78 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Domain.Security.Values;
 using Libota.Application.Setup;
 using Libota.Application.Users;
 using Libota.Application.Users.Services;
 using Libota.Data.Models.Organisation;
-using Libota.Desktop.Assets.Resources;
+using Libota.Desktop.Navigation;
 using Libota.Desktop.ViewModels.Shared;
 using Microsoft.Extensions.Logging;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using ReactiveUI.Validation.Extensions;
-using ReactiveUI.Validation.Helpers;
-using Splat;
 
 namespace Libota.Desktop.ViewModels.Security;
 
-public class LoginScreenViewModel : ReactiveValidationObject, IRoutableViewModel
+public partial class LoginScreenViewModel : ObservableValidator
 {
-    public LoginScreenViewModel()
+    public LoginScreenViewModel(INavigationService navigationService,
+        DashboardViewModel dashboardViewModel,
+        ISetupService setupService,
+        IUserSessionService userSessionService,
+        ILogger<LoginScreenViewModel> logger)
     {
-        HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
-        _userSessionService = Locator.Current.GetService<IUserSessionService>();
-            
+        _userSessionService = userSessionService;
+
         _userSessionService?.UserSessions.Subscribe(x =>
         {
             if (x is not { IsAuthenticated: true }) return;
-            var nextViewModel = Locator.Current.GetService<DashboardViewModel>();
-            HostScreen.Router.Navigate.Execute(nextViewModel!);
+            navigationService.NavigateTo(dashboardViewModel!);
         });
 
         UserName = string.Empty;
         Password = string.Empty;
 
-        var setupService = Locator.Current.GetService<ISetupService>();
-        setupService?.ListOrganisations().ContinueWith(task =>
+        setupService.ListOrganisations().ContinueWith(task =>
         {
             Organisations = task.Result.ToList();
             CurrentOrganisation = Organisations?.FirstOrDefault();
         });
 
-        var logger = Locator.Current.GetService<ILogger<LoginScreenViewModel>>();
+        // this.ValidationRule(vm => vm.UserName,
+        //     x => !string.IsNullOrEmpty(x) && x.Length >= 3,
+        //     string.Format(Messages.login_error_username, 3));
+        //
+        // this.ValidationRule(vm => vm.Password,
+        //     x => !string.IsNullOrEmpty(x) && x.Length >= 6,
+        //     string.Format(Messages.login_error_password, 6));
 
-        this.ValidationRule(vm => vm.UserName,
-            x => !string.IsNullOrEmpty(x) && x.Length >= 3,
-            string.Format(Messages.login_error_username, 3));
+        //NotifyAuthenticationResult = new Interaction<UserSession?, Unit>();
 
-        this.ValidationRule(vm => vm.Password,
-            x => !string.IsNullOrEmpty(x) && x.Length >= 6,
-            string.Format(Messages.login_error_password, 6));
+        // Login = ReactiveCommand.CreateFromTask(AuthenticateUser, this.IsValid());
 
-        NotifyAuthenticationResult = new Interaction<UserSession?, Unit>();
-
-        Login = ReactiveCommand.CreateFromTask(AuthenticateUser, this.IsValid());
-
-        Login.ThrownExceptions.Subscribe(ex => { logger!.LogError(ex, "login error {Exception}", ex.Message); });
+        //Login.ThrownExceptions.Subscribe(ex => { logger.LogError(ex, "login error {Exception}", ex.Message); });
     }
-        
-    [Reactive] public string? UserName { get; set; }
 
-    [Reactive] public string? Password { get; set; }
+    [ObservableProperty] private string? _userName;
 
-    [Reactive] public IList<OrganisationData>? Organisations { get; set; }
+    [ObservableProperty] private string? _password;
 
-    [Reactive] public OrganisationData? CurrentOrganisation { get; set; }
-    public ReactiveCommand<Unit, UserSession?> Login { get; }
+    [ObservableProperty] private IList<OrganisationData>? _organisations;
 
-    public Interaction<UserSession?, Unit> NotifyAuthenticationResult { get; set; }
+    [ObservableProperty] private OrganisationData? _currentOrganisation;
+
+    //public Interaction<UserSession?, Unit> NotifyAuthenticationResult { get; set; }
 
     public string UrlPathSegment => "login";
-    public IScreen HostScreen { get; }
-        
+
+    [RelayCommand]
     private async Task<UserSession?> AuthenticateUser()
     {
         var credentials = new Credentials(UserName, Password);
         var response = await _userSessionService?.Authenticate(credentials, CurrentOrganisation)!;
         return response;
     }
-        
+
     private readonly IUserSessionService? _userSessionService;
 }

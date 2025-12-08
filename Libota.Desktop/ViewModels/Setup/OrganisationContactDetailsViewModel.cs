@@ -1,19 +1,10 @@
-using System;
-using Libota.Desktop.ViewModels.Shared;
-using ReactiveUI;
-using ReactiveUI.Validation.Helpers;
-using Splat;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Libota.Desktop.Navigation;
 
 namespace Libota.Desktop.ViewModels.Setup
 {
-    public class OrganisationContactDetailsViewModel : ReactiveValidationObject, IRoutableViewModel
+    public class OrganisationContactDetailsViewModel(INavigationService navigationService) : ObservableObject
     {
-        public OrganisationContactDetailsViewModel()
-        {
-            HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
-        }
-
         public string UrlPathSegment => "setup.organisation.contact-details";
-        public IScreen HostScreen { get; }
     }
 }

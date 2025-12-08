@@ -15,7 +15,7 @@ namespace Libota.Application.Security
                 invocation.Proceed();
             else
             {
-                var currentUserName = userSessionService?.CurrentUserSession?.UserName;
+                var currentUserName = userSessionService.CurrentUserSession?.UserName;
                 if (currentUserName != "admin" )
                 {
                     throw new SecurityException($"unauthorized operation [{currentUserName} => {invocation.TargetType}.{invocation.Method.Name}]");

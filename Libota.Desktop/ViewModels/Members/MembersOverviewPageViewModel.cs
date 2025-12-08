@@ -1,37 +1,27 @@
 using System;
 using System.Reactive;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Domain.Organisation.Requests;
 using Domain.Shared.Values;
+using JetBrains.Annotations;
 using Libota.Application.Organisation;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using ReactiveUI.Validation.Helpers;
-using Splat;
-using ReactiveCommand = ReactiveUI.ReactiveCommand;
+using Libota.Desktop.Infrastructure;
 
 namespace Libota.Desktop.ViewModels.Members;
 
-public class MembersOverviewPageViewModel : ReactiveValidationObject, IRoutableViewModel
+[UsedImplicitly]
+public partial class MembersOverviewPageViewModel : ObservableValidator
 {
-    public ReactiveCommand<Unit, Unit> RegisterMember { get; }
-    [Reactive] public int TotalMembersCount { get; set; }
-    [Reactive] public int MaleMembersCount { get; set; }
-    [Reactive] public int FemaleMembersCount { get; set; }
-
-    public Interaction<Unit, MemberRegistrationRequest?> ShowRegistrationPrompt { get; }
-
-
-    public MembersOverviewPageViewModel()
+    public MembersOverviewPageViewModel(MembersManagementScreenViewModel hostScreen,
+        IOrganisationManagementFacade organisationManagementFacade)
     {
-        HostScreen = Locator.Current.GetService<MembersManagementScreenViewModel>() ?? throw new InvalidOperationException();;
-        _organisationManagementFacade = Locator.Current.GetService<IOrganisationManagementFacade>() ?? throw new InvalidOperationException();
+        _organisationManagementFacade = organisationManagementFacade;
 
-        RegisterMember = ReactiveCommand.CreateFromTask(OnRegisterMember);
 
         ShowRegistrationPrompt = new Interaction<Unit, MemberRegistrationRequest?>();
-            
+
         _organisationManagementFacade.CurrentMembers.Subscribe(m =>
         {
             TotalMembersCount++;
@@ -49,21 +39,19 @@ public class MembersOverviewPageViewModel : ReactiveValidationObject, IRoutableV
         });
     }
 
-    private Task OnRegisterMember()
+    public string UrlPathSegment => "members.overview";
+
+    public Interaction<Unit, MemberRegistrationRequest> ShowRegistrationPrompt { get; }
+
+    [RelayCommand]
+    private async Task RegisterMember()
     {
-        ShowRegistrationPrompt.Handle(Unit.Default)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(request =>
-            {
-                if(request == null)
-                    return;
-                _organisationManagementFacade.RegisterMember(request);
-            });
-        return Task.CompletedTask;
+        var request = await ShowRegistrationPrompt.Handle(Unit.Default);
+        await _organisationManagementFacade.RegisterMember(request);
     }
 
-    public string UrlPathSegment => "members.overview";
-    public IScreen HostScreen { get; }
-        
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
+    [ObservableProperty] private int _totalMembersCount;
+    [ObservableProperty] private int _maleMembersCount;
+    [ObservableProperty] private int _femaleMembersCount;
 }

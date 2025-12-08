@@ -1,26 +1,19 @@
-using System;
-using System.Reactive.Disposables;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Members;
-using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Members;
 
-public partial class MemberRegistrationDialog : ReactiveWindow<MemberRegistrationDialogViewModel>
+[SingleInstanceView]
+public partial class MemberRegistrationDialog : Window, IViewFor<MemberRegistrationDialogViewModel>
 {
-    public MemberRegistrationDialog()
+    public MemberRegistrationDialog(MemberRegistrationDialogViewModel viewModel)
     {
         InitializeComponent();
-        ViewModel = Locator.Current.GetService<MemberRegistrationDialogViewModel>();
-
-        this.WhenActivated(disposables =>
-        {
-            ViewModel?.RegisterMember.Subscribe(Close);
-            Disposable.Create(() => { }).DisposeWith(disposables);
-        });
+        DataContext = viewModel;
     }
 
     private void InitializeComponent()
@@ -32,4 +25,6 @@ public partial class MemberRegistrationDialog : ReactiveWindow<MemberRegistratio
     {
         FirstNameField?.Focus();
     }
+
+    public new MemberRegistrationDialogViewModel? DataContext { get; set; }
 }

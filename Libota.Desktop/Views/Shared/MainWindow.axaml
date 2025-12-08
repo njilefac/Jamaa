@@ -1,31 +1,42 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:rxui="http://reactiveui.net"
-        xmlns:shared="clr-namespace:Libota.Desktop.Views.Shared"
-        xmlns:vm="clr-namespace:Libota.Desktop.ViewModels.Shared"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="Libota.Desktop.Views.Shared.MainWindow"
-        MinWidth="950"
-        MinHeight="850"
-        Icon="/Assets/Icons/avalonia-logo.ico"
-        Title="{Binding ApplicationTitle}"
-        WindowState="Maximized"
-        WindowStartupLocation="CenterScreen"
-        ShowActivated="True"
-        TransparencyLevelHint="AcrylicBlur"
-        Background="Transparent"
-        x:DataType="vm:MainWindowViewModel">
+﻿<Window
+    x:Class="Libota.Desktop.Views.Shared.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:Libota.Desktop.Views.Shared"
+    xmlns:vm="clr-namespace:Libota.Desktop.ViewModels.Shared"
+    Title="{Binding ApplicationTitle}"
+    MinWidth="950"
+    MinHeight="850"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="vm:MainWindowViewModel"
+    Background="Transparent"
+    Icon="/Assets/Icons/avalonia-logo.ico"
+    ShowActivated="True"
+    TransparencyLevelHint="AcrylicBlur"
+    WindowStartupLocation="CenterScreen"
+    WindowState="Maximized"
+    mc:Ignorable="d">
 
-    <Grid RowDefinitions="Auto,*,35" ColumnDefinitions="*">
+    <Grid ColumnDefinitions="*" RowDefinitions="Auto,*,35">
         <shared:MainMenu Grid.Row="0" />
         <Panel Grid.Row="1">
-            <rxui:RoutedViewHost
-                Router="{Binding Router}"
+            <ExperimentalAcrylicBorder IsHitTestVisible="False">
+                <ExperimentalAcrylicBorder.Material>
+                    <ExperimentalAcrylicMaterial
+                        BackgroundSource="Digger"
+                        MaterialOpacity="0.65"
+                        TintColor="Black"
+                        TintOpacity="1" />
+                </ExperimentalAcrylicBorder.Material>
+            </ExperimentalAcrylicBorder>
+            <ContentControl
+                x:Name="ContentContainer"
                 HorizontalContentAlignment="Stretch"
-                VerticalContentAlignment="Stretch"
-                x:Name="ContentContainer" />
+                VerticalContentAlignment="Stretch" />
         </Panel>
         <Panel Grid.Row="2" Background="gray" />
     </Grid>

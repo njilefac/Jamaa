@@ -1,18 +1,18 @@
-using System;
-using Libota.Desktop.ViewModels.Shared;
-using ReactiveUI;
-using Splat;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Libota.Desktop.Navigation;
 
 namespace Libota.Desktop.ViewModels.Members;
 
-public class MembersManagementScreenViewModel : ReactiveObject, IRoutableViewModel, IScreen
+public partial class MembersManagementScreenViewModel: ObservableObject
 {
-    public MembersManagementScreenViewModel()
+    public MembersManagementScreenViewModel(INavigationService navigationService, MembersOverviewPageViewModel membersOverviewPageViewModel)
     {
-        Router = new RoutingState();
+        _navigationService = navigationService;
+        CurrentContent = membersOverviewPageViewModel;
     }
+    
+    [ObservableProperty]
+    private ObservableObject? _currentContent;
 
-    public string UrlPathSegment => "members.home";
-    public IScreen HostScreen { get; } = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
-    public RoutingState Router { get; }
+    private readonly INavigationService _navigationService;
 }

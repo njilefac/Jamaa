@@ -1,26 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Akka.Hosting" Version="1.5.30" />
+      <PackageReference Include="Akka.Hosting" Version="1.5.55.1" />
       <PackageReference Include="Akka.Logger.Serilog" Version="1.5.25" />
-      <PackageReference Include="Akka.Persistence.Query" Version="1.5.30" />
-      <PackageReference Include="Akka.Persistence.Sql" Version="1.5.30" />
-      <PackageReference Include="Akka.Persistence.Sqlite" Version="1.5.30" />
-      <PackageReference Include="Akka.Remote.Hosting" Version="1.5.30" />
-      <PackageReference Include="AutoMapper" Version="13.0.1" />
+      <PackageReference Include="Akka.Persistence.Query" Version="1.5.56" />
+      <PackageReference Include="Akka.Persistence.Sql" Version="1.5.55.1" />
+      <PackageReference Include="Akka.Persistence.Sqlite" Version="1.5.39" />
+      <PackageReference Include="Akka.Remote.Hosting" Version="1.5.55.1" />
+      <PackageReference Include="AutoMapper" Version="16.0.0" />
       <PackageReference Include="EntityFrameworkCore.Triggers" Version="1.2.3" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
-      <PackageReference Include="Nickvision.Aura" Version="2023.11.4" />
+      <PackageReference Include="FluentEmail.Liquid" Version="3.0.2" />
+      <PackageReference Include="itext" Version="9.4.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+      <PackageReference Include="QuestPDF" Version="2025.7.4" />
+      <PackageReference Include="QuestPDF.Barcodes" Version="2024.10.3" />
+      <PackageReference Include="QuestPDF.Markdown" Version="1.43.0" />
       <PackageReference Include="Rhino.Licensing.X" Version="2.0.0.1" />
-      <PackageReference Include="Suplex.Security.Core" Version="1.0.19075" />
-      <PackageReference Include="Suplex.Security.FileSystemDal" Version="1.0.19109" />
-      <PackageReference Include="Suplex.Security.Utilities.Json" Version="1.0.19109" />
     </ItemGroup>
 
     <ItemGroup>
