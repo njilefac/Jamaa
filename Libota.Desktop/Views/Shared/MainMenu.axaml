@@ -19,11 +19,11 @@
             </MenuItem>
             <Separator Foreground="DarkGray" />
             <MenuItem
-                Command="{Binding Logout}"
+                Command="{Binding LogoutCommand}"
                 Header="_Logout"
-                IsVisible="{Binding !Logout.CanExecute}" />
+                IsVisible="{Binding !LogoutCommand.CanExecute}" />
             <Separator Foreground="DarkGray" />
-            <MenuItem Command="{Binding Exit}" Header="E_xit" />
+            <MenuItem Command="{Binding ExitApplicationCommand}" Header="E_xit" />
         </MenuItem>
         <MenuItem Header="_Edit">
             <MenuItem Header="_Copy" />

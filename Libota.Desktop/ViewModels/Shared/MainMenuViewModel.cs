@@ -15,7 +15,7 @@ public partial class MainMenuViewModel(IUserSessionService userSessionService, I
 {
     
     [RelayCommand]
-    private Task EndUserSession()
+    private Task Logout()
     {
         userSessionService.EndSession();
         navigationService.NavigateTo<LoginScreenViewModel>();
