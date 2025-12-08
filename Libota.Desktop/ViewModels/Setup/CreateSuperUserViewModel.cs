@@ -7,6 +7,8 @@ using JetBrains.Annotations;
 using Libota.Application.Setup;
 using Libota.Application.Users;
 using Libota.Application.Users.Services;
+using Libota.Desktop.Navigation;
+using Libota.Desktop.ViewModels.Security;
 using Libota.Desktop.ViewModels.Shared;
 
 namespace Libota.Desktop.ViewModels.Setup
@@ -14,9 +16,11 @@ namespace Libota.Desktop.ViewModels.Setup
     [UsedImplicitly]
     public partial class CreateSuperUserViewModel : ObservableValidator
     {
-        public CreateSuperUserViewModel(MainWindowViewModel hostScreen, 
+        public CreateSuperUserViewModel(INavigationService navigationService,  
             ISetupService setupService,
-            IUserSessionService userSessionService)
+            IUserSessionService userSessionService,
+            DashboardViewModel dashboardViewModel, 
+            LoginScreenViewModel loginScreenViewModel)
         {
             _setupService = setupService;
             _userSessionService = userSessionService;
@@ -47,8 +51,7 @@ namespace Libota.Desktop.ViewModels.Setup
         [ObservableProperty] private string _userName;
         [ObservableProperty] private string _email;
         [ObservableProperty] private string _password;
-        public string UrlPathSegment => "setup.create-super-user";
-        
+
         [RelayCommand]
         private async Task<UserSession?> OnCreateAccount(CancellationToken cancellationToken)
         {

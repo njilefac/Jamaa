@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -7,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml;
 using Libota.Application.Shared.Logging;
 using Libota.Data.Configuration;
@@ -75,18 +73,12 @@ public class App : Avalonia.Application
 
         Messages.Culture = CultureInfo.CurrentUICulture;
         if (ServiceProvider.GetService<IViewFor<MainWindowViewModel>>() is not MainWindow mainWindow) return;
-        mainWindow.DataTemplates.AddRange(GetDataTemplates());
-        mainWindow.WindowState = WindowState.FullScreen;
-        mainWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        var mainViewModel = ServiceProvider.GetRequiredService<MainWindowViewModel>();
+        mainWindow.DataContext = mainViewModel;
         lifeTime.MainWindow = mainWindow;
     }
 
     private ServiceProvider ServiceProvider { get; set; }
-
-    private IEnumerable<IDataTemplate> GetDataTemplates()
-    {
-        yield return new FuncDataTemplate<MainWindowViewModel>((vm, ns) => ServiceProvider.GetViewForViewModel<MainWindowViewModel>(), true);
-    }
 
 
     private static void UpdateDatabase(ILogger<Program>? logger, IServiceProvider serviceProvider)

@@ -2,7 +2,6 @@
     x:Class="Libota.Desktop.Views.Shared.MainWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:Libota.Desktop.Views.Shared"
@@ -36,7 +35,8 @@
             <ContentControl
                 x:Name="ContentContainer"
                 HorizontalContentAlignment="Stretch"
-                VerticalContentAlignment="Stretch" />
+                VerticalContentAlignment="Stretch"
+                Content="{Binding CurrentView}" />
         </Panel>
         <Panel Grid.Row="2" Background="gray" />
     </Grid>

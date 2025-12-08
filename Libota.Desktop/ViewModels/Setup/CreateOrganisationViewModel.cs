@@ -32,16 +32,14 @@ public partial class CreateOrganisationViewModel(ISetupService setupService,
 
     [ObservableProperty] private string _website = string.Empty;
 
-    public string UrlPathSegment => "setup.organization.create";
-
     [RelayCommand]
     private async Task CreateOrganisation()
     {
         var organisationWasCreated = await setupService.CreateOrganisation(Name.Trim(), Description.Trim());
-        if (!organisationWasCreated) {};
+        if (!organisationWasCreated) {}
 
         var superUser = await setupService.GetSuperUser();
         ObservableObject?  nextViewModel = superUser == null ? createSuperUserViewModel : loginScreenViewModel;
-        navigationService.NavigateTo(nextViewModel ?? throw new InvalidOperationException());
+        await navigationService.NavigateTo(nextViewModel ?? throw new InvalidOperationException());
     }
 }
