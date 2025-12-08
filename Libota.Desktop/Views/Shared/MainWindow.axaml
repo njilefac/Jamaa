@@ -21,7 +21,7 @@
     mc:Ignorable="d">
 
     <Grid ColumnDefinitions="*" RowDefinitions="Auto,*,35">
-        <shared:MainMenu Grid.Row="0" />
+        <shared:MainMenu Grid.Row="0" DataContext="{Binding MainMenuViewModel}" />
         <Panel Grid.Row="1">
             <ExperimentalAcrylicBorder IsHitTestVisible="False">
                 <ExperimentalAcrylicBorder.Material>

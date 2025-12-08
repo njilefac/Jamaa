@@ -18,6 +18,4 @@ public partial class MainMenu : UserControl, IViewFor<MainMenuViewModel>
     {
         AvaloniaXamlLoader.Load(this);
     }
-
-    public new MainMenuViewModel? DataContext { get; set; }
 }

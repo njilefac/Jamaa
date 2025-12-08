@@ -20,15 +20,17 @@ namespace Libota.Desktop.ViewModels.Shared
         public MainWindowViewModel(
             ISetupService setupService,
             IUserSessionService userSessionService,
+            MainMenuViewModel mainMenuViewModel,
             CreateOrganisationViewModel createOrganisationViewModel,
             CreateSuperUserViewModel createSuperUserViewModel,
             LoginScreenViewModel loginScreenViewModel)
         {
             _setupService = setupService;
+            _mainMenuViewModel = mainMenuViewModel;
             _createOrganisationViewModel = createOrganisationViewModel;
             _createSuperUserViewModel = createSuperUserViewModel;
             _loginScreenViewModel = loginScreenViewModel;
-            CurrentView = GetStartupViewModel();
+            CurrentView = DetermineInitialView();
             
             userSessionService.UserSessions.Subscribe(x =>
             {
@@ -38,7 +40,7 @@ namespace Libota.Desktop.ViewModels.Shared
             });
         }
 
-        private ObservableObject GetStartupViewModel()
+        private ObservableObject DetermineInitialView()
         {
             var existingOrganisations = _setupService.ListOrganisations().Result;
 
@@ -54,6 +56,8 @@ namespace Libota.Desktop.ViewModels.Shared
 
         [ObservableProperty] private string? _applicationTitle = ApplicationName;
         [ObservableProperty] private ObservableObject _currentView;
+        [ObservableProperty] private ObservableObject _mainMenuViewModel;
+        
 
         private const string ApplicationName = "Libota Desktop";
     }
