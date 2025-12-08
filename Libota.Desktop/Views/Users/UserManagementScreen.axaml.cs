@@ -1,28 +1,25 @@
-using System.Reactive.Disposables;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using JetBrains.Annotations;
+using Libota.Desktop.Infrastructure;
 using Libota.Desktop.ViewModels.Users;
-using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Users
 {
-    public partial class UserManagementScreen : ReactiveUserControl<UserManagementViewModel>
+    [UsedImplicitly]
+    public partial class UserManagementScreen : UserControl, IViewFor<UserManagementViewModel>
     {
-        public UserManagementScreen()
+        public UserManagementScreen(UserManagementViewModel viewModel)
         {
             InitializeComponent();
-            this.WhenActivated(disposables =>
-            {
-                DataContext = Locator.Current.GetService<UserManagementViewModel>();
-                Disposable.Create(() => { }).DisposeWith(disposables);
-            });
-            
+            DataContext = viewModel;
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
+
+        public new UserManagementViewModel? DataContext { get; set; }
     }
 }

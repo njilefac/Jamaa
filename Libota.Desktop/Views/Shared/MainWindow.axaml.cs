@@ -1,33 +1,43 @@
 ﻿using System.Linq;
-using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using JetBrains.Annotations;
 using Libota.Application.Setup;
+using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Security;
 using Libota.Desktop.ViewModels.Setup;
 using Libota.Desktop.ViewModels.Shared;
-using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Shared;
 
 [SingleInstanceView]
-public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
+[UsedImplicitly]
+public partial class MainWindow : Window, IViewFor<MainWindowViewModel>
 {
-    public MainWindow()
-    {
-        this.WhenActivated(disposables =>
-        {
-            DataContext = Locator.Current.GetService<MainWindowViewModel>();
+    private readonly ISetupService _setupService;
+    private readonly IViewFor<CreateOrganisationViewModel> _createOrganisationView;
+    private readonly IViewFor<LoginScreenViewModel> _loginScreenView;
+    private readonly IViewFor<CreateSuperUserViewModel> _createSuperUserView;
 
-            Disposable.Create(() => { }).DisposeWith(disposables);
-        });
+    public MainWindow(MainWindowViewModel viewModel,
+        ISetupService setupService,
+        IViewFor<CreateOrganisationViewModel> createOrganisationView,
+        IViewFor<CreateSuperUserViewModel> createSuperUserView,
+        IViewFor<LoginScreenViewModel> loginScreenView)
+    {
+        DataContext = viewModel;
+        
+        _setupService = setupService;
+        _createOrganisationView = createOrganisationView;
+        _loginScreenView = loginScreenView;
+        _createSuperUserView = createSuperUserView;
 
         InitializeComponent();
+
 #if DEBUG
         //this.AttachDevTools();
 #endif
@@ -48,25 +58,23 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
-        var contentPageContainer = this.FindControl<RoutedViewHost>("ContentContainer");
-        if (contentPageContainer != null)
-        {
-            contentPageContainer.DefaultContent = GetStartupScreen().Result;
-        }
+        var contentPageContainer = this.FindControl<ContentControl>("ContentContainer");
+        contentPageContainer?.Content = GetStartupScreen().Result;
     }
 
-    private static async Task<IViewFor?> GetStartupScreen()
+    private async Task<UserControl?> GetStartupScreen()
     {
-        var setupService = Locator.Current.GetService<ISetupService>();
-        var existingOrganisations = await setupService?.ListOrganisations()!;
+        var existingOrganisations = await _setupService.ListOrganisations();
 
-        if (existingOrganisations.Any() == false)
-            return Locator.Current.GetService<IViewFor<CreateOrganisationViewModel>>();
+        if (!existingOrganisations.Any())
+            return _createOrganisationView as UserControl;
 
-        var superUser = await setupService.GetSuperUser();
+        var superUser = await _setupService.GetSuperUser();
         if (superUser == null)
-            return Locator.Current.GetService<IViewFor<CreateSuperUserViewModel>>();
+            return _createSuperUserView as UserControl;
 
-        return Locator.Current.GetService<IViewFor<LoginScreenViewModel>>();
+        return _loginScreenView as UserControl;
     }
+
+    public new MainWindowViewModel? DataContext { get; set; }
 }

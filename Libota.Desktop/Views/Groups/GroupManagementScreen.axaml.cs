@@ -1,23 +1,24 @@
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Groups;
-using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Groups;
 
 [SingleInstanceView]
-public partial class GroupManagementScreen : ReactiveUserControl<GroupManagementViewModel>
+public partial class GroupManagementScreen : UserControl, IViewFor<GroupManagementViewModel>
 {
-    public GroupManagementScreen()
+    public GroupManagementScreen(GroupManagementViewModel viewModel)
     {
         InitializeComponent();
-        this.WhenActivated(disposables => { });
-        DataContext = Locator.Current.GetService<GroupManagementViewModel>();
+        DataContext = viewModel;
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
     }
+
+    public new GroupManagementViewModel? DataContext { get; set; }
 }

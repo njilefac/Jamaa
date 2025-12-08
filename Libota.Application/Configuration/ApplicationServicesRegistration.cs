@@ -7,29 +7,31 @@ using Libota.Application.Shared;
 using Libota.Application.Users.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Libota.Application.Configuration
+namespace Libota.Application.Configuration;
+
+public static class ApplicationServicesRegistration
 {
-    public static class ApplicationServicesRegistration
-    {
         
-        public static ServiceCollection RegisterApplicationServices(this ServiceCollection services)
-        {
-            services.AddSingleton(new ProxyGenerator());
+    public static ServiceCollection RegisterApplicationServices(this ServiceCollection services)
+    {
+        services.AddSingleton(new ProxyGenerator());
             
-            services.AddProxiedScoped<IUserManagementFacade, UserManagementFacade>();
+        services.AddProxiedScoped<IUserManagementFacade, UserManagementFacade>();
 
-            services.AddProxiedScoped<ISetupService, SetupService>();
+        services.AddProxiedScoped<ISetupService, SetupService>();
 
-            services.AddProxiedSingleton<IOrganisationManagementFacade, OrganisationManagementFacade>();
+        services.AddProxiedSingleton<IOrganisationManagementFacade, OrganisationManagementFacade>();
 
-            services.AddSingleton<IQueryProcessor, QueryProcessor>();
+        services.AddSingleton<IQueryProcessor, QueryProcessor>();
 
-            services.AddScoped<IInterceptor, AuthorizationCheckInterceptor>();
+        services.AddScoped<IInterceptor, AuthorizationCheckInterceptor>();
 
-            return services;
-        }
-        private static void AddProxiedScoped<TInterface, TImplementation>
-            (this IServiceCollection services)
+        return services;
+    }
+    extension(IServiceCollection services)
+    {
+        private void AddProxiedScoped<TInterface, TImplementation>
+            ()
             where TInterface : class
             where TImplementation : class, TInterface
         {
@@ -42,13 +44,12 @@ namespace Libota.Application.Configuration
                     .GetRequiredService<TImplementation>();
                 var interceptors = serviceProvider
                     .GetServices<IInterceptor>().ToArray();
-                return proxyGenerator.CreateInterfaceProxyWithTarget(
-                    typeof(TInterface), actual, interceptors);
+                return proxyGenerator.CreateInterfaceProxyWithTarget<TInterface>(actual, interceptors);
             });
         }
 
-        private static void AddProxiedSingleton<TInterface, TImplementation>
-            (this IServiceCollection services)
+        private void AddProxiedSingleton<TInterface, TImplementation>
+            ()
             where TInterface : class
             where TImplementation : class, TInterface
         {
@@ -61,8 +62,7 @@ namespace Libota.Application.Configuration
                     .GetRequiredService<TImplementation>();
                 var interceptors = serviceProvider
                     .GetServices<IInterceptor>().ToArray();
-                return proxyGenerator.CreateInterfaceProxyWithTarget(
-                    typeof(TInterface), actual, interceptors);
+                return proxyGenerator.CreateInterfaceProxyWithTarget<TInterface>(actual, interceptors);
             });
         }
     }

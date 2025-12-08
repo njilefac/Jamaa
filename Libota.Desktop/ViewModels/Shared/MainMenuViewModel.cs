@@ -1,50 +1,32 @@
-using System;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using JetBrains.Annotations;
 using Libota.Application.Users.Services;
+using Libota.Desktop.Navigation;
 using Libota.Desktop.ViewModels.Security;
-using ReactiveUI;
-using Splat;
 using static System.Threading.Tasks.Task;
 
 namespace Libota.Desktop.ViewModels.Shared;
 
-public class MainMenuViewModel : ReactiveObject
+[UsedImplicitly]
+public partial class MainMenuViewModel(IUserSessionService userSessionService, INavigationService navigationService) : ObservableObject
 {
-    public MainMenuViewModel()
-    {
-        _hostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
-        _sessionService = Locator.Current.GetService<IUserSessionService>() ?? throw new InvalidOperationException();
-        _loginScreenViewModel = Locator.Current.GetService<LoginScreenViewModel>() ?? throw new InvalidOperationException();
-
-        var userIsAuthenticated = _sessionService.UserSessions.Select(s => s is { IsAuthenticated: true });
-
-        Exit = ReactiveCommand.CreateFromTask(ExitApplication);
-        Logout = ReactiveCommand.CreateFromTask(EndUserSession, userIsAuthenticated);
-        Edit = ReactiveCommand.CreateFromObservable<Unit>(() => null!, userIsAuthenticated);
-    }
     
-    public ReactiveCommand<Unit, Unit> Exit { get; }
-    public ReactiveCommand<Unit, Unit> Logout { get; }
-    public ReactiveCommand<Unit, Unit> Edit { get; }
-
+    [RelayCommand]
     private Task EndUserSession()
     {
-        _sessionService.EndSession();
-        _hostScreen.Router.Navigate.Execute(_loginScreenViewModel);
+        userSessionService.EndSession();
+        navigationService.NavigateTo<LoginScreenViewModel>();
         return CompletedTask;
     }
 
+    [RelayCommand]
     private static Task ExitApplication()
     {
         if (Avalonia.Application.Current?.ApplicationLifetime is ClassicDesktopStyleApplicationLifetime desktop)
             desktop.Shutdown();
         return CompletedTask;
     }
-    
-    private readonly IUserSessionService _sessionService;
-    private readonly LoginScreenViewModel _loginScreenViewModel;
-    private readonly IScreen _hostScreen;
 }

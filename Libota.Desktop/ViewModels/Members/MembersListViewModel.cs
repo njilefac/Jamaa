@@ -3,37 +3,38 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using DynamicData;
 using DynamicData.Binding;
+using JetBrains.Annotations;
 using Libota.Application.Organisation;
 using Libota.Data.Models.Members;
-using Libota.Desktop.ViewModels.Shared;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using Splat;
-using ReactiveCommand = ReactiveUI.ReactiveCommand;
+using Libota.Desktop.Navigation;
 
 namespace Libota.Desktop.ViewModels.Members;
 
-public class MembersListViewModel : ReactiveObject, IRoutableViewModel
+[UsedImplicitly]
+public partial class MembersListViewModel : ObservableValidator
 {
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
-    [Reactive] public string? SearchTerm { get; set; }
+    private readonly MemberProfileViewModel _memberProfileViewModel;
+    private readonly INavigationService _navigationService;
 
-    public ReactiveCommand<MemberData, Unit> ShowMemberDetails { get; set; }
-
-    public MembersListViewModel()
+    public MembersListViewModel(IOrganisationManagementFacade organisationManagementFacade,
+        MemberProfileViewModel memberProfileViewModel, INavigationService navigationService)
     {
-        HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
-        _organisationManagementFacade = Locator.Current.GetService<IOrganisationManagementFacade>() ?? throw new InvalidOperationException();
+        _organisationManagementFacade = organisationManagementFacade;
+        _memberProfileViewModel = memberProfileViewModel;
+        _navigationService = navigationService;
 
         var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
             
         var members = new ObservableCollectionExtended<MemberData>();
-        membersSourceList.PopulateFrom(_organisationManagementFacade.CurrentMembers);
+        membersSourceList.PopulateFrom(organisationManagementFacade.CurrentMembers);
         membersSourceList.Connect()
             .Sort(SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
-            .ObserveOn(RxApp.MainThreadScheduler)
+            //.ObserveOn(RxApp.MainThreadScheduler)
             .Bind(Members)
             .DisposeMany()
             .Subscribe(changeSet =>
@@ -46,7 +47,7 @@ public class MembersListViewModel : ReactiveObject, IRoutableViewModel
 
         this.WhenValueChanged(x => x.SearchTerm, false)
             .Throttle(TimeSpan.FromSeconds(1))
-            .WhereNotNull()
+            .Where(x => !string.IsNullOrWhiteSpace(x) || !string.IsNullOrWhiteSpace(SearchTerm))
             .Subscribe(term =>
             {
                 var matchingMembers = string.IsNullOrWhiteSpace(term)
@@ -59,26 +60,23 @@ public class MembersListViewModel : ReactiveObject, IRoutableViewModel
                     innerList.AddOrUpdate(matchingMembers);
                 });
             });
-
-        ShowMemberDetails = ReactiveCommand.CreateFromTask<MemberData, Unit>(ShowMemberProfile);
     }
+    
+    [ObservableProperty] private string? _searchTerm;
         
-    [Reactive] public ObservableCollectionExtended<MemberData> Members { get; set; } = new();
-    public string? UrlPathSegment => "members.list";
-    public IScreen HostScreen { get; }
+    [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = new();
+    public string UrlPathSegment => "members.list";
 
+    [RelayCommand]
     private async Task<Unit> ShowMemberProfile(MemberData member)
     {
-        var memberProfileViewModel = Locator.Current.GetService<MemberProfileViewModel>();
-        if (memberProfileViewModel == null) return await Task.FromResult(Unit.Default);
+        _memberProfileViewModel.FirstName = member.FirstName;
+        _memberProfileViewModel.MiddleName = member.MiddleName;
+        _memberProfileViewModel.LastName = member.LastName;
+        _memberProfileViewModel.Gender = member.Gender;
+        _memberProfileViewModel.Registration = member.Registration;
 
-        memberProfileViewModel.FirstName = member.FirstName;
-        memberProfileViewModel.MiddleName = member.MiddleName;
-        memberProfileViewModel.LastName = member.LastName;
-        memberProfileViewModel.Gender = member.Gender;
-        memberProfileViewModel.Registration = member.Registration;
-
-        await HostScreen.Router.Navigate.Execute(memberProfileViewModel);
+        await _navigationService.NavigateTo(_memberProfileViewModel);
 
         return await Task.FromResult(Unit.Default);
     }

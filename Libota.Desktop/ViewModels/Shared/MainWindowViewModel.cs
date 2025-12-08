@@ -1,24 +1,25 @@
 ﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
+using JetBrains.Annotations;
 using Libota.Application.Users.Services;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 
 namespace Libota.Desktop.ViewModels.Shared
 {
-    public class MainWindowViewModel : ReactiveObject, IScreen
+    [UsedImplicitly]
+    public partial class MainWindowViewModel : ObservableObject
     {
-        private const string APPLICATION_NAME = "Libota Desktop";
-
-        [Reactive] public string? ApplicationTitle { get; set; } = APPLICATION_NAME;
-        public RoutingState Router { get; }
-
         public MainWindowViewModel(IUserSessionService userSessionService)
         {
             userSessionService.UserSessions.Subscribe(x =>
             {
-                ApplicationTitle = x is { IsAuthenticated: true } ? $"{APPLICATION_NAME} -  ({x.Organisation?.Name})" : APPLICATION_NAME;
+                ApplicationTitle = x is { IsAuthenticated: true }
+                    ? $"{ApplicationName} -  ({x.Organisation?.Name})"
+                    : ApplicationName;
             });
-            Router = new RoutingState();
         }
+
+        [ObservableProperty]
+        private string? _applicationTitle = ApplicationName;
+        private const string ApplicationName = "Libota Desktop";
     }
 }

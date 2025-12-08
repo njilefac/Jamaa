@@ -20,67 +20,70 @@ namespace Libota.Desktop.Configuration.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static ServiceCollection ConfigureAkka(this ServiceCollection services, IClassicDesktopStyleApplicationLifetime applicationLifetime, IConfigurationRoot configuration)
+    extension(ServiceCollection services)
     {
-        services.AddSingleton<IHostApplicationLifetime>(new AvaloniaApplicationLifeTime(applicationLifetime));
-
-        services.AddAkka("Libota-Akka", builder =>
+        public ServiceCollection ConfigureAkka(IClassicDesktopStyleApplicationLifetime applicationLifetime, IConfigurationRoot configuration)
         {
-            builder.WithActors((system, registry, resolver) =>
+            services.AddSingleton<IHostApplicationLifetime>(new AvaloniaApplicationLifeTime(applicationLifetime));
+
+            services.AddAkka("Libota-Akka", builder =>
             {
-                var commandProcessor = system.ActorOf(resolver.Props<CommandProcessor>(), "command-processor");
-
-                var organisationEventsProjector = system.ActorOf(resolver.Props<OrganisationProjection>(), "organisation-events-projector");
-
-
-                registry.Register<CommandProcessor>(commandProcessor);
-                registry.Register<OrganisationProjection>(organisationEventsProjector);
-
-                system.WhenTerminated.ContinueWith(_ => applicationLifetime.Shutdown());
-            });
-
-            builder.ConfigureLoggers(b =>
-            {
-                b.ClearLoggers();
-                b.AddLogger<SerilogLogger>();
-            });
-
-            var connectionString = $"Data Source={Path.Combine(Directory.GetCurrentDirectory(),
-                configuration.GetSection("Database:DataFile").Value ?? throw new InvalidOperationException())};";
-
-            
-            
-            builder.WithSqlPersistence(connectionString,
-                ProviderName.SQLiteMS,
-                journalBuilder:b =>
+                builder.WithActors((system, registry, resolver) =>
                 {
-                    b.AddWriteEventAdapter<LibotaEventTagger>("organisation-event-tagger", new[] { typeof(ILibotaEvent) });
-                },
-                autoInitialize: true,
-                useWriterUuidColumn: true);
-        });
+                    var commandProcessor = system.ActorOf(resolver.Props<CommandProcessor>(), "command-processor");
 
-        return services;
-    }
+                    var organisationEventsProjector = system.ActorOf(resolver.Props<OrganisationProjection>(), "organisation-events-projector");
 
-    public static ServiceCollection ConfigureServices(this ServiceCollection services, IConfigurationRoot configuration)
-    {
-        services.AddLogging();
 
-        services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
+                    registry.Register<CommandProcessor>(commandProcessor);
+                    registry.Register<OrganisationProjection>(organisationEventsProjector);
 
-        services
-            .RegisterApplicationServices()
-            .RegisterDataServices()
-            .RegisterPresentationServices()
-            .AddSerilog((_, l) =>
-            {
-                l.ReadFrom.Configuration(configuration, new ConfigurationReaderOptions
-                {
-                    SectionName = "Serilog"
+                    system.WhenTerminated.ContinueWith(_ => applicationLifetime.Shutdown());
                 });
+
+                builder.ConfigureLoggers(b =>
+                {
+                    b.ClearLoggers();
+                    b.AddLogger<SerilogLogger>();
+                });
+
+                var connectionString = $"Data Source={Path.Combine(Directory.GetCurrentDirectory(),
+                    configuration.GetSection("Database:DataFile").Value ?? throw new InvalidOperationException())};";
+
+            
+            
+                builder.WithSqlPersistence(connectionString,
+                    ProviderName.SQLiteMS,
+                    journalBuilder:b =>
+                    {
+                        b.AddWriteEventAdapter<LibotaEventTagger>("organisation-event-tagger", [typeof(ILibotaEvent)]);
+                    },
+                    autoInitialize: true,
+                    useWriterUuidColumn: true);
             });
 
-        return services;
+            return services;
+        }
+
+        public ServiceCollection ConfigureServices(IConfigurationRoot configuration)
+        {
+            services.AddLogging();
+
+            services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
+
+            services
+                .RegisterApplicationServices()
+                .RegisterDataServices()
+                .RegisterPresentationServices()
+                .AddSerilog((_, l) =>
+                {
+                    l.ReadFrom.Configuration(configuration, new ConfigurationReaderOptions
+                    {
+                        SectionName = "Serilog"
+                    });
+                });
+
+            return services;
+        }
     }
 }

@@ -1,27 +1,28 @@
-using System.Reactive.Disposables;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Setup;
-using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Setup;
 
 [SingleInstanceView]
-public partial class OrganisationContactDetailsScreen : ReactiveUserControl<OrganisationContactDetailsViewModel>
+public partial class OrganisationContactDetailsScreen : UserControl, IViewFor<OrganisationContactDetailsViewModel>
 {
-    public OrganisationContactDetailsScreen()
+    public OrganisationContactDetailsScreen(OrganisationContactDetailsViewModel viewModel)
     {
+        DataContext = viewModel;
         InitializeComponent();
-        this.WhenActivated(disposables =>
-        {
-            ViewModel = Locator.Current.GetService<OrganisationContactDetailsViewModel>();
-            Disposable.Create(() => { }).DisposeWith(disposables);
-        });
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+    }
+
+    public OrganisationContactDetailsViewModel? DataContext
+    {
+        get => base.DataContext as OrganisationContactDetailsViewModel;
+        set => base.DataContext = value;
     }
 }

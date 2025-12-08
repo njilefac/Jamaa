@@ -1,9 +1,13 @@
-﻿<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:sty="using:FluentAvalonia.Styling"
-             RequestedThemeVariant="Default"
-             x:Class="Libota.Desktop.App"
-             Name="Libota Desktop">
+﻿<Application
+    x:Class="Libota.Desktop.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:shared="clr-namespace:Libota.Desktop.ViewModels.Shared"
+    xmlns:shared1="clr-namespace:Libota.Desktop.Views.Shared"
+    xmlns:sty="using:FluentAvalonia.Styling"
+    Name="Libota Desktop"
+    RequestedThemeVariant="Dark">
+
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -18,4 +22,13 @@
         <StyleInclude Source="/Assets/Styles/PageStyles.axaml" />
         <StyleInclude Source="/Assets/Styles/ControlStyles.axaml" />
     </Application.Styles>
+
+    <Application.DataTemplates>
+        <DataTemplate DataType="shared:MainMenuViewModel">
+            <shared1:MainMenu />
+        </DataTemplate>
+        <DataTemplate DataType="shared:DashboardViewModel">
+            <shared1:Dashboard />
+        </DataTemplate>
+    </Application.DataTemplates>
 </Application>

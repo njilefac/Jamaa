@@ -1,42 +1,27 @@
 using System;
-using System.Reactive;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Domain.Shared.Values;
+using JetBrains.Annotations;
 using Libota.Data.Models.Members;
-using Libota.Desktop.ViewModels.Shared;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using Splat;
-using ReactiveCommand = ReactiveUI.ReactiveCommand;
+using Libota.Desktop.Navigation;
 
-namespace Libota.Desktop.ViewModels.Members
+namespace Libota.Desktop.ViewModels.Members;
+
+[UsedImplicitly]
+public partial class MemberProfileViewModel(INavigationService navigationService): ObservableObject
 {
-    public class MemberProfileViewModel: ReactiveObject, IRoutableViewModel
+    [ObservableProperty] private string _firstName  = string.Empty;
+    [ObservableProperty] private string? _middleName;
+    [ObservableProperty] private string _lastName = string.Empty;
+    [ObservableProperty] private Gender _gender;
+    [ObservableProperty] private DateTime _birthDate;
+    [ObservableProperty] private RegistrationData? _registration;
+
+    [RelayCommand]
+    private async Task GoToPreviousPage()
     {
-        public MemberProfileViewModel()
-        {
-            HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();;
-            GoBack = ReactiveCommand.CreateFromTask(GoToPreviousPage);
-        }
-        
-        public string? UrlPathSegment => "members.profile";
-        public IScreen HostScreen { get; }
-        [Reactive] public string FirstName { get; set; } = string.Empty;
-        [Reactive] public string? MiddleName { get; set; }
-        [Reactive] public string LastName { get; set; } = string.Empty;
-        
-        [Reactive] public Gender Gender { get; set; }
-        
-        [Reactive] public DateTime BirthDate { get; set; }
-        
-        [Reactive] public required RegistrationData Registration { get; set; }
-
-        public ReactiveCommand<Unit, Unit> GoBack { get; set; }
-
-        private async Task GoToPreviousPage()
-        {
-            HostScreen.Router.NavigateBack.Execute();
-            await Task.FromResult(Unit.Default);
-        }
+        await navigationService.GoBack();
     }
 }

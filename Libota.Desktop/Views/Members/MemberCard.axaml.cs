@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using ReactiveUI;
+using Libota.Desktop.Infrastructure.Attributes;
 
 namespace Libota.Desktop.Views.Members;
 

@@ -1,23 +1,24 @@
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Events;
-using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Events;
 
 [SingleInstanceView]
-public partial class EventManagementScreen : ReactiveUserControl<EventManagementViewModel>
+public partial class EventManagementScreen : UserControl, IViewFor<EventManagementViewModel>
 {
-    public EventManagementScreen()
+    public EventManagementScreen(EventManagementViewModel viewModel)
     {
         InitializeComponent();
-        DataContext = Locator.Current.GetService<EventManagementViewModel>();
-        this.WhenActivated(disposables => { });
+        DataContext = viewModel;
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
     }
+
+    public new EventManagementViewModel? DataContext { get; set; }
 }

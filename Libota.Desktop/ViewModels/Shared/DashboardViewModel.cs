@@ -1,22 +1,22 @@
 using System;
 using System.Collections.Generic;
-using Libota.Application.Users.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Libota.Desktop.Navigation;
 using Libota.Desktop.ViewModels.Events;
 using Libota.Desktop.ViewModels.Finances;
 using Libota.Desktop.ViewModels.Members;
 using Libota.Desktop.ViewModels.Navigation;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using Splat;
 
 namespace Libota.Desktop.ViewModels.Shared;
 
-public class DashboardViewModel: ReactiveObject, IRoutableViewModel
+public partial class DashboardViewModel: ObservableValidator
 {
-    public DashboardViewModel()
+    private readonly INavigationService _navigationService;
+
+    public DashboardViewModel(INavigationService navigationService)
     {
-        HostScreen = Locator.Current.GetService<MainWindowViewModel>() ?? throw new InvalidOperationException();
-        _userSessionService = Locator.Current.GetService<IUserSessionService>() ?? throw new InvalidOperationException();
+        _navigationService = navigationService;
         MenuItems =
         [
             new NavigationItemViewModel("Home", "Icons.Home", typeof(DashboardViewModel)),
@@ -25,10 +25,12 @@ public class DashboardViewModel: ReactiveObject, IRoutableViewModel
             new NavigationItemViewModel("Finances", "Icons.Finances", typeof(FinanceManagementViewModel))
         ];
     }
+    
+    [RelayCommand]
+    private void NavigateTo(Type viewModelType)
+    {
+        _navigationService.NavigateTo(viewModelType);
+    }
 
-    [Reactive] public IEnumerable<NavigationItemViewModel> MenuItems { get; private set; }
-    public string UrlPathSegment => "Home";
-    public IScreen HostScreen { get; }
-
-    private readonly IUserSessionService _userSessionService;
+    [ObservableProperty] private IEnumerable<NavigationItemViewModel> _menuItems;
 }

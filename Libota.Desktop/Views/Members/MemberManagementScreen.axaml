@@ -1,22 +1,16 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:reactiveUi="http://reactiveui.net"
-             xmlns:vm="clr-namespace:Libota.Desktop.ViewModels.Members"
-             xmlns:views="clr-namespace:Libota.Desktop.Views.Members"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Libota.Desktop.Views.Members.MemberManagementScreen"
-             x:DataType="vm:MembersOverviewPageViewModel">
+<UserControl
+    x:Class="Libota.Desktop.Views.Members.MemberManagementScreen"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:Libota.Desktop.ViewModels.Members"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="vm:MembersManagementScreenViewModel"
+    mc:Ignorable="d">
+
     <Panel>
-        <reactiveUi:RoutedViewHost
-            Router="{Binding Router}"
-            x:Name="PagesHost"
-            HorizontalContentAlignment="Stretch"
-            VerticalContentAlignment="Stretch">
-            <reactiveUi:RoutedViewHost.DefaultContent>
-                <views:MembersOverviewPage />
-            </reactiveUi:RoutedViewHost.DefaultContent>
-        </reactiveUi:RoutedViewHost>
+        <ContentControl Content="{Binding CurrentContent}" />
     </Panel>
 </UserControl>

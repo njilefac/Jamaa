@@ -1,39 +1,19 @@
-using System;
-using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
+using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Security;
 using Libota.Desktop.ViewModels.Shared;
-using ReactiveUI;
-using Splat;
 
 namespace Libota.Desktop.Views.Security;
 
 [SingleInstanceView]
-public partial class LoginScreen : ReactiveUserControl<LoginScreenViewModel>
+public partial class LoginScreen : UserControl, IViewFor<LoginScreenViewModel>
 {
-    public LoginScreen()
+    public LoginScreen(LoginScreenViewModel loginScreenViewModel, DashboardViewModel dashboardViewModel)
     {
         InitializeComponent();
-
-        var vm = Locator.Current.GetService<LoginScreenViewModel>();
-        var dashboardVm = Locator.Current.GetService<DashboardViewModel>();
-
-        DataContext = vm;
-        this.WhenActivated(disposables =>
-        {
-            if (ViewModel == null) return;
-            ViewModel.Password = string.Empty;
-
-            ViewModel.Login.Subscribe(session =>
-            {
-                if (session is { IsAuthenticated: true })
-                    ViewModel.HostScreen.Router.Navigate.Execute(dashboardVm ?? throw new InvalidOperationException());
-            });
-
-            Disposable.Create(() => { }).DisposeWith(disposables);
-        });
+        DataContext = loginScreenViewModel;
     }
 
     private void InitializeComponent()
@@ -41,5 +21,11 @@ public partial class LoginScreen : ReactiveUserControl<LoginScreenViewModel>
         AvaloniaXamlLoader.Load(this);
         var userNameField = this.FindControl<TextBox>("UserNameField");
         userNameField!.AttachedToVisualTree += (target, _) => (target as TextBox)!.Focus();
+    }
+
+    public new LoginScreenViewModel? DataContext
+    {
+        get => base.DataContext as LoginScreenViewModel;
+        set => base.DataContext = value;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -6,12 +7,13 @@ using System.Linq;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
 using Libota.Application.Shared.Logging;
 using Libota.Data.Configuration;
 using Libota.Desktop.Assets.Resources;
 using Libota.Desktop.Configuration.Extensions;
+using Libota.Desktop.Infrastructure;
 using Libota.Desktop.ViewModels.Shared;
 using Libota.Desktop.Views.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -19,10 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ReactiveUI;
 using Serilog;
-using Splat;
-using Splat.Microsoft.Extensions.DependencyInjection;
 
 namespace Libota.Desktop;
 
@@ -33,7 +32,7 @@ public class App : Avalonia.Application
         AvaloniaXamlLoader.Load(this);
     }
 
-    public override void OnFrameworkInitializationCompleted()
+    public override async void OnFrameworkInitializationCompleted()
     {
         base.OnFrameworkInitializationCompleted();
 
@@ -53,21 +52,19 @@ public class App : Avalonia.Application
             .AddEnvironmentVariables()
             .Build();
 
-        var serviceProvider = new ServiceCollection()
+        ServiceProvider = new ServiceCollection()
             .ConfigureServices(configuration)
             .ConfigureAkka(lifeTime, configuration)
             .BuildServiceProvider();
 
-        serviceProvider.UseMicrosoftDependencyResolver();
+        var akkaService = ServiceProvider.GetRequiredService<IHostedService>();
+        await akkaService.StartAsync(CancellationToken.None);
 
-        var akkaService = serviceProvider.GetRequiredService<IHostedService>();
-        akkaService.StartAsync(CancellationToken.None);
-
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        var logger = ServiceProvider.GetRequiredService<ILogger<Program>>();
         try
         {
-            UpdateDatabase(logger, serviceProvider);
-            var diagnosticListener = serviceProvider.GetService<IObserver<DiagnosticListener>>();
+            UpdateDatabase(logger, ServiceProvider);
+            var diagnosticListener = ServiceProvider.GetService<IObserver<DiagnosticListener>>();
             if (diagnosticListener != null)
                 DiagnosticListener.AllListeners.Subscribe(diagnosticListener);
         }
@@ -77,11 +74,18 @@ public class App : Avalonia.Application
         }
 
         Messages.Culture = CultureInfo.CurrentUICulture;
-        RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
-        if (Locator.Current.GetService<IViewFor<MainWindowViewModel>>() is not MainWindow mainWindow) return;
+        if (ServiceProvider.GetService<IViewFor<MainWindowViewModel>>() is not MainWindow mainWindow) return;
+        mainWindow.DataTemplates.AddRange(GetDataTemplates());
         mainWindow.WindowState = WindowState.FullScreen;
         mainWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         lifeTime.MainWindow = mainWindow;
+    }
+
+    private ServiceProvider ServiceProvider { get; set; }
+
+    private IEnumerable<IDataTemplate> GetDataTemplates()
+    {
+        yield return new FuncDataTemplate<MainWindowViewModel>((vm, ns) => ServiceProvider.GetViewForViewModel<MainWindowViewModel>(), true);
     }
 
 
