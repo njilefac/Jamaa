@@ -9,9 +9,8 @@ namespace Libota.Desktop.Views.Setup;
 [SingleInstanceView]
 public partial class CreateOrganisationScreen : UserControl, IViewFor<CreateOrganisationViewModel>
 {
-    public CreateOrganisationScreen(CreateOrganisationViewModel viewModel)
+    public CreateOrganisationScreen()
     {
-        DataContext = viewModel;
         InitializeComponent();
     }
 
