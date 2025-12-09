@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -5,7 +6,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using JetBrains.Annotations;
 using Libota.Application.Setup;
-using Libota.Application.Users;
 using Libota.Application.Users.Services;
 using Libota.Desktop.Assets.Resources;
 using Libota.Desktop.Navigation;
@@ -25,6 +25,13 @@ public partial class CreateSuperUserViewModel : ObservableValidator
     {
         _setupService = setupService;
         _userSessionService = userSessionService;
+        _userSessionService.UserSessions.Subscribe(x =>
+        {
+            if (x is { IsAuthenticated: true })
+            {
+                _ = navigationService.NavigateTo(dashboardViewModel);
+            }
+        });
 
         UserName = string.Empty;
         Password = string.Empty;
@@ -52,12 +59,12 @@ public partial class CreateSuperUserViewModel : ObservableValidator
     private string _password;
 
     [RelayCommand(CanExecute = nameof(IsValid))]
-    private async Task<UserSession?> CreateSuperUser()
+    private async Task CreateSuperUser()
     {
         var user = await _setupService.CreateSuperUser(UserName, Password, Email, FirstName, LastName);
-        if (user?.Account.Credentials == null) return null;
+        if (user?.Account.Credentials == null) return ;
         var defaultOrganisation = (await _setupService.ListOrganisations()).FirstOrDefault();
-        return await _userSessionService.Authenticate(user.Account.Credentials, defaultOrganisation);
+        _ =  await _userSessionService.Authenticate(user.Account.Credentials, defaultOrganisation);
     }
 
     public bool IsValid

@@ -46,7 +46,9 @@ public class UserData
             Email = user.Account.Email,
             FirstName = user.FirstName,
             MiddleName = user.MiddleName,
-            LastName = user.LastName
+            LastName = user.LastName,
+            IsActive = user.Account.IsActive ?? false,
+            IsSuperUser = user.Account.IsSuperUser ?? false
         };
     }
 }

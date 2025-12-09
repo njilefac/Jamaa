@@ -1,4 +1,4 @@
-using System.Reactive.Subjects;
+using System;
 using System.Threading.Tasks;
 using Domain.Security.Values;
 using Libota.Data.Models.Organisation;
@@ -9,7 +9,7 @@ namespace Libota.Application.Users.Services
     {
         Task<UserSession?> Authenticate(Credentials credentials, OrganisationData? organisation);
         Task<bool> EndSession();
-        Subject<UserSession?> UserSessions { get; }
+        IObservable<UserSession?> UserSessions { get; }
         
         UserSession? CurrentUserSession { get; }
     }
