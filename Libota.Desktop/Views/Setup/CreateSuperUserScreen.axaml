@@ -29,7 +29,7 @@
                 Grid.Row="0"
                 Grid.Column="1"
                 Classes="form field"
-                Text="{Binding UserName}" />
+                Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="0"
@@ -53,7 +53,7 @@
                 Grid.Row="2"
                 Grid.Column="1"
                 Classes="form field secret"
-                Text="{Binding _password}" />
+                Text="{Binding Password}" />
             <TextBlock
                 Grid.Row="3"
                 Grid.Column="0"
@@ -82,7 +82,7 @@
                 Grid.Row="5"
                 Grid.Column="1"
                 HorizontalAlignment="Right"
-                Command="{Binding CreateAccount}"
+                Command="{Binding CreateSuperUserCommand}"
                 Content="Create Account"
                 IsDefault="True" />
         </Grid>

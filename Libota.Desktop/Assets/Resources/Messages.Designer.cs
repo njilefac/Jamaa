@@ -44,13 +44,18 @@ namespace Libota.Desktop.Assets.Resources {
         
         internal static string login_error_username {
             get {
-                return ResourceManager.GetString("login.error.username", resourceCulture);
+                return ResourceManager.GetString("login_error_username", resourceCulture);
             }
         }
         
         internal static string login_error_password {
             get {
-                return ResourceManager.GetString("login.error.password", resourceCulture);
+                return ResourceManager.GetString("login_error_password", resourceCulture);
+            }
+        }
+        internal static string setup_error_email {
+            get {
+                return ResourceManager.GetString("setup_error_email", resourceCulture);
             }
         }
     }

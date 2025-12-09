@@ -20,10 +20,4 @@ public partial class CreateSuperUserScreen : UserControl, IViewFor<CreateSuperUs
         var nameField = this.FindControl<TextBox>("UserNameField");
         nameField!.AttachedToVisualTree += (target, _) => (target as TextBox)!.Focus();
     }
-
-    public new CreateSuperUserViewModel? DataContext
-    {
-        get => base.DataContext as CreateSuperUserViewModel;
-        set => base.DataContext = value;
-    }
 }
