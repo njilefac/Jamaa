@@ -3,15 +3,13 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using JetBrains.Annotations;
-using Libota.Desktop.Infrastructure;
 using Libota.Desktop.Infrastructure.Attributes;
-using Libota.Desktop.ViewModels.Shared;
 
 namespace Libota.Desktop.Views.Shared;
 
 [SingleInstanceView]
 [UsedImplicitly]
-public partial class MainWindow : Window, IViewFor<MainWindowViewModel>
+public partial class MainWindow : Window
 {
 
     public MainWindow()

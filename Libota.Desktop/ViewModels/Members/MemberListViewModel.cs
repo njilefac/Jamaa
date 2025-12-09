@@ -15,13 +15,13 @@ using Libota.Desktop.Navigation;
 namespace Libota.Desktop.ViewModels.Members;
 
 [UsedImplicitly]
-public partial class MembersListViewModel : ObservableValidator
+public partial class MemberListViewModel : ObservableValidator
 {
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
     private readonly MemberProfileViewModel _memberProfileViewModel;
     private readonly INavigationService _navigationService;
 
-    public MembersListViewModel(IOrganisationManagementFacade organisationManagementFacade,
+    public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
         MemberProfileViewModel memberProfileViewModel, INavigationService navigationService)
     {
         _organisationManagementFacade = organisationManagementFacade;

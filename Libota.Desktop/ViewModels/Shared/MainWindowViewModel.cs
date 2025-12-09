@@ -14,7 +14,6 @@ namespace Libota.Desktop.ViewModels.Shared
     public partial class MainWindowViewModel : ObservableObject
     {
         private readonly ISetupService _setupService;
-        private readonly INavigationService _navigationService;
         private readonly CreateOrganisationViewModel _createOrganisationViewModel;
         private readonly CreateSuperUserViewModel _createSuperUserViewModel;
         private readonly LoginScreenViewModel _loginScreenViewModel;
@@ -34,14 +33,14 @@ namespace Libota.Desktop.ViewModels.Shared
             _createOrganisationViewModel = createOrganisationViewModel;
             _createSuperUserViewModel = createSuperUserViewModel;
             _loginScreenViewModel = loginScreenViewModel;
-            _navigationService = navigationService;
-            _navigationService.ViewChanged.Subscribe(vm =>
+            _currentViewModel = null;
+            navigationService.ViewChanged.Subscribe(vm =>
             {
                 CurrentViewModel = vm;
             });
             
             var initialViewModel =  DetermineInitialView();
-            _navigationService.NavigateTo(initialViewModel);
+            navigationService.NavigateTo(initialViewModel);
 
             userSessionService.UserSessions.Subscribe(x =>
             {
@@ -67,7 +66,7 @@ namespace Libota.Desktop.ViewModels.Shared
 
         [ObservableProperty] private string? _applicationTitle = ApplicationName;
         [ObservableProperty] private ObservableObject _mainMenuViewModel;
-        [ObservableProperty] private ObservableObject _currentViewModel;
+        [ObservableProperty] private ObservableObject? _currentViewModel;
         
 
         private const string ApplicationName = "Libota Desktop";

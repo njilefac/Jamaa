@@ -2,12 +2,14 @@
     x:Class="Libota.Desktop.App"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:securityViewModels="clr-namespace:Libota.Desktop.ViewModels.Security"
-    xmlns:securityViews="clr-namespace:Libota.Desktop.Views.Security"
-    xmlns:setupViewModels="clr-namespace:Libota.Desktop.ViewModels.Setup"
-    xmlns:setupViews="clr-namespace:Libota.Desktop.Views.Setup"
-    xmlns:sharedViewModels="clr-namespace:Libota.Desktop.ViewModels.Shared"
-    xmlns:sharedViews="clr-namespace:Libota.Desktop.Views.Shared"
+    xmlns:members-View-Models="clr-namespace:Libota.Desktop.ViewModels.Members"
+    xmlns:members-Views="clr-namespace:Libota.Desktop.Views.Members"
+    xmlns:security-View-Models="clr-namespace:Libota.Desktop.ViewModels.Security"
+    xmlns:security-Views="clr-namespace:Libota.Desktop.Views.Security"
+    xmlns:setup-View-Models="clr-namespace:Libota.Desktop.ViewModels.Setup"
+    xmlns:setup-Views="clr-namespace:Libota.Desktop.Views.Setup"
+    xmlns:shared-View-Models="clr-namespace:Libota.Desktop.ViewModels.Shared"
+    xmlns:shared-Views="clr-namespace:Libota.Desktop.Views.Shared"
     xmlns:sty="using:FluentAvalonia.Styling"
     Name="Libota Desktop"
     RequestedThemeVariant="Dark">
@@ -28,23 +30,29 @@
     </Application.Styles>
 
     <Application.DataTemplates>
-        <DataTemplate DataType="{x:Type sharedViewModels:MainWindowViewModel}">
-            <sharedViews:MainWindow />
+        <DataTemplate DataType="{x:Type shared-View-Models:MainWindowViewModel}">
+            <shared-Views:MainWindow />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type sharedViewModels:MainMenuViewModel}">
-            <sharedViews:MainMenu />
+        <DataTemplate DataType="{x:Type shared-View-Models:MainMenuViewModel}">
+            <shared-Views:MainMenu />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type sharedViewModels:DashboardViewModel}">
-            <sharedViews:Dashboard />
+        <DataTemplate DataType="{x:Type shared-View-Models:DashboardViewModel}">
+            <shared-Views:Dashboard />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type setupViewModels:CreateOrganisationViewModel}">
-            <setupViews:CreateOrganisationScreen />
+        <DataTemplate DataType="{x:Type setup-View-Models:CreateOrganisationViewModel}">
+            <setup-Views:CreateOrganisationScreen />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type setupViewModels:CreateSuperUserViewModel}">
-            <setupViews:CreateSuperUserScreen />
+        <DataTemplate DataType="{x:Type setup-View-Models:CreateSuperUserViewModel}">
+            <setup-Views:CreateSuperUserScreen />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type securityViewModels:LoginScreenViewModel}">
-            <securityViews:LoginScreen />
+        <DataTemplate DataType="{x:Type security-View-Models:LoginScreenViewModel}">
+            <security-Views:LoginScreen />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type members-View-Models:MemberManagementScreenViewModel}">
+            <members-Views:MemberManagementScreen />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type members-View-Models:MemberOverviewPageViewModel}">
+            <members-Views:MembersOverviewPage />
         </DataTemplate>
     </Application.DataTemplates>
 </Application>

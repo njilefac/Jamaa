@@ -1,13 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Libota.Desktop.Infrastructure;
 using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Setup;
 
 namespace Libota.Desktop.Views.Setup;
 
 [SingleInstanceView]
-public partial class CreateSuperUserScreen : UserControl, IViewFor<CreateSuperUserViewModel>
+public partial class CreateSuperUserScreen : UserControl
 {
     public CreateSuperUserScreen()
     {
