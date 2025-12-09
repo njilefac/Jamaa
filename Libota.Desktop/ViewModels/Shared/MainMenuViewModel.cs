@@ -11,10 +11,10 @@ using static System.Threading.Tasks.Task;
 namespace Libota.Desktop.ViewModels.Shared;
 
 [UsedImplicitly]
-public partial class MainMenuViewModel(IUserSessionService userSessionService, INavigationService navigationService) : ObservableObject
+public partial class MainMenuViewModel(IUserSessionService userSessionService, INavigationService navigationService)
+    : ObservableObject
 {
-    
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsLoggedIn))]
     private Task Logout()
     {
         userSessionService.EndSession();
@@ -29,4 +29,6 @@ public partial class MainMenuViewModel(IUserSessionService userSessionService, I
             desktop.Shutdown();
         return CompletedTask;
     }
+
+    public bool IsLoggedIn => userSessionService.CurrentUserSession?.IsAuthenticated ?? false;
 }

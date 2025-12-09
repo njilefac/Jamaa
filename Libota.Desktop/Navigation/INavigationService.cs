@@ -10,4 +10,6 @@ public interface INavigationService
     Task GoBack();
     Task NavigateTo(ObservableObject viewModel);
     void NavigateTo(Type? viewModelType);
+    
+    IObservable<ObservableObject> ViewChanged { get;  }
 }

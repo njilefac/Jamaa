@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using JetBrains.Annotations;
 using Libota.Application.Setup;
 using Libota.Application.Users.Services;
+using Libota.Desktop.Navigation;
 using Libota.Desktop.ViewModels.Security;
 using Libota.Desktop.ViewModels.Setup;
 
@@ -13,9 +14,11 @@ namespace Libota.Desktop.ViewModels.Shared
     public partial class MainWindowViewModel : ObservableObject
     {
         private readonly ISetupService _setupService;
+        private readonly INavigationService _navigationService;
         private readonly CreateOrganisationViewModel _createOrganisationViewModel;
         private readonly CreateSuperUserViewModel _createSuperUserViewModel;
         private readonly LoginScreenViewModel _loginScreenViewModel;
+        
 
         public MainWindowViewModel(
             ISetupService setupService,
@@ -23,15 +26,23 @@ namespace Libota.Desktop.ViewModels.Shared
             MainMenuViewModel mainMenuViewModel,
             CreateOrganisationViewModel createOrganisationViewModel,
             CreateSuperUserViewModel createSuperUserViewModel,
-            LoginScreenViewModel loginScreenViewModel)
+            LoginScreenViewModel loginScreenViewModel, 
+            INavigationService navigationService)
         {
             _setupService = setupService;
             _mainMenuViewModel = mainMenuViewModel;
             _createOrganisationViewModel = createOrganisationViewModel;
             _createSuperUserViewModel = createSuperUserViewModel;
             _loginScreenViewModel = loginScreenViewModel;
-            CurrentView = DetermineInitialView();
+            _navigationService = navigationService;
+            _navigationService.ViewChanged.Subscribe(vm =>
+            {
+                CurrentViewModel = vm;
+            });
             
+            var initialViewModel =  DetermineInitialView();
+            _navigationService.NavigateTo(initialViewModel);
+
             userSessionService.UserSessions.Subscribe(x =>
             {
                 ApplicationTitle = x is { IsAuthenticated: true }
@@ -55,8 +66,8 @@ namespace Libota.Desktop.ViewModels.Shared
         }
 
         [ObservableProperty] private string? _applicationTitle = ApplicationName;
-        [ObservableProperty] private ObservableObject _currentView;
         [ObservableProperty] private ObservableObject _mainMenuViewModel;
+        [ObservableProperty] private ObservableObject _currentViewModel;
         
 
         private const string ApplicationName = "Libota Desktop";

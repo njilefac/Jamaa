@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -16,7 +17,11 @@ public partial class CreateOrganisationViewModel(ISetupService setupService,
     INavigationService navigationService) : ObservableValidator
 {
 
-    [ObservableProperty] private string _name = string.Empty;
+    [ObservableProperty]
+    [Required(ErrorMessage = "the name is required.")]
+    [MinLength(3, ErrorMessage = "the name must be at least 3 characters.")]
+    [NotifyCanExecuteChangedFor(nameof(CreateOrganisationCommand))]
+    private string _name = string.Empty;
 
     [ObservableProperty] private string _description = string.Empty;
 
@@ -32,7 +37,7 @@ public partial class CreateOrganisationViewModel(ISetupService setupService,
 
     [ObservableProperty] private string _website = string.Empty;
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsValid))]
     private async Task CreateOrganisation()
     {
         var organisationWasCreated = await setupService.CreateOrganisation(Name.Trim(), Description.Trim());
@@ -41,5 +46,14 @@ public partial class CreateOrganisationViewModel(ISetupService setupService,
         var superUser = await setupService.GetSuperUser();
         ObservableObject?  nextViewModel = superUser == null ? createSuperUserViewModel : loginScreenViewModel;
         await navigationService.NavigateTo(nextViewModel ?? throw new InvalidOperationException());
+    }
+
+    public bool IsValid
+    {
+        get
+        {
+            ValidateProperty(Name, nameof(Name));
+            return !HasErrors;
+        }
     }
 }
