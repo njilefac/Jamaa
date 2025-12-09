@@ -3,8 +3,9 @@ using System.Collections.Generic;
 
 namespace Libota.Desktop.ViewModels.Navigation;
 
-public record NavigationItemViewModel(string Title, 
-    string Icon, 
+public record NavigationItemViewModel(
     Type ViewModelType,
-    bool Enabled = true, 
+    string Title,
+    string Icon,
+    bool Enabled = true,
     IList<NavigationItemViewModel>? SubItems = null);

@@ -26,10 +26,12 @@
     </UserControl.Styles>
 
     <controls:NavigationView
+        x:Name="DashboardNavigationView"
         VerticalAlignment="Stretch"
         Header="{Binding $self.SelectedItem.Title}"
         MenuItemsSource="{Binding MenuItems}"
-        PaneDisplayMode="Auto">
+        PaneDisplayMode="Auto"
+        SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
 
         <controls:NavigationView.MenuItemTemplate>
             <DataTemplate x:DataType="navigation:NavigationItemViewModel">
@@ -40,10 +42,7 @@
         <controls:Frame
             x:Name="ContentFrame"
             HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch">
-            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Run>No Content</Run>
-            </TextBlock>
-        </controls:Frame>
+            VerticalAlignment="Stretch"
+            Content="{Binding CurrentPage}" />
     </controls:NavigationView>
 </UserControl>

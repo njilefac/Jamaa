@@ -3,42 +3,25 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Domain.Organisation.Requests;
-using Libota.Desktop.Infrastructure;
 using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Members;
-using Libota.Desktop.ViewModels.Shared;
 
 namespace Libota.Desktop.Views.Members;
 
 [SingleInstanceView]
-public partial class MembersOverviewPage : UserControl, IViewFor<MembersOverviewPageViewModel>
+public partial class MembersOverviewPage : UserControl, IDisposable
 {
-    private readonly IViewFor<MemberRegistrationDialogViewModel> _memberRegistrationDialog;
-    private readonly IViewFor<MainWindowViewModel> _mainWindow;
+    private IDisposable? _registration;
 
-    public MembersOverviewPage(MembersOverviewPageViewModel viewModel,
-        IViewFor<MemberRegistrationDialogViewModel> memberRegistrationDialog,
-        IViewFor<MainWindowViewModel> mainWindow)
+    public MembersOverviewPage()
     {
-        _memberRegistrationDialog = memberRegistrationDialog;
-        _mainWindow = mainWindow;
         InitializeComponent();
-
-        DataContext = viewModel;
-
-        viewModel.ShowRegistrationPrompt.RegisterHandler(ctx =>
-        {
-            var request = ShowMemberRegistrationDialog().Result;
-            ctx.SetOutput(request);
-        });
     }
 
     private async Task<MemberRegistrationRequest> ShowMemberRegistrationDialog()
     {
-        var dialog = _memberRegistrationDialog as Window;
-        var result = await dialog?.ShowDialog<MemberRegistrationRequest>(_mainWindow as Window ??
-                                                                         throw new InvalidOperationException())!;
-        return result;
+        //TODO: Implement dialog
+        return await Task.FromResult(new MemberRegistrationRequest());
     }
 
     private void InitializeComponent()
@@ -46,5 +29,29 @@ public partial class MembersOverviewPage : UserControl, IViewFor<MembersOverview
         AvaloniaXamlLoader.Load(this);
     }
 
-    public new MembersOverviewPageViewModel? DataContext { get; set; }
+    protected override void OnDataContextEndUpdate()
+    {
+        base.OnDataContextEndUpdate();
+        var viewModel = DataContext as MemberOverviewPageViewModel;
+
+        // Dispose previous registration (if any) to avoid leaks and duplicate handlers
+        _registration?.Dispose();
+        _registration = null;
+
+        if (viewModel != null)
+        {
+            _registration = viewModel.ShowRegistrationPrompt.RegisterHandler(ctx =>
+            {
+                ShowMemberRegistrationDialog()
+                    .ContinueWith(x => { ctx.SetOutput(x.Result); });
+            });
+        }
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _registration?.Dispose();
+        _registration = null;
+    }
 }

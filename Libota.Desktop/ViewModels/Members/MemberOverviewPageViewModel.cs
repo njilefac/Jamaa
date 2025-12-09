@@ -12,36 +12,33 @@ using Libota.Desktop.Infrastructure;
 namespace Libota.Desktop.ViewModels.Members;
 
 [UsedImplicitly]
-public partial class MembersOverviewPageViewModel : ObservableValidator
+public partial class MemberOverviewPageViewModel : ObservableValidator
 {
-    public MembersOverviewPageViewModel(MembersManagementScreenViewModel hostScreen,
-        IOrganisationManagementFacade organisationManagementFacade)
+    public MemberOverviewPageViewModel(IOrganisationManagementFacade organisationManagementFacade)
     {
         _organisationManagementFacade = organisationManagementFacade;
-
-
-        ShowRegistrationPrompt = new Interaction<Unit, MemberRegistrationRequest?>();
-
         _organisationManagementFacade.CurrentMembers.Subscribe(m =>
         {
             TotalMembersCount++;
-            if (m.Gender == Gender.Male)
-                MaleMembersCount++;
-            else FemaleMembersCount++;
+            if (m.Gender == Gender.Male) { MaleMembersCount++; }
+            else { FemaleMembersCount++; }
         });
 
         _organisationManagementFacade.MemberDeleted.Subscribe(m =>
         {
             TotalMembersCount--;
             if (m.Gender == Gender.Male)
+            {
                 MaleMembersCount--;
-            else FemaleMembersCount--;
+            }
+            else
+            {
+                FemaleMembersCount--;
+            }
         });
     }
 
-    public string UrlPathSegment => "members.overview";
-
-    public Interaction<Unit, MemberRegistrationRequest> ShowRegistrationPrompt { get; }
+    public Interaction<Unit, MemberRegistrationRequest> ShowRegistrationPrompt { get; } = new();
 
     [RelayCommand]
     private async Task RegisterMember()

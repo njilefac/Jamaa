@@ -1,13 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Libota.Desktop.Infrastructure;
 using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Finances;
 
 namespace Libota.Desktop.Views.Finances;
 
 [SingleInstanceView]
-public partial class FinanceManagementScreen : UserControl, IViewFor<FinanceManagementViewModel>
+public partial class FinanceManagementScreen : UserControl
 {
     public FinanceManagementScreen(FinanceManagementViewModel viewModel)
     {
