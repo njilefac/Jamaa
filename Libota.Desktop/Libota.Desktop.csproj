@@ -17,8 +17,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\Icons\**" />
+    <AvaloniaResource Include="Assets\Styles\**" />
   </ItemGroup>
+  <PropertyGroup>
+    <GenerateResourceDesignerFiles>true</GenerateResourceDesignerFiles>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects> <!-- optional for .NET Framework -->
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Akka.Persistence.Hosting" Version="1.5.55.1" />
     <PackageReference Include="Akka.Persistence.Sql.Hosting" Version="1.5.55.1" />
@@ -77,10 +82,11 @@
   </ItemGroup>
   
   <ItemGroup>
-    <EmbeddedResource Update="Assets\Resources\Messages.resx">
+    <AvaloniaResource Include="Assets\Resources\Messages.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Messages.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+      <CustomToolNamespace>Libota.Desktop.Assets.Resources</CustomToolNamespace>
+    </AvaloniaResource>
   </ItemGroup>
   
   <ItemGroup>

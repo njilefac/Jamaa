@@ -1,7 +1,6 @@
 using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Libota.Application.Users.Services;
-using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,9 +13,7 @@ public static class PresentationServicesRegistration
         public IServiceCollection RegisterPresentationServices()
         {
             services.RegisterServices()
-                .RegisterViewModels()
-                .RegisterSingleInstanceViews()
-                .RegisterMultipleInstanceViews();
+                .RegisterViewModels();
 
             return services;
         }
@@ -37,32 +34,6 @@ public static class PresentationServicesRegistration
                 .FromAssemblyOf<App>()
                 .AddClasses(c => c.Where(t =>
                     t.IsAssignableTo(typeof(ObservableObject)) && !t.IsAssignableTo(typeof(Avalonia.Controls.Control))))
-                .AsSelf()
-                .WithTransientLifetime());
-
-            return services;
-        }
-
-        private IServiceCollection RegisterSingleInstanceViews()
-        {
-            services.Scan(scan => scan
-                .FromAssemblyOf<App>()
-                .AddClasses(c =>
-                    c.AssignableTo<Avalonia.Controls.Control>()
-                        .WithAttribute<SingleInstanceViewAttribute>())
-                .AsSelfWithInterfaces()
-                .WithSingletonLifetime());
-
-            return services;
-        }
-
-        private IServiceCollection RegisterMultipleInstanceViews()
-        {
-            services.Scan(scan => scan
-                .FromAssemblyOf<App>()
-                .AddClasses(c =>
-                    c.AssignableTo<Avalonia.Controls.Control>()
-                        .WithoutAttribute<SingleInstanceViewAttribute>())
                 .AsSelfWithInterfaces()
                 .WithTransientLifetime());
 

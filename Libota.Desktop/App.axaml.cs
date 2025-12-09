@@ -4,14 +4,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Libota.Application.Shared.Logging;
 using Libota.Data.Configuration;
 using Libota.Desktop.Assets.Resources;
 using Libota.Desktop.Configuration.Extensions;
-using Libota.Desktop.Infrastructure;
 using Libota.Desktop.ViewModels.Shared;
 using Libota.Desktop.Views.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -72,10 +70,16 @@ public class App : Avalonia.Application
         }
 
         Messages.Culture = CultureInfo.CurrentUICulture;
-        if (ServiceProvider.GetService<IViewFor<MainWindowViewModel>>() is not MainWindow mainWindow) return;
+        var mainWindow = CreateAndConfigureMainWindow();
+        lifeTime.MainWindow = mainWindow;
+    }
+
+    private MainWindow CreateAndConfigureMainWindow()
+    {
+        var mainWindow = new MainWindow();
         var mainViewModel = ServiceProvider.GetRequiredService<MainWindowViewModel>();
         mainWindow.DataContext = mainViewModel;
-        lifeTime.MainWindow = mainWindow;
+        return mainWindow;
     }
 
     private ServiceProvider ServiceProvider { get; set; }
