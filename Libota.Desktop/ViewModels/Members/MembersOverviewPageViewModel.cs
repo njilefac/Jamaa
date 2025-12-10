@@ -12,11 +12,12 @@ using Libota.Desktop.Infrastructure;
 namespace Libota.Desktop.ViewModels.Members;
 
 [UsedImplicitly]
-public partial class MemberOverviewPageViewModel : ObservableValidator
+public partial class MembersOverviewPageViewModel : ObservableValidator
 {
-    public MemberOverviewPageViewModel(IOrganisationManagementFacade organisationManagementFacade)
+    public MembersOverviewPageViewModel(IOrganisationManagementFacade organisationManagementFacade, MemberListViewModel memberList)
     {
         _organisationManagementFacade = organisationManagementFacade;
+        _memberList = memberList;
         _organisationManagementFacade.CurrentMembers.Subscribe(m =>
         {
             TotalMembersCount++;
@@ -48,6 +49,7 @@ public partial class MemberOverviewPageViewModel : ObservableValidator
     }
 
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
+    [ObservableProperty] private MemberListViewModel _memberList;
     [ObservableProperty] private int _totalMembersCount;
     [ObservableProperty] private int _maleMembersCount;
     [ObservableProperty] private int _femaleMembersCount;

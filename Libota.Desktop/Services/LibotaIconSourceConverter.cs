@@ -10,9 +10,11 @@ public class LibotaIconSourceConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is string iconKey && !string.IsNullOrWhiteSpace(iconKey) && targetType.IsAssignableTo(typeof(IconSource)))
-
+        if (value is string iconKey && !string.IsNullOrWhiteSpace(iconKey) &&
+            targetType.IsAssignableTo(typeof(IconSource)))
+        {
             return Get<IconSource>(iconKey);
+        }
 
         return new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
     }
@@ -26,12 +28,14 @@ public class LibotaIconSourceConverter : IValueConverter
     {
         try
         {
-            var success = Avalonia.Application.Current!.TryGetResource(resourceName, Avalonia.Application.Current.ActualThemeVariant, out var outValue);
+            var success = Avalonia.Application.Current!.TryGetResource(resourceName,
+                Avalonia.Application.Current.ActualThemeVariant, out var outValue);
 
             if (success && outValue is T value)
             {
                 return value;
             }
+
             return default;
         }
         catch

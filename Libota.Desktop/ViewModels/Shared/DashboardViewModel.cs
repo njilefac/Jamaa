@@ -21,8 +21,8 @@ public partial class DashboardViewModel: ObservableValidator
         MenuItems =
         [
             new NavigationItemViewModel(typeof(MemberManagementScreenViewModel),"Members", "Icons.Members"),
-            new NavigationItemViewModel(typeof(EventManagementViewModel),"Events", "Icons.Calendar"),
-            new NavigationItemViewModel(typeof(FinanceManagementViewModel),"Finances", "Icons.Finances")
+            new NavigationItemViewModel(typeof(EventOverviewPageViewModel),"Events", "Icons.Calendar"),
+            new NavigationItemViewModel(typeof(FinanceOverviewPageViewModel),"Finances", "Icons.Finances")
         ];
         
         SelectedItem = MenuItems.First(x => x.ViewModelType == typeof(MemberManagementScreenViewModel));
@@ -31,10 +31,10 @@ public partial class DashboardViewModel: ObservableValidator
     partial void OnSelectedItemChanged(NavigationItemViewModel value)
     {
         var vm = (ObservableObject)_serviceProvider.GetService(value.ViewModelType)!;
-        CurrentPage = vm;
+        CurrentContent = vm;
     }
     
     [ObservableProperty] private IEnumerable<NavigationItemViewModel> _menuItems;
     [ObservableProperty] private NavigationItemViewModel _selectedItem;
-    [ObservableProperty] private ObservableObject? _currentPage;
+    [ObservableProperty] private ObservableObject? _currentContent;
 }

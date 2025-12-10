@@ -24,7 +24,7 @@ namespace Libota.Desktop.ViewModels.Security;
 public partial class LoginScreenViewModel : ObservableValidator
 {
     public LoginScreenViewModel(INavigationService navigationService,
-        DashboardViewModel dashboardViewModel,
+        DashboardViewModel dashboard,
         ISetupService setupService,
         IUserSessionService userSessionService,
         ILogger<LoginScreenViewModel> logger)
@@ -37,7 +37,7 @@ public partial class LoginScreenViewModel : ObservableValidator
             
             UserName = string.Empty;
             Password = string.Empty;
-            navigationService.NavigateTo(dashboardViewModel);
+            navigationService.NavigateTo(dashboard);
         });
 
         UserName = string.Empty;
@@ -46,7 +46,7 @@ public partial class LoginScreenViewModel : ObservableValidator
         setupService.ListOrganisations().ContinueWith(task =>
         {
             Organisations = task.Result.ToList();
-            CurrentOrganisation = Organisations?.FirstOrDefault();
+            CurrentOrganisation = Organisations.Count == 1 ? Organisations?.FirstOrDefault() : null;
         });
     }
 

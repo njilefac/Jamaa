@@ -1,16 +1,14 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Libota.Desktop.Infrastructure.Attributes;
-using Libota.Desktop.ViewModels.Finances;
 
 namespace Libota.Desktop.Views.Finances;
 
 [SingleInstanceView]
-public partial class FinanceManagementScreen : UserControl
+public partial class FinanceOverviewPage : UserControl
 {
-    public FinanceManagementScreen(FinanceManagementViewModel viewModel)
+    public FinanceOverviewPage()
     {
-        DataContext = viewModel;
         InitializeComponent();
     }
 
@@ -18,6 +16,4 @@ public partial class FinanceManagementScreen : UserControl
     {
         AvaloniaXamlLoader.Load(this);
     }
-
-    public new FinanceManagementViewModel? DataContext { get; set; }
 }
