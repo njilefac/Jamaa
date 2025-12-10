@@ -1,36 +1,56 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:data="clr-namespace:Libota.Data.Models.Members;assembly=Libota.Data"
-             xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Libota.Desktop.Views.Members.MembersList"
-             HorizontalAlignment="Stretch"
-             VerticalAlignment="Stretch">
+<UserControl
+    x:Class="Libota.Desktop.Views.Members.MembersList"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:data="clr-namespace:Libota.Data.Models.Members;assembly=Libota.Data"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
     <UserControl.KeyBindings>
         <KeyBinding Gesture="Ctrl+A" />
     </UserControl.KeyBindings>
 
     <Grid RowDefinitions="60,*">
-        <TextBox Grid.Row="0" Watermark="Find members"
-                 VerticalAlignment="Top"
-                 HorizontalAlignment="Center"
-                 Text="{Binding SearchTerm}"
-                 HorizontalContentAlignment="Center"
-                 VerticalContentAlignment="Center"
-                 Width="700"
-                 FontSize="14"
-                 CornerRadius="8"
-                 Margin="0,10,0,0">
+        <TextBox
+            Grid.Row="0"
+            Width="700"
+            Margin="0,10,0,0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            HorizontalContentAlignment="Center"
+            VerticalContentAlignment="Center"
+            CornerRadius="8"
+            FontSize="14"
+            Text="{Binding SearchTerm}"
+            Watermark="Find members">
             <TextBox.InnerLeftContent>
-                <Image Source="avares://Libota/Assets/Icons/edit/ search_small.png" Width="40" Height="40" />
+                <Image
+                    Width="40"
+                    Height="40"
+                    Source="avares://Libota/Assets/Icons/edit/ search_small.png" />
             </TextBox.InnerLeftContent>
         </TextBox>
-        <ScrollViewer Grid.Row="1" AllowAutoHide="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Padding="30,0,30,0" Margin="5">
-            <ItemsRepeater ItemsSource="{Binding Members}" HorizontalAlignment="Center" VerticalAlignment="Top">
+        <ScrollViewer
+            Grid.Row="1"
+            Margin="5"
+            Padding="30,0,30,0"
+            AllowAutoHide="True"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <ItemsRepeater
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                ItemsSource="{Binding Members}">
                 <ItemsRepeater.Layout>
-                    <WrapLayout Orientation="Horizontal" HorizontalSpacing="25" VerticalSpacing="25" />
+                    <WrapLayout
+                        HorizontalSpacing="25"
+                        Orientation="Horizontal"
+                        VerticalSpacing="25" />
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
                     <DataTemplate x:DataType="data:MemberData">

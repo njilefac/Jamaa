@@ -2,6 +2,10 @@
     x:Class="Libota.Desktop.App"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:events-View-Models="clr-namespace:Libota.Desktop.ViewModels.Events"
+    xmlns:events-Views="clr-namespace:Libota.Desktop.Views.Events"
+    xmlns:finances-View-Models="clr-namespace:Libota.Desktop.ViewModels.Finances"
+    xmlns:finances-Views="clr-namespace:Libota.Desktop.Views.Finances"
     xmlns:members-View-Models="clr-namespace:Libota.Desktop.ViewModels.Members"
     xmlns:members-Views="clr-namespace:Libota.Desktop.Views.Members"
     xmlns:security-View-Models="clr-namespace:Libota.Desktop.ViewModels.Security"
@@ -51,8 +55,17 @@
         <DataTemplate DataType="{x:Type members-View-Models:MemberManagementScreenViewModel}">
             <members-Views:MemberManagementScreen />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type members-View-Models:MemberOverviewPageViewModel}">
+        <DataTemplate DataType="{x:Type members-View-Models:MembersOverviewPageViewModel}">
             <members-Views:MembersOverviewPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type finances-View-Models:FinanceOverviewPageViewModel}">
+            <finances-Views:FinanceOverviewPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type members-View-Models:MemberListViewModel}">
+            <members-Views:MembersList />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type events-View-Models:EventOverviewPageViewModel}">
+            <events-Views:EventOverviewPage />
         </DataTemplate>
     </Application.DataTemplates>
 </Application>

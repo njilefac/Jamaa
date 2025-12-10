@@ -32,7 +32,7 @@ public partial class MembersOverviewPage : UserControl, IDisposable
     protected override void OnDataContextEndUpdate()
     {
         base.OnDataContextEndUpdate();
-        var viewModel = DataContext as MemberOverviewPageViewModel;
+        var viewModel = DataContext as MembersOverviewPageViewModel;
 
         // Dispose previous registration (if any) to avoid leaks and duplicate handlers
         _registration?.Dispose();

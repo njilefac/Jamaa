@@ -17,15 +17,13 @@ namespace Libota.Desktop.ViewModels.Members;
 [UsedImplicitly]
 public partial class MemberListViewModel : ObservableValidator
 {
-    private readonly IOrganisationManagementFacade _organisationManagementFacade;
-    private readonly MemberProfileViewModel _memberProfileViewModel;
+    [ObservableProperty] private MemberProfileViewModel _memberProfileViewModel;
     private readonly INavigationService _navigationService;
 
     public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
         MemberProfileViewModel memberProfileViewModel, INavigationService navigationService)
     {
-        _organisationManagementFacade = organisationManagementFacade;
-        _memberProfileViewModel = memberProfileViewModel;
+        MemberProfileViewModel = memberProfileViewModel;
         _navigationService = navigationService;
 
         var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
@@ -33,9 +31,7 @@ public partial class MemberListViewModel : ObservableValidator
         var members = new ObservableCollectionExtended<MemberData>();
         membersSourceList.PopulateFrom(organisationManagementFacade.CurrentMembers);
         membersSourceList.Connect()
-            .Sort(SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
-            //.ObserveOn(RxApp.MainThreadScheduler)
-            .Bind(Members)
+            .SortAndBind(Members, SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
             .DisposeMany()
             .Subscribe(changeSet =>
             {
@@ -65,18 +61,17 @@ public partial class MemberListViewModel : ObservableValidator
     [ObservableProperty] private string? _searchTerm;
         
     [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = new();
-    public string UrlPathSegment => "members.list";
 
     [RelayCommand]
     private async Task<Unit> ShowMemberProfile(MemberData member)
     {
-        _memberProfileViewModel.FirstName = member.FirstName;
-        _memberProfileViewModel.MiddleName = member.MiddleName;
-        _memberProfileViewModel.LastName = member.LastName;
-        _memberProfileViewModel.Gender = member.Gender;
-        _memberProfileViewModel.Registration = member.Registration;
+        MemberProfileViewModel.FirstName = member.FirstName;
+        MemberProfileViewModel.MiddleName = member.MiddleName;
+        MemberProfileViewModel.LastName = member.LastName;
+        MemberProfileViewModel.Gender = member.Gender;
+        MemberProfileViewModel.Registration = member.Registration;
 
-        await _navigationService.NavigateTo(_memberProfileViewModel);
+        await _navigationService.NavigateTo(MemberProfileViewModel);
 
         return await Task.FromResult(Unit.Default);
     }

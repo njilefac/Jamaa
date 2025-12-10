@@ -1,14 +1,11 @@
 <UserControl
-    x:Class="Libota.Desktop.Views.Members.MemberManagementScreen"
+    x:Class="Libota.Desktop.Views.Events.EventOverviewPage"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="members:MemberManagementScreen"
     mc:Ignorable="d">
-
-    <ContentControl Content="{Binding CurrentContent}" />
+    Event Overview Page
 </UserControl>
