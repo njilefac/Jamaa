@@ -28,6 +28,7 @@ public static class PresentationServicesRegistration
             return services;
         }
 
+        // ReSharper disable once UnusedMethodReturnValue.Local
         private IServiceCollection RegisterViewModels()
         {
             services.Scan(scan => scan

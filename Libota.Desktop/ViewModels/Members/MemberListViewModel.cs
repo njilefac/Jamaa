@@ -5,11 +5,13 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Domain.Organisation.Requests;
 using DynamicData;
 using DynamicData.Binding;
 using JetBrains.Annotations;
 using Libota.Application.Organisation;
 using Libota.Data.Models.Members;
+using Libota.Desktop.Infrastructure.Interactions;
 using Libota.Desktop.Navigation;
 
 namespace Libota.Desktop.ViewModels.Members;
@@ -18,18 +20,20 @@ namespace Libota.Desktop.ViewModels.Members;
 public partial class MemberListViewModel : ObservableValidator
 {
     [ObservableProperty] private MemberProfileViewModel _memberProfileViewModel;
+    private readonly IOrganisationManagementFacade _organisationManagementFacade;
     private readonly INavigationService _navigationService;
 
     public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
         MemberProfileViewModel memberProfileViewModel, INavigationService navigationService)
     {
         MemberProfileViewModel = memberProfileViewModel;
+        _organisationManagementFacade = organisationManagementFacade;
         _navigationService = navigationService;
 
         var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
             
         var members = new ObservableCollectionExtended<MemberData>();
-        membersSourceList.PopulateFrom(organisationManagementFacade.CurrentMembers);
+        membersSourceList.PopulateFrom(_organisationManagementFacade.CurrentMembers);
         membersSourceList.Connect()
             .SortAndBind(Members, SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
             .DisposeMany()
@@ -56,6 +60,15 @@ public partial class MemberListViewModel : ObservableValidator
                     innerList.AddOrUpdate(matchingMembers);
                 });
             });
+    }
+    
+    public Interaction<Unit, MemberRegistrationRequest> ShowRegistrationPrompt { get; } = new();
+
+    [RelayCommand]
+    private async Task RegisterMember()
+    {
+        var request = await ShowRegistrationPrompt.Handle(Unit.Default);
+        await _organisationManagementFacade.RegisterMember(request);
     }
     
     [ObservableProperty] private string? _searchTerm;

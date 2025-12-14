@@ -6,4 +6,4 @@
             Then they should see the login screen
             And the credential fields should be empty
             And the login button should be disabled
-            And the only the exit menu should be enabled 
+            And only the exit menu should be enabled 

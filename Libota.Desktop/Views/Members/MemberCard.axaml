@@ -1,22 +1,26 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:data="clr-namespace:Libota.Data.Models.Members;assembly=Libota.Data"
-             xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Libota.Desktop.Views.Members.MemberCard"
-             x:DataType="data:MemberData"
-             VerticalContentAlignment="Stretch"
-             HorizontalContentAlignment="Stretch"
-             ClipToBounds="True">
+<husk:Card
+    x:Class="Libota.Desktop.Views.Members.MemberCard"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:data="clr-namespace:Libota.Data.Models.Members;assembly=Libota.Data"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
+    HorizontalContentAlignment="Stretch"
+    VerticalContentAlignment="Stretch"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="data:MemberData"
+    ClipToBounds="True"
+    mc:Ignorable="d">
 
-    <UserControl.Styles>
+    <husk:Card.Styles>
         <Style Selector="Border.MemberCard">
             <Setter Property="(Interaction.Behaviors)">
                 <BehaviorCollectionTemplate>
                     <BehaviorCollection>
-                        <ExecuteCommandOnDoubleTappedBehavior CommandParameter="{Binding}" Command="{Binding $parent[members:MembersList].ViewModel.ShowMemberDetails}" />
+                        <ExecuteCommandOnDoubleTappedBehavior Command="{Binding $parent[members:MembersList].ViewModel.ShowMemberDetails}" CommandParameter="{Binding}" />
                     </BehaviorCollection>
                 </BehaviorCollectionTemplate>
             </Setter>
@@ -30,17 +34,22 @@
                 <Setter Property="BorderBrush" Value="DarkBlue" />
             </Style>
         </Style>
-    </UserControl.Styles>
+    </husk:Card.Styles>
 
-    <Border Padding="4"
-            CornerRadius="10"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            Width="220"
-            Height="150"
-            Classes="MemberCard">
-        <Grid RowDefinitions="Auto,Auto,Auto,*" ColumnDefinitions="Auto,Auto">
-            <Label Grid.Row="0" Grid.Column="0" FontWeight="Bold" FontSize="14">
+    <Border
+        Width="220"
+        Height="150"
+        Padding="4"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        Classes="MemberCard"
+        CornerRadius="10">
+        <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,*">
+            <Label
+                Grid.Row="0"
+                Grid.Column="0"
+                FontSize="14"
+                FontWeight="Bold">
                 <Label.Content>
                     <MultiBinding StringFormat="{}{0} {1}">
                         <Binding Path="FirstName" />
@@ -48,8 +57,14 @@
                     </MultiBinding>
                 </Label.Content>
             </Label>
-            <Label Content="{Binding Registration.MembershipType, StringFormat='Membership: {0}'}" Grid.Row="1" Grid.Column="0" />
-            <Label Content="{Binding Registration.Status, StringFormat='Registration: {0}'}" Grid.Row="2" Grid.Column="0" />
+            <Label
+                Grid.Row="1"
+                Grid.Column="0"
+                Content="{Binding Registration.MembershipType, StringFormat='Membership: {0}'}" />
+            <Label
+                Grid.Row="2"
+                Grid.Column="0"
+                Content="{Binding Registration.Status, StringFormat='Registration: {0}'}" />
         </Grid>
     </Border>
-</UserControl>
+</husk:Card>

@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Libota.Desktop.Infrastructure.Attributes;
-using Libota.Desktop.ViewModels.Members;
 
 namespace Libota.Desktop.Views.Members;
 
@@ -17,6 +16,4 @@ public partial class MembersList : UserControl
     {
         AvaloniaXamlLoader.Load(this);
     }
-
-    public new MemberListViewModel? DataContext { get; set; }
 }

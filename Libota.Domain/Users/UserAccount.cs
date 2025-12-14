@@ -3,24 +3,14 @@ using Domain.Security.Values;
 
 namespace Domain.Users;
 
-public class UserAccount
+public record UserAccount(
+    string UserName,
+    string Password,
+    string Email,
+    bool? IsSuperUser = false,
+    bool? IsActive = false)
 {
-    public UserAccount(string? userName, string? password, string? email = null, bool? isSuperUser = false, bool? isActive = false)
-    {
-        Id = Guid.NewGuid();
-        Credentials = new Credentials(userName, password);
-        Email = email;
-        IsActive = isActive;
-        IsSuperUser = isSuperUser;
-    }
-
-    public Guid Id { get; }
-    public string? Email { get; }
-    public Credentials Credentials { get; }
-        
+    public Guid Id { get; } = Guid.NewGuid();
+    public Credentials Credentials =>  new(UserName, Password);
     public DateTimeOffset CreatedOn { get; set; }
-        
-    public bool? IsSuperUser { get; }
-        
-    public bool? IsActive { get; }
 }

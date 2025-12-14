@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Akka.Persistence;
 using Akka.Persistence.Query;
 using Akka.Persistence.Sql.Query;

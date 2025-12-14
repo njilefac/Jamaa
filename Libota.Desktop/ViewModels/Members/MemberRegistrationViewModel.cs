@@ -13,11 +13,11 @@ using Libota.Application.Users.Services;
 namespace Libota.Desktop.ViewModels.Members;
 
 [UsedImplicitly]
-public partial class MemberRegistrationDialogViewModel : ObservableValidator
+public partial class MemberRegistrationViewModel : ObservableValidator
 {
     private readonly IUserSessionService _userSessionService;
 
-    public MemberRegistrationDialogViewModel(IUserSessionService userSessionService)
+    public MemberRegistrationViewModel(IUserSessionService userSessionService)
     {
         _userSessionService = userSessionService;
         GenderChoices = Enum.GetValues<Gender>().ToList();

@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Hosting;
 using Domain.Members.Queries;
@@ -11,6 +8,7 @@ using Domain.Organisation.Requests;
 using Domain.Organisation.Values;
 using Libota.Application.Organisation.Commands;
 using Libota.Application.Security;
+using Libota.Application.Security.Authorization;
 using Libota.Application.Shared;
 using Libota.Application.Users;
 using Libota.Application.Users.Services;

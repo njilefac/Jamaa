@@ -1,6 +1,4 @@
-using System;
-
-namespace Libota.Application.Security
+namespace Libota.Application.Security.Authorization
 {
     public class AuthorizeAttribute : Attribute
     {

@@ -14,6 +14,7 @@ using Libota.Application.Users.Services;
 using Libota.Data.Models.Organisation;
 using Libota.Desktop.Assets.Resources;
 using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Interactions;
 using Libota.Desktop.Navigation;
 using Libota.Desktop.ViewModels.Shared;
 using Microsoft.Extensions.Logging;

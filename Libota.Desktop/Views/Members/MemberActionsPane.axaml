@@ -12,7 +12,7 @@
             Grid.Column="0"
             Grid.ColumnSpan="2"
             Margin="4"
-            HorizontalAlignment="Right"
+            HorizontalAlignment="Center"
             VerticalAlignment="Stretch"
             Orientation="Horizontal"
             Spacing="8">
@@ -21,10 +21,6 @@
                 Height="40"
                 Command="{Binding RegisterMemberCommand}"
                 Content="Add Member" />
-            <Button
-                Width="150"
-                Height="40"
-                Content="Import Members" />
         </StackPanel>
     </Grid>
 </UserControl>

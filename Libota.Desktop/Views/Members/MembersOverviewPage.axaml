@@ -5,16 +5,17 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:members-Views="clr-namespace:Libota.Desktop.Views.Members"
+    Padding="5,5,15,5"
     HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
 
     <Grid ColumnDefinitions="*" RowDefinitions="Auto,*">
-        <members-Views:MemberActionsPane Grid.Row="0" />
         <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
             <members-Views:MembersList Grid.Column="0" Content="{Binding MemberList}" />
-            <members-Views:GlobalMemberStatisticsPane Grid.Column="1" />
+            <members-Views:MemberStatisticsPane Grid.Column="1" />
         </Grid>
     </Grid>
 </UserControl>

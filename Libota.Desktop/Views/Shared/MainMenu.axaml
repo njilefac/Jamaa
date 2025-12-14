@@ -9,24 +9,18 @@
     mc:Ignorable="d">
 
     <Menu DockPanel.Dock="Top">
-        <MenuItem Header="_File">
-            <MenuItem
-                Header="_Import"
-                IsEnabled="{Binding Logout.CanExecute}"
-                IsVisible="{Binding !Logout.CanExecute}">
-                <MenuItem Header="_Members" IsSubMenuOpen="True" />
-                <MenuItem Header="Financial _Transactions" IsSubMenuOpen="True" />
+        <MenuItem Header="File">
+            <MenuItem Header="Import">
+                <MenuItem Header="Members" IsSubMenuOpen="True" />
+                <MenuItem Header="Financial Transactions" IsSubMenuOpen="True" />
             </MenuItem>
             <Separator Foreground="DarkGray" />
-            <MenuItem
-                Command="{Binding LogoutCommand}"
-                Header="_Logout"
-                IsVisible="{Binding !LogoutCommand.CanExecute}" />
+            <MenuItem Command="{Binding LogoutCommand}" Header="Logout" />
             <Separator Foreground="DarkGray" />
-            <MenuItem Command="{Binding ExitApplicationCommand}" Header="E_xit" />
+            <MenuItem Command="{Binding ExitApplicationCommand}" Header="Exit" />
         </MenuItem>
-        <MenuItem Header="_Edit">
-            <MenuItem Header="_Copy" />
+        <MenuItem Header="Edit">
+            <MenuItem Header="Copy" />
         </MenuItem>
     </Menu>
 

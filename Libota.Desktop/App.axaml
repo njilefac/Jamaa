@@ -6,6 +6,7 @@
     xmlns:events-Views="clr-namespace:Libota.Desktop.Views.Events"
     xmlns:finances-View-Models="clr-namespace:Libota.Desktop.ViewModels.Finances"
     xmlns:finances-Views="clr-namespace:Libota.Desktop.Views.Finances"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:members-View-Models="clr-namespace:Libota.Desktop.ViewModels.Members"
     xmlns:members-Views="clr-namespace:Libota.Desktop.Views.Members"
     xmlns:security-View-Models="clr-namespace:Libota.Desktop.ViewModels.Security"
@@ -14,9 +15,8 @@
     xmlns:setup-Views="clr-namespace:Libota.Desktop.Views.Setup"
     xmlns:shared-View-Models="clr-namespace:Libota.Desktop.ViewModels.Shared"
     xmlns:shared-Views="clr-namespace:Libota.Desktop.Views.Shared"
-    xmlns:sty="using:FluentAvalonia.Styling"
     Name="Libota Desktop"
-    RequestedThemeVariant="Dark">
+    RequestedThemeVariant="Default">
 
     <Application.Resources>
         <ResourceDictionary>
@@ -27,10 +27,9 @@
     </Application.Resources>
 
     <Application.Styles>
-        <sty:FluentAvaloniaTheme />
+        <husk:HuskuiTheme Corner="Normal" />
         <StyleInclude Source="/Assets/Styles/FormStyles.axaml" />
         <StyleInclude Source="/Assets/Styles/PageStyles.axaml" />
-        <StyleInclude Source="/Assets/Styles/ControlStyles.axaml" />
     </Application.Styles>
 
     <Application.DataTemplates>
