@@ -1,4 +1,3 @@
-using System;
 using Libota.Data.Models.Organisation;
 
 namespace Libota.Application.Users

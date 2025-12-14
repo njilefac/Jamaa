@@ -7,7 +7,7 @@ using Domain.Organisation.Requests;
 using Domain.Shared.Values;
 using JetBrains.Annotations;
 using Libota.Application.Organisation;
-using Libota.Desktop.Infrastructure;
+using Libota.Desktop.Infrastructure.Interactions;
 
 namespace Libota.Desktop.ViewModels.Members;
 

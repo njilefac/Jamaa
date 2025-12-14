@@ -1,7 +1,7 @@
-using System.Linq;
 using Castle.DynamicProxy;
 using Libota.Application.Organisation;
 using Libota.Application.Security;
+using Libota.Application.Security.Authorization;
 using Libota.Application.Setup;
 using Libota.Application.Shared;
 using Libota.Application.Users.Services;

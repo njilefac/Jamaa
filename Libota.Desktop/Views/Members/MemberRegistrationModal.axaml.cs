@@ -5,9 +5,9 @@ using Libota.Desktop.Infrastructure.Attributes;
 namespace Libota.Desktop.Views.Members;
 
 [SingleInstanceView]
-public partial class MemberCard : Card
+public partial class MemberRegistrationModal : Modal
 {
-    public MemberCard()
+    public MemberRegistrationModal()
     {
         InitializeComponent();
     }

@@ -1,7 +1,6 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Interactivity;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Huskui.Avalonia.Controls;
 using JetBrains.Annotations;
 using Libota.Desktop.Infrastructure.Attributes;
 
@@ -9,7 +8,7 @@ namespace Libota.Desktop.Views.Shared;
 
 [SingleInstanceView]
 [UsedImplicitly]
-public partial class MainWindow : Window
+public partial class MainWindow : AppWindow
 {
 
     public MainWindow()
@@ -21,18 +20,6 @@ public partial class MainWindow : Window
 #if DEBUG
         //this.AttachDevTools();
 #endif
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        if (Screens.Primary == null) return;
-        var screenSize = Screens.Primary.WorkingArea.Size;
-        var windowSize = PixelSize.FromSize(ClientSize, Screens.Primary.Scaling);
-
-        Position = new PixelPoint(
-            screenSize.Width - windowSize.Width,
-            screenSize.Height - windowSize.Height);
     }
 
     private void InitializeComponent()

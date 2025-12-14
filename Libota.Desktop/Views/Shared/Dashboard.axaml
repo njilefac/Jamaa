@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:navigation="clr-namespace:Libota.Desktop.ViewModels.Navigation"
     xmlns:services="clr-namespace:Libota.Desktop.Services"
+    xmlns:styling="clr-namespace:FluentAvalonia.Styling;assembly=FluentAvalonia"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch"
@@ -20,6 +21,7 @@
     </UserControl.Resources>
 
     <UserControl.Styles>
+        <styling:FluentAvaloniaTheme />
         <Style Selector="controls|NavigationViewItem">
             <Setter Property="Height" Value="70" />
         </Style>
@@ -38,5 +40,21 @@
                 <controls:NavigationViewItem Content="{Binding Title}" IconSource="{Binding Icon, Converter={StaticResource IconSourceConverter}}" />
             </DataTemplate>
         </controls:NavigationView.MenuItemTemplate>
+        <controls:NavigationView.HeaderTemplate>
+            <DataTemplate>
+                <TextBlock
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    FontSize="22"
+                    FontWeight="Bold"
+                    Text="{Binding}"
+                    TextAlignment="Center" />
+            </DataTemplate>
+        </controls:NavigationView.HeaderTemplate>
+        <controls:NavigationView.ContentTemplate>
+            <DataTemplate>
+                <ContentControl Content="{Binding}" />
+            </DataTemplate>
+        </controls:NavigationView.ContentTemplate>
     </controls:NavigationView>
 </UserControl>
