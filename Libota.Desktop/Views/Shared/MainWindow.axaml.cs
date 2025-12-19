@@ -1,6 +1,5 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Huskui.Avalonia.Controls;
 using JetBrains.Annotations;
 using Libota.Desktop.Infrastructure.Attributes;
 
@@ -8,7 +7,7 @@ namespace Libota.Desktop.Views.Shared;
 
 [SingleInstanceView]
 [UsedImplicitly]
-public partial class MainWindow : AppWindow
+public partial class MainWindow : Window
 {
 
     public MainWindow()

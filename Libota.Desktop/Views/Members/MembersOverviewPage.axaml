@@ -14,7 +14,7 @@
 
     <Grid ColumnDefinitions="*" RowDefinitions="Auto,*">
         <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-            <members-Views:MembersList Grid.Column="0" Content="{Binding MemberList}" />
+            <ContentControl Grid.Column="0" Content="{Binding MemberList}" />
             <members-Views:MemberStatisticsPane Grid.Column="1" />
         </Grid>
     </Grid>
