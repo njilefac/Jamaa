@@ -15,6 +15,7 @@
     xmlns:setup-Views="clr-namespace:Libota.Desktop.Views.Setup"
     xmlns:shared-View-Models="clr-namespace:Libota.Desktop.ViewModels.Shared"
     xmlns:shared-Views="clr-namespace:Libota.Desktop.Views.Shared"
+    xmlns:sty="using:FluentAvalonia.Styling"
     Name="Libota Desktop"
     RequestedThemeVariant="Default">
 
@@ -27,7 +28,7 @@
     </Application.Resources>
 
     <Application.Styles>
-        <husk:HuskuiTheme Corner="Normal" />
+        <sty:FluentAvaloniaTheme />
         <StyleInclude Source="/Assets/Styles/FormStyles.axaml" />
         <StyleInclude Source="/Assets/Styles/PageStyles.axaml" />
     </Application.Styles>
@@ -65,6 +66,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type events-View-Models:EventOverviewPageViewModel}">
             <events-Views:EventOverviewPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type members-View-Models:MemberRegistrationViewModel}">
+            <members-Views:MemberRegistrationDialog />
         </DataTemplate>
     </Application.DataTemplates>
 </Application>

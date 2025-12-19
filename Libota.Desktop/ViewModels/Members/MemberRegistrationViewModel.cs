@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Domain.Organisation.Requests;
@@ -24,21 +23,9 @@ public partial class MemberRegistrationViewModel : ObservableValidator
         SelectedGender = Gender.Unknown;
         MembershipType = MembershipType.Regular;
         RegistrationBegin = DateTime.Today;
-
-        // this.ValidationRule(x => x.FirstName, v => !string.IsNullOrWhiteSpace(v) && v.Length > 2,
-        //     "First name must be at least three characters");
-        //
-        // this.ValidationRule(x => x.LastName, v => !string.IsNullOrWhiteSpace(v) && v.Length > 2,
-        //     "Last name must be at least three characters");
-        //
-        // this.ValidationRule(x => x.SelectedGender, v => v != Gender.Unknown,
-        //     "Please select a gender");
-        //
-        // RegisterMember =
-        //     ReactiveCommand.CreateFromTask<Unit, MemberRegistrationRequest>(GetRegistrationData, this.IsValid());
     }
 
-    private async Task<MemberRegistrationRequest> GetRegistrationData(Unit arg)
+    internal async Task<MemberRegistrationRequest> GetRegistrationRequest()
     {
         var organisationId = _userSessionService!.CurrentUserSession!.Organisation?.Id;
 
@@ -55,7 +42,7 @@ public partial class MemberRegistrationViewModel : ObservableValidator
 
         return await Task.FromResult(request);
     }
-
+    
     public List<Gender> GenderChoices { get; }
     [ObservableProperty] private string? _firstName;
     [ObservableProperty] private string? _middleName;

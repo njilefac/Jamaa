@@ -19,13 +19,18 @@ namespace Libota.Desktop.ViewModels.Members;
 [UsedImplicitly]
 public partial class MemberListViewModel : ObservableValidator
 {
+    public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
     [ObservableProperty] private MemberProfileViewModel _memberProfileViewModel;
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
     private readonly INavigationService _navigationService;
 
-    public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
-        MemberProfileViewModel memberProfileViewModel, INavigationService navigationService)
+    public MemberListViewModel(
+        IOrganisationManagementFacade organisationManagementFacade,
+        MemberRegistrationViewModel memberRegistrationViewModel,
+        MemberProfileViewModel memberProfileViewModel, 
+        INavigationService navigationService)
     {
+        MemberRegistrationViewModel = memberRegistrationViewModel;
         MemberProfileViewModel = memberProfileViewModel;
         _organisationManagementFacade = organisationManagementFacade;
         _navigationService = navigationService;

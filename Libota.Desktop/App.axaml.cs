@@ -48,19 +48,19 @@ public class App : Avalonia.Application
             .AddEnvironmentVariables()
             .Build();
 
-        ServiceProvider = new ServiceCollection()
+        var serviceProvider = new ServiceCollection()
             .ConfigureServices(configuration)
             .ConfigureAkka(lifeTime, configuration)
             .BuildServiceProvider();
 
-        var akkaService = ServiceProvider.GetRequiredService<IHostedService>();
+        var akkaService = serviceProvider.GetRequiredService<IHostedService>();
         await akkaService.StartAsync(CancellationToken.None);
 
-        var logger = ServiceProvider.GetRequiredService<ILogger<Program>>();
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         try
         {
-            UpdateDatabase(logger, ServiceProvider);
-            var diagnosticListener = ServiceProvider.GetService<IObserver<DiagnosticListener>>();
+            UpdateDatabase(logger, serviceProvider);
+            var diagnosticListener = serviceProvider.GetService<IObserver<DiagnosticListener>>();
             if (diagnosticListener != null)
                 DiagnosticListener.AllListeners.Subscribe(diagnosticListener);
         }
@@ -70,20 +70,17 @@ public class App : Avalonia.Application
         }
 
         Messages.Culture = CultureInfo.CurrentUICulture;
-        var mainWindow = CreateAndConfigureMainWindow();
+        var mainWindow = CreateAndConfigureMainWindow(serviceProvider);
         lifeTime.MainWindow = mainWindow;
     }
 
-    private MainWindow CreateAndConfigureMainWindow()
+    private MainWindow CreateAndConfigureMainWindow(ServiceProvider serviceProvider)
     {
         var mainWindow = new MainWindow();
-        var mainViewModel = ServiceProvider.GetRequiredService<MainWindowViewModel>();
+        var mainViewModel = (serviceProvider ?? throw new InvalidOperationException()).GetRequiredService<MainWindowViewModel>();
         mainWindow.DataContext = mainViewModel;
         return mainWindow;
     }
-
-    private ServiceProvider ServiceProvider { get; set; }
-
 
     private static void UpdateDatabase(ILogger<Program>? logger, IServiceProvider serviceProvider)
     {

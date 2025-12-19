@@ -1,13 +1,13 @@
 using Avalonia.Markup.Xaml;
-using Huskui.Avalonia.Controls;
+using FluentAvalonia.UI.Controls;
 using Libota.Desktop.Infrastructure.Attributes;
 
 namespace Libota.Desktop.Views.Members;
 
 [SingleInstanceView]
-public partial class MemberRegistrationModal : Modal
+public partial class MemberRegistrationDialog : ContentDialog
 {
-    public MemberRegistrationModal()
+    public MemberRegistrationDialog()
     {
         InitializeComponent();
     }

@@ -24,30 +24,8 @@ public class Interaction<TInput, TOutput>
             await snapshot[i].Invoke(interactionContext);
         }
 
-        if (interactionContext.Output == null)
-        {
-            throw new InvalidOperationException("No handler produced an output for this interaction.");
-        }
-
-        return interactionContext.Output;
-    }
-
-    public IDisposable RegisterHandler(Action<InteractionContext<TInput, TOutput>> handler)
-    {
-        // Wrap sync handler into ValueTask delegate
-        Func<InteractionContext<TInput, TOutput>, ValueTask> wrapper = ctx =>
-        {
-            handler(ctx);
-            return ValueTask.CompletedTask;
-        };
-
-        if (_handlers.Contains(wrapper))
-        {
-            return Disposable.Empty;
-        }
-
-        _handlers.Push(wrapper);
-        return new HandlerSubscription(this, wrapper);
+        return interactionContext.Output ??
+               throw new InvalidOperationException("No handler produced an output for this interaction.");
     }
 
     public IDisposable RegisterHandler(Func<InteractionContext<TInput, TOutput>, Task> asyncHandler)
@@ -62,17 +40,6 @@ public class Interaction<TInput, TOutput>
 
         _handlers.Push(wrapper);
         return new HandlerSubscription(this, wrapper);
-    }
-
-    public IDisposable RegisterHandler(Func<InteractionContext<TInput, TOutput>, ValueTask> asyncHandler)
-    {
-        if (_handlers.Contains(asyncHandler))
-        {
-            return Disposable.Empty;
-        }
-
-        _handlers.Push(asyncHandler);
-        return new HandlerSubscription(this, asyncHandler);
     }
 
     private void RemoveHandler(Func<InteractionContext<TInput, TOutput>, ValueTask> handler)
