@@ -1,11 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Libota.Desktop.Infrastructure.Attributes;
 using Libota.Desktop.ViewModels.Members;
 
 namespace Libota.Desktop.Views.Members;
 
-[SingleInstanceView]
 public partial class MemberProfilePage : UserControl
 {
     public MemberProfilePage(MemberProfileViewModel viewModel)

@@ -1,34 +1,34 @@
 ﻿<Window
-    x:Class="Libota.Desktop.Views.Shared.MainWindow"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:shared="clr-namespace:Libota.Desktop.Views.Shared"
-    Title="{Binding ApplicationTitle}"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    x:DataType="shared:MainWindow"
     Background="Transparent"
     Icon="/Assets/Icons/avalonia-logo.ico"
     ShowActivated="True"
+    Title="{Binding ApplicationTitle}"
     TransparencyLevelHint="Blur, Mica"
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized"
-    mc:Ignorable="d">
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Libota.Desktop.Views.Shared.MainWindow"
+    x:DataType="shared:MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:Libota.Desktop.Views.Shared"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Grid ColumnDefinitions="*" RowDefinitions="Auto,*,35">
-        <shared:MainMenu Grid.Row="0" Content="{Binding MainMenuViewModel}" />
+        <shared:MainMenu Content="{Binding MainMenuViewModel}" Grid.Row="0" />
         <Panel Grid.Row="1">
             <ContentControl
-                x:Name="ContentContainer"
+                Content="{Binding CurrentViewModel}"
                 HorizontalContentAlignment="Stretch"
                 VerticalContentAlignment="Stretch"
-                Content="{Binding CurrentViewModel}" />
+                x:Name="ContentContainer" />
         </Panel>
         <Panel
-            Grid.Row="2"
             Background="gray"
+            Grid.Row="2"
             Opacity="0.2" />
     </Grid>
 </Window>

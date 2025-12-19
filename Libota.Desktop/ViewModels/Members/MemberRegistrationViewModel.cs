@@ -8,11 +8,12 @@ using Domain.Organisation.Values;
 using Domain.Shared.Values;
 using JetBrains.Annotations;
 using Libota.Application.Users.Services;
+using Libota.Desktop.Infrastructure.Interactions;
 
 namespace Libota.Desktop.ViewModels.Members;
 
 [UsedImplicitly]
-public partial class MemberRegistrationViewModel : ObservableValidator
+public partial class MemberRegistrationViewModel : ObservableValidator, IResultProvider<MemberRegistrationRequest>
 {
     private readonly IUserSessionService _userSessionService;
 
@@ -25,9 +26,9 @@ public partial class MemberRegistrationViewModel : ObservableValidator
         RegistrationBegin = DateTime.Today;
     }
 
-    internal async Task<MemberRegistrationRequest> GetRegistrationRequest()
+    private MemberRegistrationRequest GetRegistrationRequest()
     {
-        var organisationId = _userSessionService!.CurrentUserSession!.Organisation?.Id;
+        var organisationId = _userSessionService.CurrentUserSession!.Organisation?.Id;
 
         var request = new MemberRegistrationRequest
         {
@@ -40,7 +41,7 @@ public partial class MemberRegistrationViewModel : ObservableValidator
             OrganisationId = OrganisationId.With(organisationId ?? throw new InvalidOperationException())
         };
 
-        return await Task.FromResult(request);
+        return request;
     }
     
     public List<Gender> GenderChoices { get; }
@@ -52,4 +53,5 @@ public partial class MemberRegistrationViewModel : ObservableValidator
     [ObservableProperty] private DateTime _dateOfBirth;
     [ObservableProperty] private DateTime _registrationBegin;
     [ObservableProperty] private MembershipType _membershipType;
+    public MemberRegistrationRequest Result => GetRegistrationRequest();
 }

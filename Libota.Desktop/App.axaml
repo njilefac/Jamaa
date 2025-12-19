@@ -1,7 +1,8 @@
 ﻿<Application
+    Name="Libota Desktop"
+    RequestedThemeVariant="Default"
     x:Class="Libota.Desktop.App"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:events-View-Models="clr-namespace:Libota.Desktop.ViewModels.Events"
     xmlns:events-Views="clr-namespace:Libota.Desktop.Views.Events"
     xmlns:finances-View-Models="clr-namespace:Libota.Desktop.ViewModels.Finances"
@@ -16,8 +17,7 @@
     xmlns:shared-View-Models="clr-namespace:Libota.Desktop.ViewModels.Shared"
     xmlns:shared-Views="clr-namespace:Libota.Desktop.Views.Shared"
     xmlns:sty="using:FluentAvalonia.Styling"
-    Name="Libota Desktop"
-    RequestedThemeVariant="Default">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Application.Resources>
         <ResourceDictionary>
@@ -66,9 +66,6 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type events-View-Models:EventOverviewPageViewModel}">
             <events-Views:EventOverviewPage />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type members-View-Models:MemberRegistrationViewModel}">
-            <members-Views:MemberRegistrationDialog />
         </DataTemplate>
     </Application.DataTemplates>
 </Application>
