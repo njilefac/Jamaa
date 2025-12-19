@@ -1,10 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Libota.Desktop.Infrastructure.Attributes;
 
 namespace Libota.Desktop.Views.Setup;
 
-[SingleInstanceView]
 public partial class CreateOrganisationScreen : UserControl
 {
     public CreateOrganisationScreen()

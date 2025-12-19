@@ -1,4 +1,4 @@
-﻿# Product Requirements for Club Station
+﻿# Product Requirements for Libota
 
 ## General Description
 
@@ -15,6 +15,10 @@
   get up-to-date and accurate individual and group financial and other reports.
   
 ## Functional Requirements
+
+### Initial Setup
+  - On first launch of the application, the system checks if an organization and a superuser have been created. If not, a wizard is presented to guide the user through the setup process.
+
 ### User Management
    - User Accounts:
      - CRUD (create, read, update, delete)

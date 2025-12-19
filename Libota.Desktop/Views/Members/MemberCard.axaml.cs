@@ -1,10 +1,8 @@
 using Avalonia.Markup.Xaml;
 using Huskui.Avalonia.Controls;
-using Libota.Desktop.Infrastructure.Attributes;
 
 namespace Libota.Desktop.Views.Members;
 
-[SingleInstanceView]
 public partial class MemberCard : Card
 {
     public MemberCard()

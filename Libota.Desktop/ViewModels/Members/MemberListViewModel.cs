@@ -23,17 +23,19 @@ public partial class MemberListViewModel : ObservableValidator
     [ObservableProperty] private MemberProfileViewModel _memberProfileViewModel;
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
     private readonly INavigationService _navigationService;
+    private readonly IDialogService _dialogService;
 
     public MemberListViewModel(
         IOrganisationManagementFacade organisationManagementFacade,
         MemberRegistrationViewModel memberRegistrationViewModel,
         MemberProfileViewModel memberProfileViewModel, 
-        INavigationService navigationService)
+        INavigationService navigationService, IDialogService dialogService)
     {
         MemberRegistrationViewModel = memberRegistrationViewModel;
         MemberProfileViewModel = memberProfileViewModel;
         _organisationManagementFacade = organisationManagementFacade;
         _navigationService = navigationService;
+        _dialogService = dialogService;
 
         var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
             
@@ -67,13 +69,15 @@ public partial class MemberListViewModel : ObservableValidator
             });
     }
     
-    public Interaction<Unit, MemberRegistrationRequest> ShowRegistrationPrompt { get; } = new();
 
     [RelayCommand]
     private async Task RegisterMember()
     {
-        var request = await ShowRegistrationPrompt.Handle(Unit.Default);
-        await _organisationManagementFacade.RegisterMember(request);
+        var request = await _dialogService.ShowAsync<MemberRegistrationViewModel, MemberRegistrationRequest>(MemberRegistrationViewModel);
+        if (request.Confirmed)
+        {
+            await _organisationManagementFacade.RegisterMember(request.Result);
+        }
     }
     
     [ObservableProperty] private string? _searchTerm;
