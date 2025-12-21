@@ -3,7 +3,6 @@ using System.Diagnostics;
 using Domain.Users;
 using Libota.Data.Notifiers;
 using Libota.Data.Queries.Members;
-using Libota.Data.Repositories;
 using Libota.Data.Repositories.Organisations;
 using Microsoft.Extensions.DependencyInjection;
 using EntityFrameworkCore.Rx;
