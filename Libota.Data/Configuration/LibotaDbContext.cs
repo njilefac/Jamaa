@@ -1,16 +1,14 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using Domain.Shared.Values;
 using Libota.Data.Models.Members;
 using Libota.Data.Models.Organisation;
 using Libota.Data.Models.Users;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Libota.Data.Configuration;
 
-public class LibotaDbContext(IOptions<DatabaseOptions> options, ILoggerFactory loggerFactory) : DbContext
+public class LibotaDbContext(IOptions<DatabaseOptions> options) : DbContext
 {
     private readonly DatabaseOptions _dbOptions = options.Value;
     public DbSet<UserData> Users { get; set; }
@@ -19,11 +17,9 @@ public class LibotaDbContext(IOptions<DatabaseOptions> options, ILoggerFactory l
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var executingDirectory = Directory.GetCurrentDirectory();
         optionsBuilder.UseSqlite(
             $"Filename={_dbOptions.DataFile}",
             options => { options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName); });
-        optionsBuilder.UseLoggerFactory(loggerFactory);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
