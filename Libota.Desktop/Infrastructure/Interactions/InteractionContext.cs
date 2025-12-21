@@ -1,3 +1,4 @@
+
 namespace Libota.Desktop.Infrastructure.Interactions;
 
 public record InteractionContext<TInput, TOutput>(TInput Input)
@@ -7,5 +8,5 @@ public record InteractionContext<TInput, TOutput>(TInput Input)
         Output = output;
     }
 
-    public TOutput? Output { get; set; }
+    public TOutput Output { get; private set; }
 }

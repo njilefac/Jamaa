@@ -1,7 +1,6 @@
 using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Libota.Application.Users.Services;
-using Libota.Desktop.Infrastructure.Interactions;
 using Libota.Desktop.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,7 +22,6 @@ public static class PresentationServicesRegistration
         {
             services.AddSingleton<IUserSessionService, UserSessionService>();
             services.AddSingleton<NavigationStore>();
-            services.AddSingleton<IDialogService, ContentDialogService>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddScoped<WindowNotificationManager>();
 

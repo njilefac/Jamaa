@@ -28,10 +28,15 @@ public partial class DashboardViewModel: ObservableValidator
         SelectedItem = MenuItems.First(x => x.ViewModelType == typeof(MemberManagementScreenViewModel));
     }
 
-    partial void OnSelectedItemChanged(NavigationItemViewModel value)
+    partial void OnSelectedItemChanged(NavigationItemViewModel? value)
     {
+        if (value == null)
+        {
+            return;
+        }
         var vm = (ObservableObject)_serviceProvider.GetService(value.ViewModelType)!;
         CurrentContent = vm;
+
     }
     
     [ObservableProperty] private IEnumerable<NavigationItemViewModel> _menuItems;
