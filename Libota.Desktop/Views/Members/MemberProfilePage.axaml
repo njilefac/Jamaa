@@ -18,7 +18,7 @@
     <DockPanel>
         <!--  todo: use a bread crumb here  -->
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-            <Button Command="{Binding GoBack}" Content="Back" />
+            <Button Command="{Binding GoToPreviousPageCommand}" Content="Back" />
         </StackPanel>
         <Border>
             <StackPanel>
