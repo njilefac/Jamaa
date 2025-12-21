@@ -66,6 +66,7 @@
         <controls:ContentDialog
             x:Name="AddMemberDialog"
             Title="Register New Member"
+            IsVisible="False"
             PrimaryButtonText="Register Member"
             SecondaryButtonText="Cancel">
             <StackPanel>
