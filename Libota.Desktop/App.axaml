@@ -1,8 +1,7 @@
 ﻿<Application
-    Name="Libota Desktop"
-    RequestedThemeVariant="Default"
     x:Class="Libota.Desktop.App"
     xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:events-View-Models="clr-namespace:Libota.Desktop.ViewModels.Events"
     xmlns:events-Views="clr-namespace:Libota.Desktop.Views.Events"
     xmlns:finances-View-Models="clr-namespace:Libota.Desktop.ViewModels.Finances"
@@ -17,20 +16,21 @@
     xmlns:shared-View-Models="clr-namespace:Libota.Desktop.ViewModels.Shared"
     xmlns:shared-Views="clr-namespace:Libota.Desktop.Views.Shared"
     xmlns:sty="using:FluentAvalonia.Styling"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    Name="Libota Desktop"
+    RequestedThemeVariant="Default">
 
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="/Assets/Resources/Icons.axaml" />
+                <ResourceInclude Source="/Themes/Libota.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 
     <Application.Styles>
+        <husk:HuskuiTheme Corner="Normal" />
         <sty:FluentAvaloniaTheme />
-        <StyleInclude Source="/Assets/Styles/FormStyles.axaml" />
-        <StyleInclude Source="/Assets/Styles/PageStyles.axaml" />
+        <StyleInclude Source="avares://Libota/Styles/LibotaStyles.axaml" />
     </Application.Styles>
 
     <Application.DataTemplates>
@@ -57,6 +57,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type members-View-Models:MembersOverviewPageViewModel}">
             <members-Views:MembersOverviewPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type members-View-Models:MemberProfileViewModel}">
+            <members-Views:MemberProfilePage />
         </DataTemplate>
         <DataTemplate DataType="{x:Type finances-View-Models:FinanceOverviewPageViewModel}">
             <finances-Views:FinanceOverviewPage />

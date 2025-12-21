@@ -7,43 +7,25 @@
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
+    Padding="4"
     HorizontalContentAlignment="Stretch"
     VerticalContentAlignment="Stretch"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="data:MemberData"
-    ClipToBounds="True"
+    CornerRadius="10"
     mc:Ignorable="d">
 
-    <husk:Card.Styles>
-        <Style Selector="Border.MemberCard">
-            <Setter Property="(Interaction.Behaviors)">
-                <BehaviorCollectionTemplate>
-                    <BehaviorCollection>
-                        <ExecuteCommandOnDoubleTappedBehavior Command="{Binding $parent[members:MembersList].ViewModel.ShowMemberDetails}" CommandParameter="{Binding}" />
-                    </BehaviorCollection>
-                </BehaviorCollectionTemplate>
-            </Setter>
-            <Setter Property="Background" Value="LightSlateGray" />
-            <Style Selector="^:pointerover">
-                <Setter Property="BorderThickness" Value="3" />
-                <Setter Property="BorderBrush" Value="DarkGreen" />
-            </Style>
-            <Style Selector="^:selected">
-                <Setter Property="BorderThickness" Value="2" />
-                <Setter Property="BorderBrush" Value="DarkBlue" />
-            </Style>
-        </Style>
-    </husk:Card.Styles>
-
-    <Border
-        Width="220"
+    <Button
+        Width="300"
         Height="150"
-        Padding="4"
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch"
-        Classes="MemberCard"
-        CornerRadius="10">
+        Padding="8"
+        HorizontalContentAlignment="Stretch"
+        VerticalContentAlignment="Stretch"
+        BorderThickness="2"
+        Command="{Binding $parent[members:MembersList].DataContext.ShowMemberProfileCommand}"
+        CommandParameter="{Binding}"
+        CornerRadius="6">
         <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,*">
             <Label
                 Grid.Row="0"
@@ -66,5 +48,5 @@
                 Grid.Column="0"
                 Content="{Binding Registration.Status, StringFormat='Registration: {0}'}" />
         </Grid>
-    </Border>
+    </Button>
 </husk:Card>

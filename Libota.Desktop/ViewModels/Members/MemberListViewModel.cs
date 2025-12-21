@@ -40,7 +40,8 @@ public partial class MemberListViewModel : ObservableValidator
             
         var members = new ObservableCollectionExtended<MemberData>();
         membersSourceList.PopulateFrom(_organisationManagementFacade.CurrentMembers);
-        membersSourceList.Connect()
+        membersSourceList
+            .Connect()
             .SortAndBind(Members, SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
             .DisposeMany()
             .Subscribe(changeSet =>
@@ -81,7 +82,7 @@ public partial class MemberListViewModel : ObservableValidator
     
     [ObservableProperty] private string? _searchTerm;
         
-    [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = new();
+    [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = [];
 
     [RelayCommand]
     private async Task<Unit> ShowMemberProfile(MemberData member)

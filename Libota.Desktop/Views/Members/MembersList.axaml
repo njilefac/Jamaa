@@ -42,6 +42,7 @@
                 Margin="5"
                 Padding="30,0,30,0"
                 AllowAutoHide="True"
+                Background="{StaticResource SystemListLowColor}"
                 HorizontalScrollBarVisibility="Disabled"
                 VerticalScrollBarVisibility="Auto">
                 <ItemsRepeater
@@ -49,10 +50,7 @@
                     VerticalAlignment="Top"
                     ItemsSource="{Binding Members}">
                     <ItemsRepeater.Layout>
-                        <WrapLayout
-                            HorizontalSpacing="25"
-                            Orientation="Horizontal"
-                            VerticalSpacing="25" />
+                        <WrapLayout Orientation="Horizontal" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="data:MemberData">
