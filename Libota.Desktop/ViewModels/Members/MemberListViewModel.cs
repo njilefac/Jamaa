@@ -20,22 +20,21 @@ namespace Libota.Desktop.ViewModels.Members;
 public partial class MemberListViewModel : ObservableValidator
 {
     public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
+    public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();   
     [ObservableProperty] private MemberProfileViewModel _memberProfileViewModel;
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
     private readonly INavigationService _navigationService;
-    private readonly IDialogService _dialogService;
-
+    
     public MemberListViewModel(
         IOrganisationManagementFacade organisationManagementFacade,
         MemberRegistrationViewModel memberRegistrationViewModel,
         MemberProfileViewModel memberProfileViewModel, 
-        INavigationService navigationService, IDialogService dialogService)
+        INavigationService navigationService)
     {
         MemberRegistrationViewModel = memberRegistrationViewModel;
         MemberProfileViewModel = memberProfileViewModel;
         _organisationManagementFacade = organisationManagementFacade;
         _navigationService = navigationService;
-        _dialogService = dialogService;
 
         var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
             
@@ -73,7 +72,7 @@ public partial class MemberListViewModel : ObservableValidator
     [RelayCommand]
     private async Task RegisterMember()
     {
-        var request = await _dialogService.ShowAsync<MemberRegistrationViewModel, MemberRegistrationRequest>(MemberRegistrationViewModel);
+        var request = await AddMemberRegistration.Handle(MemberRegistrationViewModel);
         if (request.Confirmed)
         {
             await _organisationManagementFacade.RegisterMember(request.Result);
