@@ -50,7 +50,10 @@
                     VerticalAlignment="Top"
                     ItemsSource="{Binding Members}">
                     <ItemsRepeater.Layout>
-                        <WrapLayout Orientation="Horizontal" />
+                        <WrapLayout
+                            HorizontalSpacing="10"
+                            Orientation="Horizontal"
+                            VerticalSpacing="10" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="data:MemberData">

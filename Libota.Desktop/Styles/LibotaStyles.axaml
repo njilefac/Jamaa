@@ -1,4 +1,7 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia">
     <Design.PreviewWith>
         <Border Padding="20">
             <!--  Add Controls for Previewer Here  -->
@@ -84,5 +87,10 @@
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Background" Value="LightGray" />
         <Setter Property="Padding" Value="5" />
+    </Style>
+    <Style Selector="husk|Card:pointerover">
+        <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBorderBrushPointerOver}" />
+        <Setter Property="BorderThickness" Value="4" />
+        <Setter Property="Background" Value="{StaticResource ControlStrokeColorOnAccentDefault}" />
     </Style>
 </Styles>

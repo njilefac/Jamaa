@@ -84,7 +84,7 @@ public partial class MemberListViewModel : ObservableValidator
         
     [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = [];
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanShowMemberProfile))]
     private async Task<Unit> ShowMemberProfile(MemberData member)
     {
         MemberProfileViewModel.FirstName = member.FirstName;
@@ -97,6 +97,8 @@ public partial class MemberListViewModel : ObservableValidator
 
         return await Task.FromResult(Unit.Default);
     }
+
+    private bool CanShowMemberProfile(MemberData member) => true  ;
 
     private static bool MemberMatches(MemberData member, string? searchTerm)
     {
