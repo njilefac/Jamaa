@@ -3,5 +3,5 @@ using Libota.Application.Users.Services;
 
 namespace Libota.Desktop.ViewModels.Events
 {
-    public class EventOverviewPageViewModel(IUserSessionService userSessionService) : ObservableObject;
+    public class EventsOverviewPageViewModel(IUserSessionService userSessionService) : ObservableObject;
 }

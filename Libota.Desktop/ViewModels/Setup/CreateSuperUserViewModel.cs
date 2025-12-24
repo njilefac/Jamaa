@@ -9,19 +9,15 @@ using Libota.Application.Setup;
 using Libota.Application.Users.Services;
 using Libota.Desktop.Assets.Resources;
 using Libota.Desktop.Navigation;
-using Libota.Desktop.ViewModels.Security;
-using Libota.Desktop.ViewModels.Shared;
 
 namespace Libota.Desktop.ViewModels.Setup;
 
 [UsedImplicitly]
 public partial class CreateSuperUserViewModel : ObservableValidator
 {
-    public CreateSuperUserViewModel(INavigationService navigationService,
+    public CreateSuperUserViewModel(
         ISetupService setupService,
-        IUserSessionService userSessionService,
-        DashboardViewModel dashboardViewModel,
-        LoginScreenViewModel loginScreenViewModel)
+        IUserSessionService userSessionService)
     {
         _setupService = setupService;
         _userSessionService = userSessionService;
@@ -29,7 +25,7 @@ public partial class CreateSuperUserViewModel : ObservableValidator
         {
             if (x is { IsAuthenticated: true })
             {
-                _ = navigationService.NavigateTo(dashboardViewModel);
+                Navigation.NavigateToAsync(Routes.Dashboard);
             }
         });
 
@@ -80,4 +76,10 @@ public partial class CreateSuperUserViewModel : ObservableValidator
 
     private readonly ISetupService _setupService;
     private readonly IUserSessionService _userSessionService;
+    public string RoutePath => Routes.CreateSuperUser;
+    public void InitializeNavigation(INavigationScope navigationScope)
+    {
+        Navigation = navigationScope;
+    }
+    public INavigationScope Navigation { get; private set; } = default!;
 }

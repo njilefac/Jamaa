@@ -13,7 +13,7 @@
     VerticalContentAlignment="Stretch"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="data:MemberData"
+    x:DataType="data:MemberProfile"
     mc:Ignorable="d">
     <husk:Card
         Width="300"
@@ -35,7 +35,7 @@
                 <Label
                     Grid.Row="0"
                     Grid.Column="0"
-                    FontSize="{StaticResource HeaderFontSize}"
+                    FontSize="{StaticResource HeadingFontSize}"
                     FontWeight="Bold">
                     <Label.Content>
                         <MultiBinding StringFormat="{}{0} {1}">

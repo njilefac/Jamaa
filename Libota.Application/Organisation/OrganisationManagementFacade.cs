@@ -7,7 +7,6 @@ using Domain.Organisation.Queries;
 using Domain.Organisation.Requests;
 using Domain.Organisation.Values;
 using Libota.Application.Organisation.Commands;
-using Libota.Application.Security;
 using Libota.Application.Security.Authorization;
 using Libota.Application.Shared;
 using Libota.Application.Users;
@@ -22,7 +21,7 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
 {
     private readonly IActorRef _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
-    private readonly ReplaySubject<MemberData> _currentMembers;
+    private readonly ReplaySubject<MemberProfile> _currentMembers;
 
     public OrganisationManagementFacade(IRequiredActor<CommandProcessor> commandProcessorProvider,
         IQueryProcessor queryProcessor,
@@ -33,14 +32,14 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         _commandProcessor = commandProcessorProvider.ActorRef;
         _queryProcessor = queryProcessor;
 
-        _currentMembers = new ReplaySubject<MemberData>();
+        _currentMembers = new ReplaySubject<MemberProfile>();
         CurrentMembers = _currentMembers;
         
-        MemberAdded = dataChangeNotifier.Insertions.OfType<MemberData>();
+        MemberAdded = dataChangeNotifier.Insertions.OfType<MemberProfile>();
         MemberAdded.Subscribe(x => _currentMembers.OnNext(x));
         
-        MemberUpdated = dataChangeNotifier.Updates.OfType<MemberData>();
-        MemberDeleted = dataChangeNotifier.Deletions.OfType<MemberData>();
+        MemberUpdated = dataChangeNotifier.Updates.OfType<MemberProfile>();
+        MemberDeleted = dataChangeNotifier.Deletions.OfType<MemberProfile>();
     }
 
     private async void InitializeCurrentMembers(UserSession? s)
@@ -52,7 +51,7 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         }
     }
 
-    public IObservable<MemberData> CurrentMembers { get; set; }
+    public IObservable<MemberProfile> CurrentMembers { get; set; }
 
     public Task CreateOrganisation(string name, string? description)
     {
@@ -81,11 +80,11 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         return await _queryProcessor.Get(new GetAllOrganisations());
     }
     
-    public IObservable<MemberData> MemberUpdated { get; }
+    public IObservable<MemberProfile> MemberUpdated { get; }
 
-    public IObservable<MemberData> MemberDeleted { get; }
+    public IObservable<MemberProfile> MemberDeleted { get; }
 
-    private async Task<IList<MemberData>?> ListCurrentMembers(UserSession? userSession)
+    private async Task<IList<MemberProfile>?> ListCurrentMembers(UserSession? userSession)
     {
         var currentOrganisationId = userSession?.Organisation?.Id;
         var query = new GetMembersByOrganisation(OrganisationId.With(currentOrganisationId ?? Guid.NewGuid().ToString()));
@@ -93,5 +92,5 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         return existingMembers;
     }
 
-    private IObservable<MemberData> MemberAdded { get; }
+    private IObservable<MemberProfile> MemberAdded { get; }
 }

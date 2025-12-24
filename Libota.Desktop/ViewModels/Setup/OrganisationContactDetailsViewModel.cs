@@ -1,10 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Libota.Desktop.Navigation;
 
-namespace Libota.Desktop.ViewModels.Setup
+namespace Libota.Desktop.ViewModels.Setup;
+
+public class OrganisationContactDetailsViewModel : ObservableObject
 {
-    public class OrganisationContactDetailsViewModel(INavigationService navigationService) : ObservableObject
+    public string RoutePath => Routes.OrganisationContactDetails;
+    public void InitializeNavigation(INavigationScope navigationScope)
     {
-        public string UrlPathSegment => "setup.organisation.contact-details";
+        throw new System.NotImplementedException();
     }
 }

@@ -7,7 +7,7 @@ namespace Libota.Application.Users
         public UserSession(bool isAuthenticated, string? userName, OrganisationData? organisation)
         {
             if (string.IsNullOrWhiteSpace(userName))
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(userName));
+                throw new ArgumentException(@"Value cannot be null or whitespace.", nameof(userName));
             IsAuthenticated = isAuthenticated;
             UserName = userName;
             Organisation = organisation;

@@ -2,23 +2,23 @@ using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using JetBrains.Annotations;
 using Libota.Application.Users.Services;
-using Libota.Desktop.Navigation;
 using Libota.Desktop.ViewModels.Security;
 using static System.Threading.Tasks.Task;
 
 namespace Libota.Desktop.ViewModels.Shared;
 
 [UsedImplicitly]
-public partial class MainMenuViewModel(IUserSessionService userSessionService, INavigationService navigationService)
+public partial class MainMenuViewModel(IUserSessionService userSessionService)
     : ObservableObject
 {
     [RelayCommand(CanExecute = nameof(IsLoggedIn))]
     private Task Logout()
     {
         userSessionService.EndSession();
-        navigationService.NavigateTo<LoginScreenViewModel>();
+        WeakReferenceMessenger.Default.Send(new UserLoggedOut());
         return CompletedTask;
     }
 

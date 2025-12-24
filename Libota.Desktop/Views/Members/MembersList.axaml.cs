@@ -25,30 +25,37 @@ public partial class MembersList : UserControl, IDisposable
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
+
+        if (DataContext is not MemberListViewModel vm)
+        {
+            return;
+        }
+
         _handler?.Dispose();
         _handler = null;
-        if (DataContext is MemberListViewModel vm)
+        _handler = vm.AddMemberRegistration.RegisterHandler(async interaction =>
         {
-            _handler = vm.AddMemberRegistration.RegisterHandler(async interaction =>
+            var dialog = this.FindControl<ContentDialog>("AddMemberDialog");
+
+            var nullResponse = new DialogResponse<MemberRegistrationRequest>(Confirmed: false, Result: null!);
+
+            if (dialog == null)
             {
-                var dialog = this.FindControl<ContentDialog>("AddMemberDialog");
-                dialog?.DataContext = interaction.Input;
-                var result = await dialog?.ShowAsync();
-                if(result != ContentDialogResult.Primary)
-                {
-                    interaction.SetOutput(new DialogResponse<MemberRegistrationRequest>(
-                        Confirmed: false,
-                        Result: null!
-                    ));
-                    return;
-                }
-                
-                interaction.SetOutput(new DialogResponse<MemberRegistrationRequest>(
+                throw new InvalidOperationException("Could not find AddMemberDialog in MembersList view.");
+            }
+
+            dialog.DataContext = interaction.Input;
+            var result = await dialog.ShowAsync();
+
+            var output = result == ContentDialogResult.Primary
+                ? new DialogResponse<MemberRegistrationRequest>(
                     Confirmed: true,
-                    Result: (dialog.DataContext as MemberRegistrationViewModel)!.Result
-                ));
-            });
-        }
+                    Result: (dialog.DataContext as IResultProvider<MemberRegistrationRequest>)!.Result
+                )
+                : nullResponse;
+
+            interaction.SetOutput(output);
+        });
     }
 
     public void Dispose()

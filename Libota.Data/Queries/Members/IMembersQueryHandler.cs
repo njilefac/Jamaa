@@ -7,5 +7,5 @@ namespace Libota.Data.Queries.Members;
 
 public interface IMembersQueryHandler
 {
-    Task<IList<MemberData>> Get(GetMembersByOrganisation query);
+    Task<IList<MemberProfile>> Get(GetMembersByOrganisation query);
 }

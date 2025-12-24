@@ -64,7 +64,6 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.1" />
     <PackageReference Include="Mvvm.CommonInteractions.Avalonia" Version="1.0.68" />
     <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="3.0.4" />
-    <PackageReference Include="NP.Ava.Visuals" Version="1.0.48" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
     <PackageReference Include="QRCode.Avalonia" Version="1.0.0" />
     <PackageReference Include="Scrutor" Version="7.0.0" />

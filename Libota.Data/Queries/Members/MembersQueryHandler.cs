@@ -10,7 +10,7 @@ namespace Libota.Data.Queries.Members;
 
 public class MembersQueryHandler(LibotaDbContext dbContext) : IMembersQueryHandler
 {
-    public async Task<IList<MemberData>> Get(GetMembersByOrganisation query)
+    public async Task<IList<MemberProfile>> Get(GetMembersByOrganisation query)
     {
         var organisations = await dbContext.Organisations
             .Include(x => x.Members)
@@ -19,6 +19,6 @@ public class MembersQueryHandler(LibotaDbContext dbContext) : IMembersQueryHandl
 
         var matchingOrganisation = organisations.FirstOrDefault(x => x.Id == query.OrganisationId.Value);
 
-        return matchingOrganisation != null ? matchingOrganisation.Members : new List<MemberData>();
+        return matchingOrganisation != null ? matchingOrganisation.Members : new List<MemberProfile>();
     }
 }

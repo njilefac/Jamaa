@@ -21,8 +21,9 @@ public static class PresentationServicesRegistration
         private IServiceCollection RegisterServices()
         {
             services.AddSingleton<IUserSessionService, UserSessionService>();
-            services.AddSingleton<NavigationStore>();
             services.AddSingleton<INavigationService, NavigationService>();
+            services.AddSingleton<IRouteResolver, RouteResolver>();
+            services.AddSingleton<IRouteRegistry, RouteRegistry>();
             services.AddScoped<WindowNotificationManager>();
 
             return services;
@@ -34,7 +35,10 @@ public static class PresentationServicesRegistration
             services.Scan(scan => scan
                 .FromAssemblyOf<App>()
                 .AddClasses(c => c.Where(t =>
-                    t.IsAssignableTo(typeof(ObservableObject)) && !t.IsAssignableTo(typeof(Avalonia.Controls.Control))))
+                    t.IsAssignableTo(typeof(ObservableObject)) 
+                    && !t.IsAssignableTo(typeof(Avalonia.Controls.Control)) 
+                    && !t.IsAssignableTo(typeof(INavigationScope)) 
+                    && !t.IsAssignableTo(typeof(INavigationService))))
                 .AsSelfWithInterfaces()
                 .WithTransientLifetime());
 
