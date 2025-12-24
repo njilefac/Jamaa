@@ -1,5 +1,5 @@
 ﻿<Window
-    x:Class="Libota.Desktop.Views.Shared.MainWindow"
+    x:Class="Libota.Desktop.Views.Shared.Shell"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,7 +8,7 @@
     Title="{Binding ApplicationTitle}"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="shared:MainWindow"
+    x:DataType="shared:Shell"
     Background="Transparent"
     Icon="/Assets/Icons/avalonia-logo.ico"
     ShowActivated="True"
@@ -23,7 +23,7 @@
                 x:Name="ContentContainer"
                 HorizontalContentAlignment="Stretch"
                 VerticalContentAlignment="Stretch"
-                Content="{Binding CurrentViewModel}" />
+                Content="{Binding ActiveContent}" />
         </Panel>
         <Panel
             Grid.Row="2"

@@ -16,6 +16,6 @@ public class QueryProcessor(IOrganisationQueryHandler organisationQueryHandler, 
     public Task<OrganisationData?> Get(GetOrganisationByName query) =>
         organisationQueryHandler.HandleQuery(query);
 
-    public Task<IList<MemberData>> Get(GetMembersByOrganisation query) =>
+    public Task<IList<MemberProfile>> Get(GetMembersByOrganisation query) =>
         membersQueryHandler.Get(query);
 }

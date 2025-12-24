@@ -9,5 +9,5 @@ public class OrganisationData
     [Key] public required string Id { get; set; }
     public required string Name { get; set; }
     public string? Description { get; set; }
-    public IList<MemberData> Members { get; set; } = new List<MemberData>();
+    public IList<MemberProfile> Members { get; set; } = new List<MemberProfile>();
 }

@@ -7,7 +7,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:navigation="clr-namespace:Libota.Desktop.ViewModels.Navigation"
     xmlns:services="clr-namespace:Libota.Desktop.Services"
-    xmlns:styling="clr-namespace:FluentAvalonia.Styling;assembly=FluentAvalonia"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch"
@@ -20,16 +19,9 @@
         <services:LibotaIconSourceConverter x:Key="IconSourceConverter" />
     </UserControl.Resources>
 
-    <UserControl.Styles>
-        <styling:FluentAvaloniaTheme />
-        <Style Selector="controls|NavigationViewItem">
-            <Setter Property="Height" Value="70" />
-        </Style>
-    </UserControl.Styles>
-
     <controls:NavigationView
         VerticalAlignment="Stretch"
-        Content="{Binding CurrentContent}"
+        Content="{Binding ActiveContent}"
         Header="{Binding $self.SelectedItem.Title}"
         MenuItemsSource="{Binding MenuItems}"
         PaneDisplayMode="Auto"
@@ -53,7 +45,7 @@
         </controls:NavigationView.HeaderTemplate>
         <controls:NavigationView.ContentTemplate>
             <DataTemplate>
-                <ContentControl Content="{Binding}" />
+                <ContentControl Content="{Binding ActiveContent}" />
             </DataTemplate>
         </controls:NavigationView.ContentTemplate>
     </controls:NavigationView>

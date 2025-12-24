@@ -56,7 +56,7 @@
                             VerticalSpacing="10" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="data:MemberData">
+                        <DataTemplate x:DataType="data:MemberProfile">
                             <members:MemberCard />
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>

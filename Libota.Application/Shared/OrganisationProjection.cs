@@ -118,7 +118,7 @@ public class OrganisationProjection : ReceivePersistentActor
                 StartDate = @event.RegistrationBegin,
                 Status = RegistrationStatus.Full
             };
-            var memberData = new MemberData
+            var memberData = new MemberProfile
             {
                 FirstName = @event.FirstName,
                 MiddleName = @event.MiddleName,
@@ -142,7 +142,7 @@ public class OrganisationProjection : ReceivePersistentActor
             Id = @event.Id.Value,
             Name = @event.Name,
             Description = @event.Description,
-            Members = new List<MemberData>()
+            Members = new List<MemberProfile>()
         });
         await dbContext.SaveChangesAsync();
     }

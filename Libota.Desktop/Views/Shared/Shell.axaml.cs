@@ -5,10 +5,10 @@ using JetBrains.Annotations;
 namespace Libota.Desktop.Views.Shared;
 
 [UsedImplicitly]
-public partial class MainWindow : Window
+public partial class Shell : Window
 {
 
-    public MainWindow()
+    public Shell()
     {
         InitializeComponent();
 

@@ -1,19 +1,17 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using JetBrains.Annotations;
+using Libota.Desktop.Navigation;
 
 namespace Libota.Desktop.ViewModels.Members;
 
+[UsedImplicitly]
 public partial class MemberManagementScreenViewModel : ObservableObject
 {
-    [ObservableProperty] private MemberListViewModel _memberListViewModel;
-    [ObservableProperty] private MemberProfileViewModel _memberProfileViewModel;
-
-    public MemberManagementScreenViewModel(MembersOverviewPageViewModel membersOverviewPageViewModel,
-        MemberListViewModel memberListViewModel, MemberProfileViewModel memberProfileViewModel)
+    public MemberManagementScreenViewModel(IRouteResolver routeResolver)
     {
-        _memberListViewModel = memberListViewModel;
-        _memberProfileViewModel = memberProfileViewModel;
-        CurrentContent = membersOverviewPageViewModel;
+        var content = routeResolver.Resolve(Routes.MembersOverview);
+        ActiveContent = "member overview";
     }
 
-    [ObservableProperty] private ObservableObject? _currentContent;
+    [ObservableProperty] private object? _activeContent;
 }

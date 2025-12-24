@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Domain.Organisation.Requests;
 using DynamicData;
 using DynamicData.Binding;
@@ -13,6 +13,7 @@ using Libota.Application.Organisation;
 using Libota.Data.Models.Members;
 using Libota.Desktop.Infrastructure.Interactions;
 using Libota.Desktop.Navigation;
+using Libota.Desktop.ViewModels.Members.Messages;
 
 namespace Libota.Desktop.ViewModels.Members;
 
@@ -21,28 +22,27 @@ public partial class MemberListViewModel : ObservableValidator
 {
     public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
     public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();   
-    [ObservableProperty] private MemberProfileViewModel _memberProfileViewModel;
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
-    private readonly INavigationService _navigationService;
-    
+    private readonly IRouteResolver _routeResolver;
+
+
     public MemberListViewModel(
         IOrganisationManagementFacade organisationManagementFacade,
         MemberRegistrationViewModel memberRegistrationViewModel,
         MemberProfileViewModel memberProfileViewModel, 
-        INavigationService navigationService)
+        IRouteResolver routeResolver)
     {
         MemberRegistrationViewModel = memberRegistrationViewModel;
-        MemberProfileViewModel = memberProfileViewModel;
         _organisationManagementFacade = organisationManagementFacade;
-        _navigationService = navigationService;
+        _routeResolver = routeResolver;
 
-        var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
+        var membersSourceList = new SourceCache<MemberProfile, string>(m => m.Id);
             
-        var members = new ObservableCollectionExtended<MemberData>();
+        var members = new ObservableCollectionExtended<MemberProfile>();
         membersSourceList.PopulateFrom(_organisationManagementFacade.CurrentMembers);
         membersSourceList
             .Connect()
-            .SortAndBind(Members, SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
+            .SortAndBind(Members, SortExpressionComparer<MemberProfile>.Ascending(m => m.LastName))
             .DisposeMany()
             .Subscribe(changeSet =>
             {
@@ -81,26 +81,20 @@ public partial class MemberListViewModel : ObservableValidator
     }
     
     [ObservableProperty] private string? _searchTerm;
+    [ObservableProperty] private object _activeContent;
         
-    [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = [];
+    [ObservableProperty] private ObservableCollectionExtended<MemberProfile> _members = [];
 
     [RelayCommand(CanExecute = nameof(CanShowMemberProfile))]
-    private async Task<Unit> ShowMemberProfile(MemberData member)
+    private void ShowMemberProfile(MemberProfile member)
     {
-        MemberProfileViewModel.FirstName = member.FirstName;
-        MemberProfileViewModel.MiddleName = member.MiddleName;
-        MemberProfileViewModel.LastName = member.LastName;
-        MemberProfileViewModel.Gender = member.Gender;
-        MemberProfileViewModel.Registration = member.Registration;
-
-        await _navigationService.NavigateTo(MemberProfileViewModel);
-
-        return await Task.FromResult(Unit.Default);
+        ActiveContent = _routeResolver.Resolve(Routes.MemberProfile, new{ memberId = member.Id });
+        WeakReferenceMessenger.Default.Send(new MemberProfileSelected(member));
     }
 
-    private bool CanShowMemberProfile(MemberData member) => true  ;
+    private static bool CanShowMemberProfile(MemberProfile member) => true  ;
 
-    private static bool MemberMatches(MemberData member, string? searchTerm)
+    private static bool MemberMatches(MemberProfile member, string? searchTerm)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
             return true;

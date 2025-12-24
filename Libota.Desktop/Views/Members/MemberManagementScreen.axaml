@@ -10,5 +10,5 @@
     x:DataType="members:MemberManagementScreen"
     mc:Ignorable="d">
 
-    <ContentControl Content="{Binding CurrentContent}" />
+    <ContentControl Content="{Binding ActiveContent}" />
 </UserControl>

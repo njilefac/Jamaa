@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Domain.Security.Values;
 using JetBrains.Annotations;
 using Libota.Application.Setup;
@@ -13,10 +13,7 @@ using Libota.Application.Users;
 using Libota.Application.Users.Services;
 using Libota.Data.Models.Organisation;
 using Libota.Desktop.Assets.Resources;
-using Libota.Desktop.Infrastructure;
-using Libota.Desktop.Infrastructure.Interactions;
 using Libota.Desktop.Navigation;
-using Libota.Desktop.ViewModels.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Libota.Desktop.ViewModels.Security;
@@ -24,30 +21,32 @@ namespace Libota.Desktop.ViewModels.Security;
 [UsedImplicitly]
 public partial class LoginScreenViewModel : ObservableValidator
 {
-    public LoginScreenViewModel(INavigationService navigationService,
-        DashboardViewModel dashboard,
+    public LoginScreenViewModel(
         ISetupService setupService,
         IUserSessionService userSessionService,
+        INavigationService navigationService,
         ILogger<LoginScreenViewModel> logger)
     {
         _userSessionService = userSessionService;
-
-        _userSessionService?.UserSessions.Subscribe(x =>
+        Navigation = navigationService.CreateScope();
+        
+        _userSessionService?.UserSessions.Subscribe(session =>
         {
-            if (x is not { IsAuthenticated: true }) {return;}
+            if (session is not { IsAuthenticated: true })
+            {
+                WeakReferenceMessenger.Default.Send(new AuthenticationFailed());
+                return;
+            }
             
+            WeakReferenceMessenger.Default.Send(new UserAuthenticated(session));
             UserName = string.Empty;
             Password = string.Empty;
-            navigationService.NavigateTo(dashboard);
         });
-
-        UserName = string.Empty;
-        Password = string.Empty;
 
         setupService.ListOrganisations().ContinueWith(task =>
         {
             Organisations = task.Result.ToList();
-            CurrentOrganisation = Organisations.Count == 1 ? Organisations?.FirstOrDefault() : null;
+            CurrentOrganisation = Organisations.Count == 1 ? Organisations?.Single() : null;
         });
     }
 
@@ -67,14 +66,11 @@ public partial class LoginScreenViewModel : ObservableValidator
 
     [ObservableProperty] private OrganisationData? _currentOrganisation;
 
-    public Interaction<UserSession?, Unit> NotifyAuthenticationResult => new();
-
     [RelayCommand(CanExecute = nameof(IsValid))]
     private async Task<UserSession?> Login()
     {
         var credentials = new Credentials(UserName, Password);
         var response = await _userSessionService?.Authenticate(credentials, CurrentOrganisation)!;
-        //_ = await NotifyAuthenticationResult.Handle(response);
         return response;
     }
 
@@ -89,4 +85,5 @@ public partial class LoginScreenViewModel : ObservableValidator
     }
 
     private readonly IUserSessionService? _userSessionService;
+    private INavigationScope? Navigation { get; }
 }

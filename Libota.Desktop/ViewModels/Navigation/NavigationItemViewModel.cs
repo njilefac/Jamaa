@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 
 namespace Libota.Desktop.ViewModels.Navigation;
 
 public record NavigationItemViewModel(
-    Type ViewModelType,
+    string TargetRoute,
     string Title,
     string Icon,
     bool Enabled = true,

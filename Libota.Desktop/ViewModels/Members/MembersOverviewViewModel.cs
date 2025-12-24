@@ -3,16 +3,19 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Domain.Shared.Values;
 using JetBrains.Annotations;
 using Libota.Application.Organisation;
+using Libota.Desktop.Navigation;
 
 namespace Libota.Desktop.ViewModels.Members;
 
 [UsedImplicitly]
-public partial class MembersOverviewPageViewModel : ObservableValidator
+public partial class MembersOverviewViewModel : ObservableValidator
 {
-    public MembersOverviewPageViewModel(IOrganisationManagementFacade organisationManagementFacade,
-        MemberListViewModel memberList)
+    public MembersOverviewViewModel(
+        IOrganisationManagementFacade organisationManagementFacade,
+        IRouteResolver routeResolver)
     {
-        _memberList = memberList;
+        ActiveContent = routeResolver.Resolve(Routes.MembersList);
+        
         organisationManagementFacade.CurrentMembers.Subscribe(m =>
         {
             TotalMembersCount++;
@@ -40,9 +43,8 @@ public partial class MembersOverviewPageViewModel : ObservableValidator
         });
     }
 
-
-    [ObservableProperty] private MemberListViewModel _memberList;
     [ObservableProperty] private int _totalMembersCount;
     [ObservableProperty] private int _maleMembersCount;
     [ObservableProperty] private int _femaleMembersCount;
+    [ObservableProperty] private object? _activeContent;
 }

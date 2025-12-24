@@ -10,5 +10,5 @@ public interface IQueryProcessor
     Task<List<OrganisationData>> Get(GetAllOrganisations query);
     Task<OrganisationData?> Get(GetOrganisationByName query);
 
-    Task<IList<MemberData>> Get(GetMembersByOrganisation query);
+    Task<IList<MemberProfile>> Get(GetMembersByOrganisation query);
 }

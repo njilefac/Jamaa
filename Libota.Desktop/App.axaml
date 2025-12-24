@@ -34,8 +34,8 @@
     </Application.Styles>
 
     <Application.DataTemplates>
-        <DataTemplate DataType="{x:Type shared-View-Models:MainWindowViewModel}">
-            <shared-Views:MainWindow />
+        <DataTemplate DataType="{x:Type shared-View-Models:ShellViewModel}">
+            <shared-Views:Shell />
         </DataTemplate>
         <DataTemplate DataType="{x:Type shared-View-Models:MainMenuViewModel}">
             <shared-Views:MainMenu />
@@ -55,7 +55,7 @@
         <DataTemplate DataType="{x:Type members-View-Models:MemberManagementScreenViewModel}">
             <members-Views:MemberManagementScreen />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type members-View-Models:MembersOverviewPageViewModel}">
+        <DataTemplate DataType="{x:Type members-View-Models:MembersOverviewViewModel}">
             <members-Views:MembersOverviewPage />
         </DataTemplate>
         <DataTemplate DataType="{x:Type members-View-Models:MemberProfileViewModel}">
@@ -67,7 +67,7 @@
         <DataTemplate DataType="{x:Type members-View-Models:MemberListViewModel}">
             <members-Views:MembersList />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type events-View-Models:EventOverviewPageViewModel}">
+        <DataTemplate DataType="{x:Type events-View-Models:EventsOverviewPageViewModel}">
             <events-Views:EventOverviewPage />
         </DataTemplate>
     </Application.DataTemplates>

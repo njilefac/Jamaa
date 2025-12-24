@@ -10,6 +10,12 @@ using Libota.Application.Shared.Logging;
 using Libota.Data.Configuration;
 using Libota.Desktop.Assets.Resources;
 using Libota.Desktop.Configuration.Extensions;
+using Libota.Desktop.Navigation;
+using Libota.Desktop.ViewModels.Events;
+using Libota.Desktop.ViewModels.Finances;
+using Libota.Desktop.ViewModels.Members;
+using Libota.Desktop.ViewModels.Security;
+using Libota.Desktop.ViewModels.Setup;
 using Libota.Desktop.ViewModels.Shared;
 using Libota.Desktop.Views.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +58,9 @@ public partial class Program
                     .ConfigureAkka(lifeTime, configuration)
                     .BuildServiceProvider();
 
+                var routes = serviceProvider.GetRequiredService<IRouteRegistry>();
+                RegisterRoutes(routes);
+
                 var akkaService = serviceProvider.GetRequiredService<IHostedService>();
                 akkaService.StartAsync(CancellationToken.None);
 
@@ -75,11 +84,32 @@ public partial class Program
             .StartWithClassicDesktopLifetime(args);
     }
 
-    private static MainWindow CreateAndConfigureMainWindow(ServiceProvider serviceProvider)
+    private static void RegisterRoutes(IRouteRegistry routes)
     {
-        var mainWindow = new MainWindow();
+        routes.Register(new RouteMap(Path: Routes.Home, ViewModel: typeof(ShellViewModel), Nested:
+        [
+            new RouteMap(Path: Routes.CreateOrganisation, ViewModel: typeof(CreateOrganisationViewModel)),
+            new RouteMap(Path: Routes.CreateSuperUser, ViewModel: typeof(CreateSuperUserViewModel)),
+            new RouteMap(Path: Routes.Login, ViewModel: typeof(LoginScreenViewModel)),
+            new RouteMap(Path: Routes.Dashboard, ViewModel: typeof(DashboardViewModel), Nested:
+            [
+                new RouteMap(Path: Routes.MembersOverview, ViewModel: typeof(MembersOverviewViewModel), Nested:
+                    [
+                        new RouteMap(Path: Routes.MembersList, ViewModel: typeof(MemberListViewModel)),
+                        new RouteMap(Path: Routes.MemberProfile, ViewModel: typeof(MemberProfileViewModel)),
+                    ]
+                ),
+                new RouteMap(Path: Routes.EventsOverview, ViewModel: typeof(EventsOverviewPageViewModel)),
+                new RouteMap(Path: Routes.FinancesOverview, ViewModel: typeof(FinanceOverviewPageViewModel)),
+            ]),
+        ]));
+    }
+
+    private static Shell CreateAndConfigureMainWindow(ServiceProvider serviceProvider)
+    {
+        var mainWindow = new Shell();
         var mainViewModel = (serviceProvider ?? throw new InvalidOperationException())
-            .GetRequiredService<MainWindowViewModel>();
+            .GetRequiredService<ShellViewModel>();
         mainWindow.DataContext = mainViewModel;
         return mainWindow;
     }

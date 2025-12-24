@@ -8,6 +8,8 @@
         </Border>
     </Design.PreviewWith>
 
+
+
     <Style Selector="HeaderedContentControl">
         <Setter Property="Template">
             <Setter.Value>
@@ -90,7 +92,7 @@
     </Style>
     <Style Selector="husk|Card:pointerover">
         <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBorderBrushPointerOver}" />
-        <Setter Property="BorderThickness" Value="4" />
         <Setter Property="Background" Value="{StaticResource ControlStrokeColorOnAccentDefault}" />
+        <Setter Property="BorderThickness" Value="3" />
     </Style>
 </Styles>
