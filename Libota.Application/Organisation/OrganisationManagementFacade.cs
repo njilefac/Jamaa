@@ -21,7 +21,7 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
 {
     private readonly IActorRef _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
-    private readonly ReplaySubject<MemberProfile> _currentMembers;
+    private readonly ReplaySubject<MemberData> _currentMembers;
 
     public OrganisationManagementFacade(IRequiredActor<CommandProcessor> commandProcessorProvider,
         IQueryProcessor queryProcessor,
@@ -32,14 +32,14 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         _commandProcessor = commandProcessorProvider.ActorRef;
         _queryProcessor = queryProcessor;
 
-        _currentMembers = new ReplaySubject<MemberProfile>();
+        _currentMembers = new ReplaySubject<MemberData>();
         CurrentMembers = _currentMembers;
         
-        MemberAdded = dataChangeNotifier.Insertions.OfType<MemberProfile>();
+        MemberAdded = dataChangeNotifier.Insertions.OfType<MemberData>();
         MemberAdded.Subscribe(x => _currentMembers.OnNext(x));
         
-        MemberUpdated = dataChangeNotifier.Updates.OfType<MemberProfile>();
-        MemberDeleted = dataChangeNotifier.Deletions.OfType<MemberProfile>();
+        MemberUpdated = dataChangeNotifier.Updates.OfType<MemberData>();
+        MemberDeleted = dataChangeNotifier.Deletions.OfType<MemberData>();
     }
 
     private async void InitializeCurrentMembers(UserSession? s)
@@ -51,7 +51,7 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         }
     }
 
-    public IObservable<MemberProfile> CurrentMembers { get; set; }
+    public IObservable<MemberData> CurrentMembers { get; set; }
 
     public Task CreateOrganisation(string name, string? description)
     {
@@ -80,11 +80,11 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         return await _queryProcessor.Get(new GetAllOrganisations());
     }
     
-    public IObservable<MemberProfile> MemberUpdated { get; }
+    public IObservable<MemberData> MemberUpdated { get; }
 
-    public IObservable<MemberProfile> MemberDeleted { get; }
+    public IObservable<MemberData> MemberDeleted { get; }
 
-    private async Task<IList<MemberProfile>?> ListCurrentMembers(UserSession? userSession)
+    private async Task<IList<MemberData>?> ListCurrentMembers(UserSession? userSession)
     {
         var currentOrganisationId = userSession?.Organisation?.Id;
         var query = new GetMembersByOrganisation(OrganisationId.With(currentOrganisationId ?? Guid.NewGuid().ToString()));
@@ -92,5 +92,5 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         return existingMembers;
     }
 
-    private IObservable<MemberProfile> MemberAdded { get; }
+    private IObservable<MemberData> MemberAdded { get; }
 }

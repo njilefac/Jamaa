@@ -52,9 +52,6 @@
         <DataTemplate DataType="{x:Type security-View-Models:LoginScreenViewModel}">
             <security-Views:LoginScreen />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type members-View-Models:MemberManagementScreenViewModel}">
-            <members-Views:MemberManagementScreen />
-        </DataTemplate>
         <DataTemplate DataType="{x:Type members-View-Models:MembersOverviewViewModel}">
             <members-Views:MembersOverviewPage />
         </DataTemplate>
@@ -66,6 +63,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type members-View-Models:MemberListViewModel}">
             <members-Views:MembersList />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type members-View-Models:MembersSummary}">
+            <members-Views:MembersSummaryPane />
         </DataTemplate>
         <DataTemplate DataType="{x:Type events-View-Models:EventsOverviewPageViewModel}">
             <events-Views:EventOverviewPage />

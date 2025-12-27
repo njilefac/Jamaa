@@ -8,8 +8,6 @@
         </Border>
     </Design.PreviewWith>
 
-
-
     <Style Selector="HeaderedContentControl">
         <Setter Property="Template">
             <Setter.Value>
@@ -90,9 +88,27 @@
         <Setter Property="Background" Value="LightGray" />
         <Setter Property="Padding" Value="5" />
     </Style>
-    <Style Selector="husk|Card:pointerover">
+    <Style Selector="husk|Card.memberlist.member-card:pointerover">
         <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBorderBrushPointerOver}" />
         <Setter Property="Background" Value="{StaticResource ControlStrokeColorOnAccentDefault}" />
-        <Setter Property="BorderThickness" Value="3" />
+    </Style>
+    <Style Selector="husk|Card.member-card:focus">
+        <Setter Property="BorderThickness" Value="4" />
+        <Setter Property="Background" Value="{StaticResource AccentButtonBackgroundPressed}" />
+    </Style>
+    <Style Selector="husk|Divider.member-card">
+        <Setter Property="Margin" Value="8" />
+        <Setter Property="Height" Value="2" />
+        <Setter Property="Width" Value="280" />
+        <Setter Property="Orientation" Value="Horizontal" />
+    </Style>
+    <Style Selector="husk|Card.memberlist.member-card">
+        <Setter Property="Width" Value="300" />
+        <Setter Property="Height" Value="200" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="Label.member-card.title">
+        <Setter Property="FontSize" Value="20" />
     </Style>
 </Styles>

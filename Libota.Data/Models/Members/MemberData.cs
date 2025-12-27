@@ -4,7 +4,7 @@ using Libota.Data.Models.Organisation;
 
 namespace Libota.Data.Models.Members
 {
-    public class MemberProfile
+    public class MemberData
     {
         [Key] public string Id { get; set; }
         public string LastName { get; set; }

@@ -7,21 +7,11 @@
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:members="clr-namespace:Libota.Desktop.Views.Members"
-    x:Name="MemberCardControl"
-    Padding="4"
-    HorizontalContentAlignment="Stretch"
-    VerticalContentAlignment="Stretch"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="data:MemberProfile"
+    x:DataType="data:MemberData"
     mc:Ignorable="d">
-    <husk:Card
-        Width="300"
-        Height="200"
-        Padding="8"
-        HorizontalContentAlignment="Stretch"
-        VerticalContentAlignment="Stretch"
-        CornerRadius="6">
+    <husk:Card Classes="memberlist member-card">
         <Interaction.Behaviors>
             <EventTriggerBehavior EventName="Tapped">
                 <InvokeCommandAction Command="{Binding $parent[members:MembersList].DataContext.ShowMemberProfileCommand}" CommandParameter="{Binding}" />
@@ -31,11 +21,11 @@
             <Grid
                 Grid.Row="0"
                 ColumnDefinitions="Auto,Auto"
-                RowDefinitions="Auto,Auto,Auto,*">
+                RowDefinitions="Auto,Auto,Auto,Auto,*">
                 <Label
                     Grid.Row="0"
                     Grid.Column="0"
-                    FontSize="{StaticResource HeadingFontSize}"
+                    Classes="member-card title"
                     FontWeight="Bold">
                     <Label.Content>
                         <MultiBinding StringFormat="{}{0} {1}">
@@ -44,17 +34,24 @@
                         </MultiBinding>
                     </Label.Content>
                 </Label>
-                <Label
+                <husk:Divider
                     Grid.Row="1"
                     Grid.Column="0"
-                    Content="{Binding Registration.MembershipType, StringFormat='Membership: {0}'}" />
+                    Grid.ColumnSpan="2"
+                    Classes="member-card" />
                 <Label
                     Grid.Row="2"
                     Grid.Column="0"
+                    Content="{Binding Registration.MembershipType, StringFormat='Membership: {0}'}" />
+                <Label
+                    Grid.Row="3"
+                    Grid.Column="0"
                     Content="{Binding Registration.Status, StringFormat='Registration: {0}'}" />
             </Grid>
-            <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <StackPanel Grid.Row="1">
+                <husk:Divider Classes="member-card" />
                 <Button
+                    HorizontalAlignment="Left"
                     Command="{Binding $parent[members:MembersList].DataContext.ShowMemberProfileCommand}"
                     CommandParameter="{Binding}"
                     Content="Edit" />

@@ -8,7 +8,7 @@ namespace Libota.Data.Models.Members
     public class RegistrationData
     {
         [Key] public string Id { get; set; }
-        public MemberProfile Member { get; set; }
+        public MemberData Member { get; set; }
         public string MemberId { get; set; }
         public DateTime StartDate { get; set; }
 
