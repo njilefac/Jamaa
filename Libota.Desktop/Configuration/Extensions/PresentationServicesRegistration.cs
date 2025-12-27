@@ -2,6 +2,8 @@ using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Libota.Application.Users.Services;
 using Libota.Desktop.Navigation;
+using Libota.Desktop.Navigation.Interfaces;
+using Libota.Desktop.Navigation.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Libota.Desktop.Configuration.Extensions;
@@ -21,7 +23,6 @@ public static class PresentationServicesRegistration
         private IServiceCollection RegisterServices()
         {
             services.AddSingleton<IUserSessionService, UserSessionService>();
-            services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IRouteResolver, RouteResolver>();
             services.AddSingleton<IRouteRegistry, RouteRegistry>();
             services.AddScoped<WindowNotificationManager>();
@@ -35,10 +36,8 @@ public static class PresentationServicesRegistration
             services.Scan(scan => scan
                 .FromAssemblyOf<App>()
                 .AddClasses(c => c.Where(t =>
-                    t.IsAssignableTo(typeof(ObservableObject)) 
-                    && !t.IsAssignableTo(typeof(Avalonia.Controls.Control)) 
-                    && !t.IsAssignableTo(typeof(INavigationScope)) 
-                    && !t.IsAssignableTo(typeof(INavigationService))))
+                    t.IsAssignableTo(typeof(ObservableObject))
+                    && !t.IsAssignableTo(typeof(Avalonia.Controls.Control))))
                 .AsSelfWithInterfaces()
                 .WithTransientLifetime());
 

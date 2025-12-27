@@ -1,6 +1,8 @@
 using Xunit;
 using FluentAssertions;
 using Libota.Desktop.Navigation;
+using Libota.Desktop.Navigation.Models;
+using Libota.Desktop.Navigation.Services;
 
 namespace Tests.Navigation;
 

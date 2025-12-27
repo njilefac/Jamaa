@@ -91,6 +91,7 @@
     <Style Selector="husk|Card.memberlist.member-card:pointerover">
         <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBorderBrushPointerOver}" />
         <Setter Property="Background" Value="{StaticResource ControlStrokeColorOnAccentDefault}" />
+        <Setter Property="BorderThickness" Value="3" />
     </Style>
     <Style Selector="husk|Card.member-card:focus">
         <Setter Property="BorderThickness" Value="4" />
