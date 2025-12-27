@@ -2,20 +2,17 @@
     x:Class="Libota.Desktop.App"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:events-View-Models="clr-namespace:Libota.Desktop.ViewModels.Events"
-    xmlns:events-Views="clr-namespace:Libota.Desktop.Views.Events"
-    xmlns:finances-View-Models="clr-namespace:Libota.Desktop.ViewModels.Finances"
-    xmlns:finances-Views="clr-namespace:Libota.Desktop.Views.Finances"
+    xmlns:components="clr-namespace:Libota.Desktop.Members.Components"
+    xmlns:events-View-Models="clr-namespace:Libota.Desktop.Events"
+    xmlns:finances-View-Models="clr-namespace:Libota.Desktop.Finances"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
-    xmlns:members-View-Models="clr-namespace:Libota.Desktop.ViewModels.Members"
-    xmlns:members-Views="clr-namespace:Libota.Desktop.Views.Members"
-    xmlns:security-View-Models="clr-namespace:Libota.Desktop.ViewModels.Security"
-    xmlns:security-Views="clr-namespace:Libota.Desktop.Views.Security"
-    xmlns:setup-View-Models="clr-namespace:Libota.Desktop.ViewModels.Setup"
-    xmlns:setup-Views="clr-namespace:Libota.Desktop.Views.Setup"
-    xmlns:shared-View-Models="clr-namespace:Libota.Desktop.ViewModels.Shared"
-    xmlns:shared-Views="clr-namespace:Libota.Desktop.Views.Shared"
+    xmlns:pages="clr-namespace:Libota.Desktop.Members.Pages"
+    xmlns:security="clr-namespace:Libota.Desktop.Security"
+    xmlns:semi="https://irihi.tech/semi"
+    xmlns:setup="clr-namespace:Libota.Desktop.Setup"
+    xmlns:shared="clr-namespace:Libota.Desktop.Shared"
     xmlns:sty="using:FluentAvalonia.Styling"
+    xmlns:u-semi="https://irihi.tech/ursa/themes/semi"
     Name="Libota Desktop"
     RequestedThemeVariant="Default">
 
@@ -28,47 +25,50 @@
     </Application.Resources>
 
     <Application.Styles>
+        <semi:SemiTheme />
+        <u-semi:SemiTheme />
         <husk:HuskuiTheme Corner="Normal" />
         <sty:FluentAvaloniaTheme />
         <StyleInclude Source="avares://Libota/Styles/LibotaStyles.axaml" />
+        <StyleInclude Source="avares://FluentAvalonia.BreadcrumbBar/Styling/Styles.axaml" />
     </Application.Styles>
 
     <Application.DataTemplates>
-        <DataTemplate DataType="{x:Type shared-View-Models:ShellViewModel}">
-            <shared-Views:Shell />
+        <DataTemplate DataType="{x:Type shared:ShellViewModel}">
+            <shared:Shell />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type shared-View-Models:MainMenuViewModel}">
-            <shared-Views:MainMenu />
+        <DataTemplate DataType="{x:Type shared:MainMenuViewModel}">
+            <shared:MainMenu />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type shared-View-Models:DashboardViewModel}">
-            <shared-Views:Dashboard />
+        <DataTemplate DataType="{x:Type shared:DashboardViewModel}">
+            <shared:Dashboard />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type setup-View-Models:CreateOrganisationViewModel}">
-            <setup-Views:CreateOrganisationScreen />
+        <DataTemplate DataType="{x:Type setup:CreateOrganisationViewModel}">
+            <setup:CreateOrganisationScreen />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type setup-View-Models:CreateSuperUserViewModel}">
-            <setup-Views:CreateSuperUserScreen />
+        <DataTemplate DataType="{x:Type setup:CreateSuperUserViewModel}">
+            <setup:CreateSuperUserScreen />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type security-View-Models:LoginScreenViewModel}">
-            <security-Views:LoginScreen />
+        <DataTemplate DataType="{x:Type security:LoginScreenViewModel}">
+            <security:LoginScreen />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type members-View-Models:MembersOverviewViewModel}">
-            <members-Views:MembersOverviewPage />
+        <DataTemplate DataType="{x:Type pages:MembersOverviewViewModel}">
+            <pages:MembersOverviewPage />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type members-View-Models:MemberProfileViewModel}">
-            <members-Views:MemberProfilePage />
+        <DataTemplate DataType="{x:Type pages:MemberProfileViewModel}">
+            <pages:MemberProfilePage />
         </DataTemplate>
         <DataTemplate DataType="{x:Type finances-View-Models:FinanceOverviewPageViewModel}">
-            <finances-Views:FinanceOverviewPage />
+            <finances-View-Models:FinanceOverviewPage />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type members-View-Models:MemberListViewModel}">
-            <members-Views:MembersList />
+        <DataTemplate DataType="{x:Type components:MemberListViewModel}">
+            <components:MembersList />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type members-View-Models:MembersSummary}">
-            <members-Views:MembersSummaryPane />
+        <DataTemplate DataType="{x:Type components:MembersSummary}">
+            <components:MembersSummaryPane />
         </DataTemplate>
         <DataTemplate DataType="{x:Type events-View-Models:EventsOverviewPageViewModel}">
-            <events-Views:EventOverviewPage />
+            <events-View-Models:EventOverviewPage />
         </DataTemplate>
     </Application.DataTemplates>
 </Application>
