@@ -7,12 +7,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:navigation="clr-namespace:Libota.Desktop.ViewModels.Navigation"
     xmlns:services="clr-namespace:Libota.Desktop.Services"
+    xmlns:shared="clr-namespace:Libota.Desktop.ViewModels.Shared"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch"
     VerticalContentAlignment="Stretch"
     d:DesignHeight="450"
     d:DesignWidth="800"
+    x:DataType="shared:DashboardViewModel"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -25,11 +27,15 @@
         Header="{Binding $self.SelectedItem.Title}"
         MenuItemsSource="{Binding MenuItems}"
         PaneDisplayMode="Auto"
+        PaneTitle="Modules"
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
 
         <controls:NavigationView.MenuItemTemplate>
             <DataTemplate x:DataType="navigation:NavigationItemViewModel">
-                <controls:NavigationViewItem Content="{Binding Title}" IconSource="{Binding Icon, Converter={StaticResource IconSourceConverter}}" />
+                <controls:NavigationViewItem
+                    Content="{Binding Title}"
+                    IconSource="{Binding Icon, Converter={StaticResource IconSourceConverter}}"
+                    Tag="{Binding TargetRoute}" />
             </DataTemplate>
         </controls:NavigationView.MenuItemTemplate>
         <controls:NavigationView.HeaderTemplate>
@@ -43,10 +49,5 @@
                     TextAlignment="Center" />
             </DataTemplate>
         </controls:NavigationView.HeaderTemplate>
-        <controls:NavigationView.ContentTemplate>
-            <DataTemplate>
-                <ContentControl Content="{Binding ActiveContent}" />
-            </DataTemplate>
-        </controls:NavigationView.ContentTemplate>
     </controls:NavigationView>
 </UserControl>

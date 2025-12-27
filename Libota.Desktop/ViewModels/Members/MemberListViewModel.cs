@@ -36,13 +36,13 @@ public partial class MemberListViewModel : ObservableValidator
         _organisationManagementFacade = organisationManagementFacade;
         _routeResolver = routeResolver;
 
-        var membersSourceList = new SourceCache<MemberProfile, string>(m => m.Id);
+        var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
             
-        var members = new ObservableCollectionExtended<MemberProfile>();
+        var members = new ObservableCollectionExtended<MemberData>();
         membersSourceList.PopulateFrom(_organisationManagementFacade.CurrentMembers);
         membersSourceList
             .Connect()
-            .SortAndBind(Members, SortExpressionComparer<MemberProfile>.Ascending(m => m.LastName))
+            .SortAndBind(Members, SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
             .DisposeMany()
             .Subscribe(changeSet =>
             {
@@ -83,18 +83,17 @@ public partial class MemberListViewModel : ObservableValidator
     [ObservableProperty] private string? _searchTerm;
     [ObservableProperty] private object _activeContent;
         
-    [ObservableProperty] private ObservableCollectionExtended<MemberProfile> _members = [];
+    [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = [];
 
     [RelayCommand(CanExecute = nameof(CanShowMemberProfile))]
-    private void ShowMemberProfile(MemberProfile member)
+    private void ShowMemberProfile(MemberData member)
     {
-        ActiveContent = _routeResolver.Resolve(Routes.MemberProfile, new{ memberId = member.Id });
-        WeakReferenceMessenger.Default.Send(new MemberProfileSelected(member));
+        WeakReferenceMessenger.Default.Send(new MemberDetailsRequested(member));
     }
 
-    private static bool CanShowMemberProfile(MemberProfile member) => true  ;
+    private static bool CanShowMemberProfile(MemberData member) => true  ;
 
-    private static bool MemberMatches(MemberProfile member, string? searchTerm)
+    private static bool MemberMatches(MemberData member, string? searchTerm)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
             return true;

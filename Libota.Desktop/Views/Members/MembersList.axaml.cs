@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using Domain.Organisation.Requests;
 using FluentAvalonia.UI.Controls;
 using Libota.Desktop.Infrastructure.Interactions;
@@ -11,6 +12,7 @@ namespace Libota.Desktop.Views.Members;
 public partial class MembersList : UserControl, IDisposable
 {
     private IDisposable? _handler;
+    private ContentDialog? _dialog;
 
     public MembersList()
     {
@@ -35,22 +37,23 @@ public partial class MembersList : UserControl, IDisposable
         _handler = null;
         _handler = vm.AddMemberRegistration.RegisterHandler(async interaction =>
         {
-            var dialog = this.FindControl<ContentDialog>("AddMemberDialog");
+            _dialog ??= this.FindControl<ContentDialog>("AddMemberDialog");
 
             var nullResponse = new DialogResponse<MemberRegistrationRequest>(Confirmed: false, Result: null!);
 
-            if (dialog == null)
+            if (_dialog == null)
             {
                 throw new InvalidOperationException("Could not find AddMemberDialog in MembersList view.");
             }
 
-            dialog.DataContext = interaction.Input;
-            var result = await dialog.ShowAsync();
+            _dialog.DataContext = interaction.Input;
+            var owner = this.GetVisualRoot() as Window;
+            var result = await _dialog.ShowAsync(owner);
 
             var output = result == ContentDialogResult.Primary
                 ? new DialogResponse<MemberRegistrationRequest>(
                     Confirmed: true,
-                    Result: (dialog.DataContext as IResultProvider<MemberRegistrationRequest>)!.Result
+                    Result: (_dialog.DataContext as IResultProvider<MemberRegistrationRequest>)!.Result
                 )
                 : nullResponse;
 

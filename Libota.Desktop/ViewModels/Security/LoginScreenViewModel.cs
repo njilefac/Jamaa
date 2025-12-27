@@ -28,7 +28,6 @@ public partial class LoginScreenViewModel : ObservableValidator
         ILogger<LoginScreenViewModel> logger)
     {
         _userSessionService = userSessionService;
-        Navigation = navigationService.CreateScope();
         
         _userSessionService?.UserSessions.Subscribe(session =>
         {
@@ -85,5 +84,4 @@ public partial class LoginScreenViewModel : ObservableValidator
     }
 
     private readonly IUserSessionService? _userSessionService;
-    private INavigationScope? Navigation { get; }
 }

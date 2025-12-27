@@ -46,10 +46,10 @@ public class LibotaDbContext(IOptions<DatabaseOptions> options) : DbContext
             .WithOne(e => e.Organisation)
             .HasForeignKey(m => m.OrganisationId);
 
-        modelBuilder.Entity<MemberProfile>().ToTable("Members")
+        modelBuilder.Entity<MemberData>().ToTable("Members")
             .Property(e => e.Id).ValueGeneratedOnAdd();
 
-        modelBuilder.Entity<MemberProfile>()
+        modelBuilder.Entity<MemberData>()
             .HasOne(x => x.Registration)
             .WithOne(r => r.Member)
             .HasForeignKey<RegistrationData>(x => x.MemberId);

@@ -4,8 +4,7 @@ public static class Routes
 {
     public const string Home = "/";
     public const string Dashboard = "/dashboard";
-    public const string Members = "/members";
-    public const string MembersOverview = "/members/overview";
+    public const string MembersOverview = "/members";
     public const string MembersList = "/members/list";
     public const string MemberProfile = "/members/profile";
     public const string CreateOrganisation = "/setup/create-organisation";

@@ -3,13 +3,13 @@ using Avalonia.Markup.Xaml;
 
 namespace Libota.Desktop.Views.Members;
 
-public partial class MemberManagementScreen : UserControl
+public partial class MembersSummaryPane : UserControl
 {
-    public MemberManagementScreen()
+    public MembersSummaryPane()
     {
         InitializeComponent();
     }
-
+    
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
