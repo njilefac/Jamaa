@@ -55,7 +55,6 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
 
         this.WhenValueChanged<MemberListViewModel, string>(x => x.SearchTerm, false)
             .Throttle(TimeSpan.FromSeconds(1))
-            .Where(x => !string.IsNullOrWhiteSpace(x) || !string.IsNullOrWhiteSpace(SearchTerm))
             .Subscribe(term =>
             {
                 var matchingMembers = string.IsNullOrWhiteSpace(term)

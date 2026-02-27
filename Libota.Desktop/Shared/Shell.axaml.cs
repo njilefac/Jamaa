@@ -1,11 +1,11 @@
-﻿using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Markup.Xaml;
+using Huskui.Avalonia.Controls;
 using JetBrains.Annotations;
 
 namespace Libota.Desktop.Shared;
 
 [UsedImplicitly]
-public partial class Shell : Window
+public partial class Shell : AppWindow
 {
 
     public Shell()

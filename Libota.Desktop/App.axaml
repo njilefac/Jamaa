@@ -12,9 +12,9 @@
     xmlns:setup="clr-namespace:Libota.Desktop.Setup"
     xmlns:shared="clr-namespace:Libota.Desktop.Shared"
     xmlns:sty="using:FluentAvalonia.Styling"
-    xmlns:u-semi="https://irihi.tech/ursa/themes/semi"
     Name="Libota Desktop"
-    RequestedThemeVariant="Default">
+    RequestedThemeVariant="Default"
+    >
 
     <Application.Resources>
         <ResourceDictionary>
@@ -25,10 +25,9 @@
     </Application.Resources>
 
     <Application.Styles>
-        <semi:SemiTheme />
-        <u-semi:SemiTheme />
         <husk:HuskuiTheme Corner="Normal" />
         <sty:FluentAvaloniaTheme />
+        <semi:SemiTheme />
         <StyleInclude Source="avares://Libota/Styles/LibotaStyles.axaml" />
         <StyleInclude Source="avares://FluentAvalonia.BreadcrumbBar/Styling/Styles.axaml" />
     </Application.Styles>
