@@ -10,6 +10,7 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="data:MemberData"
+    Focusable="True"
     IsTabStop="True"
     mc:Ignorable="d">
     <husk:Card Classes="memberlist member-card">

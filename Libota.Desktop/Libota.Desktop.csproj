@@ -44,9 +44,9 @@
     <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="2.0.316.1" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
-    <PackageReference Include="Huskui.Avalonia" Version="0.9.0" />
-    <PackageReference Include="Irihi.Ursa" Version="1.14.0" />
-    <PackageReference Include="Irihi.Ursa.Themes.Semi" Version="1.14.0" />
+    <PackageReference Include="Huskui.Avalonia" Version="0.10.1" />
+    <PackageReference Include="Irihi.Ursa" Version="1.14.1" />
+    <PackageReference Include="Irihi.Ursa.Themes.Semi" Version="1.14.1" />
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0" />
@@ -69,7 +69,7 @@
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
     <PackageReference Include="QRCode.Avalonia" Version="1.0.0" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
-    <PackageReference Include="Semi.Avalonia" Version="11.3.7.1" />
+    <PackageReference Include="Semi.Avalonia" Version="11.3.7.2" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Enrichers.AssemblyName" Version="2.0.0" />
     <PackageReference Include="Serilog.Enrichers.Context" Version="4.6.5" />
@@ -182,6 +182,12 @@
     </Compile>
     <Compile Update="Members\Pages\MembersOverviewViewModel.cs">
       <DependentUpon>MembersOverviewPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Members\Components\MemberRegistrationViewModel.cs">
+      <DependentUpon>MembersList.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Members\Components\MembersSummary.cs">
+      <DependentUpon>MembersSummaryPane.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
   

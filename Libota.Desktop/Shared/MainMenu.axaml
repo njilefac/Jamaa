@@ -6,7 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    >
 
     <Menu DockPanel.Dock="Top">
         <MenuItem Header="File">
@@ -14,9 +15,9 @@
                 <MenuItem Header="Members" IsSubMenuOpen="True" />
                 <MenuItem Header="Financial Transactions" IsSubMenuOpen="True" />
             </MenuItem>
-            <Separator Foreground="DarkGray" />
+            <Separator />
             <MenuItem Command="{Binding LogoutCommand}" Header="Logout" />
-            <Separator Foreground="DarkGray" />
+            <Separator />
             <MenuItem Command="{Binding ExitApplicationCommand}" Header="Exit" />
         </MenuItem>
         <MenuItem Header="Edit">
