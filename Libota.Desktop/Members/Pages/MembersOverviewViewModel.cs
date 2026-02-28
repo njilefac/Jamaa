@@ -13,6 +13,7 @@ using Libota.Desktop.Navigation.Interfaces;
 using Libota.Desktop.Navigation.Messages;
 using Libota.Desktop.Navigation.Models;
 using Libota.Desktop.Navigation.Values;
+using Libota.Desktop.Shared;
 
 namespace Libota.Desktop.Members.Pages;
 
@@ -21,11 +22,12 @@ public partial class MembersOverviewViewModel : ObservableValidator,
     INavigationHost,
     IRecipient<NavigateBackRequested>,
     IRecipient<MemberDetailsRequested>,
-    IDisposable
+    IDisposable,
+    IApplicationModule
 {
     private readonly IRouteResolver _routeResolver;
-    private readonly LinkedList<IRouteableViewModel?> _navigationHistory = new();
-    public ObservableCollection<BreadcrumbItemModel> Breadcrumbs { get; } = new();
+    private readonly LinkedList<IRouteableViewModel?> _navigationHistory = [];
+    public ObservableCollection<BreadcrumbItemModel> Breadcrumbs { get; } = [];
 
     public MembersOverviewViewModel(
         IOrganisationManagementFacade organisationManagementFacade,
@@ -158,4 +160,8 @@ public partial class MembersOverviewViewModel : ObservableValidator,
         var currentIndex = _navigationHistory.ToList().IndexOf(ActiveContent);
         ActiveContent = _navigationHistory.ToList()[currentIndex + 1];
     }
+
+    public Guid Id => Guid.Parse("d1c8b9e7-5c3a-4f8e-9b2a-1f2e3d4c5b6a");
+    public string Title  => "Members";
+    public object HeaderContent => MembersSummary;
 }

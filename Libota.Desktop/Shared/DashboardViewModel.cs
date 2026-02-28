@@ -6,7 +6,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using JetBrains.Annotations;
 using Libota.Desktop.Navigation.Interfaces;
 using Libota.Desktop.Navigation.Models;
-using Libota.Desktop.Navigation.Services;
 using Libota.Desktop.Navigation.Values;
 
 namespace Libota.Desktop.Shared;
@@ -19,7 +18,7 @@ public partial class DashboardViewModel : ObservableValidator,
     private readonly IRouteResolver _routeResolver;
     [ObservableProperty] private IEnumerable<NavigationItemModel> _menuItems;
     [ObservableProperty] private NavigationItemModel? _selectedItem;
-    [ObservableProperty] private object? _activeContent;
+    [ObservableProperty] private IApplicationModule? _activeModule;
 
     public DashboardViewModel(IRouteResolver routeResolver)
     {
@@ -27,11 +26,11 @@ public partial class DashboardViewModel : ObservableValidator,
 
         WeakReferenceMessenger.Default.RegisterAll(this);
 
-        MenuItems = GetNavigationMenuItems();
+        MenuItems = GetNavigationItems();
         SelectedItem = MenuItems.FirstOrDefault();
     }
 
-    private static IEnumerable<NavigationItemModel> GetNavigationMenuItems()
+    private static IEnumerable<NavigationItemModel> GetNavigationItems()
     {
         //TODO: Load dynamically based on user permissions
         //TODO: this should be done by a factory or service
@@ -50,7 +49,7 @@ public partial class DashboardViewModel : ObservableValidator,
 
     public void Receive(ModuleSelected message)
     {
-        ActiveContent = GetViewModelForRoute(message.Path);
+        ActiveModule = GetModuleForRoute(message.Route);
     }
     
     public void Dispose()
@@ -59,17 +58,17 @@ public partial class DashboardViewModel : ObservableValidator,
         WeakReferenceMessenger.Default.UnregisterAll(this);
     }
     
-    private object? GetViewModelForRoute(string path)
+    private IApplicationModule GetModuleForRoute(string route)
     {
-        if (_viewModelCache.TryGetValue(path, out var cachedVm))
+        if (_moduleCache.TryGetValue(route, out var cachedModule))
         {
-            return cachedVm;
+            return cachedModule ?? throw new InvalidOperationException();
         }
 
-        var vm = _routeResolver.Resolve(path);
-        _viewModelCache[path] = vm;
-        return vm;
+        var module = _routeResolver.Resolve(route) as IApplicationModule ?? throw new InvalidOperationException($"Route '{route}' did not resolve to a valid view model.");
+        _moduleCache[route] = module;
+        return module;
     }
     
-    private readonly Dictionary<string, object?> _viewModelCache = new();
+    private readonly Dictionary<string, IApplicationModule?> _moduleCache = new();
 }

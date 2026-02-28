@@ -7,15 +7,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:Libota.Desktop.Navigation.Models"
     xmlns:services="clr-namespace:Libota.Desktop.Services"
-    xmlns:shared1="clr-namespace:Libota.Desktop.Shared"
+    xmlns:shared="clr-namespace:Libota.Desktop.Shared"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch"
     VerticalContentAlignment="Stretch"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="shared1:DashboardViewModel"
-    mc:Ignorable="d">
+    x:DataType="shared:DashboardViewModel"
+    mc:Ignorable="d"
+    >
 
     <UserControl.Resources>
         <services:LibotaIconSourceConverter x:Key="IconSourceConverter" />
@@ -23,29 +24,25 @@
 
     <controls:NavigationView
         VerticalAlignment="Stretch"
-        Content="{Binding ActiveContent}"
-        Header="{Binding $self.SelectedItem.Title}"
+        Content="{Binding ActiveModule}"
+        Header="{Binding}"
         MenuItemsSource="{Binding MenuItems}"
         PaneDisplayMode="Auto"
-        SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+        SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+        >
 
         <controls:NavigationView.MenuItemTemplate>
             <DataTemplate x:DataType="models:NavigationItemModel">
                 <controls:NavigationViewItem
                     Content="{Binding Title}"
                     IconSource="{Binding Icon, Converter={StaticResource IconSourceConverter}}"
-                    Tag="{Binding TargetRoute}" />
+                    Tag="{Binding TargetRoute}"
+                    />
             </DataTemplate>
         </controls:NavigationView.MenuItemTemplate>
         <controls:NavigationView.HeaderTemplate>
             <DataTemplate>
-                <TextBlock
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
-                    FontSize="22"
-                    FontWeight="Bold"
-                    Text="{Binding}"
-                    TextAlignment="Center" />
+                <shared:DashboardHeader Title="{Binding ActiveModule.Title}" DataContext="{Binding ActiveModule}" />
             </DataTemplate>
         </controls:NavigationView.HeaderTemplate>
     </controls:NavigationView>
