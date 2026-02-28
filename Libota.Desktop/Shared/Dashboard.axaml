@@ -20,16 +20,25 @@
 
     <UserControl.Resources>
         <services:LibotaIconSourceConverter x:Key="IconSourceConverter" />
+        <Thickness x:Key="NavigationViewHeaderMargin">0</Thickness>
+        <Thickness x:Key="NavigationViewHeaderPadding">0</Thickness>
+        <Thickness x:Key="NavigationViewHeaderContentControlMargin">0</Thickness>
     </UserControl.Resources>
 
     <controls:NavigationView
+        Margin="0"
+        Padding="0"
         VerticalAlignment="Stretch"
-        Content="{Binding ActiveModule}"
         Header="{Binding}"
         MenuItemsSource="{Binding MenuItems}"
         PaneDisplayMode="Auto"
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
         >
+        <controls:NavigationView.Content>
+            <Border Background="{DynamicResource LayerFillColorDefaultBrush}">
+                <ContentControl Content="{Binding ActiveModule}" />
+            </Border>
+        </controls:NavigationView.Content>
 
         <controls:NavigationView.MenuItemTemplate>
             <DataTemplate x:DataType="models:NavigationItemModel">
@@ -42,7 +51,11 @@
         </controls:NavigationView.MenuItemTemplate>
         <controls:NavigationView.HeaderTemplate>
             <DataTemplate>
-                <shared:DashboardHeader Title="{Binding ActiveModule.Title}" DataContext="{Binding ActiveModule}" />
+                <shared:DashboardHeader
+                    Title="{Binding ActiveModule.Title}"
+                    Classes="module header"
+                    DataContext="{Binding ActiveModule}"
+                    />
             </DataTemplate>
         </controls:NavigationView.HeaderTemplate>
     </controls:NavigationView>

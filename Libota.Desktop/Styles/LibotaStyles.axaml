@@ -13,12 +13,19 @@
     <Style Selector="TextBlock.page.title">
         <Setter Property="FontSize" Value="24" />
         <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="Padding" Value="5,5,5,50" />
+        <Setter Property="Padding" Value="5" />
         <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="shared|DashboardHeader.module.header">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="MinHeight" Value="100" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="Padding" Value="5,10" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="ContentControl.module.content">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="TextBlock.form.label">
         <Setter Property="FontWeight" Value="Bold" />
