@@ -16,12 +16,13 @@ public class RouteRegistry : IRouteRegistry
     private void RegisterInternal(RouteMap routeMap)
     {
         _routeRegistrations.TryAdd(routeMap.Path, routeMap);
-        if (routeMap.Nested != null)
+        if (routeMap.Nested == null)
         {
-            foreach (var nested in routeMap.Nested)
-            {
-                RegisterInternal(nested);
-            }
+            return;
+        }
+        foreach (var nested in routeMap.Nested)
+        {
+            RegisterInternal(nested);
         }
     }
 
