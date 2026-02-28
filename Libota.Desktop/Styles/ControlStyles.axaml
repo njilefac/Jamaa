@@ -1,40 +1,13 @@
 <Styles
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia">
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    >
     <Design.PreviewWith>
         <Border Padding="20">
             <!--  Add Controls for Previewer Here  -->
         </Border>
     </Design.PreviewWith>
-
-    <Style Selector="HeaderedContentControl">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate>
-                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,*">
-                        <Border
-                            Margin="5,0,0,0"
-                            Padding="5,0,5,0"
-                            Background="White"
-                            ZIndex="1">
-                            <TextBlock FontWeight="Bold" Text="{TemplateBinding Header}" />
-                        </Border>
-                        <Border
-                            Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="0"
-                            Grid.ColumnSpan="2"
-                            Margin="0,10,0,0"
-                            BorderBrush="{TemplateBinding Background}"
-                            BorderThickness="1">
-                            <ContentPresenter Content="{TemplateBinding Content}" />
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
     <Style Selector="husk|Card:pointerover">
         <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBorderBrushPointerOver}" />
         <Setter Property="BorderThickness" Value="2" />

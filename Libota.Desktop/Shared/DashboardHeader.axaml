@@ -1,0 +1,32 @@
+<UserControl
+    x:Class="Libota.Desktop.Shared.DashboardHeader"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:components="clr-namespace:Libota.Desktop.Members.Components"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Padding="5,5"
+    mc:Ignorable="d"
+    >
+
+    <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Classes="page title" Text="{Binding Title}" />
+
+        <ContentControl
+            Grid.Column="1"
+            Classes="module header"
+            Content="{Binding HeaderContent}"
+            >
+            <ContentControl.DataTemplates>
+                <DataTemplate x:DataType="components:MembersSummary">
+                    <components:MembersSummaryPane />
+                </DataTemplate>
+
+                <!--  Default fallback for other ViewModels  -->
+                <DataTemplate x:DataType="x:Object">
+                    <TextBlock Text="{Binding}" />
+                </DataTemplate>
+            </ContentControl.DataTemplates>
+        </ContentControl>
+    </Grid>
+</UserControl>
