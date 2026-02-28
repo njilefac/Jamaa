@@ -14,10 +14,15 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 10.0.x
+        dotnet-version: |
+          10.0.x
+          10.0.100-preview.1.25081.5
+    - name: Install Avalonia workloads
+      run: |
+        dotnet workload install avalonia --source https://api.nuget.org/v3/index.json
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore Libota.sln
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build Libota.sln --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test Libota.sln --no-build --verbosity normal
