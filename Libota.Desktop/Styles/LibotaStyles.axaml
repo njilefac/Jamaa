@@ -79,20 +79,20 @@
     <Style Selector="husk|Divider.member-card">
         <Setter Property="Margin" Value="8" />
         <Setter Property="Height" Value="2" />
-        <Setter Property="Width" Value="280" />
+        <Setter Property="Width" Value="220" />
         <Setter Property="Orientation" Value="Horizontal" />
     </Style>
     <Style Selector="husk|Card.memberlist.member-card">
-        <Setter Property="Width" Value="300" />
-        <Setter Property="Height" Value="200" />
+        <Setter Property="Width" Value="240" />
+        <Setter Property="Height" Value="180" />
         <Setter Property="Padding" Value="8" />
         <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Label.member-card.title">
-        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontSize" Value="16" />
     </Style>
     <Style Selector="ListBoxItem">
-        <Setter Property="Padding" Value="8" />
-        <Setter Property="Margin" Value="10" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Margin" Value="6" />
     </Style>
 </Styles>
