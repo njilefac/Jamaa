@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using Domain.Organisation.Requests;
 using FluentAvalonia.UI.Controls;
-using Libota.Desktop.Infrastructure.Interactions;
+using Libota.Desktop.Services.Interactions;
 
 namespace Libota.Desktop.Members.Components;
 

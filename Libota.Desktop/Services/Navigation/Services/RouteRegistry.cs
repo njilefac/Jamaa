@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Libota.Desktop.Navigation.Interfaces;
-using Libota.Desktop.Navigation.Models;
+using Libota.Desktop.Services.Navigation.Interfaces;
+using Libota.Desktop.Services.Navigation.Models;
 
-namespace Libota.Desktop.Navigation.Services;
+namespace Libota.Desktop.Services.Navigation.Services;
 
 public class RouteRegistry : IRouteRegistry
 {

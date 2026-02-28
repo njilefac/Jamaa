@@ -1,4 +1,4 @@
-namespace Libota.Desktop.Navigation.Interfaces;
+namespace Libota.Desktop.Services.Navigation.Interfaces;
 
 public interface INavigationHost
 {

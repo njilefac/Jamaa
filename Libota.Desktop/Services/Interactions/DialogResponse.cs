@@ -1,3 +1,3 @@
-namespace Libota.Desktop.Infrastructure.Interactions;
+namespace Libota.Desktop.Services.Interactions;
 
 public record DialogResponse<TResult>(bool Confirmed, TResult Result);

@@ -4,9 +4,9 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using JetBrains.Annotations;
-using Libota.Desktop.Navigation.Interfaces;
-using Libota.Desktop.Navigation.Models;
-using Libota.Desktop.Navigation.Values;
+using Libota.Desktop.Services.Navigation.Interfaces;
+using Libota.Desktop.Services.Navigation.Models;
+using Libota.Desktop.Services.Navigation.Values;
 
 namespace Libota.Desktop.Shared;
 

@@ -7,11 +7,9 @@ using CommunityToolkit.Mvvm.Messaging;
 using JetBrains.Annotations;
 using Libota.Application.Setup;
 using Libota.Application.Users.Services;
-using Libota.Desktop.Navigation;
-using Libota.Desktop.Navigation.Interfaces;
-using Libota.Desktop.Navigation.Services;
-using Libota.Desktop.Navigation.Values;
 using Libota.Desktop.Security;
+using Libota.Desktop.Services.Navigation.Interfaces;
+using Libota.Desktop.Services.Navigation.Values;
 using Libota.Desktop.Setup;
 
 namespace Libota.Desktop.Shared;

@@ -1,5 +1,5 @@
 
-namespace Libota.Desktop.Infrastructure.Interactions;
+namespace Libota.Desktop.Services.Interactions;
 
 public record InteractionContext<TInput, TOutput>(TInput Input)
 {

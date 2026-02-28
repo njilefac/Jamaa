@@ -5,16 +5,25 @@
     xmlns:components="clr-namespace:Libota.Desktop.Members.Components"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Padding="8"
+    xmlns:shared="clr-namespace:Libota.Desktop.Shared"
+    Padding="10"
+    Background="{Binding $parent[shared:DashboardHeader].Background}"
     mc:Ignorable="d"
     >
 
-    <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Classes="page title" Text="{Binding Title}" />
+    <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <TextBlock
+            x:Name="PageTitle"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Classes="page title"
+            Text="{Binding Title}"
+            />
 
         <ContentControl
-            Grid.Column="1"
-            Classes="module header"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Classes="module content"
             Content="{Binding HeaderContent}"
             >
             <ContentControl.DataTemplates>
@@ -28,5 +37,5 @@
                 </DataTemplate>
             </ContentControl.DataTemplates>
         </ContentControl>
-    </Grid>
+    </Panel>
 </UserControl>

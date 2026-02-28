@@ -1,4 +1,4 @@
-namespace Libota.Desktop.Navigation.Models;
+namespace Libota.Desktop.Services.Navigation.Models;
 
 public record BreadcrumbItemModel(
     string Title,

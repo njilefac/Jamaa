@@ -1,10 +1,9 @@
-using Xunit;
 using FluentAssertions;
-using Libota.Desktop.Navigation;
-using Libota.Desktop.Navigation.Models;
-using Libota.Desktop.Navigation.Services;
+using Libota.Desktop.Services.Navigation.Models;
+using Libota.Desktop.Services.Navigation.Services;
+using Xunit;
 
-namespace Tests.Navigation;
+namespace UnitTests.Navigation;
 
 public class RouteRegistryTests
 {
