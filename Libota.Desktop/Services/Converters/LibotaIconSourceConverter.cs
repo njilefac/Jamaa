@@ -4,7 +4,7 @@ using Avalonia.Data;
 using Avalonia.Data.Converters;
 using FluentAvalonia.UI.Controls;
 
-namespace Libota.Desktop.Services;
+namespace Libota.Desktop.Services.Converters;
 
 public class LibotaIconSourceConverter : IValueConverter
 {

@@ -1,7 +1,7 @@
 using System;
-using Libota.Desktop.Navigation.Interfaces;
+using Libota.Desktop.Services.Navigation.Interfaces;
 
-namespace Libota.Desktop.Navigation.Services;
+namespace Libota.Desktop.Services.Navigation.Services;
 
 public sealed class RouteResolver(IRouteRegistry routeRegistry, IServiceProvider serviceProvider) : IRouteResolver
 {

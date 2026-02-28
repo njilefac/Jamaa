@@ -11,10 +11,9 @@ using DynamicData.Binding;
 using JetBrains.Annotations;
 using Libota.Application.Organisation;
 using Libota.Data.Models.Members;
-using Libota.Desktop.Infrastructure.Interactions;
 using Libota.Desktop.Members.Messages;
-using Libota.Desktop.Navigation.Interfaces;
-using Libota.Desktop.Navigation.Services;
+using Libota.Desktop.Services.Interactions;
+using Libota.Desktop.Services.Navigation.Interfaces;
 
 namespace Libota.Desktop.Members.Components;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
 
-namespace Libota.Desktop.Infrastructure.Interactions;
+namespace Libota.Desktop.Services.Interactions;
 
 public class Interaction<TInput, TOutput>
 {

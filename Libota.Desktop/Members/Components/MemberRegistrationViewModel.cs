@@ -7,7 +7,7 @@ using Domain.Organisation.Values;
 using Domain.Shared.Values;
 using JetBrains.Annotations;
 using Libota.Application.Users.Services;
-using Libota.Desktop.Infrastructure.Interactions;
+using Libota.Desktop.Services.Interactions;
 
 namespace Libota.Desktop.Members.Components;
 

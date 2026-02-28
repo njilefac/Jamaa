@@ -9,10 +9,10 @@ using JetBrains.Annotations;
 using Libota.Application.Organisation;
 using Libota.Desktop.Members.Components;
 using Libota.Desktop.Members.Messages;
-using Libota.Desktop.Navigation.Interfaces;
-using Libota.Desktop.Navigation.Messages;
-using Libota.Desktop.Navigation.Models;
-using Libota.Desktop.Navigation.Values;
+using Libota.Desktop.Services.Navigation.Interfaces;
+using Libota.Desktop.Services.Navigation.Messages;
+using Libota.Desktop.Services.Navigation.Models;
+using Libota.Desktop.Services.Navigation.Values;
 using Libota.Desktop.Shared;
 
 namespace Libota.Desktop.Members.Pages;

@@ -1,10 +1,8 @@
-name: .NET
+name: Build and Test
 
 on:
   push:
-    branches: [ $default-branch ]
   pull_request:
-    branches: [ $default-branch ]
 
 jobs:
   build:

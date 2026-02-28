@@ -1,6 +1,6 @@
-using Libota.Desktop.Navigation.Models;
+using Libota.Desktop.Services.Navigation.Models;
 
-namespace Libota.Desktop.Navigation.Interfaces;
+namespace Libota.Desktop.Services.Navigation.Interfaces;
 
 public interface IRouteRegistry
 {

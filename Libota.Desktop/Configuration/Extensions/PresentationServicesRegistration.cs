@@ -1,9 +1,8 @@
 using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Libota.Application.Users.Services;
-using Libota.Desktop.Navigation;
-using Libota.Desktop.Navigation.Interfaces;
-using Libota.Desktop.Navigation.Services;
+using Libota.Desktop.Services.Navigation.Interfaces;
+using Libota.Desktop.Services.Navigation.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Libota.Desktop.Configuration.Extensions;

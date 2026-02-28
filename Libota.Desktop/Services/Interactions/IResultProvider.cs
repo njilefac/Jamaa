@@ -1,4 +1,4 @@
-namespace Libota.Desktop.Infrastructure.Interactions;
+namespace Libota.Desktop.Services.Interactions;
 
 public interface IResultProvider<TResult>
 {

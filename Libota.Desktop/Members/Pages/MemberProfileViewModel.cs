@@ -6,8 +6,8 @@ using CommunityToolkit.Mvvm.Messaging;
 using Domain.Shared.Values;
 using JetBrains.Annotations;
 using Libota.Data.Models.Members;
-using Libota.Desktop.Navigation.Interfaces;
-using Libota.Desktop.Navigation.Messages;
+using Libota.Desktop.Services.Navigation.Interfaces;
+using Libota.Desktop.Services.Navigation.Messages;
 
 namespace Libota.Desktop.Members.Pages;
 

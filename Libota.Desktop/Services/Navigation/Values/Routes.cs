@@ -1,4 +1,4 @@
-namespace Libota.Desktop.Navigation.Values;
+namespace Libota.Desktop.Services.Navigation.Values;
 
 public static class Routes
 {
