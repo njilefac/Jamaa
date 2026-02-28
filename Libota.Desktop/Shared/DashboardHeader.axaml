@@ -5,7 +5,7 @@
     xmlns:components="clr-namespace:Libota.Desktop.Members.Components"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Padding="5,5"
+    Padding="8"
     mc:Ignorable="d"
     >
 
@@ -24,7 +24,7 @@
 
                 <!--  Default fallback for other ViewModels  -->
                 <DataTemplate x:DataType="x:Object">
-                    <TextBlock Text="{Binding}" />
+                    <TextBlock Text="No Header Context Information available" />
                 </DataTemplate>
             </ContentControl.DataTemplates>
         </ContentControl>
