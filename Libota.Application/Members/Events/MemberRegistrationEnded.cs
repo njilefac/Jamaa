@@ -1,12 +1,9 @@
-using EventFlow.Aggregates;
-using EventFlow.EventStores;
-using Libota.Application.Organisation.Aggregates;
+using Libota.Application.Members.Aggregates;
+using Libota.Application.Shared;
 
-namespace Libota.Application.Members.Events
+namespace Libota.Application.Members.Events;
+
+public record MemberRegistrationEnded(MemberId Id) : ILibotaEvent
 {
-    [EventVersion("member-registration-ended", 1)]
-    public class MemberRegistrationEnded : AggregateEvent<OrganisationAggregate, OrganisationId>
-    {
-        
-    }
+    public string EntityId => Id.Value;
 }

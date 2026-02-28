@@ -1,0 +1,31 @@
+<UserControl
+    x:Class="Libota.Desktop.Members.Pages.MembersOverviewPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia.BreadcrumbBar"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Libota.Desktop.Navigation.Models"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Padding="5,5,15,5"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    >
+
+    <Grid ColumnDefinitions="*" RowDefinitions="Auto,*">
+        <controls:BreadcrumbBar Grid.Column="0" ItemsSource="{Binding Breadcrumbs}">
+            <controls:BreadcrumbBar.ItemTemplate>
+                <DataTemplate x:DataType="local:BreadcrumbItemModel">
+                    <TextBlock IsEnabled="{Binding IsActive}" Text="{Binding Title}" />
+                </DataTemplate>
+            </controls:BreadcrumbBar.ItemTemplate>
+        </controls:BreadcrumbBar>
+        <ContentControl
+            Grid.Row="1"
+            Grid.Column="0"
+            Content="{Binding ActiveContent}"
+            />
+    </Grid>
+</UserControl>

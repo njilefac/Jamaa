@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+#nullable disable
+
 namespace Libota.Data.Migrations
 {
     [DbContext(typeof(LibotaDbContext))]
@@ -13,316 +15,9 @@ namespace Libota.Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.9");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
 
-            modelBuilder.Entity("EventFlow.EntityFramework.EventStores.EventEntity", b =>
-                {
-                    b.Property<long>("GlobalSequenceNumber")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("AggregateId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AggregateName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("AggregateSequenceNumber")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("BatchId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Data")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("GlobalSequenceNumber");
-
-                    b.HasIndex("AggregateId", "AggregateSequenceNumber")
-                        .IsUnique();
-
-                    b.ToTable("EventEntity");
-                });
-
-            modelBuilder.Entity("EventFlow.EntityFramework.SnapshotStores.SnapshotEntity", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("AggregateId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AggregateName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("AggregateSequenceNumber")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Data")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AggregateName", "AggregateId", "AggregateSequenceNumber")
-                        .IsUnique();
-
-                    b.ToTable("SnapshotEntity");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireCounter", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("ExpireAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("Value")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExpireAt");
-
-                    b.HasIndex("Key", "Value");
-
-                    b.ToTable("HangfireCounter");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireHash", b =>
-                {
-                    b.Property<string>("Key")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Field")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ExpireAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Key", "Field");
-
-                    b.HasIndex("ExpireAt");
-
-                    b.ToTable("HangfireHash");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireJob", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ExpireAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("InvocationData")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<long?>("StateId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("StateName")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExpireAt");
-
-                    b.HasIndex("StateId");
-
-                    b.HasIndex("StateName");
-
-                    b.ToTable("HangfireJob");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireJobParameter", b =>
-                {
-                    b.Property<long>("JobId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("JobId", "Name");
-
-                    b.ToTable("HangfireJobParameter");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireList", b =>
-                {
-                    b.Property<string>("Key")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("ExpireAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Key", "Position");
-
-                    b.HasIndex("ExpireAt");
-
-                    b.ToTable("HangfireList");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireLock", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("AcquiredAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("HangfireLock");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireQueuedJob", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("FetchedAt")
-                        .IsConcurrencyToken()
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("JobId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Queue")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("JobId");
-
-                    b.HasIndex("Queue", "FetchedAt");
-
-                    b.ToTable("HangfireQueuedJob");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireServer", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("Heartbeat")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Queues")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("WorkerCount")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Heartbeat");
-
-                    b.ToTable("HangfireServer");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireSet", b =>
-                {
-                    b.Property<string>("Key")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Value")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ExpireAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<double>("Score")
-                        .HasColumnType("REAL");
-
-                    b.HasKey("Key", "Value");
-
-                    b.HasIndex("ExpireAt");
-
-                    b.HasIndex("Key", "Score");
-
-                    b.ToTable("HangfireSet");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireState", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("JobId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Reason")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("JobId");
-
-                    b.ToTable("HangfireState");
-                });
-
-            modelBuilder.Entity("Libota.Application.Members.Queries.Models.Member", b =>
+            modelBuilder.Entity("Libota.Data.Models.Members.MemberData", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
@@ -350,10 +45,10 @@ namespace Libota.Data.Migrations
 
                     b.HasIndex("OrganisationId");
 
-                    b.ToTable("Members");
+                    b.ToTable("Members", (string)null);
                 });
 
-            modelBuilder.Entity("Libota.Application.Members.Queries.Models.Registration", b =>
+            modelBuilder.Entity("Libota.Data.Models.Members.RegistrationData", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
@@ -370,6 +65,7 @@ namespace Libota.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("OrganisationId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("StartDate")
@@ -385,13 +81,12 @@ namespace Libota.Data.Migrations
 
                     b.HasIndex("OrganisationId");
 
-                    b.ToTable("Registrations");
+                    b.ToTable("Registrations", (string)null);
                 });
 
-            modelBuilder.Entity("Libota.Application.Organisation.Queries.Models.OrganisationReadModel", b =>
+            modelBuilder.Entity("Libota.Data.Models.Organisation.OrganisationData", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -406,7 +101,7 @@ namespace Libota.Data.Migrations
                     b.ToTable("Organisations");
                 });
 
-            modelBuilder.Entity("Libota.Data.Models.UserData", b =>
+            modelBuilder.Entity("Libota.Data.Models.Users.UserData", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -416,6 +111,7 @@ namespace Libota.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Gender")
@@ -439,6 +135,7 @@ namespace Libota.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -449,51 +146,9 @@ namespace Libota.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireJob", b =>
+            modelBuilder.Entity("Libota.Data.Models.Members.MemberData", b =>
                 {
-                    b.HasOne("Hangfire.EntityFrameworkCore.HangfireState", "State")
-                        .WithMany()
-                        .HasForeignKey("StateId");
-
-                    b.Navigation("State");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireJobParameter", b =>
-                {
-                    b.HasOne("Hangfire.EntityFrameworkCore.HangfireJob", "Job")
-                        .WithMany("Parameters")
-                        .HasForeignKey("JobId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Job");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireQueuedJob", b =>
-                {
-                    b.HasOne("Hangfire.EntityFrameworkCore.HangfireJob", "Job")
-                        .WithMany("QueuedJobs")
-                        .HasForeignKey("JobId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Job");
-                });
-
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireState", b =>
-                {
-                    b.HasOne("Hangfire.EntityFrameworkCore.HangfireJob", "Job")
-                        .WithMany("States")
-                        .HasForeignKey("JobId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Job");
-                });
-
-            modelBuilder.Entity("Libota.Application.Members.Queries.Models.Member", b =>
-                {
-                    b.HasOne("Libota.Application.Organisation.Queries.Models.OrganisationReadModel", "Organisation")
+                    b.HasOne("Libota.Data.Models.Organisation.OrganisationData", "Organisation")
                         .WithMany("Members")
                         .HasForeignKey("OrganisationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -502,39 +157,32 @@ namespace Libota.Data.Migrations
                     b.Navigation("Organisation");
                 });
 
-            modelBuilder.Entity("Libota.Application.Members.Queries.Models.Registration", b =>
+            modelBuilder.Entity("Libota.Data.Models.Members.RegistrationData", b =>
                 {
-                    b.HasOne("Libota.Application.Members.Queries.Models.Member", "Member")
+                    b.HasOne("Libota.Data.Models.Members.MemberData", "Member")
                         .WithOne("Registration")
-                        .HasForeignKey("Libota.Application.Members.Queries.Models.Registration", "MemberId")
+                        .HasForeignKey("Libota.Data.Models.Members.RegistrationData", "MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Libota.Application.Organisation.Queries.Models.OrganisationReadModel", "Organisation")
+                    b.HasOne("Libota.Data.Models.Organisation.OrganisationData", "Organisation")
                         .WithMany()
-                        .HasForeignKey("OrganisationId");
+                        .HasForeignKey("OrganisationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Member");
 
                     b.Navigation("Organisation");
                 });
 
-            modelBuilder.Entity("Hangfire.EntityFrameworkCore.HangfireJob", b =>
-                {
-                    b.Navigation("Parameters");
-
-                    b.Navigation("QueuedJobs");
-
-                    b.Navigation("States");
-                });
-
-            modelBuilder.Entity("Libota.Application.Members.Queries.Models.Member", b =>
+            modelBuilder.Entity("Libota.Data.Models.Members.MemberData", b =>
                 {
                     b.Navigation("Registration")
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Libota.Application.Organisation.Queries.Models.OrganisationReadModel", b =>
+            modelBuilder.Entity("Libota.Data.Models.Organisation.OrganisationData", b =>
                 {
                     b.Navigation("Members");
                 });

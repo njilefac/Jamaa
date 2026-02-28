@@ -1,72 +1,96 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using EventFlow;
-using EventFlow.Queries;
-using Libota.Application.Members.Queries;
-using Libota.Application.Members.Queries.Models;
-using Libota.Application.Organisation.Aggregates;
+using System.Reactive.Subjects;
+using Akka.Actor;
+using Akka.Hosting;
+using Domain.Members.Queries;
+using Domain.Organisation.Queries;
+using Domain.Organisation.Requests;
+using Domain.Organisation.Values;
 using Libota.Application.Organisation.Commands;
-using Libota.Application.Organisation.Queries;
-using Libota.Application.Organisation.Queries.Models;
-using Libota.Application.Organisation.Requests;
-using Libota.Application.Security;
-using Libota.Application.Shared.Providers;
+using Libota.Application.Security.Authorization;
+using Libota.Application.Shared;
+using Libota.Application.Users;
+using Libota.Application.Users.Services;
+using Libota.Data.Models.Members;
+using Libota.Data.Models.Organisation;
+using Libota.Data.Notifiers;
 
-namespace Libota.Application.Organisation
+namespace Libota.Application.Organisation;
+
+public class OrganisationManagementFacade : IOrganisationManagementFacade
 {
-    public class OrganisationManagementFacade : IOrganisationManagementFacade
+    private readonly IActorRef _commandProcessor;
+    private readonly IQueryProcessor _queryProcessor;
+    private readonly ReplaySubject<MemberData> _currentMembers;
+
+    public OrganisationManagementFacade(IRequiredActor<CommandProcessor> commandProcessorProvider,
+        IQueryProcessor queryProcessor,
+        IDataChangeNotifier dataChangeNotifier,
+        IUserSessionService userSessionService)
     {
-        private readonly ICommandBus _commandBus;
-        private readonly IQueryProcessor _queryProcessor;
+        userSessionService.UserSessions.Subscribe(InitializeCurrentMembers);
+        _commandProcessor = commandProcessorProvider.ActorRef;
+        _queryProcessor = queryProcessor;
 
-        public OrganisationManagementFacade(
-            ICommandBus commandBus,
-            IQueryProcessor queryProcessor,
-            IDataChangeNotifier dataChangeNotifier)
-        {
-            _commandBus = commandBus;
-            _queryProcessor = queryProcessor;
-
-            MemberAdded = dataChangeNotifier.Insertions.Where(e => e is Member).Select(e => (Member)e);
-            MemberUpdated = dataChangeNotifier.Updates.Where(e => e is Member).Select(e => (Member)e);
-            MemberDeleted = dataChangeNotifier.Deletions.Where(e => e is Member).Select(e => (Member)e);
-        }
-
-        public async Task<bool> CreateOrganisation(string name, string? description)
-        {
-            var result = await _commandBus.PublishAsync(
-                new CreateOrganisationCommand(name, description), CancellationToken.None);
-
-            return result.IsSuccess;
-        }
-
-        [Authorize(Operation = "member.registration")]
-        public async Task RegisterMember(MemberRegistrationRequest request)
-        {
-            await _commandBus.PublishAsync(new RegisterMemberCommand(request), CancellationToken.None);
-        }
-
-        public async Task<IList<OrganisationReadModel>> ListOrganisations()
-        {
-            var result = await _queryProcessor.ProcessAsync(new GetAllOrganisations(), CancellationToken.None);
-            return result.ToList();
-        }
-
-        public async Task<IList<Member>?> ListMembersByOrganisation(OrganisationId organisationId)
-        {
-            var query = new GetMembersByOrganisation(organisationId);
-            var members = await _queryProcessor.ProcessAsync(query, CancellationToken.None);
-            return members.ToList();
-        }
-
-        public IObservable<Member> MemberAdded { get; }
-
-        public IObservable<Member> MemberUpdated { get; }
-
-        public IObservable<Member> MemberDeleted { get; }
+        _currentMembers = new ReplaySubject<MemberData>();
+        CurrentMembers = _currentMembers;
+        
+        MemberAdded = dataChangeNotifier.Insertions.OfType<MemberData>();
+        MemberAdded.Subscribe(x => _currentMembers.OnNext(x));
+        
+        MemberUpdated = dataChangeNotifier.Updates.OfType<MemberData>();
+        MemberDeleted = dataChangeNotifier.Deletions.OfType<MemberData>();
     }
+
+    private async void InitializeCurrentMembers(UserSession? s)
+    {
+        var existingMembers =  (await ListCurrentMembers(s) ?? throw new InvalidOperationException()).ToObservable();
+        foreach (var member in existingMembers)
+        {
+            _currentMembers.OnNext(member);
+        }
+    }
+
+    public IObservable<MemberData> CurrentMembers { get; set; }
+
+    public Task CreateOrganisation(string name, string? description)
+    {
+        return Task.Run(() => _commandProcessor.Tell(new CreateOrganisation(name, description)));
+    }
+
+    [Authorize(Operation = "member.registration")]
+    public Task RegisterMember(MemberRegistrationRequest request)
+    {
+        return Task.Run(() =>
+        {
+            var message = new RegisterMember(request.OrganisationId,
+                request.FirstName,
+                request.MiddleName,
+                request.LastName,
+                request.Gender,
+                request.MembershipType,
+                request.RegistrationBegin);
+
+            _commandProcessor.Tell(message);
+        });
+    }
+
+    public async Task<IEnumerable<OrganisationData>> ListOrganisations()
+    {
+        return await _queryProcessor.Get(new GetAllOrganisations());
+    }
+    
+    public IObservable<MemberData> MemberUpdated { get; }
+
+    public IObservable<MemberData> MemberDeleted { get; }
+
+    private async Task<IList<MemberData>?> ListCurrentMembers(UserSession? userSession)
+    {
+        var currentOrganisationId = userSession?.Organisation?.Id;
+        var query = new GetMembersByOrganisation(OrganisationId.With(currentOrganisationId ?? Guid.NewGuid().ToString()));
+        var existingMembers = await _queryProcessor.Get(query);
+        return existingMembers;
+    }
+
+    private IObservable<MemberData> MemberAdded { get; }
 }

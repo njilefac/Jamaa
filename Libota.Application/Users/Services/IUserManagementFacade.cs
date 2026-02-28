@@ -1,10 +1,9 @@
-using System.Threading.Tasks;
-using Domain.Entities.Users;
+using Domain.Users;
 
 namespace Libota.Application.Users.Services
 {
     public interface IUserManagementFacade
     {
-        Task<User?> CreateUser(string username, string password, string? email, string? firstName, string? lastName);
+        Task<User> CreateUser(string username, string password, string email, string? firstName, string? lastName);
     }
 }

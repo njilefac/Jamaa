@@ -1,11 +1,9 @@
-using EventFlow.Aggregates;
-using EventFlow.EventStores;
-using Libota.Application.Organisation.Aggregates;
+using Libota.Application.Members.Aggregates;
+using Libota.Application.Shared;
 
-namespace Libota.Application.Members.Events
+namespace Libota.Application.Members.Events;
+
+public record MemberRegistrationUpdated(MemberId Id) : ILibotaEvent
 {
-    [EventVersion("member-registration-updated", 1)]
-    public class MemberRegistrationUpdated : IAggregateEvent<OrganisationAggregate, OrganisationId>
-    {
-    }
+    public string EntityId => Id.Value;
 }

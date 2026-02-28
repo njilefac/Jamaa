@@ -1,32 +1,23 @@
 using System;
 using System.Diagnostics;
-using Libota.Application.Shared.Providers;
 
-namespace Libota.Data.Notifiers
+namespace Libota.Data.Notifiers;
+
+public class DatabaseEventListener(IDataChangeNotifier dataChangeNotifier) : IObserver<DiagnosticListener>
 {
-    public class DatabaseEventListener : IObserver<DiagnosticListener>
+    public void OnCompleted()
     {
-        private readonly IDataChangeNotifier _dataChangeNotifier;
+    }
 
-        public DatabaseEventListener(IDataChangeNotifier dataChangeNotifier)
-        {
-            _dataChangeNotifier = dataChangeNotifier;
-        }
+    public void OnError(Exception error)
+    {
+    }
 
-        public void OnCompleted()
+    public void OnNext(DiagnosticListener value)
+    {
+        if (value.Name.Equals("Microsoft.EntityFrameworkCore"))
         {
-        }
-
-        public void OnError(Exception error)
-        {
-        }
-
-        public void OnNext(DiagnosticListener value)
-        {
-            if (value.Name.Equals("Microsoft.EntityFrameworkCore"))
-            {
-                value.Subscribe(_dataChangeNotifier);
-            }
+            value.Subscribe(dataChangeNotifier);
         }
     }
 }

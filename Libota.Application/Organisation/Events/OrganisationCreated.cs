@@ -1,19 +1,10 @@
-using EventFlow.Aggregates;
-using EventFlow.EventStores;
-using Libota.Application.Organisation.Aggregates;
+using Domain.Organisation.Values;
+using Libota.Application.Shared;
 
 namespace Libota.Application.Organisation.Events
 {
-    [EventVersion("organisation-created", 1)]
-    public class OrganisationCreated : AggregateEvent<OrganisationAggregate, OrganisationId>
+    public record OrganisationCreated(OrganisationId Id, string Name, string? Description) : ILibotaEvent
     {
-        public string Name { get; }
-        public string? Description { get; }
-
-        public OrganisationCreated(string name, string? description)
-        {
-            Name = name;
-            Description = description;
-        }
+        public string EntityId => Id.Value;
     }
 }

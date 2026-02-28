@@ -1,36 +1,24 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using EventFlow.EntityFramework;
-using EventFlow.Queries;
-using Libota.Application.Members.Queries;
-using Libota.Application.Members.Queries.Models;
+using Domain.Members.Queries;
 using Libota.Data.Configuration;
+using Libota.Data.Models.Members;
 using Microsoft.EntityFrameworkCore;
 
-namespace Libota.Data.Queries.Members
+namespace Libota.Data.Queries.Members;
+
+public class MembersQueryHandler(LibotaDbContext dbContext) : IMembersQueryHandler
 {
-    public class MembersQueryHandler : IQueryHandler<GetMembersByOrganisation, IEnumerable<Member>>
+    public async Task<IList<MemberData>> Get(GetMembersByOrganisation query)
     {
-        private readonly LibotaDbContext _dataContext;
+        var organisations = await dbContext.Organisations
+            .Include(x => x.Members)
+            .ThenInclude(member => member.Registration)
+            .ToListAsync();
 
-        public MembersQueryHandler(IDbContextProvider<LibotaDbContext> dbContextProvider)
-        {
-            _dataContext = dbContextProvider.CreateContext();
-        }
-        public async Task<IEnumerable<Member>> ExecuteQueryAsync(GetMembersByOrganisation query, CancellationToken cancellationToken)
-        {
-            var organisations = await _dataContext.Organisations
-                .Include(x => x.Members)
-                .ThenInclude(member => member.Registration)
-                .ToListAsync(cancellationToken);
+        var matchingOrganisation = organisations.FirstOrDefault(x => x.Id == query.OrganisationId.Value);
 
-            var matchingOrganisation = organisations.FirstOrDefault(x =>
-                x.Id != null && x.Id.Equals(query.OrganisationId.Value, StringComparison.InvariantCultureIgnoreCase));
-
-            return matchingOrganisation != null ? matchingOrganisation.Members : new List<Member>();
-        }
+        return matchingOrganisation != null ? matchingOrganisation.Members : new List<MemberData>();
     }
 }

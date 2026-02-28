@@ -1,62 +1,47 @@
-using System;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
-using Domain.Repositories;
-using Domain.Values;
-using Libota.Application.Organisation;
-using Libota.Application.Organisation.Queries.Models;
-using Libota.Application.Security;
+using Domain.Security.Values;
+using Domain.Users;
+using Libota.Data.Models.Organisation;
 using Microsoft.Extensions.Logging;
 
-namespace Libota.Application.Users.Services
+namespace Libota.Application.Users.Services;
+
+public class UserSessionService(ILogger<UserSessionService> logger, IUserRepository users) : IUserSessionService
 {
-    public class UserSessionService : IUserSessionService
+    private static readonly UserSession? NullSession = new(false, "none", null);
+    private readonly Subject<UserSession?> _userSessions = new();
+    public IObservable<UserSession?> UserSessions => _userSessions;
+    public UserSession? CurrentUserSession { get; private set; }
+
+    public async Task<UserSession?> Authenticate(Credentials credentials, OrganisationData? organisation)
     {
-        private readonly IUserRepository _users;
+        ArgumentNullException.ThrowIfNull(credentials);
 
-        private readonly ILogger<UserSessionService> _logger;
-        private static readonly UserSession? NullSession = new UserSession(false, "none", null);
-        public Subject<UserSession?> UserSessions { get; }
-        public UserSession? CurrentUserSession { get; private set; }
-
-        public UserSessionService(ILogger<UserSessionService> logger, IUserRepository users)
+        logger.LogInformation("authenticating user...");
+        var matchingUser = await users.SingleOrDefault(x =>
+            x.Account.Credentials.Equals(credentials));
+        if (matchingUser == null)
         {
-            _logger = logger;
-            _users = users;
-            UserSessions = new Subject<UserSession?>();
+            logger.LogInformation("authentication failed!");
+            return NullSession;
         }
 
-        public async Task<UserSession?> Authenticate(Credentials credentials,
-            OrganisationReadModel? organisation)
-        {
-            if (credentials == null) throw new ArgumentNullException(nameof(credentials));
+        logger.LogInformation("authenticated!");
 
-            _logger.LogInformation($"authenticating user...");
-            var matchingUser = await _users.SingleOrDefault(x =>
-                x.Account.Credentials.Equals(credentials));
-            if (matchingUser == null)
-            {
-                _logger.LogInformation($"authentication failed!");
-                return NullSession;
-            }
+        logger.LogInformation("creating user session...");
+        var userSession = new UserSession(true, credentials.UserName, organisation);
+        _userSessions.OnNext(userSession);
+        CurrentUserSession = userSession;
+        logger.LogInformation("user session created");
 
-            _logger.LogInformation($"authenticated!");
+        return await Task.FromResult(userSession);
+    }
 
-            _logger.LogInformation($"creating user session...");
-            var userSession = new UserSession(true, credentials.UserName, organisation);
-            UserSessions.OnNext(userSession);
-            CurrentUserSession = userSession;
-            _logger.LogInformation($"user session created");
-
-            return await Task.FromResult(userSession);
-        }
-
-        public async Task<bool> EndSession()
-        {
-            UserSessions.OnNext(null);
-            CurrentUserSession = null;
-            _logger.LogInformation($"user session terminated.");
-            return await Task.FromResult(true);
-        }
+    public async Task<bool> EndSession()
+    {
+        _userSessions.OnNext(null);
+        CurrentUserSession = null;
+        logger.LogInformation("user session terminated.");
+        return await Task.FromResult(true);
     }
 }
