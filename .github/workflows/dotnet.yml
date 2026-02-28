@@ -6,8 +6,10 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write # Required for commenting on PRs
 
     steps:
     - uses: actions/checkout@v6
@@ -20,4 +22,11 @@ jobs:
     - name: Build
       run: dotnet build Libota.sln --no-restore
     - name: Test
-      run: dotnet test Libota.sln --no-build --verbosity normal
+      run: dotnet test Libota.sln --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: .NET Test Results
+        path: "**/test-results.trx"
+        reporter: dotnet-trx
