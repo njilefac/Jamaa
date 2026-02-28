@@ -22,11 +22,11 @@ jobs:
     - name: Build
       run: dotnet build Libota.sln --no-restore
     - name: Test
-      run: dotnet test Libota.sln --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
+      run: dotnet test Libota.sln --no-build --verbosity normal --logger "trx" --results-directory ./TestResults
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: always()
       with:
         name: .NET Test Results
-        path: "TestResults/*.trx"
+        path: "**/TestResults/*.trx"
         reporter: dotnet-trx
