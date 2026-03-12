@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using Domain.Shared.Values;
 using JetBrains.Annotations;
 using Libota.Application.Organisation;
@@ -68,13 +70,32 @@ public partial class MembersOverviewViewModel : ObservableValidator,
     private void AddToNavigationHistory(IRouteableViewModel state)
     {
         _navigationHistory.AddLast(state);
-        Breadcrumbs.Add(new BreadcrumbItemModel(state.Title, string.Empty));
-       Breadcrumbs[^1] = Breadcrumbs[^1] with { IsActive = false };
-       // activate all except the last
-       for (var i = 0; i < Breadcrumbs.Count - 1; i++)
-       {
-           Breadcrumbs[i] = Breadcrumbs[i] with { IsActive = true };
-       }
+        var clickCommand = new RelayCommand(() => NavigateTo(state));
+        Breadcrumbs.Add(new BreadcrumbItemModel(state.Title, string.Empty, ClickCommand: clickCommand));
+        Breadcrumbs[^1] = Breadcrumbs[^1] with { IsActive = false };
+        // activate all except the last
+        for (var i = 0; i < Breadcrumbs.Count - 1; i++)
+        {
+            Breadcrumbs[i] = Breadcrumbs[i] with { IsActive = true };
+        }
+    }
+
+    private void NavigateTo(IRouteableViewModel state)
+    {
+        if (ActiveContent == state) return;
+
+        ActiveContent = state;
+        while (_navigationHistory.Last?.Value != state && _navigationHistory.Count > 1)
+        {
+            _navigationHistory.RemoveLast();
+            Breadcrumbs.RemoveAt(Breadcrumbs.Count - 1);
+        }
+        
+        Breadcrumbs[^1] = Breadcrumbs[^1] with { IsActive = false };
+        for (var i = 0; i < Breadcrumbs.Count - 1; i++)
+        {
+            Breadcrumbs[i] = Breadcrumbs[i] with { IsActive = true };
+        }
     }
 
     [ObservableProperty] private IRouteableViewModel? _activeContent;

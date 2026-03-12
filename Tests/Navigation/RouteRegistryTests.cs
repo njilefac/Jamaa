@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using Libota.Desktop.Services.Navigation.Models;
 using Libota.Desktop.Services.Navigation.Services;
 using Xunit;
@@ -21,8 +21,8 @@ public class RouteRegistryTests
         var resolved = registry.Resolve("/parent/child");
 
         // Assert
-        resolved.Should().NotBeNull();
-        resolved!.Path.Should().Be("/parent/child");
+        resolved.ShouldNotBeNull();
+        resolved.Path.ShouldBe("/parent/child");
     }
 
     [Fact]
@@ -37,8 +37,8 @@ public class RouteRegistryTests
         var resolved = registry.Resolve("/home");
 
         // Assert
-        resolved.Should().NotBeNull();
-        resolved!.Path.Should().Be("/home");
+        resolved.ShouldNotBeNull();
+        resolved.Path.ShouldBe("/home");
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class RouteRegistryTests
         var resolved = registry.Resolve("/a/b/c");
 
         // Assert
-        resolved.Should().NotBeNull();
-        resolved!.Path.Should().Be("/a/b/c");
+        resolved.ShouldNotBeNull();
+        resolved.Path.ShouldBe("/a/b/c");
     }
 }
