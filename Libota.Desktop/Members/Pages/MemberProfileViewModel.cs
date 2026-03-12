@@ -1,8 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
+using Domain.Organisation.Values;
 using Domain.Shared.Values;
 using JetBrains.Annotations;
 using Libota.Data.Models.Members;
@@ -21,12 +20,9 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
     [ObservableProperty] private DateTime _birthDate;
     [ObservableProperty] private RegistrationData? _registration;
 
-    [RelayCommand]
-    private Task GoToPreviousPage()
-    {
-        WeakReferenceMessenger.Default.Send(new NavigateBackRequested());
-        return Task.CompletedTask;
-    }
+    public Gender[] Genders => Enum.GetValues<Gender>();
+    public RegistrationStatus[] RegistrationStatuses => Enum.GetValues<RegistrationStatus>();
+    public MembershipType[] MembershipTypes => Enum.GetValues<MembershipType>();
 
-    public string Title => $"Details [{FirstName} {LastName}]";
+    public string Title => $"Member-Details";
 }

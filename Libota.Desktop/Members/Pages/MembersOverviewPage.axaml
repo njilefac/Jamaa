@@ -18,7 +18,14 @@
         <controls:BreadcrumbBar Grid.Column="0" ItemsSource="{Binding Breadcrumbs}">
             <controls:BreadcrumbBar.ItemTemplate>
                 <DataTemplate x:DataType="local:BreadcrumbItemModel">
-                    <TextBlock IsEnabled="{Binding IsActive}" Text="{Binding Title}" />
+                    <Button
+                        Padding="0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{Binding ClickCommand}"
+                        Content="{Binding Title}"
+                        IsEnabled="{Binding IsActive}"
+                        />
                 </DataTemplate>
             </controls:BreadcrumbBar.ItemTemplate>
         </controls:BreadcrumbBar>
