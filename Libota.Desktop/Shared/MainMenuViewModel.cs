@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using JetBrains.Annotations;
 using Libota.Application.Users.Services;
-using Libota.Desktop.Security;
+using Libota.Desktop.Security.Events;
 using static System.Threading.Tasks.Task;
 
 namespace Libota.Desktop.Shared;

@@ -13,6 +13,7 @@ using Libota.Application.Users;
 using Libota.Application.Users.Services;
 using Libota.Data.Models.Organisation;
 using Libota.Desktop.Assets.Resources;
+using Libota.Desktop.Security.Events;
 using Microsoft.Extensions.Logging;
 
 namespace Libota.Desktop.Security;
