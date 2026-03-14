@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,6 +13,7 @@ using Libota.Data.Models.Members;
 using Libota.Desktop.Members.Messages;
 using Libota.Desktop.Services.Interactions;
 using Libota.Desktop.Services.Navigation.Interfaces;
+using Libota.Desktop.Services.Notifications;
 
 namespace Libota.Desktop.Members.Components;
 
@@ -28,10 +28,12 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
         MemberRegistrationViewModel memberRegistrationViewModel,
         Pages.MemberProfileViewModel memberProfileViewModel, 
-        IRouteResolver routeResolver)
+        IRouteResolver routeResolver,
+        INotificationService notificationService)
     {
         MemberRegistrationViewModel = memberRegistrationViewModel;
         _organisationManagementFacade = organisationManagementFacade;
+        _notificationService = notificationService;
 
         var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
             
@@ -65,6 +67,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         if (request.Confirmed)
         {
             await _organisationManagementFacade.RegisterMember(request.Result);
+            _notificationService.Show("Success", $"Member {request.Result.FirstName} {request.Result.LastName} registered successfully.", NotificationType.Success);
         }
     }
 
@@ -95,5 +98,6 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = [];
     private static bool CanShowMemberProfile(MemberData member) => true;
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
+    private readonly INotificationService _notificationService;
     private readonly IDisposable _subscription;
 }

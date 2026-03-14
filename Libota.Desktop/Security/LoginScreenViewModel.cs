@@ -14,6 +14,7 @@ using Libota.Application.Users.Services;
 using Libota.Data.Models.Organisation;
 using Libota.Desktop.Assets.Resources;
 using Libota.Desktop.Security.Events;
+using Libota.Desktop.Services.Notifications;
 using Microsoft.Extensions.Logging;
 
 namespace Libota.Desktop.Security;
@@ -24,9 +25,11 @@ public partial class LoginScreenViewModel : ObservableValidator
     public LoginScreenViewModel(
         ISetupService setupService,
         IUserSessionService userSessionService,
-        ILogger<LoginScreenViewModel> logger)
+        ILogger<LoginScreenViewModel> logger,
+        INotificationService notificationService)
     {
         _userSessionService = userSessionService;
+        _notificationService = notificationService;
         
         _userSessionService?.UserSessions.Subscribe(session =>
         {
@@ -69,6 +72,10 @@ public partial class LoginScreenViewModel : ObservableValidator
     {
         var credentials = new Credentials(UserName, Password);
         var response = await _userSessionService?.Authenticate(credentials, CurrentOrganisation)!;
+        if (response is null or { IsAuthenticated: false })
+        {
+            _notificationService.Show(Messages.login_authentication_failed_title, Messages.login_authentication_failed_message, NotificationType.Error);
+        }
         return response;
     }
 
@@ -83,4 +90,5 @@ public partial class LoginScreenViewModel : ObservableValidator
     }
 
     private readonly IUserSessionService? _userSessionService;
+    private readonly INotificationService _notificationService;
 }

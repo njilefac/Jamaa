@@ -1,6 +1,6 @@
-using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Libota.Application.Users.Services;
+using Libota.Desktop.Services.Notifications;
 using Libota.Desktop.Services.Navigation.Interfaces;
 using Libota.Desktop.Services.Navigation.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +24,9 @@ public static class PresentationServicesRegistration
             services.AddSingleton<IUserSessionService, UserSessionService>();
             services.AddSingleton<IRouteResolver, RouteResolver>();
             services.AddSingleton<IRouteRegistry, RouteRegistry>();
-            services.AddScoped<WindowNotificationManager>();
+            services.AddSingleton<AvaloniaNotificationService>();
+            services.AddSingleton<INotificationService>(sp => sp.GetRequiredService<AvaloniaNotificationService>());
+            services.AddSingleton<Shared.Shell>();
 
             return services;
         }
