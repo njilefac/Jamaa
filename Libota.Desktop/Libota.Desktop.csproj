@@ -25,52 +25,52 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects> <!-- optional for .NET Framework -->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Akka.Persistence.Hosting" Version="1.5.57" />
-    <PackageReference Include="Akka.Persistence.Sql.Hosting" Version="1.5.55.1" />
+    <PackageReference Include="Akka.Persistence.Hosting" Version="1.5.62" />
+    <PackageReference Include="Akka.Persistence.Sql.Hosting" Version="1.5.60.1" />
     <PackageReference Include="Akka.Persistence.Sqlite" Version="1.5.39" />
     <PackageReference Include="Avalonia.Labs.Notifications" Version="11.3.1" />
     <PackageReference Include="Avalonia.Labs.Panels" Version="11.3.1" />
     <PackageReference Include="Avalonia.Labs.Qr" Version="11.3.1" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.10" />
-    <PackageReference Include="Avalonia" Version="11.3.10" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.10" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
+    <PackageReference Include="Avalonia" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
     <PackageReference Include="Avalonia.MonoMac" Version="0.6.1" />
     <PackageReference Include="CalendarControl.Avalonia" Version="11.2.5" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Dotnet.Bundle" Version="0.9.13" />
-    <PackageReference Include="DynamicData" Version="9.4.1" />
+    <PackageReference Include="DynamicData" Version="9.4.31" />
     <PackageReference Include="FluentAvalonia.BreadcrumbBar" Version="2.0.2" />
-    <PackageReference Include="FluentAvaloniaUI" Version="2.4.1" />
-    <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="2.0.316.1" />
+    <PackageReference Include="FluentAvaloniaUI" Version="2.5.0" />
+    <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="2.0.320" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
-    <PackageReference Include="Huskui.Avalonia" Version="0.10.1" />
-    <PackageReference Include="Irihi.Ursa" Version="1.14.1" />
-    <PackageReference Include="Irihi.Ursa.Themes.Semi" Version="1.14.1" />
+    <PackageReference Include="Huskui.Avalonia" Version="0.10.3" />
+    <PackageReference Include="Irihi.Ursa" Version="1.15.0" />
+    <PackageReference Include="Irihi.Ursa.Themes.Semi" Version="1.15.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.3.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
     <PackageReference Include="Mvvm.CommonInteractions.Avalonia" Version="1.0.68" />
     <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="3.0.4" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
     <PackageReference Include="QRCode.Avalonia" Version="1.0.0" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
-    <PackageReference Include="Semi.Avalonia" Version="11.3.7.2" />
-    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Semi.Avalonia" Version="11.3.7.3" />
+    <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="Serilog.Enrichers.AssemblyName" Version="2.0.0" />
     <PackageReference Include="Serilog.Enrichers.Context" Version="4.6.5" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
@@ -87,8 +87,8 @@
     <PackageReference Include="System.Reactive" Version="6.1.0" />
     <PackageReference Remove="Microsoft.Maui.Controls" />
     <PackageReference Remove="Microsoft.Maui.Controls.Compatibility" />
-    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9" />
-    <PackageReference Include="Xaml.Behaviors.Interactions.DragAndDrop.DataGrid" Version="11.3.9" />
+    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5" />
+    <PackageReference Include="Xaml.Behaviors.Interactions.DragAndDrop.DataGrid" Version="11.3.9.5" />
   </ItemGroup>
   
   <ItemGroup>

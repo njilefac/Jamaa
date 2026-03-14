@@ -120,7 +120,7 @@ public partial class Program
         return mainWindow;
     }
 
-    private static void UpdateDatabase(ILogger<Program>? logger, IServiceProvider serviceProvider)
+    private static void UpdateDatabase(ILogger<Program> logger, IServiceProvider serviceProvider)
     {
         var dataContext = serviceProvider.GetService<LibotaDbContext>();
         if (dataContext == null) return;
@@ -128,7 +128,7 @@ public partial class Program
         var pendingMigrations = dataContext.Database.GetPendingMigrations().ToArray();
         if (pendingMigrations.Length != 0)
         {
-            LogApplyingPendingMigrationsMigrations(logger, string.Join(", ", pendingMigrations));
+            LogApplyingPendingMigrations(logger, string.Join(", ", pendingMigrations));
             dataContext.Database.Migrate();
             LogTheDatabaseWasUpgraded(logger);
         }
@@ -142,7 +142,7 @@ public partial class Program
     static partial void LogException(ILogger<Program> logger);
 
     [LoggerMessage(LogLevel.Information, "applying pending migrations: [{migrations}]")]
-    static partial void LogApplyingPendingMigrationsMigrations(ILogger<Program> logger, string migrations);
+    static partial void LogApplyingPendingMigrations(ILogger<Program> logger, string migrations);
 
     [LoggerMessage(LogLevel.Information, "the database was upgraded")]
     static partial void LogTheDatabaseWasUpgraded(ILogger<Program> logger);

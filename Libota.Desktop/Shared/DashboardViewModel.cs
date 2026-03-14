@@ -42,8 +42,12 @@ public partial class DashboardViewModel : ObservableValidator,
         ];
     }
 
-    partial void OnSelectedItemChanged(NavigationItemModel value)
+    partial void OnSelectedItemChanged(NavigationItemModel? value)
     {
+        if (value == null)
+        {
+            return;
+        }
         WeakReferenceMessenger.Default.Send(new ModuleSelected(value.TargetRoute));
     }
 

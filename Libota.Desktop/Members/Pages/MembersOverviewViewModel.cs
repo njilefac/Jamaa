@@ -4,9 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
-using Domain.Shared.Values;
 using JetBrains.Annotations;
 using Libota.Application.Organisation;
 using Libota.Desktop.Members.Components;
@@ -33,45 +31,23 @@ public partial class MembersOverviewViewModel : ObservableValidator,
 
     public MembersOverviewViewModel(
         IOrganisationManagementFacade organisationManagementFacade,
+        MembersSummary membersSummary,
         IRouteResolver routeResolver)
     {
         _routeResolver = routeResolver;
         NavigateTo(Routes.MembersList);
+        MembersSummary = membersSummary;
 
         WeakReferenceMessenger.Default.RegisterAll(this);
 
-        organisationManagementFacade.CurrentMembers.Subscribe(m =>
-        {
-            MembersSummary.TotalMembersCount++;
-            if (m.Gender == Gender.Male)
-            {
-                MembersSummary.MaleMembersCount++;
-            }
-            else
-            {
-                MembersSummary.FemaleMembersCount++;
-            }
-        });
-
-        organisationManagementFacade.MemberDeleted.Subscribe(m =>
-        {
-            MembersSummary.TotalMembersCount--;
-            if (m.Gender == Gender.Male)
-            {
-                MembersSummary.MaleMembersCount--;
-            }
-            else
-            {
-                MembersSummary.FemaleMembersCount--;
-            }
-        });
+        
     }
 
     private void AddToNavigationHistory(IRouteableViewModel state)
     {
         _navigationHistory.AddLast(state);
-        var clickCommand = new RelayCommand(() => NavigateTo(state));
-        Breadcrumbs.Add(new BreadcrumbItemModel(state.Title, string.Empty, ClickCommand: clickCommand));
+        var breadCrumbClick = new RelayCommand(() => NavigateTo(state));
+        Breadcrumbs.Add(new BreadcrumbItemModel(state.Title, string.Empty, ClickCommand: breadCrumbClick));
         Breadcrumbs[^1] = Breadcrumbs[^1] with { IsActive = false };
         // activate all except the last
         for (var i = 0; i < Breadcrumbs.Count - 1; i++)
@@ -98,9 +74,6 @@ public partial class MembersOverviewViewModel : ObservableValidator,
         }
     }
 
-    [ObservableProperty] private IRouteableViewModel? _activeContent;
-    [ObservableProperty] private MembersSummary _membersSummary = new();
-
     public void Receive(NavigateBackRequested message)
     {
         GoBack();
@@ -108,21 +81,29 @@ public partial class MembersOverviewViewModel : ObservableValidator,
 
     public void Receive(MemberDetailsRequested message)
     {
-        ActiveContent = new MemberProfileViewModel
+        var viewModel = _routeResolver.Resolve(Routes.MemberProfile, message.Member) as MemberProfileViewModel;
+        if (viewModel != null)
         {
-            FirstName = message.Member.FirstName,
-            LastName = message.Member.LastName,
-            MiddleName = message.Member.MiddleName,
-            Gender = message.Member.Gender,
-            Registration = message.Member.Registration.Member.Registration
-        };
-        AddToNavigationHistory(ActiveContent ?? throw new InvalidOperationException());
+            viewModel.FirstName = message.Member.FirstName;
+            viewModel.LastName = message.Member.LastName;
+            viewModel.MiddleName = message.Member.MiddleName;
+            viewModel.Gender = message.Member.Gender;
+            viewModel.Registration = message.Member.Registration.Member.Registration;
+            ActiveContent = viewModel;
+            AddToNavigationHistory(ActiveContent);
+        }
     }
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
         WeakReferenceMessenger.Default.UnregisterAll(this);
+        MembersSummary.Dispose();
+        
+        foreach (var viewModel in _navigationHistory.OfType<IDisposable>())
+        {
+            viewModel.Dispose();
+        }
     }
 
     public void NavigateTo<TViewModel>(object? parameter = null)
@@ -185,4 +166,7 @@ public partial class MembersOverviewViewModel : ObservableValidator,
     public Guid Id => Guid.Parse("d1c8b9e7-5c3a-4f8e-9b2a-1f2e3d4c5b6a");
     public string Title  => "Members";
     public object HeaderContent => MembersSummary;
+    
+    [ObservableProperty] private IRouteableViewModel? _activeContent;
+    [ObservableProperty] private MembersSummary _membersSummary;
 }
