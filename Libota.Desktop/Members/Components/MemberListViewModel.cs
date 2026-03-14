@@ -18,56 +18,45 @@ using Libota.Desktop.Services.Navigation.Interfaces;
 namespace Libota.Desktop.Members.Components;
 
 [UsedImplicitly]
-public partial class MemberListViewModel : ObservableValidator, IRouteableViewModel
+public partial class MemberListViewModel : ObservableValidator, IRouteableViewModel, IDisposable
 {
     public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
-    public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();   
-    private readonly IOrganisationManagementFacade _organisationManagementFacade;
-    private readonly IRouteResolver _routeResolver;
+    public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();
+    public string Title => "Overview";
 
 
-    public MemberListViewModel(
-        IOrganisationManagementFacade organisationManagementFacade,
+    public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
         MemberRegistrationViewModel memberRegistrationViewModel,
         Pages.MemberProfileViewModel memberProfileViewModel, 
         IRouteResolver routeResolver)
     {
         MemberRegistrationViewModel = memberRegistrationViewModel;
         _organisationManagementFacade = organisationManagementFacade;
-        _routeResolver = routeResolver;
 
         var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
             
-        var members = new ObservableCollectionExtended<MemberData>();
-        membersSourceList.PopulateFrom(_organisationManagementFacade.CurrentMembers);
+        _subscription = membersSourceList.PopulateFrom(_organisationManagementFacade.CurrentMembers);
+
+        var filter = this.WhenValueChanged(x => x.SearchTerm)
+            .Throttle(TimeSpan.FromMilliseconds(250))
+            .Select(BuildFilter);
+        
         membersSourceList
             .Connect()
+            .Filter(filter)
             .SortAndBind(Members, SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
             .DisposeMany()
-            .Subscribe(changeSet =>
-            {
-                foreach (var change in changeSet)
-                {
-                    members.Add(change.Current);
-                }
-            });
-
-        this.WhenValueChanged<MemberListViewModel, string>(x => x.SearchTerm, false)
-            .Throttle(TimeSpan.FromSeconds(1))
-            .Subscribe(term =>
-            {
-                var matchingMembers = string.IsNullOrWhiteSpace(term)
-                    ? members
-                    : members.Where(m => MemberMatches(m, term.Trim()));
-
-                membersSourceList.Edit(innerList =>
-                {
-                    innerList.Clear();
-                    innerList.AddOrUpdate(matchingMembers);
-                });
-            });
+            .Subscribe();
     }
-    
+
+    private static Func<MemberData, bool> BuildFilter(string? term)
+    {
+        if (string.IsNullOrWhiteSpace(term))
+            return _ => true;
+
+        var search = term.Trim();
+        return m => MemberMatches(m, search);
+    }
 
     [RelayCommand]
     private async Task RegisterMember()
@@ -78,19 +67,12 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             await _organisationManagementFacade.RegisterMember(request.Result);
         }
     }
-    
-    [ObservableProperty] private string? _searchTerm;
-    [ObservableProperty] private object _activeContent;
-        
-    [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = [];
 
     [RelayCommand(CanExecute = nameof(CanShowMemberProfile))]
     private void ShowMemberProfile(MemberData member)
     {
         WeakReferenceMessenger.Default.Send(new MemberDetailsRequested(member));
     }
-
-    private static bool CanShowMemberProfile(MemberData member) => true  ;
 
     private static bool MemberMatches(MemberData member, string? searchTerm)
     {
@@ -102,5 +84,16 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
                member.MiddleName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    public string Title => "Overview";
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _subscription.Dispose();
+    }
+    
+    [ObservableProperty] private string? _searchTerm;
+    [ObservableProperty] private object _activeContent;
+    [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = [];
+    private static bool CanShowMemberProfile(MemberData member) => true;
+    private readonly IOrganisationManagementFacade _organisationManagementFacade;
+    private readonly IDisposable _subscription;
 }
