@@ -12,18 +12,26 @@
     x:DataType="data:MemberData"
     Focusable="True"
     IsTabStop="True"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    >
+    <UserControl.Styles>
+        <Style Selector="components|MemberCard[IsSelected=True] husk|Card">
+            <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight3}" />
+        </Style>
+    </UserControl.Styles>
     <husk:Card Classes="memberlist member-card">
         <Grid ColumnDefinitions="*" RowDefinitions="*,Auto">
             <Grid
                 Grid.Row="0"
-                ColumnDefinitions="Auto,Auto"
-                RowDefinitions="Auto,Auto,Auto,Auto,*">
+                ColumnDefinitions="*,Auto"
+                RowDefinitions="Auto,Auto,Auto,Auto,*"
+                >
                 <Label
                     Grid.Row="0"
                     Grid.Column="0"
                     Classes="member-card title"
-                    FontWeight="Bold">
+                    FontWeight="Bold"
+                    >
                     <Label.Content>
                         <MultiBinding StringFormat="{}{0} {1}">
                             <Binding Path="FirstName" />
@@ -31,19 +39,29 @@
                         </MultiBinding>
                     </Label.Content>
                 </Label>
+                <CheckBox
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Classes="member-card selection"
+                    IsChecked="{Binding $parent[components:MemberCard].IsSelected, Mode=TwoWay}"
+                    />
                 <husk:Divider
                     Grid.Row="1"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
-                    Classes="member-card" />
+                    Classes="member-card"
+                    />
                 <Label
                     Grid.Row="2"
                     Grid.Column="0"
-                    Content="{Binding Registration.MembershipType, StringFormat='Membership: {0}'}" />
+                    Content="{Binding Registration.MembershipType, StringFormat='Membership: {0}'}"
+                    />
                 <Label
                     Grid.Row="3"
                     Grid.Column="0"
-                    Content="{Binding Registration.Status, StringFormat='Registration: {0}'}" />
+                    Content="{Binding Registration.Status, StringFormat='Registration: {0}'}"
+                    />
             </Grid>
             <StackPanel Grid.Row="1">
                 <husk:Divider Classes="member-card" />
@@ -51,7 +69,8 @@
                     HorizontalAlignment="Left"
                     Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}"
                     CommandParameter="{Binding}"
-                    Content="Edit" />
+                    Content="Edit"
+                    />
             </StackPanel>
         </Grid>
     </husk:Card>

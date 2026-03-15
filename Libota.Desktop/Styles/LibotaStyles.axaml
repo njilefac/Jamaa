@@ -101,8 +101,10 @@
     <Style Selector="husk|Card.memberlist.member-card">
         <Setter Property="Width" Value="240" />
         <Setter Property="Height" Value="180" />
-        <Setter Property="Padding" Value="8" />
         <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="CheckBox.member-card.selection">
+        <Setter Property="Margin" Value="0,0,10,0" />
     </Style>
     <Style Selector="Label.member-card.title">
         <Setter Property="FontSize" Value="16" />
