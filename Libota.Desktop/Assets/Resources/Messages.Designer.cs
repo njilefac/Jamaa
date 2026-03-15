@@ -8,6 +8,9 @@
 //------------------------------------------------------------------------------
 
 namespace Libota.Desktop.Assets.Resources {
+    using System;
+    
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -53,9 +56,58 @@ namespace Libota.Desktop.Assets.Resources {
                 return ResourceManager.GetString("login_error_password", resourceCulture);
             }
         }
+        
+        internal static string setup_error_username {
+            get {
+                return ResourceManager.GetString("setup_error_username", resourceCulture);
+            }
+        }
+        
+        internal static string setup_error_password {
+            get {
+                return ResourceManager.GetString("setup_error_password", resourceCulture);
+            }
+        }
+        
+        internal static string organisation_name_required {
+            get {
+                return ResourceManager.GetString("organisation.name.required", resourceCulture);
+            }
+        }
+        
+        internal static string organisation_name_length {
+            get {
+                return ResourceManager.GetString("organisation_name_length", resourceCulture);
+            }
+        }
+        
+        internal static string organisation_description_required {
+            get {
+                return ResourceManager.GetString("organisation_description_required", resourceCulture);
+            }
+        }
+        
+        internal static string organisation_description_length {
+            get {
+                return ResourceManager.GetString("organisation_description_length", resourceCulture);
+            }
+        }
+        
         internal static string setup_error_email {
             get {
                 return ResourceManager.GetString("setup_error_email", resourceCulture);
+            }
+        }
+        
+        internal static string login_authentication_failed_title {
+            get {
+                return ResourceManager.GetString("login_authentication_failed_title", resourceCulture);
+            }
+        }
+        
+        internal static string login_authentication_failed_message {
+            get {
+                return ResourceManager.GetString("login_authentication_failed_message", resourceCulture);
             }
         }
     }

@@ -45,4 +45,10 @@
     <data name="setup_error_email" xml:space="preserve">
         <value>a valid email address is required</value>
     </data>
+    <data name="login_authentication_failed_title" xml:space="preserve">
+        <value>Authentication Failed</value>
+    </data>
+    <data name="login_authentication_failed_message" xml:space="preserve">
+        <value>Invalid username or password. Please try again.</value>
+    </data>
 </root>

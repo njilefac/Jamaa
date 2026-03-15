@@ -113,9 +113,9 @@ public partial class Program
 
     private static Shell CreateAndConfigureMainWindow(ServiceProvider serviceProvider)
     {
-        var mainWindow = new Shell();
-        var mainViewModel = (serviceProvider ?? throw new InvalidOperationException())
-            .GetRequiredService<ShellViewModel>();
+        var mainWindow = (serviceProvider ?? throw new InvalidOperationException())
+            .GetRequiredService<Shell>();
+        var mainViewModel = serviceProvider.GetRequiredService<ShellViewModel>();
         mainWindow.DataContext = mainViewModel;
         return mainWindow;
     }

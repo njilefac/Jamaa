@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using Libota.Application.Setup;
 using Libota.Application.Users.Services;
 using Libota.Desktop.Security;
+using Libota.Desktop.Security.Events;
 using Libota.Desktop.Services.Navigation.Interfaces;
 using Libota.Desktop.Services.Navigation.Values;
 using Libota.Desktop.Setup;
