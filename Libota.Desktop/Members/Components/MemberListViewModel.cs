@@ -8,6 +8,7 @@ using Domain.Organisation.Requests;
 using DynamicData;
 using DynamicData.Binding;
 using JetBrains.Annotations;
+using Avalonia.Controls.Selection;
 using Libota.Application.Organisation;
 using Libota.Data.Models.Members;
 using Libota.Desktop.Members.Messages;
@@ -22,6 +23,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
 {
     public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
     public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();
+    public SelectionModel<MemberData> Selection { get; }
     public string Title => "Overview";
 
 
@@ -49,6 +51,8 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             .SortAndBind(Members, SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
             .DisposeMany()
             .Subscribe();
+
+        Selection = new() { Source = Members, SingleSelect = false };
     }
 
     private static Func<MemberData, bool> BuildFilter(string? term)
@@ -85,6 +89,18 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
                member.LastName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase) ||
                !string.IsNullOrWhiteSpace(member.MiddleName) &&
                member.MiddleName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [RelayCommand]
+    private void SelectAll()
+    {
+        Selection.SelectAll();
+    }
+
+    [RelayCommand]
+    private void UnselectAll()
+    {
+        Selection.Clear();
     }
 
     public void Dispose()
