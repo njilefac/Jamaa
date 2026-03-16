@@ -1,6 +1,7 @@
 <Styles
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:components="clr-namespace:Libota.Desktop.Members.Components"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:shared="clr-namespace:Libota.Desktop.Shared"
     >
@@ -108,6 +109,12 @@
     </Style>
     <Style Selector="Label.member-card.title">
         <Setter Property="FontSize" Value="16" />
+    </Style>
+    <Style Selector="components|MemberCard">
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="components|MemberCard[IsSelected=True] husk|Card">
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight3}" />
     </Style>
     <Style Selector="ListBoxItem">
         <Setter Property="Padding" Value="4" />

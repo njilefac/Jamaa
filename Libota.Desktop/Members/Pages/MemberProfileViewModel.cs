@@ -1,12 +1,10 @@
 using System;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Domain.Organisation.Values;
 using Domain.Shared.Values;
 using JetBrains.Annotations;
 using Libota.Data.Models.Members;
 using Libota.Desktop.Services.Navigation.Interfaces;
-using Libota.Desktop.Services.Navigation.Messages;
 
 namespace Libota.Desktop.Members.Pages;
 
@@ -24,5 +22,5 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
     public RegistrationStatus[] RegistrationStatuses => Enum.GetValues<RegistrationStatus>();
     public MembershipType[] MembershipTypes => Enum.GetValues<MembershipType>();
 
-    public string Title => $"Member-Details";
+    public string Title => $"Member Profile";
 }
