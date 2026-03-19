@@ -53,4 +53,15 @@ public partial class MemberRegistrationViewModel : ObservableValidator, IResultP
     [ObservableProperty] private DateTime _registrationBegin;
     [ObservableProperty] private MembershipType _membershipType;
     public MemberRegistrationRequest Result => GetRegistrationRequest();
+
+    public void Reset()
+    {
+        FirstName = null;
+        MiddleName = null;
+        LastName = null;
+        SelectedGender = Gender.Unknown;
+        MembershipType = MembershipType.Regular;
+        RegistrationBegin = DateTime.Today;
+        ClearErrors();
+    }
 }

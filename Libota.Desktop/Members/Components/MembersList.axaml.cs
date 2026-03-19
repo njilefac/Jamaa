@@ -11,7 +11,6 @@ namespace Libota.Desktop.Members.Components;
 public partial class MembersList : UserControl, IDisposable
 {
     private IDisposable? _handler;
-    private ContentDialog? _dialog;
 
     public MembersList()
     {
@@ -36,23 +35,26 @@ public partial class MembersList : UserControl, IDisposable
         _handler = null;
         _handler = vm.AddMemberRegistration.RegisterHandler(async interaction =>
         {
-            _dialog ??= this.FindControl<ContentDialog>("AddMemberDialog");
+            var dialog = new ContentDialog
+            {
+                Title = "Register New Member",
+                PrimaryButtonText = "Register Member",
+                SecondaryButtonText = "Cancel",
+                Content = new MemberRegistrationView
+                {
+                    DataContext = interaction.Input
+                }
+            };
 
             var nullResponse = new DialogResponse<MemberRegistrationRequest>(Confirmed: false, Result: null!);
 
-            if (_dialog == null)
-            {
-                throw new InvalidOperationException("Could not find AddMemberDialog in MembersList view.");
-            }
-
-            _dialog.DataContext = interaction.Input;
             var owner = this.FindAncestorOfType<Window>();
-            var result = await _dialog.ShowAsync(owner);
-
+            var result = await dialog.ShowAsync(owner);
+            
             var output = result == ContentDialogResult.Primary
                 ? new DialogResponse<MemberRegistrationRequest>(
                     Confirmed: true,
-                    Result: (_dialog.DataContext as IResultProvider<MemberRegistrationRequest>)!.Result
+                    Result: interaction.Input.Result
                 )
                 : nullResponse;
 
