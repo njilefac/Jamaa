@@ -67,6 +67,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     [RelayCommand]
     private async Task RegisterMember()
     {
+        MemberRegistrationViewModel.Reset();
         var request = await AddMemberRegistration.Handle(MemberRegistrationViewModel);
         if (request.Confirmed)
         {
