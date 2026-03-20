@@ -86,7 +86,7 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private RegistrationData? _registration;
 
-    public static Gender[] GendersOptions => Enum.GetValues<Gender>();
+    public static Gender[] GenderOptions => Enum.GetValues<Gender>();
     public static RegistrationStatus[] RegistrationStatusOptions => Enum.GetValues<RegistrationStatus>();
     public static MembershipType[] MembershipTypeOptions => Enum.GetValues<MembershipType>();
     
