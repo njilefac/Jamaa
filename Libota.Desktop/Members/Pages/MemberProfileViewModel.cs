@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using Libota.Application.Organisation;
 using Libota.Data.Models.Members;
 using Libota.Desktop.Services.Navigation.Interfaces;
+using Libota.Desktop.Services.Notifications;
 
 namespace Libota.Desktop.Members.Pages;
 
@@ -15,11 +16,13 @@ namespace Libota.Desktop.Members.Pages;
 public partial class MemberProfileViewModel: ObservableObject, IRouteableViewModel
 {
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
+    private readonly INotificationService _notificationService;
     private MemberData? _originalMember;
 
-    public MemberProfileViewModel(IOrganisationManagementFacade organisationManagementFacade)
+    public MemberProfileViewModel(IOrganisationManagementFacade organisationManagementFacade, INotificationService notificationService)
     {
         _organisationManagementFacade = organisationManagementFacade;
+        _notificationService = notificationService;
     }
 
     public void Initialize(MemberData member)
@@ -90,6 +93,8 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
         };
 
         await _organisationManagementFacade.UpdateMember(request);
+        
+        _notificationService.Show("Success", $"Member {request.FirstName} {request.LastName} updated successfully.", NotificationType.Success);
         
         // Update original to disable save button again
         _originalMember.FirstName = FirstName;
