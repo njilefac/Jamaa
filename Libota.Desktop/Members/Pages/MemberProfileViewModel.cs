@@ -1,5 +1,6 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Domain.Organisation.Values;
 using Domain.Shared.Values;
 using JetBrains.Annotations;
@@ -21,6 +22,11 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
     public Gender[] Genders => Enum.GetValues<Gender>();
     public RegistrationStatus[] RegistrationStatuses => Enum.GetValues<RegistrationStatus>();
     public MembershipType[] MembershipTypes => Enum.GetValues<MembershipType>();
+    
+    [RelayCommand]
+    private void Save()
+    {
+    }
 
     public string Title => $"Member Profile";
 }
