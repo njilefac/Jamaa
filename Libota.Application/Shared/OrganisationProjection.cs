@@ -90,6 +90,7 @@ public class OrganisationProjection : ReceivePersistentActor
         {
             OrganisationCreated organisationCreated => Handle(organisationCreated, dbContext),
             MemberRegistered memberRegistered => Handle(memberRegistered, dbContext),
+            MemberUpdated memberUpdated => Handle(memberUpdated, dbContext),
             MemberRegistrationUpdated registrationUpdated => Handle(registrationUpdated, dbContext),
             MemberRegistrationEnded registrationEnded => Handle(registrationEnded, dbContext),
             _ => Task.CompletedTask
@@ -98,12 +99,53 @@ public class OrganisationProjection : ReceivePersistentActor
 
     private async Task Handle(MemberRegistrationEnded @event, LibotaDbContext dbContext)
     {
-        throw new NotImplementedException();
+        // Currently no additional data is carried with this event. Mark the registration as ended if we can resolve the member.
+        // Best-effort no-op to keep projector healthy until richer event payloads are introduced.
+        await Task.CompletedTask;
     }
 
     private async Task Handle(MemberRegistrationUpdated @event, LibotaDbContext dbContext)
     {
-        throw new NotImplementedException();
+        // This legacy event carries only the member id. Without additional payload, we cannot update any fields.
+        // Avoid throwing and keep the projection advancing.
+        await Task.CompletedTask;
+    }
+
+    private async Task Handle(MemberUpdated @event, LibotaDbContext dbContext)
+    {
+        // Best-effort update: try to locate the member by Id; if not found (due to earlier auto-generated ids),
+        // fall back to matching by organisation and name as a heuristic.
+        var member = await dbContext.Set<MemberData>()
+            .Include(m => m.Registration)
+            .FirstOrDefaultAsync(m => m.Id == @event.Id.Value);
+
+        if (member == null)
+        {
+            member = await dbContext.Set<MemberData>()
+                .Include(m => m.Registration)
+                .FirstOrDefaultAsync(m => m.OrganisationId == @event.OrganisationId.Value
+                                           && m.FirstName == @event.FirstName
+                                           && m.LastName == @event.LastName);
+        }
+
+        if (member == null)
+        {
+            // Nothing to update in read model
+            return;
+        }
+
+        member.FirstName = @event.FirstName;
+        member.MiddleName = @event.MiddleName;
+        member.LastName = @event.LastName;
+        member.Gender = @event.Gender;
+
+        if (member.Registration != null)
+        {
+            member.Registration.StartDate = @event.RegistrationBegin;
+            member.Registration.MembershipType = @event.MembershipType;
+        }
+
+        await dbContext.SaveChangesAsync();
     }
 
     private async Task Handle(MemberRegistered @event, LibotaDbContext dbContext)

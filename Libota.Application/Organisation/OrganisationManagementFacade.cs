@@ -6,6 +6,7 @@ using Domain.Members.Queries;
 using Domain.Organisation.Queries;
 using Domain.Organisation.Requests;
 using Domain.Organisation.Values;
+using Libota.Application.Members.Aggregates;
 using Libota.Application.Organisation.Commands;
 using Libota.Application.Security.Authorization;
 using Libota.Application.Shared;
@@ -64,6 +65,24 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         return Task.Run(() =>
         {
             var message = new RegisterMember(request.OrganisationId,
+                request.FirstName,
+                request.MiddleName,
+                request.LastName,
+                request.Gender,
+                request.MembershipType,
+                request.RegistrationBegin);
+
+            _commandProcessor.Tell(message);
+        });
+    }
+
+    [Authorize(Operation = "member.update")]
+    public Task UpdateMember(MemberUpdateRequest request)
+    {
+        return Task.Run(() =>
+        {
+            var message = new UpdateMember(request.OrganisationId,
+                new MemberId(request.MemberId),
                 request.FirstName,
                 request.MiddleName,
                 request.LastName,

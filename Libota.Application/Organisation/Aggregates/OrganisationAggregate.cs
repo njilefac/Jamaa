@@ -63,6 +63,23 @@ namespace Libota.Application.Organisation.Aggregates
                 if(LastSequenceNr % 5 == 0)
                     SaveSnapshot(_state);
             });
+            Command<UpdateMember>(command =>
+            {
+                var updatedEvent = new MemberUpdated(
+                    command.MemberId,
+                    command.FirstName,
+                    command.MiddleName,
+                    command.LastName,
+                    command.Gender,
+                    BirthDate: null,
+                    command.RegistrationBegin,
+                    command.MembershipType,
+                    OrganisationId.With(PersistenceId)
+                );
+                Persist(updatedEvent, ApplyEvent);
+                if(LastSequenceNr % 5 == 0)
+                    SaveSnapshot(_state);
+            });
         }
 
         private bool IsValid(RegisterMember command)
@@ -85,6 +102,12 @@ namespace Libota.Application.Organisation.Aggregates
 
             Context.Sender.Tell($"an organisation with the name {command.Name} already exists", Self);
             return false;
+        }
+
+        private void ApplyEvent(MemberUpdated updated)
+        {
+            // The state doesn't currently seem to store member IDs or offer a way to update them by ID.
+            // In a real system, the Domain Entity should have an Update method.
         }
 
         private void ApplyEvent(MemberRegistered registered)

@@ -84,11 +84,7 @@ public partial class MembersOverviewViewModel : ObservableValidator,
         var viewModel = _routeResolver.Resolve(Routes.MemberProfile, message.Member) as MemberProfileViewModel;
         if (viewModel != null)
         {
-            viewModel.FirstName = message.Member.FirstName;
-            viewModel.LastName = message.Member.LastName;
-            viewModel.MiddleName = message.Member.MiddleName;
-            viewModel.Gender = message.Member.Gender;
-            viewModel.Registration = message.Member.Registration.Member.Registration;
+            viewModel.Initialize(message.Member);
             ActiveContent = viewModel;
             AddToNavigationHistory(ActiveContent);
         }
