@@ -25,6 +25,7 @@ public sealed class LibotaEventTagger : IWriteEventAdapter
             MemberRegistered memberRegistered => new Tagged(memberRegistered, new[] { OrganisationEvent, OrganisationChanged,  MemberRegistered }),
             MemberRegistrationUpdated memberRegistrationUpdated => new Tagged(memberRegistrationUpdated, new [] { OrganisationEvent, MemberChanged }), 
             MemberRegistrationEnded memberRegistrationEnded => new Tagged(memberRegistrationEnded, new [] { OrganisationEvent, MemberChanged }), 
+            MemberUpdated memberUpdated => new Tagged(memberUpdated, new [] { OrganisationEvent, MemberChanged }),
             _ => evt
         };
     }

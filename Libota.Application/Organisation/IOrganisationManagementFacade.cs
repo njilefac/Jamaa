@@ -8,6 +8,7 @@ namespace Libota.Application.Organisation
     {
         Task CreateOrganisation(string name, string? description);
         Task RegisterMember(MemberRegistrationRequest request);
+        Task UpdateMember(MemberUpdateRequest request);
         Task<IEnumerable<OrganisationData>> ListOrganisations();
         IObservable<MemberData> MemberUpdated { get; }
         IObservable<MemberData> MemberDeleted { get; }
