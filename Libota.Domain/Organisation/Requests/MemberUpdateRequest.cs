@@ -13,5 +13,6 @@ public class MemberUpdateRequest
     public Gender Gender { get; set; }
     public DateTime RegistrationBegin { get; set; }
     public MembershipType MembershipType { get; set; }
+    public RegistrationStatus Status { get; set; }
     public OrganisationId OrganisationId { get; set; }
 }

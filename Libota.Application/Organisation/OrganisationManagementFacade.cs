@@ -88,6 +88,7 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
                 request.LastName,
                 request.Gender,
                 request.MembershipType,
+                request.Status,
                 request.RegistrationBegin);
 
             _commandProcessor.Tell(message);

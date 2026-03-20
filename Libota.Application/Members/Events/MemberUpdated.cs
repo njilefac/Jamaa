@@ -14,6 +14,7 @@ public record MemberUpdated(
     DateTime? BirthDate,
     DateTime RegistrationBegin,
     MembershipType MembershipType,
+    RegistrationStatus Status,
     OrganisationId OrganisationId) : ILibotaEvent
 {
     public string EntityId => OrganisationId.Value;

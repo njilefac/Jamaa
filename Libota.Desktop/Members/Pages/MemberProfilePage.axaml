@@ -71,7 +71,7 @@
                             Grid.Row="3"
                             Grid.Column="1"
                             Classes="form field"
-                            ItemsSource="{Binding Genders}"
+                            ItemsSource="{Binding GenderOptions}"
                             SelectedItem="{Binding Gender}"
                             >
                             <ComboBox.ItemTemplate>
@@ -100,7 +100,7 @@
                             Grid.Row="0"
                             Grid.Column="1"
                             Classes="form field"
-                            SelectedDate="{Binding Registration.StartDate}"
+                            SelectedDate="{Binding RegistrationStartDate}"
                             />
                         <TextBlock
                             Grid.Row="1"
@@ -112,8 +112,8 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Classes="form field"
-                            ItemsSource="{Binding RegistrationStatuses}"
-                            SelectedItem="{Binding Registration.Status}"
+                            ItemsSource="{Binding RegistrationStatusOptions}"
+                            SelectedItem="{Binding RegistrationStatus}"
                             >
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
@@ -131,8 +131,8 @@
                             Grid.Row="2"
                             Grid.Column="1"
                             Classes="form field"
-                            ItemsSource="{Binding MembershipTypes}"
-                            SelectedItem="{Binding Registration.MembershipType}"
+                            ItemsSource="{Binding MembershipTypeOptions}"
+                            SelectedItem="{Binding MembershipType}"
                             >
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>

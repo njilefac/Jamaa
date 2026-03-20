@@ -12,5 +12,6 @@ namespace Libota.Application.Organisation.Commands
         string LastName,
         Gender Gender,
         MembershipType MembershipType,
+        RegistrationStatus Status,
         DateTime RegistrationBegin);
 }

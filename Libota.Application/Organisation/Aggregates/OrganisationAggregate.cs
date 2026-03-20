@@ -74,6 +74,7 @@ namespace Libota.Application.Organisation.Aggregates
                     BirthDate: null,
                     command.RegistrationBegin,
                     command.MembershipType,
+                    command.Status,
                     OrganisationId.With(PersistenceId)
                 );
                 Persist(updatedEvent, ApplyEvent);

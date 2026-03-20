@@ -143,6 +143,7 @@ public class OrganisationProjection : ReceivePersistentActor
         {
             member.Registration.StartDate = @event.RegistrationBegin;
             member.Registration.MembershipType = @event.MembershipType;
+            member.Registration.Status = @event.Status;
         }
 
         await dbContext.SaveChangesAsync();

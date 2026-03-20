@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Domain.Organisation.Requests;
@@ -32,19 +33,20 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
         MiddleName = member.MiddleName;
         LastName = member.LastName;
         Gender = member.Gender;
-        
-        if (member.Registration != null)
+
+        RegistrationStartDate = member.Registration.StartDate;
+        RegistrationStatus = member.Registration.Status;
+        MembershipType = member.Registration.MembershipType;
+
+        Registration = new RegistrationData
         {
-            Registration = new RegistrationData
-            {
-                Id = member.Registration.Id,
-                StartDate = member.Registration.StartDate,
-                MembershipType = member.Registration.MembershipType,
-                Status = member.Registration.Status,
-                MemberId = member.Registration.MemberId,
-                Organisation = member.Registration.Organisation
-            };
-        }
+            Id = member.Registration.Id,
+            StartDate = member.Registration.StartDate,
+            MembershipType = member.Registration.MembershipType,
+            Status = member.Registration.Status,
+            MemberId = member.Registration.MemberId,
+            Organisation = member.Registration.Organisation
+        };
     }
 
     [ObservableProperty]
@@ -67,16 +69,29 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private DateTime _birthDate;
 
+    // Expose registration fields as top-level observable properties so Save CanExecute updates when they change
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private DateTime _registrationStartDate;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private RegistrationStatus _registrationStatus;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private MembershipType _membershipType;
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private RegistrationData? _registration;
 
-    public Gender[] Genders => Enum.GetValues<Gender>();
-    public RegistrationStatus[] RegistrationStatuses => Enum.GetValues<RegistrationStatus>();
-    public MembershipType[] MembershipTypes => Enum.GetValues<MembershipType>();
+    public static Gender[] GendersOptions => Enum.GetValues<Gender>();
+    public static RegistrationStatus[] RegistrationStatusOptions => Enum.GetValues<RegistrationStatus>();
+    public static MembershipType[] MembershipTypeOptions => Enum.GetValues<MembershipType>();
     
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private async void Save()
+    private async Task Save()
     {
         if (_originalMember == null || Registration == null) return;
 
@@ -87,8 +102,9 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
             MiddleName = MiddleName,
             LastName = LastName,
             Gender = Gender,
-            RegistrationBegin = Registration.StartDate,
-            MembershipType = Registration.MembershipType,
+            RegistrationBegin = RegistrationStartDate,
+            MembershipType = MembershipType,
+            Status = RegistrationStatus,
             OrganisationId = OrganisationId.With(_originalMember.OrganisationId)
         };
 
@@ -101,11 +117,9 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
         _originalMember.MiddleName = MiddleName;
         _originalMember.LastName = LastName;
         _originalMember.Gender = Gender;
-        if (_originalMember.Registration != null)
-        {
-            _originalMember.Registration.StartDate = Registration.StartDate;
-            _originalMember.Registration.MembershipType = Registration.MembershipType;
-        }
+        _originalMember.Registration.StartDate = RegistrationStartDate;
+        _originalMember.Registration.MembershipType = MembershipType;
+        _originalMember.Registration.Status = RegistrationStatus;
         SaveCommand.NotifyCanExecuteChanged();
     }
 
@@ -118,11 +132,10 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
                       LastName != _originalMember.LastName ||
                       Gender != _originalMember.Gender;
 
-        if (Registration != null && _originalMember.Registration != null)
-        {
-            changed |= Registration.StartDate != _originalMember.Registration.StartDate ||
-                       Registration.MembershipType != _originalMember.Registration.MembershipType;
-        }
+        // Compare registration-related fields
+        changed |= RegistrationStartDate != _originalMember.Registration.StartDate ||
+                   MembershipType != _originalMember.Registration.MembershipType ||
+                   RegistrationStatus != _originalMember.Registration.Status;
 
         return changed;
     }
