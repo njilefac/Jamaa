@@ -8,6 +8,7 @@ using Domain.Shared.Values;
 using JetBrains.Annotations;
 using Libota.Application.Organisation;
 using Libota.Data.Models.Members;
+using Libota.Desktop.Members.Messages;
 using Libota.Desktop.Services.Navigation.Interfaces;
 using Libota.Desktop.Services.Notifications;
 
@@ -26,8 +27,9 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
         _notificationService = notificationService;
     }
 
-    public void Initialize(MemberData member)
+    public void Initialize(MemberProfileNavigationArgs args)
     {
+        var member = args.Member;
         _originalMember = member;
         FirstName = member.FirstName;
         MiddleName = member.MiddleName;
@@ -47,7 +49,22 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
             MemberId = member.Registration.MemberId,
             Organisation = member.Registration.Organisation
         };
+
+        if (args.TargetTab != null)
+        {
+            SelectedTabIndex = args.TargetTab switch
+            {
+                "General" => 0,
+                "Finances" => 1,
+                "Attendance" => 2,
+                "Groups" => 3,
+                _ => 0
+            };
+        }
     }
+
+    [ObservableProperty]
+    private int _selectedTabIndex;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]

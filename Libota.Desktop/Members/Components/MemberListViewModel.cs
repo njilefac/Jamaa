@@ -77,9 +77,16 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     }
 
     [RelayCommand(CanExecute = nameof(CanShowMemberProfile))]
-    private void ShowMemberProfile(MemberData member)
+    private void ShowMemberProfile(object? parameter)
     {
-        WeakReferenceMessenger.Default.Send(new MemberDetailsRequested(member));
+        if (parameter is MemberData member)
+        {
+            WeakReferenceMessenger.Default.Send(new MemberDetailsRequested(new MemberProfileNavigationArgs(member)));
+        }
+        else if (parameter is MemberProfileNavigationArgs args)
+        {
+            WeakReferenceMessenger.Default.Send(new MemberDetailsRequested(args));
+        }
     }
 
     private static bool MemberMatches(MemberData member, string? searchTerm)
@@ -113,7 +120,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     [ObservableProperty] private string? _searchTerm;
     [ObservableProperty] private object _activeContent;
     [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = [];
-    private static bool CanShowMemberProfile(MemberData member) => true;
+    private static bool CanShowMemberProfile(object? parameter) => true;
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
     private readonly INotificationService _notificationService;
     private readonly IDisposable _subscription;

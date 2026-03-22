@@ -37,12 +37,14 @@ namespace Libota.Data.Notifiers
                 {
                     case EntityState.Unchanged:
                     {
-                        _insertions.OnNext(changedEntity ?? throw new InvalidOperationException());
-                        break;
-                    }
-                    case EntityState.Modified:
-                    {
-                        _updates.OnNext(changedEntity ?? throw new InvalidOperationException());
+                        if (eventData.OldState == EntityState.Added)
+                        {
+                            _insertions.OnNext(changedEntity ?? throw new InvalidOperationException());
+                        }
+                        else if (eventData.OldState == EntityState.Modified)
+                        {
+                            _updates.OnNext(changedEntity ?? throw new InvalidOperationException());
+                        }
                         break;
                     }
                     case EntityState.Deleted:
