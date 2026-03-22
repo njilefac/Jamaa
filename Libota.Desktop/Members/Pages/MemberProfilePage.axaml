@@ -16,7 +16,7 @@
             <Setter Property="CornerRadius" Value="5" />
         </Style>
     </UserControl.Styles>
-    <TabControl>
+    <TabControl SelectedIndex="{Binding SelectedTabIndex}">
         <TabItem Header="General">
             <StackPanel>
                 <DockPanel>

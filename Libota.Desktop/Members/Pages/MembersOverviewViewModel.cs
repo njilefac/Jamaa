@@ -81,10 +81,10 @@ public partial class MembersOverviewViewModel : ObservableValidator,
 
     public void Receive(MemberDetailsRequested message)
     {
-        var viewModel = _routeResolver.Resolve(Routes.MemberProfile, message.Member) as MemberProfileViewModel;
+        var viewModel = _routeResolver.Resolve(Routes.MemberProfile, message.Args.Member) as MemberProfileViewModel;
         if (viewModel != null)
         {
-            viewModel.Initialize(message.Member);
+            viewModel.Initialize(message.Args);
             ActiveContent = viewModel;
             AddToNavigationHistory(ActiveContent);
         }
