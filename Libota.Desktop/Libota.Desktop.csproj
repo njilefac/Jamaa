@@ -19,6 +19,7 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\Icons\**" />
     <AvaloniaResource Include="Assets\Styles\**" />
+    <AvaloniaResource Include="Assets\splash.png" />
   </ItemGroup>
   <PropertyGroup>
     <GenerateResourceDesignerFiles>true</GenerateResourceDesignerFiles>
