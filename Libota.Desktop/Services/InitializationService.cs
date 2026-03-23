@@ -29,38 +29,22 @@ public static class InitializationService
 {
     public static async Task<Shell> InitializeAsync(IClassicDesktopStyleApplicationLifetime lifeTime)
     {
-        Log.Logger = new LoggerConfiguration()
-            .Enrich.FromLogContext()
-            .Enrich.With<SessionUserNameEnricher>()
-            .WriteTo.Console()
-            .CreateLogger();
+        SetupLogging();
 
-        var environment = Environment.GetEnvironmentVariable("Environment") ?? "Development";
+        var configuration = BuildConfiguration();
 
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile($"appSettings.{environment}.json", false, true)
-            .AddEnvironmentVariables()
-            .Build();
-
-        var serviceProvider = new ServiceCollection()
-            .ConfigureServices(configuration)
-            .ConfigureAkka(lifeTime, configuration)
-            .BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
         var routes = serviceProvider.GetRequiredService<IRouteRegistry>();
         RegisterRoutes(routes);
 
-        var akkaService = serviceProvider.GetRequiredService<IHostedService>();
-        await akkaService.StartAsync(CancellationToken.None);
+        await StartBackgroundServicesAsync(serviceProvider);
 
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         try
         {
             UpdateDatabase(logger, serviceProvider);
-            var diagnosticListener = serviceProvider.GetService<IObserver<DiagnosticListener>>();
-            if (diagnosticListener != null)
-                DiagnosticListener.AllListeners.Subscribe(diagnosticListener);
+            SetupDiagnostics(serviceProvider);
         }
         catch (Exception)
         {
@@ -69,8 +53,49 @@ public static class InitializationService
 
         Messages.Culture = CultureInfo.CurrentUICulture;
 
-        var mainWindow = CreateAndConfigureMainWindow(serviceProvider);
-        return mainWindow;
+        return CreateAndConfigureMainWindow(serviceProvider);
+    }
+
+    private static void SetupLogging()
+    {
+        Log.Logger = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .Enrich.With<SessionUserNameEnricher>()
+            .WriteTo.Console()
+            .CreateLogger();
+    }
+
+    private static IConfigurationRoot BuildConfiguration()
+    {
+        var environment = Environment.GetEnvironmentVariable("Environment") ?? "Development";
+
+        return new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile($"appSettings.{environment}.json", false, true)
+            .AddEnvironmentVariables()
+            .Build();
+    }
+
+    private static ServiceProvider CreateServiceProvider(IConfigurationRoot configuration,
+        IClassicDesktopStyleApplicationLifetime lifeTime)
+    {
+        return new ServiceCollection()
+            .ConfigureServices(configuration)
+            .ConfigureAkka(lifeTime, configuration)
+            .BuildServiceProvider();
+    }
+
+    private static async Task StartBackgroundServicesAsync(IServiceProvider serviceProvider)
+    {
+        var akkaService = serviceProvider.GetRequiredService<IHostedService>();
+        await akkaService.StartAsync(CancellationToken.None);
+    }
+
+    private static void SetupDiagnostics(IServiceProvider serviceProvider)
+    {
+        var diagnosticListener = serviceProvider.GetService<IObserver<DiagnosticListener>>();
+        if (diagnosticListener != null)
+            DiagnosticListener.AllListeners.Subscribe(diagnosticListener);
     }
 
     private static void RegisterRoutes(IRouteRegistry routes)
