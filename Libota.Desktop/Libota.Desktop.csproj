@@ -193,6 +193,9 @@
     <Compile Update="Shared\SplashWindow.axaml.cs">
       <DependentUpon>SplashWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Shared\SplashViewModel.cs">
+      <DependentUpon>SplashWindow.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   
   <ItemGroup>

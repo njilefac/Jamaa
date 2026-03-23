@@ -29,34 +29,34 @@ namespace Libota.Desktop.Services;
 
 public static class InitializationService
 {
-    private static readonly ReplaySubject<string> StatusSubject = new(1);
+    private static readonly BehaviorSubject<string> StatusSubject = new("Initializing application...");
     public static IObservable<string> Status => StatusSubject.AsObservable();
 
     public static async Task<Shell> InitializeAsync(IClassicDesktopStyleApplicationLifetime lifeTime)
     {
-        StatusSubject.OnNext("Setting up logging...");
+        await UpdateStatus("Setting up logging...");
         SetupLogging();
 
-        StatusSubject.OnNext("Building configuration...");
+        await UpdateStatus("Building configuration...");
         var configuration = BuildConfiguration();
 
-        StatusSubject.OnNext("Creating service provider...");
+        await UpdateStatus("Creating service provider...");
         var serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
-        StatusSubject.OnNext("Registering routes...");
+        await UpdateStatus("Registering routes...");
         var routes = serviceProvider.GetRequiredService<IRouteRegistry>();
         RegisterRoutes(routes);
 
-        StatusSubject.OnNext("Starting background services...");
+        await UpdateStatus("Starting background services...");
         await StartBackgroundServicesAsync(serviceProvider);
 
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         try
         {
-            StatusSubject.OnNext("Updating database...");
+            await UpdateStatus("Updating database...");
             UpdateDatabase(logger, serviceProvider);
             
-            StatusSubject.OnNext("Setting up diagnostics...");
+            await UpdateStatus("Setting up diagnostics...");
             SetupDiagnostics(serviceProvider);
         }
         catch (Exception)
@@ -66,8 +66,14 @@ public static class InitializationService
 
         Messages.Culture = CultureInfo.CurrentUICulture;
 
-        StatusSubject.OnNext("Finalizing initialization...");
+        await UpdateStatus("Finalizing initialization...");
         return CreateAndConfigureMainWindow(serviceProvider);
+    }
+
+    private static async Task UpdateStatus(string status)
+    {
+        StatusSubject.OnNext(status);
+        await Task.Yield();
     }
 
     private static void SetupLogging()

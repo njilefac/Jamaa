@@ -17,7 +17,8 @@ public class App : Avalonia.Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var splashWindow = new SplashWindow();
+            var splashViewModel = new SplashViewModel();
+            var splashWindow = new SplashWindow { DataContext = splashViewModel };
             desktop.MainWindow = splashWindow;
 
             Dispatcher.UIThread.InvokeAsync(async () =>
@@ -26,6 +27,7 @@ public class App : Avalonia.Application
                 desktop.MainWindow = mainWindow;
                 mainWindow.Show();
                 splashWindow.Close();
+                splashViewModel.Dispose();
             });
         }
 
