@@ -1,6 +1,6 @@
 using Shouldly;
-using Libota.Desktop.Services.Navigation.Models;
-using Libota.Desktop.Services.Navigation.Services;
+using Jamaa.Desktop.Services.Navigation.Models;
+using Jamaa.Desktop.Services.Navigation.Services;
 using Xunit;
 
 namespace UnitTests.Navigation;

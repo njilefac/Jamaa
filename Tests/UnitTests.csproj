@@ -27,7 +27,7 @@
     <Folder Include="Organization\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Libota.Domain\Libota.Domain.csproj" />
-    <ProjectReference Include="..\Libota.Desktop\Libota.Desktop.csproj" />
+    <ProjectReference Include="..\Jamaa.Domain\Jamaa.Domain.csproj" />
+    <ProjectReference Include="..\Jamaa.Desktop\Jamaa.Desktop.csproj" />
   </ItemGroup>
 </Project>

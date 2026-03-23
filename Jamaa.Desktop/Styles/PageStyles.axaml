@@ -1,0 +1,15 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        <Style Selector="TextBlock.page.box.header">
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="Border.page.box">
+                <Setter Property="Margin" Value="15,10,15,10"/>
+                <Setter Property="CornerRadius" Value="4"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="VerticalAlignment" Value="Stretch"/>
+                <Setter Property="Background" Value="LightGray"/>
+                <Setter Property="Padding" Value="5"/>
+        </Style>
+</Styles>
