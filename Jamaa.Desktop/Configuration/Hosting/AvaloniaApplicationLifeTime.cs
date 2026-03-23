@@ -5,14 +5,46 @@ using Microsoft.Extensions.Hosting;
 
 namespace Jamaa.Desktop.Configuration.Hosting;
 
-public class AvaloniaApplicationLifeTime(IControlledApplicationLifetime avaloniaLifeTime) : IHostApplicationLifetime
+public class AvaloniaApplicationLifeTime : IHostApplicationLifetime, IDisposable
 {
-    public void StopApplication()
+    private readonly IControlledApplicationLifetime _avaloniaLifeTime;
+    private readonly CancellationTokenSource _startedSource = new();
+    private readonly CancellationTokenSource _stoppingSource = new();
+    private readonly CancellationTokenSource _stoppedSource = new();
+
+    public AvaloniaApplicationLifeTime(IControlledApplicationLifetime avaloniaLifeTime)
     {
-        avaloniaLifeTime.Shutdown();
+        _avaloniaLifeTime = avaloniaLifeTime;
+        _avaloniaLifeTime.Exit += OnExit;
+        
+        // Signal that the application has started
+        _startedSource?.Cancel();
     }
 
-    public CancellationToken ApplicationStarted => throw new NotImplementedException();
-    public CancellationToken ApplicationStopping => throw new NotImplementedException();
-    public CancellationToken ApplicationStopped => throw new NotImplementedException();
+    private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+    {
+        StopApplication();
+    }
+
+    public void StopApplication()
+    {
+        if (_stoppingSource is { IsCancellationRequested: true }) return;
+
+        _stoppingSource.Cancel();
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => _avaloniaLifeTime.Shutdown());
+        _stoppedSource.Cancel();
+    }
+
+    public CancellationToken ApplicationStarted => _startedSource.Token;
+    public CancellationToken ApplicationStopping => _stoppingSource.Token;
+    public CancellationToken ApplicationStopped => _stoppedSource.Token;
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _startedSource.Dispose();
+        _stoppingSource.Dispose();
+        _stoppedSource.Dispose();
+        _avaloniaLifeTime.Exit -= OnExit;
+    }
 }

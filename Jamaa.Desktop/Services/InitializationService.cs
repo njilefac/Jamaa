@@ -29,6 +29,7 @@ namespace Jamaa.Desktop.Services;
 
 public static class InitializationService
 {
+    private static ServiceProvider? _serviceProvider;
     private static readonly BehaviorSubject<string> StatusSubject = new("Initializing application...");
     public static IObservable<string> Status => StatusSubject.AsObservable();
 
@@ -41,23 +42,23 @@ public static class InitializationService
         var configuration = BuildConfiguration();
 
         await UpdateStatus("Creating service provider...");
-        var serviceProvider = CreateServiceProvider(configuration, lifeTime);
+        _serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
         await UpdateStatus("Registering routes...");
-        var routes = serviceProvider.GetRequiredService<IRouteRegistry>();
+        var routes = _serviceProvider.GetRequiredService<IRouteRegistry>();
         RegisterRoutes(routes);
 
         await UpdateStatus("Starting background services...");
-        await StartBackgroundServicesAsync(serviceProvider);
+        await StartBackgroundServicesAsync(_serviceProvider);
 
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        var logger = _serviceProvider.GetRequiredService<ILogger<Program>>();
         try
         {
             await UpdateStatus("Updating database...");
-            UpdateDatabase(logger, serviceProvider);
+            UpdateDatabase(logger, _serviceProvider);
             
             await UpdateStatus("Setting up diagnostics...");
-            SetupDiagnostics(serviceProvider);
+            SetupDiagnostics(_serviceProvider);
         }
         catch (Exception)
         {
@@ -67,7 +68,24 @@ public static class InitializationService
         Messages.Culture = CultureInfo.CurrentUICulture;
 
         await UpdateStatus("Finalizing initialization...");
-        return CreateAndConfigureMainWindow(serviceProvider);
+        return CreateAndConfigureMainWindow(_serviceProvider);
+    }
+
+    public static async Task ShutdownAsync()
+    {
+        if (_serviceProvider == null) return;
+
+        var akkaService = _serviceProvider.GetService<IHostedService>();
+        if (akkaService != null)
+        {
+            // Stop background services but avoid UI thread dependencies during disposal if not on UI thread
+            await akkaService.StopAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+
+        if (_serviceProvider is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 
     private static async Task UpdateStatus(string status)

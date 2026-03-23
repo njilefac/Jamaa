@@ -21,6 +21,12 @@ public class App : Avalonia.Application
             var splashWindow = new SplashWindow { DataContext = splashViewModel };
             desktop.MainWindow = splashWindow;
 
+            desktop.Exit += (_, _) =>
+            {
+                // Trigger shutdown but don't wait for it to complete on the UI thread
+                _ = InitializationService.ShutdownAsync();
+            };
+
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 var mainWindow = await InitializationService.InitializeAsync(desktop);
