@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -27,23 +29,34 @@ namespace Libota.Desktop.Services;
 
 public static class InitializationService
 {
+    private static readonly ReplaySubject<string> StatusSubject = new(1);
+    public static IObservable<string> Status => StatusSubject.AsObservable();
+
     public static async Task<Shell> InitializeAsync(IClassicDesktopStyleApplicationLifetime lifeTime)
     {
+        StatusSubject.OnNext("Setting up logging...");
         SetupLogging();
 
+        StatusSubject.OnNext("Building configuration...");
         var configuration = BuildConfiguration();
 
+        StatusSubject.OnNext("Creating service provider...");
         var serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
+        StatusSubject.OnNext("Registering routes...");
         var routes = serviceProvider.GetRequiredService<IRouteRegistry>();
         RegisterRoutes(routes);
 
+        StatusSubject.OnNext("Starting background services...");
         await StartBackgroundServicesAsync(serviceProvider);
 
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         try
         {
+            StatusSubject.OnNext("Updating database...");
             UpdateDatabase(logger, serviceProvider);
+            
+            StatusSubject.OnNext("Setting up diagnostics...");
             SetupDiagnostics(serviceProvider);
         }
         catch (Exception)
@@ -53,6 +66,7 @@ public static class InitializationService
 
         Messages.Culture = CultureInfo.CurrentUICulture;
 
+        StatusSubject.OnNext("Finalizing initialization...");
         return CreateAndConfigureMainWindow(serviceProvider);
     }
 
