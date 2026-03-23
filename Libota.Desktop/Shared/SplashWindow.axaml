@@ -1,0 +1,25 @@
+<husk:AppWindow
+    x:Class="Libota.Desktop.Shared.SplashWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:shared="clr-namespace:Libota.Desktop.Shared"
+    Title="Libota"
+    Width="600"
+    Height="400"
+    x:DataType="shared:SplashViewModel"
+    SystemDecorations="None"
+    WindowStartupLocation="CenterScreen"
+    >
+    <Panel>
+        <Image Source="avares://Libota/Assets/splash.png" Stretch="UniformToFill" />
+        <TextBlock
+            Margin="0,0,0,20"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            FontSize="14"
+            Foreground="White"
+            Text="{Binding Status}"
+            />
+    </Panel>
+</husk:AppWindow>

@@ -19,6 +19,7 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\Icons\**" />
     <AvaloniaResource Include="Assets\Styles\**" />
+    <AvaloniaResource Include="Assets\splash.png" />
   </ItemGroup>
   <PropertyGroup>
     <GenerateResourceDesignerFiles>true</GenerateResourceDesignerFiles>
@@ -188,6 +189,12 @@
     </Compile>
     <Compile Update="Members\Components\MembersSummary.cs">
       <DependentUpon>MembersSummaryPane.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Shared\SplashWindow.axaml.cs">
+      <DependentUpon>SplashWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Shared\SplashViewModel.cs">
+      <DependentUpon>SplashWindow.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
   
