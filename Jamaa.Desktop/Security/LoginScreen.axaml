@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="https://irihi.tech/ursa"
     HorizontalContentAlignment="Center"
     VerticalContentAlignment="Center"
     d:DesignHeight="450"
@@ -11,31 +12,20 @@
     mc:Ignorable="d"
     >
 
-    <StackPanel>
+    <u:Form>
         <TextBlock
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Classes="page title"
             Text="User Authentication"
             />
-        <Grid
-            Classes="page form"
-            ColumnDefinitions="Auto,Auto"
-            RowDefinitions="Auto,Auto,Auto,Auto"
-            >
-            <TextBlock
-                Grid.Row="0"
-                Grid.Column="0"
-                Classes="form label"
-                Text="Organisation"
-                />
+
+        <u:FormItem IsRequired="True" Label="Organisation">
             <ComboBox
-                Grid.Row="0"
-                Grid.Column="1"
                 Classes="form field"
                 IsVisible="{Binding Items.Count}"
                 ItemsSource="{Binding Organisations}"
-                SelectedItem="{Binding CurrentOrganisation, Mode=TwoWay}"
+                SelectedItem="{Binding CurrentOrganisation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 >
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -43,51 +33,27 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+        </u:FormItem>
 
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Classes="form label"
-                Text="User Name"
-                />
-            <TextBox
-                Name="UserNameField"
-                Grid.Row="1"
-                Grid.Column="1"
-                Classes="form field"
-                Text="{Binding UserName, Mode=TwoWay}"
-                >
+        <u:FormItem IsRequired="True" Label="User Name">
+            <TextBox Classes="form field" Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 <Interaction.Behaviors>
                     <BehaviorCollection>
                         <FocusOnAttachedToVisualTreeBehavior />
                     </BehaviorCollection>
                 </Interaction.Behaviors>
             </TextBox>
-            <TextBlock
-                Grid.Row="2"
-                Grid.Column="0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Classes="form label"
-                Text="Password"
-                />
-            <TextBox
-                Name="PasswordField"
-                Grid.Row="2"
-                Grid.Column="1"
-                Classes="form field secret"
-                Text="{Binding Password, Mode=TwoWay}"
-                />
-            <Button
-                Grid.Row="3"
-                Grid.Column="1"
-                HorizontalAlignment="Right"
-                Command="{Binding LoginCommand}"
-                Content="Login"
-                IsDefault="True"
-                />
-        </Grid>
-    </StackPanel>
+        </u:FormItem>
+
+        <u:FormItem IsRequired="True" Label="Password">
+            <TextBox Classes="form field secret" Text="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </u:FormItem>
+
+        <Button
+            HorizontalAlignment="Right"
+            Command="{Binding LoginCommand}"
+            Content="Login"
+            IsDefault="True"
+            />
+    </u:Form>
 </UserControl>
