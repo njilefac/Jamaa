@@ -1,0 +1,32 @@
+﻿<husk:AppWindow
+    x:Class="Jamaa.Desktop.Shared.Shell"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
+    Title="{Binding ApplicationTitle}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="shared:Shell"
+    Background="Transparent"
+    Icon="/Assets/Icons/avalonia-logo.ico"
+    ShowActivated="True"
+    TransparencyLevelHint="Blur, Mica"
+    WindowStartupLocation="CenterScreen"
+    WindowState="Maximized"
+    mc:Ignorable="d"
+    >
+    <Grid ColumnDefinitions="*" RowDefinitions="Auto,*,35">
+        <shared:MainMenu Grid.Row="0" Content="{Binding MainMenuViewModel}" />
+        <Panel Grid.Row="1">
+            <ContentControl
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                Content="{Binding ActiveContent}"
+                />
+        </Panel>
+        <Panel Grid.Row="2" />
+    </Grid>
+</husk:AppWindow>

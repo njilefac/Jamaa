@@ -20,11 +20,11 @@
         with:
           dotnet-version: 10.0.x
       - name: Restore dependencies
-        run: dotnet restore Libota.sln
+        run: dotnet restore Jamaa.sln
       - name: Build
-        run: dotnet build Libota.sln --no-restore
+        run: dotnet build Jamaa.sln --no-restore
       - name: Test
-        run: dotnet test Libota.sln --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+        run: dotnet test Jamaa.sln --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
       - name: Test Report
         uses: dorny/test-reporter@v2
         if: always()
