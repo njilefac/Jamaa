@@ -17,22 +17,22 @@ public class UserSessionService(ILogger<UserSessionService> logger, IUserReposit
     {
         ArgumentNullException.ThrowIfNull(credentials);
 
-        logger.LogInformation("authenticating user...");
+        logger.LogDebug("authenticating user...");
         var matchingUser = await users.SingleOrDefault(x =>
             x.Account.Credentials.Equals(credentials));
         if (matchingUser == null)
         {
-            logger.LogInformation("authentication failed!");
+            logger.LogDebug("authentication failed!");
             return NullSession;
         }
 
-        logger.LogInformation("authenticated!");
+        logger.LogDebug("authenticated!");
 
-        logger.LogInformation("creating user session...");
+        logger.LogDebug("creating user session...");
         var userSession = new UserSession(true, credentials.UserName, organisation);
         _userSessions.OnNext(userSession);
         CurrentUserSession = userSession;
-        logger.LogInformation("user session created");
+        logger.LogDebug("user session created");
 
         return await Task.FromResult(userSession);
     }
@@ -41,7 +41,7 @@ public class UserSessionService(ILogger<UserSessionService> logger, IUserReposit
     {
         _userSessions.OnNext(null);
         CurrentUserSession = null;
-        logger.LogInformation("user session terminated.");
+        logger.LogDebug("user session terminated.");
         return await Task.FromResult(true);
     }
 }

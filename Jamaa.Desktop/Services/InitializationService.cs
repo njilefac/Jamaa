@@ -24,10 +24,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jamaa.Desktop.Services;
 
-public static class InitializationService
+public static partial class InitializationService
 {
     private static ServiceProvider? _serviceProvider;
     private static readonly BehaviorSubject<string> StatusSubject = new("Initializing application...");
@@ -185,10 +186,12 @@ public static class InitializationService
     }
 
     // Since LoggerMessage is partial, we'd need to put this in a partial class 
-    // or just use logger.LogError directly for simplicity if it's not a performance critical path.
+    // or just use logger.LogError directly for simplicity if it's not a performance-critical path.
     // However, I will keep it simple for now or use the logger directly.
-    private static void LogException(Microsoft.Extensions.Logging.ILogger logger) => logger.LogError("An error occurred during database update.");
-    private static void LogApplyingPendingMigrations(Microsoft.Extensions.Logging.ILogger logger, string migrations) => logger.LogInformation("Applying pending migrations: [{migrations}]", migrations);
-    private static void LogTheDatabaseWasUpgraded(Microsoft.Extensions.Logging.ILogger logger) => logger.LogInformation("The database was upgraded");
-    private static void LogDatabaseIsUpToDate(Microsoft.Extensions.Logging.ILogger logger) => logger.LogInformation("Database is up-to-date!");
+    private static void LogException(ILogger logger) => logger.LogError("An error occurred during database update.");
+    private static void LogApplyingPendingMigrations(ILogger logger, string migrations) => logger.LogApplyingPendingMigrationsMigrations(migrations);
+    private static void LogTheDatabaseWasUpgraded(ILogger logger) => logger.LogDebug("The database was upgraded");
+    private static void LogDatabaseIsUpToDate(ILogger logger) => logger.LogDebug("Database is up-to-date!");
+    [LoggerMessage(LogLevel.Debug, "Applying pending migrations: [{migrations}]")]
+    static partial void LogApplyingPendingMigrationsMigrations(this ILogger logger, string migrations);
 }
