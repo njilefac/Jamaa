@@ -4,6 +4,7 @@
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
+    xmlns:u="https://irihi.tech/ursa"
     >
     <Design.PreviewWith>
         <Border Padding="20">
@@ -36,40 +37,31 @@
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,0,10,0" />
     </Style>
-    <Style Selector="TextBox.form.field">
-        <Setter Property="Width" Value="250" />
+    <Style Selector=":is(TemplatedControl).form.field">
+        <Setter Property="Width" Value="300" />
         <Setter Property="Margin" Value="0,0,0,0" />
         <Setter Property="Padding" Value="10,0" />
         <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="FontSize" Value="16" />
     </Style>
+    <Style Selector="TextBox.form.field">
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
     <Style Selector="ComboBox.form.field">
-        <Setter Property="Width" Value="250" />
-        <Setter Property="Margin" Value="0,0,0,0" />
-        <Setter Property="Padding" Value="10,0" />
-        <Setter Property="CornerRadius" Value="4" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="FontSize" Value="16" />
     </Style>
     <Style Selector="CalendarDatePicker.form.field">
         <Setter Property="Background" Value="{StaticResource CalendarDatePickerBackground}" />
-        <Setter Property="Width" Value="250" />
-        <Setter Property="Margin" Value="0,0,0,0" />
-        <Setter Property="Padding" Value="10,0" />
-        <Setter Property="CornerRadius" Value="4" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="FontSize" Value="16" />
     </Style>
     <Style Selector="TextBox.secret">
         <Setter Property="PasswordChar" Value="*" />
         <Setter Property="RevealPassword" Value="False" />
-        <Setter Property="Padding" Value="10,0" />
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Width" Value="250" />
+    </Style>
+    <Style Selector="u|FormItem">
+        <Setter Property="LabelAlignment" Value="Left" />
     </Style>
     <Style Selector="TextBlock.page.box.header">
         <Setter Property="FontWeight" Value="Bold" />
