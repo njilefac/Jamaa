@@ -1,0 +1,93 @@
+<UserControl
+    x:Class="Jamaa.Desktop.Security.LoginScreen"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    HorizontalContentAlignment="Center"
+    VerticalContentAlignment="Center"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    >
+
+    <StackPanel>
+        <TextBlock
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Classes="page title"
+            Text="User Authentication"
+            />
+        <Grid
+            Classes="page form"
+            ColumnDefinitions="Auto,Auto"
+            RowDefinitions="Auto,Auto,Auto,Auto"
+            >
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                Classes="form label"
+                Text="Organisation"
+                />
+            <ComboBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Classes="form field"
+                IsVisible="{Binding Items.Count}"
+                ItemsSource="{Binding Organisations}"
+                SelectedItem="{Binding CurrentOrganisation, Mode=TwoWay}"
+                >
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Classes="form label"
+                Text="User Name"
+                />
+            <TextBox
+                Name="UserNameField"
+                Grid.Row="1"
+                Grid.Column="1"
+                Classes="form field"
+                Text="{Binding UserName, Mode=TwoWay}"
+                >
+                <Interaction.Behaviors>
+                    <BehaviorCollection>
+                        <FocusOnAttachedToVisualTreeBehavior />
+                    </BehaviorCollection>
+                </Interaction.Behaviors>
+            </TextBox>
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Classes="form label"
+                Text="Password"
+                />
+            <TextBox
+                Name="PasswordField"
+                Grid.Row="2"
+                Grid.Column="1"
+                Classes="form field secret"
+                Text="{Binding Password, Mode=TwoWay}"
+                />
+            <Button
+                Grid.Row="3"
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                Command="{Binding LoginCommand}"
+                Content="Login"
+                IsDefault="True"
+                />
+        </Grid>
+    </StackPanel>
+</UserControl>

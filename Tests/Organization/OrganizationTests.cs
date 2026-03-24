@@ -3,7 +3,7 @@ using Domain.Members;
 using Domain.Organisation.Entities;
 using Domain.Organisation.Values;
 using Domain.Shared.Values;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 
 namespace UnitTests.Organization
@@ -21,8 +21,8 @@ namespace UnitTests.Organization
             var result = new Organisation(name, description);
 
             // Assert
-            result.Name.Should().Be(name);
-            result.Description.Should().Be(description);
+            result.Name.ShouldBe(name);
+            result.Description.ShouldBe(description);
         }
 
         [Fact]
@@ -40,11 +40,11 @@ namespace UnitTests.Organization
             var registration = organization.Register(member, MembershipType.Regular, DateTime.Today);
 
             // Assert
-            registration.Should().NotBeNull("a registration should be created");
-            registration.Member.Should().Be(member);
-            registration.Status.Should().Be(RegistrationStatus.Probation, "all newly registered members are on probabation by default");
-            registration.Begin.Should().Be(DateTime.Today);
-            registration.End.Should().BeNull("registration should not be time-limited");
+            registration.ShouldNotBeNull();
+            registration.Member.ShouldBe(member);
+            registration.Status.ShouldBe(RegistrationStatus.Probation);
+            registration.Begin.ShouldBe(DateTime.Today);
+            registration.End.ShouldBeNull();
         }
     }
 }

@@ -1,0 +1,164 @@
+<UserControl
+    x:Class="Jamaa.Desktop.Members.Pages.MemberProfilePage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="clr-namespace:Jamaa.Desktop.Members.Pages"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="pages:MemberProfileViewModel"
+    mc:Ignorable="d"
+    >
+    <UserControl.Styles>
+        <Style Selector="DockPanel &gt; Border">
+            <Setter Property="Margin" Value="20" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>
+    </UserControl.Styles>
+    <TabControl SelectedIndex="{Binding SelectedTabIndex}">
+        <TabItem Header="General">
+            <StackPanel>
+                <DockPanel>
+                    <Border>
+                        <StackPanel>
+                            <Grid
+                                Classes="page form"
+                                ColumnDefinitions="Auto,Auto"
+                                RowDefinitions="Auto,Auto,Auto,Auto"
+                                >
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Classes="form label"
+                                    Text="First Name:"
+                                    />
+                                <TextBox
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Classes="form field"
+                                    Text="{Binding FirstName}"
+                                    />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Classes="form label"
+                                    Text="Middle Name:"
+                                    />
+                                <TextBox
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Classes="form field"
+                                    Text="{Binding MiddleName}"
+                                    />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    Classes="form label"
+                                    Text="Last Name:"
+                                    />
+                                <TextBox
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Classes="form field"
+                                    Text="{Binding LastName}"
+                                    />
+                                <TextBlock
+                                    Grid.Row="3"
+                                    Grid.Column="0"
+                                    Classes="form label"
+                                    Text="Gender:"
+                                    />
+                                <ComboBox
+                                    Grid.Row="3"
+                                    Grid.Column="1"
+                                    Classes="form field"
+                                    ItemsSource="{Binding GenderOptions}"
+                                    SelectedItem="{Binding Gender}"
+                                    >
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    <Border>
+                        <StackPanel>
+                            <Grid
+                                Classes="page form"
+                                ColumnDefinitions="Auto,Auto"
+                                RowDefinitions="Auto,Auto,Auto"
+                                >
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Classes="form label"
+                                    Text="Member Since:"
+                                    />
+                                <CalendarDatePicker
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Classes="form field"
+                                    SelectedDate="{Binding RegistrationStartDate}"
+                                    />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Classes="form label"
+                                    Text="Membership Status:"
+                                    />
+                                <ComboBox
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Classes="form field"
+                                    ItemsSource="{Binding RegistrationStatusOptions}"
+                                    SelectedItem="{Binding RegistrationStatus}"
+                                    >
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    Classes="form label"
+                                    Text="Membership Type:"
+                                    />
+                                <ComboBox
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Classes="form field"
+                                    ItemsSource="{Binding MembershipTypeOptions}"
+                                    SelectedItem="{Binding MembershipType}"
+                                    >
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </DockPanel>
+                <Border>
+                    <StackPanel Orientation="Horizontal">
+                        <Button
+                            Classes="form action"
+                            Command="{Binding SaveCommand}"
+                            Content="Save"
+                            />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Finances" />
+        <TabItem Header="Attendance" />
+        <TabItem Header="Groups" />
+    </TabControl>
+</UserControl>
