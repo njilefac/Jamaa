@@ -15,12 +15,13 @@ using Jamaa.Data.Models.Organisation;
 using Jamaa.Desktop.Assets.Resources;
 using Jamaa.Desktop.Security.Events;
 using Jamaa.Desktop.Services.Notifications;
+using Jamaa.Desktop.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Jamaa.Desktop.Security;
 
 [UsedImplicitly]
-public partial class LoginScreenViewModel : ObservableValidator
+public partial class LoginScreenViewModel : ValidatableFormViewModel
 {
     public LoginScreenViewModel(
         ISetupService setupService,
@@ -67,7 +68,7 @@ public partial class LoginScreenViewModel : ObservableValidator
 
     [ObservableProperty] private OrganisationData? _currentOrganisation;
 
-    [RelayCommand(CanExecute = nameof(IsValid))]
+    [RelayCommand(CanExecute = nameof(CanLogin))]
     private async Task<UserSession?> Login()
     {
         var credentials = new Credentials(UserName, Password);
@@ -76,10 +77,11 @@ public partial class LoginScreenViewModel : ObservableValidator
         {
             _notificationService.Show(Messages.login_authentication_failed_title, Messages.login_authentication_failed_message, NotificationType.Error);
         }
+        ResetValidationState();
         return response;
     }
 
-    public bool IsValid
+    public bool CanLogin
     {
         get
         {

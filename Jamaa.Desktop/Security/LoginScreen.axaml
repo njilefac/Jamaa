@@ -25,7 +25,7 @@
                 Classes="form field"
                 IsVisible="{Binding Items.Count}"
                 ItemsSource="{Binding Organisations}"
-                SelectedItem="{Binding CurrentOrganisation, Mode=TwoWay}"
+                SelectedItem="{Binding CurrentOrganisation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 >
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -36,7 +36,7 @@
         </u:FormItem>
 
         <u:FormItem IsRequired="True" Label="User Name">
-            <TextBox Classes="form field" Text="{Binding UserName, Mode=TwoWay}">
+            <TextBox Classes="form field" Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 <Interaction.Behaviors>
                     <BehaviorCollection>
                         <FocusOnAttachedToVisualTreeBehavior />
@@ -46,7 +46,7 @@
         </u:FormItem>
 
         <u:FormItem IsRequired="True" Label="Password">
-            <TextBox Classes="form field secret" Text="{Binding Password, Mode=TwoWay}" />
+            <TextBox Classes="form field secret" Text="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         </u:FormItem>
 
         <Button
