@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Akka.Hosting;
 using Akka.Logger.Serilog;
 using Akka.Persistence.Sql.Hosting;
@@ -38,7 +39,21 @@ public static class ServiceCollectionExtensions
                     registry.Register<CommandProcessor>(commandProcessor);
                     registry.Register<OrganisationProjection>(organisationEventsProjector);
 
-                    system.WhenTerminated.ContinueWith(_ => applicationLifetime.Shutdown());
+                    system.WhenTerminated.ContinueWith(_ =>
+                    {
+                        try
+                        {
+                            applicationLifetime.Shutdown();
+                        }
+                        catch(TaskCanceledException)
+                        {
+                            // Ignore, the application is already shutting down
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "Error during application shutdown");
+                        }
+                    });
                 });
 
                 builder.ConfigureLoggers(b =>
