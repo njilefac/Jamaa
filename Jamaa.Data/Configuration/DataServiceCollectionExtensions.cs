@@ -15,7 +15,7 @@ public static class DataServiceCollectionExtensions
 {
     public static ServiceCollection RegisterDataServices(this ServiceCollection services)
     {
-        services.AddDbContext<LibotaDbContext>();
+        services.AddDbContext<JamaaDbContext>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganisationQueryHandler, OrganisationQueryHandler>();

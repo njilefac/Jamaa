@@ -89,7 +89,8 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
                 request.Gender,
                 request.MembershipType,
                 request.Status,
-                request.RegistrationBegin);
+                request.RegistrationBegin,
+                request.Avatar);
 
             _commandProcessor.Tell(message);
         });

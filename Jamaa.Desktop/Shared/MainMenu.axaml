@@ -11,17 +11,15 @@
 
     <Menu DockPanel.Dock="Top">
         <MenuItem Header="File">
-            <MenuItem Header="Import">
-                <MenuItem Header="Members" IsSubMenuOpen="True" />
-                <MenuItem Header="Financial Transactions" IsSubMenuOpen="True" />
-            </MenuItem>
-            <Separator />
             <MenuItem Command="{Binding LogoutCommand}" Header="Logout" />
             <Separator />
             <MenuItem Command="{Binding ExitApplicationCommand}" Header="Exit" />
         </MenuItem>
         <MenuItem Header="Edit">
-            <MenuItem Header="Copy" />
+            <MenuItem Header="Import">
+                <MenuItem Header="Members" IsSubMenuOpen="True" />
+                <MenuItem Header="Financial Transactions" IsSubMenuOpen="True" />
+            </MenuItem>
         </MenuItem>
     </Menu>
 

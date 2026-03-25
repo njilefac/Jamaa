@@ -169,7 +169,7 @@ public static partial class InitializationService
 
     private static void UpdateDatabase(ILogger<Program> logger, IServiceProvider serviceProvider)
     {
-        var dataContext = serviceProvider.GetService<LibotaDbContext>();
+        var dataContext = serviceProvider.GetService<JamaaDbContext>();
         if (dataContext == null) return;
 
         var pendingMigrations = dataContext.Database.GetPendingMigrations().ToArray();

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jamaa.Data.Repositories.Users;
 
-public class UserRepository(LibotaDbContext dbContext) : IUserRepository
+public class UserRepository(JamaaDbContext dbContext) : IUserRepository
 {
     public async Task<IEnumerable<User>> GetAll()
     {

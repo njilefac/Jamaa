@@ -27,6 +27,8 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
         _notificationService = notificationService;
     }
 
+    public Func<Task<byte[]?>>? AvatarPicker { get; set; }
+
     public void Initialize(MemberProfileNavigationArgs args)
     {
         var member = args.Member;
@@ -35,6 +37,7 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
         MiddleName = member.MiddleName;
         LastName = member.LastName;
         Gender = member.Gender;
+        Picture = member.PictureData;
 
         RegistrationStartDate = member.Registration.StartDate;
         RegistrationStatus = member.Registration.Status;
@@ -103,6 +106,11 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private RegistrationData? _registration;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteAvatarCommand))]
+    private byte[]? _picture;
+
     public static Gender[] GenderOptions => Enum.GetValues<Gender>();
     public static RegistrationStatus[] RegistrationStatusOptions => Enum.GetValues<RegistrationStatus>();
     public static MembershipType[] MembershipTypeOptions => Enum.GetValues<MembershipType>();
@@ -122,7 +130,8 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
             RegistrationBegin = RegistrationStartDate,
             MembershipType = MembershipType,
             Status = RegistrationStatus,
-            OrganisationId = OrganisationId.With(_originalMember.OrganisationId)
+            OrganisationId = OrganisationId.With(_originalMember.OrganisationId),
+            Avatar = Picture
         };
 
         await _organisationManagementFacade.UpdateMember(request);
@@ -134,6 +143,7 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
         _originalMember.MiddleName = MiddleName;
         _originalMember.LastName = LastName;
         _originalMember.Gender = Gender;
+        _originalMember.PictureData = Picture;
         _originalMember.Registration.StartDate = RegistrationStartDate;
         _originalMember.Registration.MembershipType = MembershipType;
         _originalMember.Registration.Status = RegistrationStatus;
@@ -154,8 +164,31 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
                    MembershipType != _originalMember.Registration.MembershipType ||
                    RegistrationStatus != _originalMember.Registration.Status;
 
+        changed |= Picture != _originalMember.PictureData;
+
         return changed;
     }
+
+    [RelayCommand]
+    private async Task ChangeAvatar()
+    {
+        if (AvatarPicker != null)
+        {
+            var newAvatar = await AvatarPicker();
+            if (newAvatar != null)
+            {
+                Picture = newAvatar;
+            }
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanDeleteAvatar))]
+    private void DeleteAvatar()
+    {
+        Picture = null;
+    }
+
+    private bool CanDeleteAvatar() => Picture != null;
 
     public string Title => $"Member Profile";
 }

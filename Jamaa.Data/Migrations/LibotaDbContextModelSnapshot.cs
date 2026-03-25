@@ -9,13 +9,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jamaa.Data.Migrations
 {
-    [DbContext(typeof(LibotaDbContext))]
+    [DbContext(typeof(JamaaDbContext))]
     partial class LibotaDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
 
             modelBuilder.Entity("Jamaa.Data.Models.Members.MemberData", b =>
                 {
@@ -40,6 +40,9 @@ namespace Jamaa.Data.Migrations
                     b.Property<string>("OrganisationId")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("PictureData")
+                        .HasColumnType("BLOB");
 
                     b.HasKey("Id");
 
