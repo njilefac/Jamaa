@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using Domain.Organisation.Requests;
@@ -10,6 +12,7 @@ namespace Jamaa.Desktop.Members.Components;
 
 public partial class MembersList : UserControl, IDisposable
 {
+    private int? _selectionAnchorIndex;
     private IDisposable? _handler;
 
     public MembersList()
@@ -20,6 +23,133 @@ public partial class MembersList : UserControl, IDisposable
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+    }
+
+    private int GetColumnCount(int vm_MembersCount)
+    {
+        if (MembersRepeater == null || vm_MembersCount == 0)
+            return 1;
+
+        var first = MembersRepeater.TryGetElement(0);
+        if (first == null) return 1;
+
+        double firstY = first.Bounds.Y;
+        int count = 1;
+        for (int i = 1; i < vm_MembersCount; i++)
+        {
+            var element = MembersRepeater.TryGetElement(i);
+            if (element == null) break;
+            if (Math.Abs(element.Bounds.Y - firstY) > 1) break;
+            count++;
+        }
+        return count;
+    }
+
+    private void OnMembersListKeyDown(object? sender, KeyEventArgs e)
+    {
+        // Do not handle keys if a TextBox (e.g., search field) has focus
+        if (e.Source is TextBox)
+            return;
+
+        if (DataContext is not MemberListViewModel vm)
+            return;
+
+        var count = vm.Members.Count;
+        if (count == 0)
+            return;
+
+        var hasShift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        var hasCtrlOrCmd = e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta);
+
+        int current = vm.Selection.SelectedIndex >= 0 ? vm.Selection.SelectedIndex : 0;
+        int newIndex = current;
+        bool handled = true;
+
+        switch (e.Key)
+        {
+            case Key.Up:
+                if (hasCtrlOrCmd && !hasShift)
+                {
+                    newIndex = 0;
+                }
+                else
+                {
+                    int columns = GetColumnCount(vm.Members.Count);
+                    newIndex = current >= columns ? current - columns : current;
+                }
+                break;
+            case Key.Down:
+                if (hasCtrlOrCmd && !hasShift)
+                {
+                    newIndex = count - 1;
+                }
+                else
+                {
+                    int columns = GetColumnCount(vm.Members.Count);
+                    newIndex = current + columns < count ? current + columns : current;
+                }
+                break;
+            case Key.Left:
+                newIndex = current > 0 ? current - 1 : 0;
+                if (hasCtrlOrCmd && !hasShift)
+                    newIndex = 0;
+                break;
+            case Key.Right:
+                newIndex = current < count - 1 ? current + 1 : count - 1;
+                if (hasCtrlOrCmd && !hasShift)
+                    newIndex = count - 1;
+                break;
+            case Key.Home:
+                newIndex = 0;
+                break;
+            case Key.End:
+                newIndex = count - 1;
+                break;
+            default:
+                handled = false;
+                break;
+        }
+
+        if (!handled)
+            return;
+
+        if (hasShift)
+        {
+            // Initialize anchor if needed
+            if (_selectionAnchorIndex is null || _selectionAnchorIndex < 0 || _selectionAnchorIndex >= count)
+                _selectionAnchorIndex = current;
+
+            vm.Selection.Clear();
+            int start = Math.Min(_selectionAnchorIndex.Value, newIndex);
+            int end = Math.Max(_selectionAnchorIndex.Value, newIndex);
+            vm.Selection.SelectRange(start, end + 1); // end is exclusive
+            vm.Selection.SelectedIndex = newIndex;
+        }
+        else
+        {
+            // Move selection/focus
+            vm.Selection.Clear();
+            vm.Selection.SelectedIndex = newIndex;
+            _selectionAnchorIndex = newIndex;
+        }
+
+        FocusAndBringIntoView(vm, newIndex);
+        e.Handled = true;
+    }
+
+    private void FocusAndBringIntoView(MemberListViewModel vm, int index)
+    {
+        if (index < 0 || index >= vm.Members.Count)
+            return;
+
+        var member = vm.Members[index];
+        var card = this.GetVisualDescendants().OfType<MemberCard>()
+            .FirstOrDefault(c => ReferenceEquals(c.DataContext, member));
+        if (card != null)
+        {
+            card.BringIntoView();
+            card.Focus();
+        }
     }
 
     protected override void OnDataContextChanged(EventArgs e)
