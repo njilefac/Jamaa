@@ -48,26 +48,20 @@
                 HorizontalScrollBarVisibility="Disabled"
                 VerticalScrollBarVisibility="Auto"
                 >
-                <ListBox
+                <ItemsRepeater
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
-                    IsTabStop="True"
                     ItemsSource="{Binding Members}"
-                    KeyboardNavigation.TabNavigation="Cycle"
-                    SelectionMode="Single"
                     >
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel />
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-
-                    <ListBox.ItemTemplate>
+                    <ItemsRepeater.Layout>
+                        <WrapLayout />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="data:MemberData">
                             <components:MemberCard />
                         </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
             </ScrollViewer>
             <components:MemberActionsPane Grid.Row="2" />
         </Grid>

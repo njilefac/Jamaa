@@ -3,6 +3,7 @@ using System.Reactive;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using Huskui.Avalonia.Controls;
 
 namespace Jamaa.Desktop.Members.Components;
@@ -18,12 +19,14 @@ public partial class MemberCard : UserControl
         set => SetValue(IsSelectedProperty, value);
     }
 
+    private MemberListViewModel? GetViewModel() => this.FindAncestorOfType<MembersList>()?.DataContext as MemberListViewModel;
+
     public MemberCard()
     {
         InitializeComponent();
         this.PointerPressed += (s, e) =>
         {
-            var vm = (this.Parent as ItemsControl)?.DataContext as MemberListViewModel;
+            var vm = GetViewModel();
             var selectionModel = vm?.Selection;
             if (selectionModel != null && this.DataContext is Jamaa.Data.Models.Members.MemberData member)
             {
@@ -53,7 +56,7 @@ public partial class MemberCard : UserControl
 
         this.Loaded += (s, e) =>
         {
-            if ((this.Parent as ItemsControl)?.DataContext is MemberListViewModel vm)
+            if (GetViewModel() is { } vm)
             {
                 vm.Selection.SelectionChanged += (sender, args) => UpdateSelection();
             }
@@ -65,7 +68,7 @@ public partial class MemberCard : UserControl
     private void UpdateSelection()
     {
         if (_isUpdatingSelection) return;
-        if ((this.Parent as ItemsControl)?.DataContext is MemberListViewModel vm && this.DataContext is Jamaa.Data.Models.Members.MemberData member)
+        if (GetViewModel() is { } vm && this.DataContext is Jamaa.Data.Models.Members.MemberData member)
         {
             var index = vm.Members.IndexOf(member);
             if (index != -1)
@@ -80,7 +83,7 @@ public partial class MemberCard : UserControl
     private void UpdateSelectionInModel()
     {
         if (_isUpdatingSelection) return;
-        if ((this.Parent as ItemsControl)?.DataContext is MemberListViewModel vm && this.DataContext is Jamaa.Data.Models.Members.MemberData member)
+        if (GetViewModel() is { } vm && this.DataContext is Jamaa.Data.Models.Members.MemberData member)
         {
             var index = vm.Members.IndexOf(member);
             if (index != -1)

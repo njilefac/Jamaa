@@ -103,14 +103,11 @@
     </Style>
     <Style Selector="components|MemberCard">
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Margin" Value="6" />
     </Style>
     <Style Selector="components|MemberCard[IsSelected=True] husk|Card">
         <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight3}" />
-    </Style>
-    <Style Selector="ListBoxItem">
-        <Setter Property="Padding" Value="4" />
-        <Setter Property="Margin" Value="6" />
-        <Setter Property="CornerRadius" Value="4" />
     </Style>
 
     <Style Selector="DataValidationErrors">

@@ -17,7 +17,7 @@
     <husk:Card Classes="memberlist member-card">
         <husk:Card.ContextMenu>
             <ContextMenu>
-                <MenuItem Command="{Binding $parent[ListBox].((components:MemberListViewModel)DataContext).ShowMemberProfileCommand}" Header="Profile">
+                <MenuItem Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}" Header="Profile">
                     <MenuItem.CommandParameter>
                         <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
                             <Binding />
@@ -25,7 +25,7 @@
                         </MultiBinding>
                     </MenuItem.CommandParameter>
                 </MenuItem>
-                <MenuItem Command="{Binding $parent[ListBox].((components:MemberListViewModel)DataContext).ShowMemberProfileCommand}" Header="Finances">
+                <MenuItem Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}" Header="Finances">
                     <MenuItem.CommandParameter>
                         <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
                             <Binding />
@@ -33,7 +33,7 @@
                         </MultiBinding>
                     </MenuItem.CommandParameter>
                 </MenuItem>
-                <MenuItem Command="{Binding $parent[ListBox].((components:MemberListViewModel)DataContext).ShowMemberProfileCommand}" Header="Attendance">
+                <MenuItem Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}" Header="Attendance">
                     <MenuItem.CommandParameter>
                         <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
                             <Binding />
@@ -46,7 +46,7 @@
         <Interaction.Behaviors>
             <BehaviorCollection>
                 <EventTriggerBehavior EventName="DoubleTapped">
-                    <InvokeCommandAction Command="{Binding $parent[ListBox].((components:MemberListViewModel)DataContext).ShowMemberProfileCommand}">
+                    <InvokeCommandAction Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}">
                         <InvokeCommandAction.CommandParameter>
                             <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
                                 <Binding />
