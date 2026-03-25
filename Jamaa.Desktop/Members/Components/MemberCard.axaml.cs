@@ -7,7 +7,7 @@ using Huskui.Avalonia.Controls;
 
 namespace Jamaa.Desktop.Members.Components;
 
-public partial class MemberCard : Card
+public partial class MemberCard : UserControl
 {
     public static readonly StyledProperty<bool> IsSelectedProperty =
         AvaloniaProperty.Register<MemberCard, bool>(nameof(IsSelected));
