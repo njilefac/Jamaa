@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -30,19 +31,52 @@ public partial class MembersList : UserControl, IDisposable
         if (MembersRepeater == null || vm_MembersCount == 0)
             return 1;
 
-        var first = MembersRepeater.TryGetElement(0);
-        if (first == null) return 1;
+        // Try to find the first few elements to see how many share the same Y coordinate
+        // We look for the first realized element to establish a baseline
+        Visual? firstElement = null;
+        int firstIndex = -1;
+        for (int i = 0; i < vm_MembersCount; i++)
+        {
+            firstElement = MembersRepeater.TryGetElement(i);
+            if (firstElement != null)
+            {
+                firstIndex = i;
+                break;
+            }
+        }
 
-        double firstY = first.Bounds.Y;
-        int count = 1;
-        for (int i = 1; i < vm_MembersCount; i++)
+        if (firstElement == null) return 1;
+
+        double baselineY = firstElement.Bounds.Y;
+        int countInFirstVisibleRow = 0;
+
+        // Check subsequent elements on the same row
+        for (int i = firstIndex; i < vm_MembersCount; i++)
         {
             var element = MembersRepeater.TryGetElement(i);
             if (element == null) break;
-            if (Math.Abs(element.Bounds.Y - firstY) > 1) break;
-            count++;
+            if (Math.Abs(element.Bounds.Y - baselineY) > 1) break;
+            countInFirstVisibleRow++;
         }
-        return count;
+
+        // Check preceding elements on the same row (if we didn't start at index 0)
+        for (int i = firstIndex - 1; i >= 0; i--)
+        {
+            var element = MembersRepeater.TryGetElement(i);
+            if (element == null) break;
+            if (Math.Abs(element.Bounds.Y - baselineY) > 1) break;
+            countInFirstVisibleRow++;
+        }
+
+        if (countInFirstVisibleRow > 0) return countInFirstVisibleRow;
+
+        // Fallback: estimate based on width if we can't find enough elements
+        if (firstElement.Bounds.Width > 0)
+        {
+            return (int)Math.Max(1, Math.Floor(MembersRepeater.Bounds.Width / firstElement.Bounds.Width));
+        }
+
+        return 1;
     }
 
     private void OnMembersListKeyDown(object? sender, KeyEventArgs e)

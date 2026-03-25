@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jamaa.Data.Queries.Members;
 
-public class MembersQueryHandler(LibotaDbContext dbContext) : IMembersQueryHandler
+public class MembersQueryHandler(JamaaDbContext dbContext) : IMembersQueryHandler
 {
     public async Task<IList<MemberData>> Get(GetMembersByOrganisation query)
     {

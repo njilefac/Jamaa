@@ -7,6 +7,7 @@
     xmlns:data="clr-namespace:Jamaa.Data.Models.Members;assembly=Jamaa.Data"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="https://irihi.tech/ursa"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="data:MemberData"
@@ -57,10 +58,24 @@
                 </EventTriggerBehavior>
             </BehaviorCollection>
         </Interaction.Behaviors>
-        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,*">
+        <Grid
+            ColumnDefinitions="Auto,*,Auto"
+            RowDefinitions="Auto,Auto,Auto,Auto,*"
+            RowSpacing="10"
+            >
+            <u:Avatar
+                Grid.Row="1"
+                Grid.RowSpan="3"
+                Grid.Column="0"
+                Width="48"
+                Height="48"
+                Margin="0,0,10,0"
+                Source="{Binding PictureData, Converter={StaticResource ByteArrayToBitmapConverter}}"
+                />
             <Label
                 Grid.Row="0"
                 Grid.Column="0"
+                Grid.ColumnSpan="3"
                 Classes="member-card title"
                 FontWeight="Bold"
                 >
@@ -71,27 +86,19 @@
                     </MultiBinding>
                 </Label.Content>
             </Label>
-            <CheckBox
-                Grid.Row="0"
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                Classes="member-card selection"
-                IsChecked="{Binding $parent[components:MemberCard].IsSelected, Mode=TwoWay}"
-                />
             <husk:Divider
                 Grid.Row="1"
-                Grid.Column="0"
+                Grid.Column="1"
                 Grid.ColumnSpan="2"
-                Classes="member-card"
                 />
             <Label
                 Grid.Row="2"
-                Grid.Column="0"
+                Grid.Column="1"
                 Content="{Binding Registration.MembershipType, StringFormat='Membership: {0}'}"
                 />
             <Label
                 Grid.Row="3"
-                Grid.Column="0"
+                Grid.Column="1"
                 Content="{Binding Registration.Status, StringFormat='Registration: {0}'}"
                 />
         </Grid>

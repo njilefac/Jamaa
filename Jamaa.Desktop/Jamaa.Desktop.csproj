@@ -198,16 +198,5 @@
   </ItemGroup>
   
   <ItemGroup>
-    <AdditionalFiles Include="Security\LoginScreen.axaml" />
-    <AdditionalFiles Include="Settings\SettingsPage.axaml" />
-    <AdditionalFiles Include="Setup\CreateOrganisationScreen.axaml" />
-    <AdditionalFiles Include="Setup\CreateSuperUserScreen.axaml" />
-    <AdditionalFiles Include="Setup\OrganisationContactDetailsScreen.axaml" />
-    <AdditionalFiles Include="Shared\Dashboard.axaml" />
-    <AdditionalFiles Include="Shared\MainMenu.axaml" />
-    <AdditionalFiles Include="Shared\Shell.axaml" />
-    <AdditionalFiles Include="Users\AddUserScreen.axaml" />
-    <AdditionalFiles Include="Users\UserDetailsScreen.axaml" />
-    <AdditionalFiles Include="Users\UserManagementScreen.axaml" />
   </ItemGroup>
 </Project>

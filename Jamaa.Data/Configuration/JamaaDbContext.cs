@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Jamaa.Data.Configuration;
 
-public class LibotaDbContext(IOptions<DatabaseOptions> options) : DbContext
+public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
 {
     private readonly DatabaseOptions _dbOptions = options.Value;
     public DbSet<UserData> Users { get; set; }

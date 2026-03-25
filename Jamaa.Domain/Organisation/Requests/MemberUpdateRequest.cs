@@ -15,4 +15,5 @@ public class MemberUpdateRequest
     public MembershipType MembershipType { get; set; }
     public RegistrationStatus Status { get; set; }
     public OrganisationId OrganisationId { get; set; }
+    public byte[]? Avatar { get; set; }
 }
