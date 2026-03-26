@@ -187,6 +187,5 @@
         </TabItem>
         <TabItem Header="Finances" />
         <TabItem Header="Attendance" />
-        <TabItem Header="Groups" />
     </TabControl>
 </UserControl>
