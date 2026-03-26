@@ -65,40 +65,25 @@
                 </TextBox>
                 <StackPanel Orientation="Horizontal" Spacing="2">
                     <ToggleButton
-                        Width="45"
                         Classes="toolbar item"
                         IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Card}}"
                         ToolTip.Tip="Card View"
                         >
-                        <Image
-                            Width="20"
-                            Height="20"
-                            Source="avares://Jamaa/Assets/Icons/grid/grid.png"
-                            />
+                        <Image Source="avares://Jamaa/Assets/Icons/grid/grid.png" />
                     </ToggleButton>
                     <ToggleButton
-                        Width="45"
                         Classes="toolbar item"
                         IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.List}}"
                         ToolTip.Tip="List View"
                         >
-                        <Image
-                            Width="20"
-                            Height="20"
-                            Source="avares://Jamaa/Assets/Icons/edit/list_ul.png"
-                            />
+                        <Image Source="avares://Jamaa/Assets/Icons/edit/list_ul.png" />
                     </ToggleButton>
                     <ToggleButton
-                        Width="45"
                         Classes="toolbar item"
                         IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Table}}"
                         ToolTip.Tip="Table View"
                         >
-                        <Image
-                            Width="20"
-                            Height="20"
-                            Source="avares://Jamaa/Assets/Icons/edit/table.png"
-                            />
+                        <Image Source="avares://Jamaa/Assets/Icons/edit/table.png" />
                     </ToggleButton>
                 </StackPanel>
             </StackPanel>
