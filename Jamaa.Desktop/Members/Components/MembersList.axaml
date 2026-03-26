@@ -48,7 +48,6 @@
                 Spacing="10"
                 >
                 <TextBox
-                    Width="900"
                     HorizontalAlignment="Center"
                     HorizontalContentAlignment="Center"
                     Classes="toolbar item"
@@ -63,29 +62,31 @@
                             />
                     </TextBox.InnerLeftContent>
                 </TextBox>
-                <StackPanel Orientation="Horizontal" Spacing="2">
-                    <ToggleButton
-                        Classes="toolbar item"
-                        IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Card}}"
-                        ToolTip.Tip="Card View"
-                        >
-                        <Image Source="avares://Jamaa/Assets/Icons/grid/grid.png" />
-                    </ToggleButton>
-                    <ToggleButton
-                        Classes="toolbar item"
-                        IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.List}}"
-                        ToolTip.Tip="List View"
-                        >
-                        <Image Source="avares://Jamaa/Assets/Icons/edit/list_ul.png" />
-                    </ToggleButton>
-                    <ToggleButton
-                        Classes="toolbar item"
-                        IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Table}}"
-                        ToolTip.Tip="Table View"
-                        >
-                        <Image Source="avares://Jamaa/Assets/Icons/edit/table.png" />
-                    </ToggleButton>
-                </StackPanel>
+                <HeaderedContentControl Classes="toolbar group" Header="Display Mode">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <ToggleButton
+                            Classes="toolbar item"
+                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Card}}"
+                            ToolTip.Tip="Card View"
+                            >
+                            <Image Source="avares://Jamaa/Assets/Icons/grid/grid.png" />
+                        </ToggleButton>
+                        <ToggleButton
+                            Classes="toolbar item"
+                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.List}}"
+                            ToolTip.Tip="List View"
+                            >
+                            <Image Source="avares://Jamaa/Assets/Icons/edit/list_ul.png" />
+                        </ToggleButton>
+                        <ToggleButton
+                            Classes="toolbar item"
+                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Table}}"
+                            ToolTip.Tip="Table View"
+                            >
+                            <Image Source="avares://Jamaa/Assets/Icons/edit/table.png" />
+                        </ToggleButton>
+                    </StackPanel>
+                </HeaderedContentControl>
             </StackPanel>
 
             <ContentControl
