@@ -16,9 +16,6 @@
             <Setter Property="Margin" Value="20" />
             <Setter Property="CornerRadius" Value="5" />
         </Style>
-        <Style Selector="u|Avatar Image">
-            <Setter Property="Stretch" Value="UniformToFill" />
-        </Style>
     </UserControl.Styles>
     <TabControl SelectedIndex="{Binding SelectedTabIndex}">
         <TabItem Header="General">
@@ -187,6 +184,5 @@
         </TabItem>
         <TabItem Header="Finances" />
         <TabItem Header="Attendance" />
-        <TabItem Header="Groups" />
     </TabControl>
 </UserControl>

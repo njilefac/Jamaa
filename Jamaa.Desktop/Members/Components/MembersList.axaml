@@ -4,16 +4,30 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:data="clr-namespace:Jamaa.Data.Models.Members;assembly=Jamaa.Data"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:services="clr-namespace:Jamaa.Desktop.Members.Services"
+    xmlns:values="clr-namespace:Jamaa.Desktop.Members.Values"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Focusable="True"
-    KeyDown="OnMembersListKeyDown"
     mc:Ignorable="d"
     >
+
+    <UserControl.Resources>
+        <services:MemberListTemplateSelector x:Key="MemberListTemplateSelector">
+            <DataTemplate x:Key="{x:Static values:MemberListDisplayMode.Card}" x:DataType="components:MemberListViewModel">
+                <components:MemberCardsList />
+            </DataTemplate>
+            <DataTemplate x:Key="{x:Static values:MemberListDisplayMode.List}" x:DataType="components:MemberListViewModel">
+                <TextBlock Text="future list view" />
+            </DataTemplate>
+            <DataTemplate x:Key="{x:Static values:MemberListDisplayMode.Table}" x:DataType="components:MemberListViewModel">
+                <TextBlock Text="future table view" />
+            </DataTemplate>
+        </services:MemberListTemplateSelector>
+    </UserControl.Resources>
 
     <UserControl.KeyBindings>
         <!--  Select All on Windows/Linux  -->
@@ -23,55 +37,63 @@
         <!--  Clear Selection convenience  -->
         <KeyBinding Command="{Binding UnselectAllCommand}" Gesture="Escape" />
     </UserControl.KeyBindings>
+
     <Panel>
         <Grid RowDefinitions="60,*,60">
-            <TextBox
+            <StackPanel
                 Grid.Row="0"
-                Width="900"
-                Margin="0,10,0,0"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center"
-                CornerRadius="8"
-                FontSize="14"
-                Text="{Binding SearchTerm}"
-                Watermark="Find members"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="10"
                 >
-                <TextBox.InnerLeftContent>
-                    <Image
-                        Width="40"
-                        Height="40"
-                        Source="avares://Jamaa/Assets/Icons/edit/search_small.png"
-                        />
-                </TextBox.InnerLeftContent>
-            </TextBox>
-            <ScrollViewer
-                x:Name="MembersScrollViewer"
-                Grid.Row="1"
-                Margin="5"
-                Padding="10,0,10,0"
-                AllowAutoHide="True"
-                Background="{StaticResource SystemListLowColor}"
-                HorizontalScrollBarVisibility="Disabled"
-                VerticalScrollBarVisibility="Auto"
-                >
-                <ItemsRepeater
-                    x:Name="MembersRepeater"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
-                    ItemsSource="{Binding Members}"
+                <TextBox
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    Classes="toolbar item"
+                    Text="{Binding SearchTerm}"
+                    Watermark="Find members"
                     >
-                    <ItemsRepeater.Layout>
-                        <WrapLayout />
-                    </ItemsRepeater.Layout>
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="data:MemberData">
-                            <components:MemberCard />
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
+                    <TextBox.InnerLeftContent>
+                        <Image
+                            Width="40"
+                            Height="40"
+                            Source="avares://Jamaa/Assets/Icons/edit/search_small.png"
+                            />
+                    </TextBox.InnerLeftContent>
+                </TextBox>
+                <HeaderedContentControl Classes="toolbar group" Header="Display Mode">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <ToggleButton
+                            Classes="toolbar item"
+                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Card}}"
+                            ToolTip.Tip="Card View"
+                            >
+                            <Image Source="avares://Jamaa/Assets/Icons/grid/grid.png" />
+                        </ToggleButton>
+                        <ToggleButton
+                            Classes="toolbar item"
+                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.List}}"
+                            ToolTip.Tip="List View"
+                            >
+                            <Image Source="avares://Jamaa/Assets/Icons/edit/list_ul.png" />
+                        </ToggleButton>
+                        <ToggleButton
+                            Classes="toolbar item"
+                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Table}}"
+                            ToolTip.Tip="Table View"
+                            >
+                            <Image Source="avares://Jamaa/Assets/Icons/edit/table.png" />
+                        </ToggleButton>
+                    </StackPanel>
+                </HeaderedContentControl>
+            </StackPanel>
+
+            <ContentControl
+                Grid.Row="1"
+                Content="{Binding}"
+                ContentTemplate="{Binding DisplayMode, Converter={StaticResource MemberListTemplateSelector}}"
+                />
             <components:MemberActionsPane Grid.Row="2" />
         </Grid>
     </Panel>

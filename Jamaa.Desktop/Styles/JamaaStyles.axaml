@@ -111,8 +111,124 @@
         <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight3}" />
     </Style>
 
-    <Style Selector="u|Avatar Image">
-        <Setter Property="Stretch" Value="UniformToFill" />
+    <Style Selector="u|Avatar">
+        <Setter Property="BorderBrush" Value="White" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        ClipToBounds="True"
+                        CornerRadius="1000"
+                        >
+                        <Grid>
+                            <Image
+                                Width="{TemplateBinding Width}"
+                                Height="{TemplateBinding Height}"
+                                Source="{TemplateBinding Source}"
+                                Stretch="UniformToFill"
+                                />
+                            <ContentPresenter
+                                Name="PART_ContentPresenter"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                />
+                        </Grid>
+                    </Border>
+                    <Border
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="1000"
+                        IsHitTestVisible="False"
+                        />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector=":is(TemplatedControl).toolbar.item">
+        <Setter Property="Height" Value="56" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="TextBox.toolbar.item">
+        <Setter Property="Width" Value="800" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ToggleButton.toolbar.item">
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="ToggleButton.toolbar.item Image">
+        <Setter Property="Width" Value="20" />
+        <Setter Property="Height" Value="20" />
+    </Style>
+    <Style Selector="ToggleButton.toolbar.item:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.toolbar.item:checked">
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight3}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="ToggleButton.toolbar.item:checked /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight3}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+    </Style>
+    <Style Selector="ToggleButton.toolbar.item:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.95)" />
+    </Style>
+
+    <Style Selector="HeaderedContentControl.toolbar.group">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Height" Value="56" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid RowDefinitions="Auto,*">
+                    <Border
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Margin="0,8,0,0"
+                        Padding="10,8,10,8"
+                        BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        >
+                        <ContentPresenter Content="{TemplateBinding Content}" />
+                    </Border>
+                    <ContentPresenter
+                        Grid.Row="0"
+                        Height="16"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        Content="{TemplateBinding Header}"
+                        >
+                        <ContentPresenter.Styles>
+                            <Style Selector="TextBlock">
+                                <Setter Property="FontSize" Value="12" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+                                <Setter Property="Margin" Value="4,0" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </ContentPresenter.Styles>
+                    </ContentPresenter>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
     </Style>
 
     <Style Selector="DataValidationErrors">
