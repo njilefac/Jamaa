@@ -20,16 +20,16 @@ public partial class MemberCardsList : UserControl, IDisposable
         InitializeComponent();
     }
     
-     private int GetColumnCount(int vm_MembersCount)
+     private int GetColumnCount(int vmMembersCount)
     {
-        if (MembersRepeater == null || vm_MembersCount == 0)
+        if (MembersRepeater == null || vmMembersCount == 0)
             return 1;
 
         // Try to find the first few elements to see how many share the same Y coordinate
         // We look for the first realized element to establish a baseline
         Visual? firstElement = null;
         int firstIndex = -1;
-        for (int i = 0; i < vm_MembersCount; i++)
+        for (int i = 0; i < vmMembersCount; i++)
         {
             firstElement = MembersRepeater.TryGetElement(i);
             if (firstElement != null)
@@ -45,7 +45,7 @@ public partial class MemberCardsList : UserControl, IDisposable
         int countInFirstVisibleRow = 0;
 
         // Check subsequent elements on the same row
-        for (int i = firstIndex; i < vm_MembersCount; i++)
+        for (int i = firstIndex; i < vmMembersCount; i++)
         {
             var element = MembersRepeater.TryGetElement(i);
             if (element == null) break;
