@@ -14,5 +14,6 @@ namespace Jamaa.Data.Models.Members
         public OrganisationData Organisation { get; set; }
         public string OrganisationId { get; set; }
         public RegistrationData Registration { get; set; }
+        public byte[]? PictureData { get; set; }
     }
 }

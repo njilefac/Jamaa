@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jamaa.Data.Repositories.Organisations;
 
-public class OrganisationQueryHandler(LibotaDbContext dbContext) : IOrganisationQueryHandler
+public class OrganisationQueryHandler(JamaaDbContext dbContext) : IOrganisationQueryHandler
 {
     public Task<List<OrganisationData>> HandleQuery(GetAllOrganisations query) =>
         dbContext.Organisations.ToListAsync();

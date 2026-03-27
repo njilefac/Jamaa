@@ -11,20 +11,23 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jamaa.Data.Migrations
 {
     [DbContext(typeof(JamaaDbContext))]
-    [Migration("20240514103847_Initial")]
-    partial class Initial
+    [Migration("20260325161950_AddAvatarToMember")]
+    partial class AddAvatarToMember
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
 
             modelBuilder.Entity("Jamaa.Data.Models.Members.MemberData", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Avatar")
+                        .HasColumnType("BLOB");
 
                     b.Property<string>("FirstName")
                         .IsRequired()

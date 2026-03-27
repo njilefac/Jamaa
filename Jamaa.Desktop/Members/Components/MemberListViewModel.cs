@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -12,6 +13,7 @@ using Avalonia.Controls.Selection;
 using Jamaa.Application.Organisation;
 using Jamaa.Data.Models.Members;
 using Jamaa.Desktop.Members.Messages;
+using Jamaa.Desktop.Members.Values;
 using Jamaa.Desktop.Services.Interactions;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Notifications;
@@ -24,6 +26,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
     public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();
     public SelectionModel<MemberData> Selection { get; }
+    public MemberListDisplayMode[] DisplayModeOptions => Enum.GetValues<MemberListDisplayMode>();
     public string Title => "Overview";
 
 
@@ -114,14 +117,15 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        _subscription.Dispose();
+        _subscription?.Dispose();
     }
     
     [ObservableProperty] private string? _searchTerm;
     [ObservableProperty] private object _activeContent;
     [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = [];
+    [ObservableProperty] private MemberListDisplayMode _displayMode = MemberListDisplayMode.Card;
     private static bool CanShowMemberProfile(object? parameter) => true;
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
     private readonly INotificationService _notificationService;
-    private readonly IDisposable _subscription;
+    private readonly IDisposable? _subscription;
 }

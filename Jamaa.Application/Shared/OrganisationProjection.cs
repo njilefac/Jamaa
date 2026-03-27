@@ -84,7 +84,7 @@ public class OrganisationProjection : ReceivePersistentActor
     private Task TryProcess(ILibotaEvent evt)
     {
         using var scope = _serviceProvider.CreateScope();
-        using var dbContext = scope.ServiceProvider.GetRequiredService<LibotaDbContext>();
+        using var dbContext = scope.ServiceProvider.GetRequiredService<JamaaDbContext>();
 
         return evt switch
         {
@@ -97,21 +97,21 @@ public class OrganisationProjection : ReceivePersistentActor
         };
     }
 
-    private async Task Handle(MemberRegistrationEnded @event, LibotaDbContext dbContext)
+    private async Task Handle(MemberRegistrationEnded @event, JamaaDbContext dbContext)
     {
         // Currently no additional data is carried with this event. Mark the registration as ended if we can resolve the member.
         // Best-effort no-op to keep projector healthy until richer event payloads are introduced.
         await Task.CompletedTask;
     }
 
-    private async Task Handle(MemberRegistrationUpdated @event, LibotaDbContext dbContext)
+    private async Task Handle(MemberRegistrationUpdated @event, JamaaDbContext dbContext)
     {
         // This legacy event carries only the member id. Without additional payload, we cannot update any fields.
         // Avoid throwing and keep the projection advancing.
         await Task.CompletedTask;
     }
 
-    private async Task Handle(MemberUpdated @event, LibotaDbContext dbContext)
+    private async Task Handle(MemberUpdated @event, JamaaDbContext dbContext)
     {
         // Best-effort update: try to locate the member by Id; if not found (due to earlier auto-generated ids),
         // fall back to matching by organisation and name as a heuristic.
@@ -138,6 +138,7 @@ public class OrganisationProjection : ReceivePersistentActor
         member.MiddleName = @event.MiddleName;
         member.LastName = @event.LastName;
         member.Gender = @event.Gender;
+        member.PictureData = @event.Avatar;
 
         if (member.Registration != null)
         {
@@ -149,7 +150,7 @@ public class OrganisationProjection : ReceivePersistentActor
         await dbContext.SaveChangesAsync();
     }
 
-    private async Task Handle(MemberRegistered @event, LibotaDbContext dbContext)
+    private async Task Handle(MemberRegistered @event, JamaaDbContext dbContext)
     {
         var matchingOrganisation = await dbContext.Organisations.FirstOrDefaultAsync(x => x.Id == @event.EntityId);
         if (matchingOrganisation != null)
@@ -178,7 +179,7 @@ public class OrganisationProjection : ReceivePersistentActor
         }
     }
 
-    private async Task Handle(OrganisationCreated @event, LibotaDbContext dbContext)
+    private async Task Handle(OrganisationCreated @event, JamaaDbContext dbContext)
     {
         dbContext.Organisations.Add(new OrganisationData
         {

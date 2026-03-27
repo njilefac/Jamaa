@@ -5,12 +5,12 @@ using Microsoft.Extensions.Options;
 
 namespace Jamaa.Data.Configuration;
 
-public class DesignTimeDbContext : IDesignTimeDbContextFactory<LibotaDbContext>
+public class DesignTimeDbContext : IDesignTimeDbContextFactory<JamaaDbContext>
 {
-    public LibotaDbContext CreateDbContext(string[] args)
+    public JamaaDbContext CreateDbContext(string[] args)
     {
         var dbOptions = new DatabaseOptions { DataFile = Path.Combine(Directory.GetCurrentDirectory(), "libota.db") };
 
-        return new LibotaDbContext(Options.Create(dbOptions));
+        return new JamaaDbContext(Options.Create(dbOptions));
     }
 }

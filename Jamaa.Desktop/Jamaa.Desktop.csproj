@@ -184,7 +184,7 @@
       <DependentUpon>MembersOverviewPage.axaml</DependentUpon>
     </Compile>
     <Compile Update="Members\Components\MemberRegistrationViewModel.cs">
-      <DependentUpon>MembersList.axaml</DependentUpon>
+      <DependentUpon>MemberRegistrationView.axaml</DependentUpon>
     </Compile>
     <Compile Update="Members\Components\MembersSummary.cs">
       <DependentUpon>MembersSummaryPane.axaml</DependentUpon>
@@ -195,19 +195,8 @@
     <Compile Update="Shared\SplashViewModel.cs">
       <DependentUpon>SplashWindow.axaml</DependentUpon>
     </Compile>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <AdditionalFiles Include="Security\LoginScreen.axaml" />
-    <AdditionalFiles Include="Settings\SettingsPage.axaml" />
-    <AdditionalFiles Include="Setup\CreateOrganisationScreen.axaml" />
-    <AdditionalFiles Include="Setup\CreateSuperUserScreen.axaml" />
-    <AdditionalFiles Include="Setup\OrganisationContactDetailsScreen.axaml" />
-    <AdditionalFiles Include="Shared\Dashboard.axaml" />
-    <AdditionalFiles Include="Shared\MainMenu.axaml" />
-    <AdditionalFiles Include="Shared\Shell.axaml" />
-    <AdditionalFiles Include="Users\AddUserScreen.axaml" />
-    <AdditionalFiles Include="Users\UserDetailsScreen.axaml" />
-    <AdditionalFiles Include="Users\UserManagementScreen.axaml" />
+    <Compile Update="Members\Components\MemberListViewModel.cs">
+      <DependentUpon>MembersList.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

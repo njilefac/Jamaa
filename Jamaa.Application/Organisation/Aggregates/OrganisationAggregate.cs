@@ -75,7 +75,8 @@ namespace Jamaa.Application.Organisation.Aggregates
                     command.RegistrationBegin,
                     command.MembershipType,
                     command.Status,
-                    OrganisationId.With(PersistenceId)
+                    OrganisationId.With(PersistenceId),
+                    command.Avatar
                 );
                 Persist(updatedEvent, ApplyEvent);
                 if(LastSequenceNr % 5 == 0)

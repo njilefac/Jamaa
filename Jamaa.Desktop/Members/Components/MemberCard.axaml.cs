@@ -2,9 +2,11 @@ using System.Linq;
 using System.Reactive;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using Huskui.Avalonia.Controls;
+using Jamaa.Desktop.Members.Messages;
 
 namespace Jamaa.Desktop.Members.Components;
 
@@ -43,6 +45,22 @@ public partial class MemberCard : UserControl
                         selectionModel.SelectedIndex = index;
                     }
                     e.Handled = true;
+                }
+            }
+        };
+
+        this.KeyDown += (s, e) =>
+        {
+            if (e.Key == Key.Enter)
+            {
+                var vm = GetViewModel();
+                if (vm != null && this.DataContext is Jamaa.Data.Models.Members.MemberData member)
+                {
+                    if (vm.ShowMemberProfileCommand.CanExecute(member))
+                    {
+                        vm.ShowMemberProfileCommand.Execute(new MemberProfileNavigationArgs(member, "General"));
+                        e.Handled = true;
+                    }
                 }
             }
         };
