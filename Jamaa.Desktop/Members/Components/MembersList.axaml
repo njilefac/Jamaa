@@ -14,6 +14,13 @@
     xmlns:values="clr-namespace:Jamaa.Desktop.Members.Values"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <UserControl.KeyBindings>
+        <KeyBinding Command="{Binding RegisterMemberCommand}" Gesture="Ctrl+Add" />
+        <KeyBinding Command="{Binding RegisterMemberCommand}" Gesture="Cmd+Add" />
+        <KeyBinding Command="{Binding RegisterMemberCommand}" Gesture="Ctrl+OemPlus" />
+        <KeyBinding Command="{Binding RegisterMemberCommand}" Gesture="Cmd+OemPlus" />
+    </UserControl.KeyBindings>
+
     <UserControl.Resources>
         <services:MemberListTemplateSelector x:Key="MemberListTemplateSelector">
             <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.Card}">
