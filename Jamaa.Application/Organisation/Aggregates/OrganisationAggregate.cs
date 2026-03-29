@@ -73,6 +73,7 @@ namespace Jamaa.Application.Organisation.Aggregates
                     command.Gender,
                     BirthDate: null,
                     command.RegistrationBegin,
+                    command.RegistrationEnd,
                     command.MembershipType,
                     command.Status,
                     OrganisationId.With(PersistenceId),

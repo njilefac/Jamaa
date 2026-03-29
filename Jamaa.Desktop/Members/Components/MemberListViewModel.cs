@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Domain.Organisation.Values;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -100,6 +101,33 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
                member.LastName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase) ||
                !string.IsNullOrWhiteSpace(member.MiddleName) &&
                member.MiddleName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [RelayCommand]
+    private async Task EndRegistration(MemberData member)
+    {
+        if (member.Registration?.EndDate is not null)
+        {
+            return;
+        }
+
+        var request = new MemberUpdateRequest
+        {
+            MemberId = member.Id,
+            FirstName = member.FirstName,
+            MiddleName = member.MiddleName,
+            LastName = member.LastName,
+            Gender = member.Gender,
+            RegistrationBegin = member.Registration?.StartDate ?? DateTime.Now,
+            RegistrationEnd = DateTime.Now,
+            MembershipType = member.Registration?.MembershipType ?? default,
+            Status = member.Registration?.Status ?? default,
+            OrganisationId = OrganisationId.With(member.OrganisationId),
+            Avatar = member.PictureData
+        };
+
+        await _organisationManagementFacade.UpdateMember(request);
+        _notificationService.Show("Success", $"Registration for {member.FirstName} {member.LastName} has been ended.", NotificationType.Information);
     }
 
     [RelayCommand]

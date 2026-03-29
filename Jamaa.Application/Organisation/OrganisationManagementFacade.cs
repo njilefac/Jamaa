@@ -90,6 +90,7 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
                 request.MembershipType,
                 request.Status,
                 request.RegistrationBegin,
+                request.RegistrationEnd,
                 request.Avatar);
 
             _commandProcessor.Tell(message);

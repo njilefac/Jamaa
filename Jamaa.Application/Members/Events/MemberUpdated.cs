@@ -13,6 +13,7 @@ public record MemberUpdated(
     Gender Gender,
     DateTime? BirthDate,
     DateTime RegistrationBegin,
+    DateTime? RegistrationEnd,
     MembershipType MembershipType,
     RegistrationStatus Status,
     OrganisationId OrganisationId,
