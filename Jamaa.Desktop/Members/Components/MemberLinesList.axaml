@@ -1,0 +1,124 @@
+<UserControl
+    x:Class="Jamaa.Desktop.Members.Components.MemberLinesList"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
+    xmlns:vm="clr-namespace:Jamaa.Desktop.Members.ViewModels"
+    xmlns:u="https://irihi.tech/ursa"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <Panel>
+        <DataGrid
+            Background="Transparent"
+            BorderThickness="0"
+            CanUserResizeColumns="True"
+            CanUserSortColumns="True"
+            GridLinesVisibility="Horizontal"
+            ItemsSource="{Binding Members}"
+            SelectionMode="Extended"
+            SelectedItem="{Binding Selection.SelectedItem, Mode=TwoWay}">
+            <DataGrid.Styles>
+                <Style Selector="DataGridRow">
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu x:DataType="vm:MemberViewModel">
+                                <MenuItem Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}" Header="Profile">
+                                    <MenuItem.CommandParameter>
+                                        <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
+                                            <Binding />
+                                            <Binding Source="General" />
+                                        </MultiBinding>
+                                    </MenuItem.CommandParameter>
+                                </MenuItem>
+                                <MenuItem Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}" Header="Finances">
+                                    <MenuItem.CommandParameter>
+                                        <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
+                                            <Binding />
+                                            <Binding Source="Finances" />
+                                        </MultiBinding>
+                                    </MenuItem.CommandParameter>
+                                </MenuItem>
+                                <MenuItem Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}" Header="Attendance">
+                                    <MenuItem.CommandParameter>
+                                        <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
+                                            <Binding />
+                                            <Binding Source="Attendance" />
+                                        </MultiBinding>
+                                    </MenuItem.CommandParameter>
+                                </MenuItem>
+                                <Separator IsVisible="{Binding Registration.EndDate, Converter={x:Static ObjectConverters.IsNull}}" />
+                                <MenuItem
+                                    Command="{Binding $parent[components:MembersList].DataContext.EndRegistrationCommand}"
+                                    CommandParameter="{Binding}"
+                                    Header="End Registration"
+                                    IsEnabled="{Binding Registration.EndDate, Converter={x:Static ObjectConverters.IsNull}}"
+                                    IsVisible="{Binding Registration.EndDate, Converter={x:Static ObjectConverters.IsNull}}"
+                                    />
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style Selector="DataGridCell">
+                    <Setter Property="Template">
+                        <ControlTemplate>
+                            <Panel Background="Transparent">
+                                <Interaction.Behaviors>
+                                    <EventTriggerBehavior EventName="DoubleTapped">
+                                        <InvokeCommandAction Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}">
+                                            <InvokeCommandAction.CommandParameter>
+                                                <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
+                                                    <Binding />
+                                                    <Binding Source="General" />
+                                                </MultiBinding>
+                                            </InvokeCommandAction.CommandParameter>
+                                        </InvokeCommandAction>
+                                    </EventTriggerBehavior>
+                                </Interaction.Behaviors>
+                                <ContentPresenter
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+                            </Panel>
+                        </ControlTemplate>
+                    </Setter>
+                </Style>
+            </DataGrid.Styles>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Full Name" Width="*" SortMemberPath="FullName">
+                    <DataTemplate x:DataType="vm:MemberViewModel">
+                        <StackPanel Orientation="Horizontal" Spacing="16" Margin="8,4">
+                            <u:Avatar
+                                Width="48"
+                                Height="48"
+                                Source="{Binding PictureData, Converter={StaticResource ByteArrayToBitmapConverter}}" />
+                            <TextBlock VerticalAlignment="Center" Text="{Binding FullName}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Membership" Width="150" SortMemberPath="Registration.MembershipType">
+                    <DataTemplate x:DataType="vm:MemberViewModel">
+                        <ComboBox
+                            HorizontalAlignment="Stretch"
+                            ItemsSource="{Binding $parent[components:MemberLinesList].DataContext.MembershipTypes}"
+                            SelectedItem="{Binding Registration.MembershipType}" />
+                    </DataTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Joined" Binding="{Binding Registration.StartDate, StringFormat='MMM/yyyy'}" Width="150" />
+                <DataGridTextColumn Header="Left" Binding="{Binding Registration.EndDate, StringFormat='MMM/yyyy'}" Width="150" />
+                <DataGridTemplateColumn Header="Status" Width="120" SortMemberPath="Registration.Status">
+                    <DataTemplate x:DataType="vm:MemberViewModel">
+                        <ComboBox
+                            HorizontalAlignment="Stretch"
+                            ItemsSource="{Binding $parent[components:MemberLinesList].DataContext.RegistrationStatuses}"
+                            SelectedItem="{Binding Registration.Status}" />
+                    </DataTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Panel>
+</UserControl>
