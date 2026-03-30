@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using Domain.Organisation.Requests;
+using Domain.Organisation.Values;
 using FluentAvalonia.UI.Controls;
 using Jamaa.Desktop.Services.Interactions;
 
@@ -67,19 +68,26 @@ public partial class MembersList : UserControl, IDisposable
         _endRegistrationHandler = null;
         _endRegistrationHandler = vm.ConfirmEndRegistration.RegisterHandler(async interaction =>
         {
-            var member = interaction.Input;
             var dialog = new ContentDialog
             {
                 Title = "End Registration",
-                Content = $"Are you sure you want to end the registration for {member.FirstName} {member.LastName}?",
                 PrimaryButtonText = "End Registration",
                 SecondaryButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Secondary
+                DefaultButton = ContentDialogButton.Secondary,
+                Content = new MemberEndRegistrationView
+                {
+                    DataContext = interaction.Input
+                }
             };
 
             var owner = this.FindAncestorOfType<Window>();
             var result = await dialog.ShowAsync(owner);
-            interaction.SetOutput(result == ContentDialogResult.Primary);
+
+            var output = result == ContentDialogResult.Primary
+                ? new DialogResponse<RegistrationStatus>(Confirmed: true, Result: interaction.Input.Result)
+                : new DialogResponse<RegistrationStatus>(Confirmed: false, Result: default);
+
+            interaction.SetOutput(output);
         });
     }
 

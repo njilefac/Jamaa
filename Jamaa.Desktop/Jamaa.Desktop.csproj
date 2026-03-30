@@ -198,5 +198,8 @@
     <Compile Update="Members\Components\MemberListViewModel.cs">
       <DependentUpon>MembersList.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Members\Components\MemberEndRegistrationViewModel.cs">
+      <DependentUpon>MemberEndRegistrationView.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

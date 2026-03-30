@@ -115,7 +115,7 @@
             <Label
                 Grid.Row="5"
                 Grid.Column="1"
-                Content="{Binding Registration.Status, StringFormat='Registration Status: {0}'}"
+                Content="{Binding Registration.Status, StringFormat='Status: {0}'}"
                 />
         </Grid>
     </husk:Card>

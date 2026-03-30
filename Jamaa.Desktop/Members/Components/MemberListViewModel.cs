@@ -26,19 +26,22 @@ namespace Jamaa.Desktop.Members.Components;
 public partial class MemberListViewModel : ObservableValidator, IRouteableViewModel, IDisposable
 {
     public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
+    public MemberEndRegistrationViewModel MemberEndRegistrationViewModel { get; }
     public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();
-    public Interaction<MemberViewModel, bool> ConfirmEndRegistration { get; } = new();
+    public Interaction<MemberEndRegistrationViewModel, DialogResponse<RegistrationStatus>> ConfirmEndRegistration { get; } = new();
     public SelectionModel<MemberViewModel> Selection { get; }
     public string Title => "Overview";
 
 
     public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
         MemberRegistrationViewModel memberRegistrationViewModel,
+        MemberEndRegistrationViewModel memberEndRegistrationViewModel,
         Pages.MemberProfileViewModel memberProfileViewModel, 
         IRouteResolver routeResolver,
         INotificationService notificationService)
     {
         MemberRegistrationViewModel = memberRegistrationViewModel;
+        MemberEndRegistrationViewModel = memberEndRegistrationViewModel;
         _organisationManagementFacade = organisationManagementFacade;
         _notificationService = notificationService;
 
@@ -132,8 +135,9 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             return;
         }
 
-        var confirmed = await ConfirmEndRegistration.Handle(member);
-        if (!confirmed)
+        MemberEndRegistrationViewModel.Reset(member);
+        var response = await ConfirmEndRegistration.Handle(MemberEndRegistrationViewModel);
+        if (!response.Confirmed)
         {
             return;
         }
@@ -148,7 +152,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             RegistrationBegin = member.Registration?.StartDate ?? DateTime.Now,
             RegistrationEnd = DateTime.Now,
             MembershipType = member.Registration?.MembershipType ?? default,
-            Status = member.Registration?.Status ?? default,
+            Status = response.Result,
             OrganisationId = OrganisationId.With(member.OrganisationId),
             Avatar = member.PictureData
         };
