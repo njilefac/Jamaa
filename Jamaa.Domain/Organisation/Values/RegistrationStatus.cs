@@ -6,5 +6,6 @@ public enum RegistrationStatus
     Rejected,
     Full,
     Left,
+    Suspended,
     Expelled = 99
 }

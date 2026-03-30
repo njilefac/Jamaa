@@ -1,7 +1,8 @@
 using System;
-using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Domain.Organisation.Values;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -12,6 +13,7 @@ using JetBrains.Annotations;
 using Avalonia.Controls.Selection;
 using Jamaa.Application.Organisation;
 using Jamaa.Data.Models.Members;
+using Jamaa.Desktop.Members.ViewModels;
 using Jamaa.Desktop.Members.Messages;
 using Jamaa.Desktop.Members.Values;
 using Jamaa.Desktop.Services.Interactions;
@@ -24,26 +26,27 @@ namespace Jamaa.Desktop.Members.Components;
 public partial class MemberListViewModel : ObservableValidator, IRouteableViewModel, IDisposable
 {
     public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
+    public MemberEndRegistrationViewModel MemberEndRegistrationViewModel { get; }
     public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();
-    public SelectionModel<MemberData> Selection { get; }
-    public MemberListDisplayMode[] DisplayModeOptions => Enum.GetValues<MemberListDisplayMode>();
+    public Interaction<MemberEndRegistrationViewModel, DialogResponse<RegistrationStatus>> ConfirmEndRegistration { get; } = new();
+    public SelectionModel<MemberViewModel> Selection { get; }
     public string Title => "Overview";
 
 
     public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
         MemberRegistrationViewModel memberRegistrationViewModel,
+        MemberEndRegistrationViewModel memberEndRegistrationViewModel,
         Pages.MemberProfileViewModel memberProfileViewModel, 
         IRouteResolver routeResolver,
         INotificationService notificationService)
     {
         MemberRegistrationViewModel = memberRegistrationViewModel;
+        MemberEndRegistrationViewModel = memberEndRegistrationViewModel;
         _organisationManagementFacade = organisationManagementFacade;
         _notificationService = notificationService;
 
-        var membersSourceList = new SourceCache<MemberData, string>(m => m.Id);
+        var membersSourceList = new SourceCache<MemberViewModel, string>(m => m.Id);
             
-        _subscription = membersSourceList.PopulateFrom(_organisationManagementFacade.CurrentMembers);
-
         var filter = this.WhenValueChanged(x => x.SearchTerm)
             .Throttle(TimeSpan.FromMilliseconds(250))
             .Select(BuildFilter);
@@ -51,14 +54,34 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         membersSourceList
             .Connect()
             .Filter(filter)
-            .SortAndBind(Members, SortExpressionComparer<MemberData>.Ascending(m => m.LastName))
+            .SortAndBind(Members, SortExpressionComparer<MemberViewModel>.Ascending(m => m.LastName))
             .DisposeMany()
             .Subscribe();
+
+        _subscription = new CompositeDisposable(
+            _organisationManagementFacade.CurrentMembers
+                .Subscribe(m => membersSourceList.AddOrUpdate(MapToViewModel(m))),
+            _organisationManagementFacade.MemberUpdated
+                .Subscribe(m =>
+                {
+                    var existing = membersSourceList.Lookup(m.Id);
+                    if (existing.HasValue)
+                    {
+                        existing.Value.UpdateFrom(m);
+                    }
+                    else
+                    {
+                        membersSourceList.AddOrUpdate(MapToViewModel(m));
+                    }
+                }),
+            _organisationManagementFacade.MemberDeleted
+                .Subscribe(m => membersSourceList.Remove(m.Id))
+        );
 
         Selection = new() { Source = Members, SingleSelect = false };
     }
 
-    private static Func<MemberData, bool> BuildFilter(string? term)
+    private static Func<MemberViewModel, bool> BuildFilter(string? term)
     {
         if (string.IsNullOrWhiteSpace(term))
             return _ => true;
@@ -82,9 +105,11 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     [RelayCommand(CanExecute = nameof(CanShowMemberProfile))]
     private void ShowMemberProfile(object? parameter)
     {
-        if (parameter is MemberData member)
+        if (parameter is MemberViewModel member)
         {
-            WeakReferenceMessenger.Default.Send(new MemberDetailsRequested(new MemberProfileNavigationArgs(member)));
+            // Note: MemberProfileNavigationArgs might still need MemberData 
+            // but let's see if we can use MemberViewModel or map it back
+            WeakReferenceMessenger.Default.Send(new MemberDetailsRequested(new MemberProfileNavigationArgs(MapToData(member))));
         }
         else if (parameter is MemberProfileNavigationArgs args)
         {
@@ -92,7 +117,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         }
     }
 
-    private static bool MemberMatches(MemberData member, string? searchTerm)
+    private static bool MemberMatches(MemberViewModel member, string? searchTerm)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
             return true;
@@ -100,6 +125,40 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
                member.LastName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase) ||
                !string.IsNullOrWhiteSpace(member.MiddleName) &&
                member.MiddleName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [RelayCommand]
+    private async Task EndRegistration(MemberViewModel member)
+    {
+        if (member.Registration is { EndDate: not null })
+        {
+            return;
+        }
+
+        MemberEndRegistrationViewModel.Reset(member);
+        var response = await ConfirmEndRegistration.Handle(MemberEndRegistrationViewModel);
+        if (!response.Confirmed)
+        {
+            return;
+        }
+
+        var request = new MemberUpdateRequest
+        {
+            MemberId = member.Id,
+            FirstName = member.FirstName,
+            MiddleName = member.MiddleName,
+            LastName = member.LastName,
+            Gender = member.Gender,
+            RegistrationBegin = member.Registration?.StartDate ?? DateTime.Now,
+            RegistrationEnd = DateTime.Now,
+            MembershipType = member.Registration?.MembershipType ?? default,
+            Status = response.Result,
+            OrganisationId = OrganisationId.With(member.OrganisationId),
+            Avatar = member.PictureData
+        };
+
+        await _organisationManagementFacade.UpdateMember(request);
+        _notificationService.Show("Success", $"Registration for {member.FirstName} {member.LastName} has been ended.", NotificationType.Success);
     }
 
     [RelayCommand]
@@ -119,10 +178,54 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         GC.SuppressFinalize(this);
         _subscription?.Dispose();
     }
+
+    private static MemberViewModel MapToViewModel(MemberData member)
+    {
+        return new MemberViewModel
+        {
+            Id = member.Id,
+            FirstName = member.FirstName,
+            MiddleName = member.MiddleName,
+            LastName = member.LastName,
+            Gender = member.Gender,
+            OrganisationId = member.OrganisationId,
+            PictureData = member.PictureData,
+            Registration = member.Registration == null ? null : new RegistrationViewModel
+            {
+                Id = member.Registration.Id,
+                StartDate = member.Registration.StartDate,
+                EndDate = member.Registration.EndDate,
+                MembershipType = member.Registration.MembershipType,
+                Status = member.Registration.Status
+            }
+        };
+    }
+
+    public static MemberData MapToData(MemberViewModel member)
+    {
+        return new MemberData
+        {
+            Id = member.Id,
+            FirstName = member.FirstName,
+            MiddleName = member.MiddleName,
+            LastName = member.LastName,
+            Gender = member.Gender,
+            OrganisationId = member.OrganisationId,
+            PictureData = member.PictureData,
+            Registration = member.Registration == null ? null : new RegistrationData
+            {
+                Id = member.Registration.Id,
+                StartDate = member.Registration.StartDate,
+                EndDate = member.Registration.EndDate,
+                MembershipType = member.Registration.MembershipType,
+                Status = member.Registration.Status
+            }
+        }!;
+    }
     
     [ObservableProperty] private string? _searchTerm;
     [ObservableProperty] private object _activeContent;
-    [ObservableProperty] private ObservableCollectionExtended<MemberData> _members = [];
+    [ObservableProperty] private ObservableCollectionExtended<MemberViewModel> _members = [];
     [ObservableProperty] private MemberListDisplayMode _displayMode = MemberListDisplayMode.Card;
     private static bool CanShowMemberProfile(object? parameter) => true;
     private readonly IOrganisationManagementFacade _organisationManagementFacade;

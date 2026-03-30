@@ -14,5 +14,6 @@ namespace Jamaa.Application.Organisation.Commands
         MembershipType MembershipType,
         RegistrationStatus Status,
         DateTime RegistrationBegin,
+        DateTime? RegistrationEnd,
         byte[]? Avatar = null);
 }

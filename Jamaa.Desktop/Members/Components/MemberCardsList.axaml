@@ -8,8 +8,9 @@
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:data="clr-namespace:Jamaa.Data.Models.Members;assembly=Jamaa.Data"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                xmlns:vm="clr-namespace:Jamaa.Desktop.Members.ViewModels"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.KeyBindings>
         <!--  Select All on Windows/Linux  -->
         <KeyBinding Command="{Binding SelectAllCommand}" Gesture="Ctrl+A" />
@@ -18,6 +19,11 @@
         <!--  Clear Selection convenience  -->
         <KeyBinding Command="{Binding UnselectAllCommand}" Gesture="Escape" />
     </UserControl.KeyBindings>
+    <Interaction.Behaviors>
+        <BehaviorCollection>
+            <AutoFocusBehavior />
+        </BehaviorCollection>
+    </Interaction.Behaviors>
     <Panel>
         <ScrollViewer
             AllowAutoHide="True"
@@ -36,7 +42,7 @@
                     <WrapLayout />
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="data:MemberData">
+                    <DataTemplate x:DataType="vm:MemberViewModel">
                         <components:MemberCard />
                     </DataTemplate>
                 </ItemsRepeater.ItemTemplate>

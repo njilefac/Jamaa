@@ -58,6 +58,7 @@ public static class ServiceCollectionExtensions
 
                 builder.ConfigureLoggers(b =>
                 {
+                    b.LogLevel = Akka.Event.LogLevel.WarningLevel;
                     b.ClearLoggers();
                     b.AddLogger<SerilogLogger>();
                 });
