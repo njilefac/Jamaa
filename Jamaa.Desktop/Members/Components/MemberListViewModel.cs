@@ -28,6 +28,9 @@ namespace Jamaa.Desktop.Members.Components;
 [UsedImplicitly]
 public partial class MemberListViewModel : ObservableValidator, IRouteableViewModel, IDisposable
 {
+    public MembershipType[] MembershipTypes => Enum.GetValues<MembershipType>();
+    public RegistrationStatus[] RegistrationStatuses => Enum.GetValues<RegistrationStatus>();
+
     public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
     public MemberEndRegistrationViewModel MemberEndRegistrationViewModel { get; }
     public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();
