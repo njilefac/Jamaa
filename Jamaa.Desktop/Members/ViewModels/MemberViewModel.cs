@@ -7,9 +7,15 @@ namespace Jamaa.Desktop.Members.ViewModels;
 public partial class MemberViewModel : ObservableObject
 {
     [ObservableProperty] private string _id;
-    [ObservableProperty] private string _lastName;
-    [ObservableProperty] private string? _middleName;
-    [ObservableProperty] private string _firstName;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FullName))]
+    private string _lastName;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FullName))]
+    private string? _middleName;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FullName))]
+    private string _firstName;
     [ObservableProperty] private Gender _gender;
     [ObservableProperty] private string _organisationId;
     [ObservableProperty] private RegistrationViewModel? _registration;
