@@ -29,8 +29,8 @@
             <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.List}">
                 <components:MemberLinesList />
             </DataTemplate>
-            <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.Table}">
-                <TextBlock Text="future table view" />
+            <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.Carousel}">
+                <TextBlock Text="future carousel view" />
             </DataTemplate>
         </services:MemberListTemplateSelector>
     </UserControl.Resources>
@@ -74,9 +74,9 @@
                         </ToggleButton>
                         <ToggleButton
                             Classes="toolbar item"
-                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Table}}"
-                            ToolTip.Tip="Table View">
-                            <Image Source="avares://Jamaa/Assets/Icons/edit/table.png" />
+                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Carousel}}"
+                            ToolTip.Tip="Carousel View">
+                            <Image Source="avares://Jamaa/Assets/Icons/basic/carousel-64.png" />
                         </ToggleButton>
                     </StackPanel>
                 </HeaderedContentControl>
