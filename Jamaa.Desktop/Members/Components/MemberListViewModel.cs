@@ -1,6 +1,9 @@
+using Avalonia.Threading;
 using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Domain.Organisation.Values;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -33,6 +36,8 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     public string Title => "Overview";
 
 
+    private readonly SynchronizationContext? _syncContext;
+
     public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
         MemberRegistrationViewModel memberRegistrationViewModel,
         MemberEndRegistrationViewModel memberEndRegistrationViewModel,
@@ -40,6 +45,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         IRouteResolver routeResolver,
         INotificationService notificationService)
     {
+        _syncContext = SynchronizationContext.Current;
         MemberRegistrationViewModel = memberRegistrationViewModel;
         MemberEndRegistrationViewModel = memberEndRegistrationViewModel;
         _organisationManagementFacade = organisationManagementFacade;
@@ -54,6 +60,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         membersSourceList
             .Connect()
             .Filter(filter)
+            .ObserveOn(_syncContext ?? SynchronizationContext.Current ?? new SynchronizationContext())
             .SortAndBind(Members, SortExpressionComparer<MemberViewModel>.Ascending(m => m.LastName))
             .DisposeMany()
             .Subscribe();
