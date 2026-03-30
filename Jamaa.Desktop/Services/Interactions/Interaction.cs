@@ -19,12 +19,12 @@ public class Interaction<TInput, TOutput>
         var interactionContext = new InteractionContext<TInput, TOutput>(input);
         // Execute handlers in LIFO order without removing them, until one produces an output
         var snapshot = _handlers.ToArray(); // top-first order
-        for (var i = 0; i < snapshot.Length && interactionContext.Output == null; i++)
+        for (var i = 0; i < snapshot.Length && !interactionContext.IsHandled; i++)
         {
             await snapshot[i].Invoke(interactionContext);
         }
 
-        return interactionContext.Output ??
+        return interactionContext.IsHandled ? interactionContext.Output :
                throw new InvalidOperationException("No handler produced an output for this interaction.");
     }
 

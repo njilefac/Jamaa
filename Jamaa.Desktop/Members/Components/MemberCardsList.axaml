@@ -18,6 +18,11 @@
         <!--  Clear Selection convenience  -->
         <KeyBinding Command="{Binding UnselectAllCommand}" Gesture="Escape" />
     </UserControl.KeyBindings>
+    <Interaction.Behaviors>
+        <BehaviorCollection>
+            <AutoFocusBehavior />
+        </BehaviorCollection>
+    </Interaction.Behaviors>
     <Panel>
         <ScrollViewer
             AllowAutoHide="True"

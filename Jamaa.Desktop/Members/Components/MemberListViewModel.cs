@@ -26,8 +26,8 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
 {
     public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
     public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();
+    public Interaction<MemberData, bool> ConfirmEndRegistration { get; } = new();
     public SelectionModel<MemberData> Selection { get; }
-    public MemberListDisplayMode[] DisplayModeOptions => Enum.GetValues<MemberListDisplayMode>();
     public string Title => "Overview";
 
 
@@ -107,6 +107,12 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     private async Task EndRegistration(MemberData member)
     {
         if (member.Registration?.EndDate is not null)
+        {
+            return;
+        }
+
+        var confirmed = await ConfirmEndRegistration.Handle(member);
+        if (!confirmed)
         {
             return;
         }

@@ -73,7 +73,7 @@
                     Grid.Row="3"
                     Grid.Column="1"
                     Classes="form field"
-                    ItemsSource="{Binding GenderChoices}"
+                    ItemsSource="{Binding GenderOptions}"
                     SelectedItem="{Binding Mode=TwoWay, Path=SelectedGender}"
                     >
                     <ComboBox.ItemTemplate>

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reactive;
 using Avalonia;
@@ -78,6 +79,10 @@ public partial class MemberCard : UserControl
             {
                 vm.Selection.SelectionChanged += (sender, args) => UpdateSelection();
             }
+        };
+
+        this.Unloaded += (s, e) =>
+        {
         };
     }
 

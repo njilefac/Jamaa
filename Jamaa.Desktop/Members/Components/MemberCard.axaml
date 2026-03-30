@@ -1,4 +1,4 @@
-<UserControl
+    <UserControl
     x:Class="Jamaa.Desktop.Members.Components.MemberCard"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -121,7 +121,7 @@
             <Label
                 Grid.Row="5"
                 Grid.Column="1"
-                Content="{Binding Registration.Status, StringFormat='Registration: {0}'}"
+                Content="{Binding Registration.Status, StringFormat='Registration Status: {0}'}"
                 />
         </Grid>
     </husk:Card>
