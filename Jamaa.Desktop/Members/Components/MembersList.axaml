@@ -27,7 +27,7 @@
                 <components:MemberCardsList />
             </DataTemplate>
             <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.List}">
-                <TextBlock Text="future list view" />
+                <components:MemberLinesList />
             </DataTemplate>
             <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.Table}">
                 <TextBlock Text="future table view" />
