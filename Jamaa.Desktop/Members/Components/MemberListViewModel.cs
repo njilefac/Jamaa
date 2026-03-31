@@ -1,5 +1,6 @@
 using Avalonia.Threading;
 using System;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -35,6 +36,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     public MemberEndRegistrationViewModel MemberEndRegistrationViewModel { get; }
     public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();
     public Interaction<MemberEndRegistrationViewModel, DialogResponse<RegistrationStatus>> ConfirmEndRegistration { get; } = new();
+    public Interaction<Unit, Unit> FocusSearch { get; } = new();
     public SelectionModel<MemberViewModel> Selection { get; }
     public string Title => "Overview";
 
@@ -66,7 +68,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             .ObserveOn(_syncContext ?? SynchronizationContext.Current ?? new SynchronizationContext())
             .SortAndBind(Members, SortExpressionComparer<MemberViewModel>.Ascending(m => m.LastName))
             .DisposeMany()
-            .Subscribe();
+            .Subscribe(_ => EnsureSelection());
 
         _subscription = new CompositeDisposable(
             _organisationManagementFacade.CurrentMembers
@@ -88,7 +90,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
                 .Subscribe(m => membersSourceList.Remove(m.Id))
         );
 
-        Selection = new() { Source = Members, SingleSelect = false };
+        Selection = new() { Source = Members, SingleSelect = true };
     }
 
     private static Func<MemberViewModel, bool> BuildFilter(string? term)
@@ -172,15 +174,23 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     }
 
     [RelayCommand]
-    private void SelectAll()
+    private async Task FocusSearchField()
     {
-        Selection.SelectAll();
+        await FocusSearch.Handle(Unit.Default);
     }
 
     [RelayCommand]
     private void UnselectAll()
     {
         Selection.Clear();
+    }
+
+    private void EnsureSelection()
+    {
+        if (Selection.SelectedItem == null && Members.Count > 0)
+        {
+            Selection.SelectedIndex = 0;
+        }
     }
 
     public void Dispose()
@@ -236,7 +246,33 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     [ObservableProperty] private string? _searchTerm;
     [ObservableProperty] private object _activeContent;
     [ObservableProperty] private ObservableCollectionExtended<MemberViewModel> _members = [];
-    [ObservableProperty] private MemberListDisplayMode _displayMode = MemberListDisplayMode.Card;
+    [ObservableProperty]
+    private MemberListDisplayMode _displayMode = MemberListDisplayMode.Card;
+
+    private MemberViewModel? _lastSelectedMember;
+
+    partial void OnDisplayModeChanging(MemberListDisplayMode value)
+    {
+        if (Selection.SelectedItem != null)
+        {
+            _lastSelectedMember = Selection.SelectedItem;
+        }
+    }
+
+    partial void OnDisplayModeChanged(MemberListDisplayMode value)
+    {
+        // Use Post to ensure this runs after UI controls are detached/attached
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (_lastSelectedMember != null)
+            {
+                Selection.SelectedItem = _lastSelectedMember;
+            }
+
+            EnsureSelection();
+        });
+    }
+    
     private static bool CanShowMemberProfile(object? parameter) => true;
     private readonly IOrganisationManagementFacade _organisationManagementFacade;
     private readonly INotificationService _notificationService;

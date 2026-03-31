@@ -18,7 +18,8 @@
             CanUserSortColumns="True"
             GridLinesVisibility="Horizontal"
             ItemsSource="{Binding Members}"
-            SelectionMode="Extended"
+            Name="MembersDataGrid"
+            SelectionMode="Single"
             SelectedItem="{Binding Selection.SelectedItem, Mode=TwoWay}">
             <DataGrid.Styles>
                 <Style Selector="DataGridRow">
@@ -62,36 +63,43 @@
                     </Setter>
                 </Style>
                 <Style Selector="DataGridCell">
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <Setter Property="Padding" Value="12,0" />
                     <Setter Property="Template">
                         <ControlTemplate>
-                            <Panel Background="Transparent">
-                                <Interaction.Behaviors>
-                                    <EventTriggerBehavior EventName="DoubleTapped">
-                                        <InvokeCommandAction Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}">
-                                            <InvokeCommandAction.CommandParameter>
-                                                <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
-                                                    <Binding />
-                                                    <Binding Source="General" />
-                                                </MultiBinding>
-                                            </InvokeCommandAction.CommandParameter>
-                                        </InvokeCommandAction>
-                                    </EventTriggerBehavior>
-                                </Interaction.Behaviors>
-                                <ContentPresenter
-                                    Margin="{TemplateBinding Padding}"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
-                            </Panel>
+                            <Border
+                                Background="Transparent"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                                <Panel Background="Transparent">
+                                    <Interaction.Behaviors>
+                                        <EventTriggerBehavior EventName="DoubleTapped">
+                                            <InvokeCommandAction Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}">
+                                                <InvokeCommandAction.CommandParameter>
+                                                    <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
+                                                        <Binding />
+                                                        <Binding Source="General" />
+                                                    </MultiBinding>
+                                                </InvokeCommandAction.CommandParameter>
+                                            </InvokeCommandAction>
+                                        </EventTriggerBehavior>
+                                    </Interaction.Behaviors>
+                                    <ContentPresenter
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        Content="{TemplateBinding Content}"
+                                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                </Panel>
+                            </Border>
                         </ControlTemplate>
                     </Setter>
                 </Style>
             </DataGrid.Styles>
             <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Full Name" Width="*" SortMemberPath="FullName">
+                <DataGridTemplateColumn Header="Full Name" Width="*" SortMemberPath="FullName" CanUserSort="True">
                     <DataTemplate x:DataType="vm:MemberViewModel">
-                        <StackPanel Orientation="Horizontal" Spacing="16" Margin="8,4">
+                        <StackPanel Orientation="Horizontal" Spacing="16">
                             <u:Avatar
                                 Width="48"
                                 Height="48"
@@ -100,20 +108,40 @@
                         </StackPanel>
                     </DataTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Membership" Width="150" SortMemberPath="Registration.MembershipType">
+                <DataGridTemplateColumn Header="Membership" Width="150" SortMemberPath="Registration.MembershipType" CanUserSort="True">
                     <DataTemplate x:DataType="vm:MemberViewModel">
                         <ComboBox
                             HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
                             ItemsSource="{Binding $parent[components:MembersGrid].DataContext.MembershipTypes}"
                             SelectedItem="{Binding Registration.MembershipType}" />
                     </DataTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Joined" Binding="{Binding Registration.StartDate, StringFormat='MMM/yyyy'}" Width="150" />
-                <DataGridTextColumn Header="Left" Binding="{Binding Registration.EndDate, StringFormat='MMM/yyyy'}" Width="150" />
-                <DataGridTemplateColumn Header="Status" Width="120" SortMemberPath="Registration.Status">
+                <DataGridTemplateColumn Header="Joined" Width="150" SortMemberPath="Registration.StartDate" CanUserSort="True">
+                    <DataTemplate x:DataType="vm:MemberViewModel">
+                        <CalendarDatePicker
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            SelectedDate="{Binding Registration.StartDate}"
+                            SelectedDateFormat="Custom"
+                            CustomDateFormatString="MMM/yyyy" />
+                    </DataTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Left" Width="150" SortMemberPath="Registration.EndDate" CanUserSort="True">
+                    <DataTemplate x:DataType="vm:MemberViewModel">
+                        <CalendarDatePicker
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            SelectedDate="{Binding Registration.EndDate}"
+                            SelectedDateFormat="Custom"
+                            CustomDateFormatString="MMM/yyyy" />
+                    </DataTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Status" Width="120" SortMemberPath="Registration.Status" CanUserSort="True">
                     <DataTemplate x:DataType="vm:MemberViewModel">
                         <ComboBox
                             HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
                             ItemsSource="{Binding $parent[components:MembersGrid].DataContext.RegistrationStatuses}"
                             SelectedItem="{Binding Registration.Status}" />
                     </DataTemplate>

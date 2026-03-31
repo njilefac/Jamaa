@@ -1,5 +1,4 @@
 <UserControl
-    KeyDown="OnMembersListKeyDown"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d"
@@ -11,10 +10,6 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.KeyBindings>
-        <!--  Select All on Windows/Linux  -->
-        <KeyBinding Command="{Binding SelectAllCommand}" Gesture="Ctrl+A" />
-        <!--  Select All on macOS  -->
-        <KeyBinding Command="{Binding SelectAllCommand}" Gesture="Cmd+A" />
         <!--  Clear Selection convenience  -->
         <KeyBinding Command="{Binding UnselectAllCommand}" Gesture="Escape" />
     </UserControl.KeyBindings>
@@ -24,28 +19,23 @@
         </BehaviorCollection>
     </Interaction.Behaviors>
     <Panel>
-        <ScrollViewer
-            AllowAutoHide="True"
+        <ListBox
             Background="{StaticResource SystemListLowColor}"
-            HorizontalScrollBarVisibility="Disabled"
-            Margin="5"
-            Padding="10,0,10,0"
-            VerticalScrollBarVisibility="Auto"
-            x:Name="MembersScrollViewer">
-            <ItemsRepeater
-                HorizontalAlignment="Stretch"
-                ItemsSource="{Binding Members}"
-                VerticalAlignment="Top"
-                x:Name="MembersRepeater">
-                <ItemsRepeater.Layout>
-                    <WrapLayout />
-                </ItemsRepeater.Layout>
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="vm:MemberViewModel">
-                        <components:MemberCard />
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-            </ItemsRepeater>
-        </ScrollViewer>
+            Classes="member-cards-list"
+            ItemsSource="{Binding Members}"
+            SelectedItem="{Binding Selection.SelectedItem, Mode=TwoWay}"
+            SelectionMode="Single"
+            x:Name="MembersListBox">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:MemberViewModel">
+                    <components:MemberCard IsSelected="{Binding $parent[ListBoxItem].IsSelected, Mode=TwoWay}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Panel>
 </UserControl>

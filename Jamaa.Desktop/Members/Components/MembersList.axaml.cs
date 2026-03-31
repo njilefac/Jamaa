@@ -1,8 +1,10 @@
 using System;
-using Avalonia;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using System.Reactive;
+using System.Reactive.Disposables;
 using Domain.Organisation.Requests;
 using Domain.Organisation.Values;
 using FluentAvalonia.UI.Controls;
@@ -12,8 +14,7 @@ namespace Jamaa.Desktop.Members.Components;
 
 public partial class MembersList : UserControl, IDisposable
 {
-    private IDisposable? _registrationHandler;
-    private IDisposable? _endRegistrationHandler;
+    private readonly CompositeDisposable _disposables = new();
 
     public MembersList()
     {
@@ -34,9 +35,8 @@ public partial class MembersList : UserControl, IDisposable
             return;
         }
 
-        _registrationHandler?.Dispose();
-        _registrationHandler = null;
-        _registrationHandler = vm.AddMemberRegistration.RegisterHandler(async interaction =>
+        _disposables.Clear();
+        _disposables.Add(vm.AddMemberRegistration.RegisterHandler(async interaction =>
         {
             var dialog = new ContentDialog
             {
@@ -62,11 +62,9 @@ public partial class MembersList : UserControl, IDisposable
                 : nullResponse;
 
             interaction.SetOutput(output);
-        });
+        }));
 
-        _endRegistrationHandler?.Dispose();
-        _endRegistrationHandler = null;
-        _endRegistrationHandler = vm.ConfirmEndRegistration.RegisterHandler(async interaction =>
+        _disposables.Add(vm.ConfirmEndRegistration.RegisterHandler(async interaction =>
         {
             var dialog = new ContentDialog
             {
@@ -88,15 +86,19 @@ public partial class MembersList : UserControl, IDisposable
                 : new DialogResponse<RegistrationStatus>(Confirmed: false, Result: default);
 
             interaction.SetOutput(output);
-        });
+        }));
+
+        _disposables.Add(vm.FocusSearch.RegisterHandler(interaction =>
+        {
+            SearchTermTextBox?.Focus();
+            interaction.SetOutput(Unit.Default);
+            return Task.CompletedTask;
+        }));
     }
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        _registrationHandler?.Dispose();
-        _registrationHandler = null;
-        _endRegistrationHandler?.Dispose();
-        _endRegistrationHandler = null;
+        _disposables.Dispose();
     }
 }
