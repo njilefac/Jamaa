@@ -3,11 +3,10 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d"
-    x:Class="Jamaa.Desktop.Members.Components.MemberCardsList"
+    x:Class="Jamaa.Desktop.Members.Components.MemberCardsExplorer"
     xmlns="https://github.com/avaloniaui"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:data="clr-namespace:Jamaa.Data.Models.Members;assembly=Jamaa.Data"
                 xmlns:vm="clr-namespace:Jamaa.Desktop.Members.ViewModels"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">

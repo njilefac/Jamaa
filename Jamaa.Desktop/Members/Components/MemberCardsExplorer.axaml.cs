@@ -10,11 +10,11 @@ using Jamaa.Desktop.Services.Interactions;
 
 namespace Jamaa.Desktop.Members.Components;
 
-public partial class MemberCardsList : UserControl, IDisposable
+public partial class MemberCardsExplorer : UserControl, IDisposable
 {
     private int? _selectionAnchorIndex;
 
-    public MemberCardsList()
+    public MemberCardsExplorer()
     {
         InitializeComponent();
     }

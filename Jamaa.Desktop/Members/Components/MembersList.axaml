@@ -24,10 +24,10 @@
     <UserControl.Resources>
         <services:MemberListTemplateSelector x:Key="MemberListTemplateSelector">
             <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.Card}">
-                <components:MemberCardsList />
+                <components:MemberCardsExplorer />
             </DataTemplate>
             <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.List}">
-                <components:MemberLinesList />
+                <components:MembersGrid />
             </DataTemplate>
             <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.Carousel}">
                 <TextBlock Text="future carousel view" />

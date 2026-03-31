@@ -202,8 +202,12 @@
     <Compile Update="Members\Components\MemberEndRegistrationViewModel.cs">
       <DependentUpon>MemberEndRegistrationView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Members\Components\MemberLinesList.axaml.cs">
-      <DependentUpon>MemberLinesList.axaml</DependentUpon>
+    <Compile Update="Members\Components\MemberCardsExplorer.axaml.cs">
+      <DependentUpon>MemberCardsExplorer.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Members\Components\MembersGrid.axaml.cs">
+      <DependentUpon>MembersGrid.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

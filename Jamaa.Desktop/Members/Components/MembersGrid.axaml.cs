@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace Jamaa.Desktop.Members.Components;
 
-public partial class MemberLinesList : UserControl
+public partial class MembersGrid : UserControl
 {
-    public MemberLinesList()
+    public MembersGrid()
     {
         InitializeComponent();
     }
