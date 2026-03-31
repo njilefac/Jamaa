@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Jamaa.Desktop.Members.ViewModels;
 
 namespace Jamaa.Desktop.Members.Components;
 
@@ -30,6 +31,13 @@ public partial class MemberCarousel : UserControl
             case Key.PageDown:
                 carousel.Next();
                 e.Handled = true;
+                break;
+            case Key.Enter:
+                if (DataContext is MemberListViewModel vm && vm.Selection.SelectedItem is MemberViewModel selectedMember)
+                {
+                    vm.ShowMemberProfileCommand.Execute(selectedMember);
+                    e.Handled = true;
+                }
                 break;
         }
     }

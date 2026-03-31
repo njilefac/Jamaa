@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.VisualTree;
 using Domain.Organisation.Requests;
 using FluentAvalonia.UI.Controls;
+using Jamaa.Desktop.Members.ViewModels;
 using Jamaa.Desktop.Services.Interactions;
 
 namespace Jamaa.Desktop.Members.Components;
@@ -131,6 +132,13 @@ public partial class MemberCardsExplorer : UserControl, IDisposable
                 break;
             case Key.End:
                 newIndex = count - 1;
+                break;
+            case Key.Enter:
+                if (vm.Selection.SelectedItem is MemberViewModel selectedMember)
+                {
+                    vm.ShowMemberProfileCommand.Execute(selectedMember);
+                    handled = true;
+                }
                 break;
             default:
                 handled = false;

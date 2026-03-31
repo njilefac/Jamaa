@@ -5,6 +5,7 @@
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="https://irihi.tech/ursa"
     xmlns:vm="clr-namespace:Jamaa.Desktop.Members.ViewModels"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -30,22 +31,12 @@
             </Carousel.ItemTemplate>
         </Carousel>
 
-        <StackPanel
+        <u:Pagination
+            CurrentPage="{Binding #MemberCarouselView.SelectedIndex, Mode=TwoWay, Converter={StaticResource IncrementConverter}}"
             Grid.Row="1"
             HorizontalAlignment="Center"
             Margin="0,20"
-            Orientation="Horizontal"
-            Spacing="20">
-            <Button Command="{Binding #MemberCarouselView.Previous}" Content="Previous" />
-            <TextBlock VerticalAlignment="Center">
-                <TextBlock.Text>
-                    <MultiBinding StringFormat="{}{0} of {1}">
-                        <Binding Converter="{StaticResource IncrementConverter}" Path="#MemberCarouselView.SelectedIndex" />
-                        <Binding Path="Members.Count" />
-                    </MultiBinding>
-                </TextBlock.Text>
-            </TextBlock>
-            <Button Command="{Binding #MemberCarouselView.Next}" Content="Next" />
-        </StackPanel>
+            PageSize="1"
+            TotalCount="{Binding Members.Count}" />
     </Grid>
 </UserControl>
