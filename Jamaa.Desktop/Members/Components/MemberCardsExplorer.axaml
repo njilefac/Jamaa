@@ -13,11 +13,7 @@
         <!--  Clear Selection convenience  -->
         <KeyBinding Command="{Binding UnselectAllCommand}" Gesture="Escape" />
     </UserControl.KeyBindings>
-    <Interaction.Behaviors>
-        <BehaviorCollection>
-            <AutoFocusBehavior />
-        </BehaviorCollection>
-    </Interaction.Behaviors>
+    
     <Panel>
         <ListBox
             Background="{StaticResource SystemListLowColor}"
@@ -28,7 +24,13 @@
             x:Name="MembersListBox">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel />
+                    <WrapPanel>
+                        <Interaction.Behaviors>
+                            <BehaviorCollection>
+                                <AutoFocusBehavior />
+                            </BehaviorCollection>
+                        </Interaction.Behaviors>
+                    </WrapPanel>
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
