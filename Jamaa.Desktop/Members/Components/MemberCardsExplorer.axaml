@@ -1,0 +1,41 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Members.Components.MemberCardsExplorer"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:vm="clr-namespace:Jamaa.Desktop.Members.ViewModels"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.KeyBindings>
+        <!--  Clear Selection convenience  -->
+        <KeyBinding Command="{Binding UnselectAllCommand}" Gesture="Escape" />
+    </UserControl.KeyBindings>
+    <Interaction.Behaviors>
+        <BehaviorCollection>
+            <AutoFocusBehavior />
+        </BehaviorCollection>
+    </Interaction.Behaviors>
+    <Panel>
+        <ListBox
+            Background="{StaticResource SystemListLowColor}"
+            Classes="member-cards-list"
+            ItemsSource="{Binding Members}"
+            SelectedItem="{Binding Selection.SelectedItem, Mode=TwoWay}"
+            SelectionMode="Single"
+            x:Name="MembersListBox">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:MemberViewModel">
+                    <components:MemberCard IsSelected="{Binding $parent[ListBoxItem].IsSelected, Mode=TwoWay}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Panel>
+</UserControl>
