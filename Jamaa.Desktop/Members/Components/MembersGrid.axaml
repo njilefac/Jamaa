@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
+    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
     xmlns:vm="clr-namespace:Jamaa.Desktop.Members.ViewModels"
     xmlns:u="https://irihi.tech/ursa"
     d:DesignHeight="450"
@@ -21,6 +22,9 @@
             Name="MembersDataGrid"
             SelectionMode="Single"
             SelectedItem="{Binding Selection.SelectedItem, Mode=TwoWay}">
+            <Interaction.Behaviors>
+                <behaviors:DataGridEnterBehavior Command="{Binding ShowMemberProfileCommand}" />
+            </Interaction.Behaviors>
             <DataGrid.Styles>
                 <Style Selector="DataGridRow">
                     <Setter Property="ContextMenu">
