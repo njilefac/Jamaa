@@ -26,6 +26,7 @@
             <converters:MemberProfileCommandArgsConverter x:Key="MemberProfileCommandArgsConverter" />
             <converters:ByteArrayToBitmapConverter x:Key="ByteArrayToBitmapConverter" />
             <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+            <converters:IncrementConverter x:Key="IncrementConverter" />
         </ResourceDictionary>
     </Application.Resources>
 

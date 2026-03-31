@@ -40,7 +40,7 @@
             <TextBlock VerticalAlignment="Center">
                 <TextBlock.Text>
                     <MultiBinding StringFormat="{}{0} of {1}">
-                        <Binding Path="#MemberCarouselView.SelectedIndex" />
+                        <Binding Converter="{StaticResource IncrementConverter}" Path="#MemberCarouselView.SelectedIndex" />
                         <Binding Path="Members.Count" />
                     </MultiBinding>
                 </TextBlock.Text>
