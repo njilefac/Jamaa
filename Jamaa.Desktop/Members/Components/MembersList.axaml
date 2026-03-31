@@ -30,7 +30,7 @@
                 <components:MembersGrid />
             </DataTemplate>
             <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.Carousel}">
-                <TextBlock Text="future carousel view" />
+                <components:MemberCarousel />
             </DataTemplate>
         </services:MemberListTemplateSelector>
     </UserControl.Resources>
