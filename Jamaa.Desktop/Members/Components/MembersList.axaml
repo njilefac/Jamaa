@@ -14,16 +14,31 @@
     xmlns:values="clr-namespace:Jamaa.Desktop.Members.Values"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <Interaction.Behaviors>
+        <EventTriggerBehavior EventName="AttachedToVisualTree">
+            <FocusControlAction TargetControl="{Binding #SearchTermTextBox}" />
+        </EventTriggerBehavior>
+    </Interaction.Behaviors>
+
+    <UserControl.KeyBindings>
+        <KeyBinding Command="{Binding FocusSearchFieldCommand}" Gesture="Ctrl+F" />
+        <KeyBinding Command="{Binding FocusSearchFieldCommand}" Gesture="Cmd+F" />
+        <KeyBinding Command="{Binding RegisterMemberCommand}" Gesture="Ctrl+Add" />
+        <KeyBinding Command="{Binding RegisterMemberCommand}" Gesture="Cmd+Add" />
+        <KeyBinding Command="{Binding RegisterMemberCommand}" Gesture="Ctrl+OemPlus" />
+        <KeyBinding Command="{Binding RegisterMemberCommand}" Gesture="Cmd+OemPlus" />
+    </UserControl.KeyBindings>
+
     <UserControl.Resources>
         <services:MemberListTemplateSelector x:Key="MemberListTemplateSelector">
             <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.Card}">
-                <components:MemberCardsList />
+                <components:MemberCardsExplorer />
             </DataTemplate>
             <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.List}">
-                <TextBlock Text="future list view" />
+                <components:MembersGrid />
             </DataTemplate>
-            <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.Table}">
-                <TextBlock Text="future table view" />
+            <DataTemplate x:DataType="components:MemberListViewModel" x:Key="{x:Static values:MemberListDisplayMode.Carousel}">
+                <components:MemberCarousel />
             </DataTemplate>
         </services:MemberListTemplateSelector>
     </UserControl.Resources>
@@ -39,7 +54,9 @@
                 Spacing="10"
                 VerticalAlignment="Center">
                 <TextBox
+                    Name="SearchTermTextBox"
                     Classes="toolbar item"
+                    Focusable="True"
                     HorizontalAlignment="Center"
                     HorizontalContentAlignment="Center"
                     Text="{Binding SearchTerm}"
@@ -67,9 +84,9 @@
                         </ToggleButton>
                         <ToggleButton
                             Classes="toolbar item"
-                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Table}}"
-                            ToolTip.Tip="Table View">
-                            <Image Source="avares://Jamaa/Assets/Icons/edit/table.png" />
+                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Carousel}}"
+                            ToolTip.Tip="Carousel View">
+                            <Image Source="avares://Jamaa/Assets/Icons/basic/carousel-64.png" />
                         </ToggleButton>
                     </StackPanel>
                 </HeaderedContentControl>

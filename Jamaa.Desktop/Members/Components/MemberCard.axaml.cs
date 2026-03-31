@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reactive;
 using Avalonia;
@@ -6,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using Huskui.Avalonia.Controls;
+using Jamaa.Desktop.Members.ViewModels;
 using Jamaa.Desktop.Members.Messages;
 
 namespace Jamaa.Desktop.Members.Components;
@@ -26,98 +28,6 @@ public partial class MemberCard : UserControl
     public MemberCard()
     {
         InitializeComponent();
-        this.PointerPressed += (s, e) =>
-        {
-            var vm = GetViewModel();
-            var selectionModel = vm?.Selection;
-            if (selectionModel != null && this.DataContext is Jamaa.Data.Models.Members.MemberData member)
-            {
-                var index = vm.Members.IndexOf(member);
-                if (index != -1)
-                {
-                    if (e.KeyModifiers.HasFlag(Avalonia.Input.KeyModifiers.Control))
-                    {
-                        if (selectionModel.IsSelected(index)) selectionModel.Deselect(index);
-                        else selectionModel.Select(index);
-                    }
-                    else
-                    {
-                        selectionModel.SelectedIndex = index;
-                    }
-                    e.Handled = true;
-                }
-            }
-        };
-
-        this.KeyDown += (s, e) =>
-        {
-            if (e.Key == Key.Enter)
-            {
-                var vm = GetViewModel();
-                if (vm != null && this.DataContext is Jamaa.Data.Models.Members.MemberData member)
-                {
-                    if (vm.ShowMemberProfileCommand.CanExecute(member))
-                    {
-                        vm.ShowMemberProfileCommand.Execute(new MemberProfileNavigationArgs(member, "General"));
-                        e.Handled = true;
-                    }
-                }
-            }
-        };
-
-        this.GetObservable(IsSelectedProperty).Subscribe(new AnonymousObserver<bool>(_ => UpdateSelectionInModel()));
-
-        this.DataContextChanged += (s, e) =>
-        {
-            UpdateSelection();
-        };
-
-        this.Loaded += (s, e) =>
-        {
-            if (GetViewModel() is { } vm)
-            {
-                vm.Selection.SelectionChanged += (sender, args) => UpdateSelection();
-            }
-        };
-    }
-
-    private bool _isUpdatingSelection;
-
-    private void UpdateSelection()
-    {
-        if (_isUpdatingSelection) return;
-        if (GetViewModel() is { } vm && this.DataContext is Jamaa.Data.Models.Members.MemberData member)
-        {
-            var index = vm.Members.IndexOf(member);
-            if (index != -1)
-            {
-                _isUpdatingSelection = true;
-                IsSelected = vm.Selection.IsSelected(index);
-                _isUpdatingSelection = false;
-            }
-        }
-    }
-
-    private void UpdateSelectionInModel()
-    {
-        if (_isUpdatingSelection) return;
-        if (GetViewModel() is { } vm && this.DataContext is Jamaa.Data.Models.Members.MemberData member)
-        {
-            var index = vm.Members.IndexOf(member);
-            if (index != -1)
-            {
-                _isUpdatingSelection = true;
-                if (IsSelected && !vm.Selection.IsSelected(index))
-                {
-                    vm.Selection.Select(index);
-                }
-                else if (!IsSelected && vm.Selection.IsSelected(index))
-                {
-                    vm.Selection.Deselect(index);
-                }
-                _isUpdatingSelection = false;
-            }
-        }
     }
 
     private void InitializeComponent()

@@ -39,7 +39,9 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
         MemberAdded = dataChangeNotifier.Insertions.OfType<MemberData>();
         MemberAdded.Subscribe(x => _currentMembers.OnNext(x));
         
-        MemberUpdated = dataChangeNotifier.Updates.OfType<MemberData>();
+        MemberUpdated = dataChangeNotifier.Updates.OfType<MemberData>()
+            .Merge(dataChangeNotifier.Updates.OfType<RegistrationData>().Select(r => r.Member))
+            .Where(m => m != null);
         MemberDeleted = dataChangeNotifier.Deletions.OfType<MemberData>();
     }
 
@@ -90,6 +92,7 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
                 request.MembershipType,
                 request.Status,
                 request.RegistrationBegin,
+                request.RegistrationEnd,
                 request.Avatar);
 
             _commandProcessor.Tell(message);

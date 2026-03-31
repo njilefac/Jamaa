@@ -143,6 +143,7 @@ public class OrganisationProjection : ReceivePersistentActor
         if (member.Registration != null)
         {
             member.Registration.StartDate = @event.RegistrationBegin;
+            member.Registration.EndDate = @event.RegistrationEnd;
             member.Registration.MembershipType = @event.MembershipType;
             member.Registration.Status = @event.Status;
         }

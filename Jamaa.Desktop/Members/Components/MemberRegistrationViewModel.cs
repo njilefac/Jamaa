@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Domain.Organisation.Requests;
@@ -7,19 +8,20 @@ using Domain.Organisation.Values;
 using Domain.Shared.Values;
 using Jamaa.Application.Users.Services;
 using Jamaa.Desktop.Services.Interactions;
+using Jamaa.Desktop.Shared;
 using JetBrains.Annotations;
 
 namespace Jamaa.Desktop.Members.Components;
 
 [UsedImplicitly]
-public partial class MemberRegistrationViewModel : ObservableValidator, IResultProvider<MemberRegistrationRequest>
+public partial class MemberRegistrationViewModel : ValidatableFormViewModel, IResultProvider<MemberRegistrationRequest>
 {
     private readonly IUserSessionService _userSessionService;
 
     public MemberRegistrationViewModel(IUserSessionService userSessionService)
     {
         _userSessionService = userSessionService;
-        GenderChoices = Enum.GetValues<Gender>().ToList();
+        GenderOptions = Enum.GetValues<Gender>().ToList();
         SelectedGender = Gender.Unknown;
         MembershipType = MembershipType.Regular;
         RegistrationBegin = DateTime.Today;
@@ -43,11 +45,16 @@ public partial class MemberRegistrationViewModel : ObservableValidator, IResultP
         return request;
     }
     
-    public List<Gender> GenderChoices { get; }
-    [ObservableProperty] private string? _firstName;
+    public List<Gender> GenderOptions { get; }
+    [ObservableProperty]
+    [Required]
+    private string? _firstName;
     [ObservableProperty] private string? _middleName;
-    [ObservableProperty] private string? _lastName;
-    [ObservableProperty] private Gender _selectedGender;
+    [ObservableProperty]
+    [Required]
+    private string? _lastName;
+    [ObservableProperty] 
+    private Gender _selectedGender;
 
     [ObservableProperty] private DateTime _dateOfBirth;
     [ObservableProperty] private DateTime _registrationBegin;
