@@ -146,6 +146,18 @@
         <Setter Property="BoxShadow" Value="0 4 12 0 #20000000" />
     </Style>
 
+    <Style Selector="components|MemberCard:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.96)" />
+    </Style>
+
+    <Style Selector="Carousel components|MemberCard:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.96)" />
+    </Style>
+
+    <Style Selector="components|MemberCard:pressed husk|Card">
+        <Setter Property="BoxShadow" Value="inset 0 4 8 0 #40000000" />
+    </Style>
+
     <Style Selector="u|Avatar">
         <Setter Property="BorderBrush" Value="White" />
         <Setter Property="BorderThickness" Value="2" />
