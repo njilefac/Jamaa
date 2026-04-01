@@ -5,13 +5,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Models;
-using Jamaa.Desktop.Services.Navigation.Values;
 using JetBrains.Annotations;
 
 namespace Jamaa.Desktop.Shared;
 
 [UsedImplicitly]
-public partial class DashboardViewModel : ObservableValidator, 
+public partial class MainWindowViewModel : ObservableValidator, 
     IRecipient<ModuleSelected>, 
     IDisposable
 {
@@ -20,32 +19,22 @@ public partial class DashboardViewModel : ObservableValidator,
     [ObservableProperty] private NavigationItemModel? _selectedItem;
     [ObservableProperty] private IApplicationModule? _activeModule;
 
-    public DashboardViewModel(IRouteResolver routeResolver)
+    public MainWindowViewModel(IRouteResolver routeResolver, INavigationItemsProvider navigationItemsProvider)
     {
         _routeResolver = routeResolver;
 
         WeakReferenceMessenger.Default.RegisterAll(this);
 
-        MenuItems = GetNavigationItems();
+        MenuItems = navigationItemsProvider.GetNavigationItems();
         SelectedItem = MenuItems.FirstOrDefault();
-    }
-
-    private static IEnumerable<NavigationItemModel> GetNavigationItems()
-    {
-        //TODO: Load dynamically based on user permissions
-        //TODO: this should be done by a factory or service
-        return
-        [
-            new NavigationItemModel(Routes.MembersOverview, "Members", "Icons.Members"),
-            new NavigationItemModel(Routes.EventsOverview, "Events", "Icons.Calendar"),
-            new NavigationItemModel(Routes.FinancesOverview, "Finances", "Icons.Finances")
-        ];
     }
 
     partial void OnSelectedItemChanged(NavigationItemModel? value)
     {
         if (value == null)
         {
+            
+            
             return;
         }
         WeakReferenceMessenger.Default.Send(new ModuleSelected(value.TargetRoute));
