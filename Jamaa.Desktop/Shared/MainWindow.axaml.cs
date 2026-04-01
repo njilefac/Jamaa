@@ -3,9 +3,9 @@ using Avalonia.Markup.Xaml;
 
 namespace Jamaa.Desktop.Shared;
 
-public partial class Dashboard : UserControl
+public partial class MainWindow : UserControl
 {
-    public Dashboard()
+    public MainWindow()
     {
         InitializeComponent();
     }

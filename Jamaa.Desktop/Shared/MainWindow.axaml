@@ -1,5 +1,5 @@
 <UserControl
-    x:Class="Jamaa.Desktop.Shared.Dashboard"
+    x:Class="Jamaa.Desktop.Shared.MainWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
@@ -7,7 +7,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:Jamaa.Desktop.Services.Navigation.Models"
-    xmlns:services="clr-namespace:Jamaa.Desktop.Services"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
@@ -15,15 +14,12 @@
     VerticalContentAlignment="Stretch"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="shared:DashboardViewModel"
+    x:DataType="shared:MainWindowViewModel"
     mc:Ignorable="d"
     >
 
     <UserControl.Resources>
         <converters:JamaaIconSourceConverter x:Key="IconSourceConverter" />
-        <Thickness x:Key="NavigationViewHeaderMargin">0</Thickness>
-        <Thickness x:Key="NavigationViewHeaderPadding">0</Thickness>
-        <Thickness x:Key="NavigationViewHeaderContentControlMargin">0</Thickness>
     </UserControl.Resources>
 
     <controls:NavigationView

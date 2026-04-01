@@ -47,8 +47,8 @@
         <DataTemplate DataType="{x:Type shared:MainMenuViewModel}">
             <shared:MainMenu />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type shared:DashboardViewModel}">
-            <shared:Dashboard />
+        <DataTemplate DataType="{x:Type shared:MainWindowViewModel}">
+            <shared:MainWindow />
         </DataTemplate>
         <DataTemplate DataType="{x:Type setup:CreateOrganisationViewModel}">
             <setup:CreateOrganisationScreen />

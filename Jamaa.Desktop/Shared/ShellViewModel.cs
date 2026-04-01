@@ -11,7 +11,6 @@ using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Setup;
 using JetBrains.Annotations;
-using Jamaa.Desktop.Security;
 
 namespace Jamaa.Desktop.Shared;
 
@@ -32,7 +31,7 @@ public partial class ShellViewModel : ObservableObject,
     {
         _setupService = setupService;
         _routeResolver = routeResolver;
-        _mainMenuViewModel = new MainMenuViewModel(userSessionService);
+        _mainMenu = new MainMenuViewModel(userSessionService);
 
         WeakReferenceMessenger.Default.RegisterAll(this);
 
@@ -50,7 +49,7 @@ public partial class ShellViewModel : ObservableObject,
     }
 
     [ObservableProperty] private string? _applicationTitle = ApplicationName;
-    [ObservableProperty] private ObservableObject _mainMenuViewModel;
+    [ObservableProperty] private ObservableObject _mainMenu;
     [ObservableProperty] private object? _activeContent;
 
     public void Dispose()
