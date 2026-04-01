@@ -21,7 +21,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="/Themes/Jamaa.axaml" />
+                <ResourceInclude Source="/Themes/JamaaTheme.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:MemberProfileCommandArgsConverter x:Key="MemberProfileCommandArgsConverter" />
             <converters:ByteArrayToBitmapConverter x:Key="ByteArrayToBitmapConverter" />

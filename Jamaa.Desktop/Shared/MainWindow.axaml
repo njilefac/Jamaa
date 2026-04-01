@@ -32,7 +32,7 @@
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
         >
         <controls:NavigationView.Content>
-            <Border Background="{DynamicResource LayerFillColorDefaultBrush}">
+            <Border Background="{DynamicResource AppLayerBackground}">
                 <ContentControl Content="{Binding ActiveModule}" />
             </Border>
         </controls:NavigationView.Content>
