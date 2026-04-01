@@ -144,7 +144,7 @@ public static partial class InitializationService
             new RouteMap(Path: Routes.CreateOrganisation, ViewModel: typeof(Setup.CreateOrganisationViewModel)),
             new RouteMap(Path: Routes.CreateSuperUser, ViewModel: typeof(Setup.CreateSuperUserViewModel)),
             new RouteMap(Path: Routes.Login, ViewModel: typeof(Security.LoginScreenViewModel)),
-            new RouteMap(Path: Routes.Dashboard, ViewModel: typeof(Shared.DashboardViewModel), Nested:
+            new RouteMap(Path: Routes.Dashboard, ViewModel: typeof(Shared.MainWindowViewModel), Nested:
             [
                 new RouteMap(Path: Routes.MembersOverview, ViewModel: typeof(Members.Pages.MembersOverviewViewModel), Nested:
                     [

@@ -24,6 +24,7 @@ public static class PresentationServicesRegistration
             services.AddSingleton<IUserSessionService, UserSessionService>();
             services.AddSingleton<IRouteResolver, RouteResolver>();
             services.AddSingleton<IRouteRegistry, RouteRegistry>();
+            services.AddSingleton<INavigationItemsProvider, NavigationItemsProvider>();
             services.AddSingleton<AvaloniaNotificationService>();
             services.AddSingleton<INotificationService>(sp => sp.GetRequiredService<AvaloniaNotificationService>());
             services.AddSingleton<Shared.Shell>();
