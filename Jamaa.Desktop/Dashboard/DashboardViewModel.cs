@@ -3,12 +3,13 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jamaa.Desktop.Shared;
 
 namespace Jamaa.Desktop.Dashboard;
 
-public partial class DashboardViewModel : IApplicationModule
+public partial class DashboardViewModel : ObservableObject, IApplicationModule
 {
     private const string LayoutFilePath = "jamaa_dashboard_layout.json";
 

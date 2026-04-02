@@ -18,6 +18,7 @@ using Jamaa.Desktop.Services.Navigation.Models;
 using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Shared;
 using Jamaa.Desktop.Configuration.Extensions;
+using Jamaa.Desktop.Dashboard;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -142,13 +143,14 @@ public static partial class InitializationService
 
     private static void RegisterRoutes(IRouteRegistry routes)
     {
-        routes.Register(new RouteMap(Path: Routes.Home, ViewModel: typeof(ShellViewModel), Nested:
+        routes.Register(new RouteMap(Path: Routes.Shell, ViewModel: typeof(ShellViewModel), Nested:
         [
             new RouteMap(Path: Routes.CreateOrganisation, ViewModel: typeof(Setup.CreateOrganisationViewModel)),
             new RouteMap(Path: Routes.CreateSuperUser, ViewModel: typeof(Setup.CreateSuperUserViewModel)),
             new RouteMap(Path: Routes.Login, ViewModel: typeof(Security.LoginScreenViewModel)),
-            new RouteMap(Path: Routes.Dashboard, ViewModel: typeof(Shared.MainWindowViewModel), Nested:
+            new RouteMap(Path: Routes.Home, ViewModel: typeof(MainWindowViewModel), Nested:
             [
+                new RouteMap(Path: Routes.Dashboard, ViewModel: typeof(DashboardViewModel), IsDefault: true),
                 new RouteMap(Path: Routes.MembersOverview, ViewModel: typeof(Members.Pages.MembersOverviewViewModel), Nested:
                     [
                         new RouteMap(Path: Routes.MembersList, ViewModel: typeof(Members.Components.MemberListViewModel)),

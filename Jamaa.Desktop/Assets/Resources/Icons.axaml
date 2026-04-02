@@ -1,11 +1,11 @@
 <ResourceDictionary
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia">
-    <controls:ImageIconSource x:Key="Icons.Home" Source="/Assets/Icons/home/ home_outline.png" />
-    <controls:ImageIconSource x:Key="Icons.Members" Source="/Assets/Icons/user/group.png" />
-    <controls:ImageIconSource x:Key="Icons.Calendar" Source="/Assets/Icons/calendar/calendar_event.png" />
-    <controls:ImageIconSource x:Key="Icons.Finances" Source="/Assets/Icons/basic/credit_card.png" />
-    <controls:ImageIconSource x:Key="Icons.Settings" Source="/Assets/Icons/basic/settings.png" />
-    <controls:ImageIconSource x:Key="Icons.Search" Source="/Assets/Icons/edit/search_small.png" />
+    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <controls:ImageIconSource Source="/Assets/Icons/home/home_outline.png" x:Key="Icons.Home" />
+    <controls:ImageIconSource Source="/Assets/Icons/user/group.png" x:Key="Icons.Members" />
+    <controls:ImageIconSource Source="/Assets/Icons/calendar/calendar_event.png" x:Key="Icons.Calendar" />
+    <controls:ImageIconSource Source="/Assets/Icons/basic/credit_card.png" x:Key="Icons.Finances" />
+    <controls:ImageIconSource Source="/Assets/Icons/basic/settings.png" x:Key="Icons.Settings" />
+    <controls:ImageIconSource Source="/Assets/Icons/edit/search_small.png" x:Key="Icons.Search" />
 </ResourceDictionary>

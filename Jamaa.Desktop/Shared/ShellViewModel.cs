@@ -70,7 +70,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(UserAuthenticated message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.Dashboard);
+        ActiveContent = GetViewModelForRoute(Routes.Home);
     }
     
     public void Receive(OrganisationCreated message)
@@ -80,7 +80,7 @@ public partial class ShellViewModel : ObservableObject,
     
     public void Receive(SuperUserCreated message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.Dashboard);
+        ActiveContent = GetViewModelForRoute(Routes.Home);
     }
     
     private object? GetViewModelForRoute(string path )

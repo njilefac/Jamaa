@@ -1,0 +1,128 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Dashboard.Dashboard"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <behaviors:WidgetDropHandler x:Key="WidgetDropHandler" />
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto, *">
+        <Button
+            Content="Add Widget"
+            Grid.Row="0"
+            Margin="16">
+            <Button.Flyout>
+                <Flyout Placement="BottomEdgeAlignedLeft">
+                    <ListBox
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ItemsSource="{Binding AvailableWidgets}"
+                        Width="200">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <TextBlock
+                                        Margin="8"
+                                        Text="{Binding Title}"
+                                        VerticalAlignment="Center" />
+                                    <Button
+                                        Command="{Binding $parent[UserControl].((dashboard:DashboardViewModel)DataContext).AddWidgetCommand}"
+                                        CommandParameter="{Binding}"
+                                        Opacity="0" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Flyout>
+            </Button.Flyout>
+        </Button>
+
+        <ItemsControl
+            Grid.Row="1"
+            ItemsSource="{Binding ActiveWidgets}"
+            Margin="16">
+
+            <ItemsControl.Styles>
+                <Style Selector="ItemsControl &gt; ContentPresenter">
+                    <Setter Property="Grid.Row" Value="{Binding Row}" />
+                    <Setter Property="Grid.Column" Value="{Binding Column}" />
+                    <Setter Property="Grid.RowSpan" Value="{Binding RowSpan}" />
+                    <Setter Property="Grid.ColumnSpan" Value="{Binding ColumnSpan}" />
+                </Style>
+            </ItemsControl.Styles>
+
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="*,*,*" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <Interaction.Behaviors>
+                <ContextDropBehavior Handler="{StaticResource WidgetDropHandler}" />
+            </Interaction.Behaviors>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="8" x:Name="WidgetContainer">
+
+                        <Border
+                            Background="White"
+                            BorderBrush="LightGray"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                            <Interaction.Behaviors>
+                                <ContextDragBehavior Context="{Binding}" />
+                            </Interaction.Behaviors>
+
+                            <Grid RowDefinitions="Auto, *">
+                                <Grid
+                                    ColumnDefinitions="*,Auto"
+                                    Grid.Row="0"
+                                    Margin="8">
+                                    <TextBlock FontWeight="Bold" Text="{Binding Title}" />
+                                    <Button
+                                        Command="{Binding RemoveCommand}"
+                                        CommandParameter="{Binding}"
+                                        Content="X"
+                                        Grid.Column="1"
+                                        IsVisible="{Binding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                </Grid>
+
+                                <TextBlock
+                                    Foreground="Gray"
+                                    Grid.Row="1"
+                                    HorizontalAlignment="Center"
+                                    Text="Widget Content Here"
+                                    VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+
+                        <Thumb
+                            Background="Transparent"
+                            Cursor="SizeWestEast"
+                            DragCompleted="OnWidgetResizeCompleted"
+                            HorizontalAlignment="Right"
+                            IsVisible="{Binding IsMultiColumn}"
+                            VerticalAlignment="Stretch"
+                            Width="8" />
+                        <Thumb
+                            Background="Transparent"
+                            Cursor="SizeNorthSouth"
+                            DragCompleted="OnWidgetResizeCompleted"
+                            Height="8"
+                            HorizontalAlignment="Stretch"
+                            IsVisible="{Binding IsMultiRow}"
+                            VerticalAlignment="Bottom" />
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>
