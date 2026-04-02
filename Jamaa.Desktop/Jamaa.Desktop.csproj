@@ -8,10 +8,28 @@
     <PackageId>Jamaa</PackageId>
     <Authors>Wilfred Azamo</Authors>
     <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <AssemblyName>Jamaa</AssemblyName>
+    <ApplicationIcon>Assets/Icons/jamaa.ico</ApplicationIcon>
+    <CFBundleIconFile>Assets/Icons/jamaa.icns</CFBundleIconFile>
+    <CFBundleName>Jamaa</CFBundleName>
+    <CFBundleDisplayName>Jamaa</CFBundleDisplayName>
+    <CFBundleIdentifier>com.nubiasystems.jamaa</CFBundleIdentifier>
+    <CFBundleVersion>1.0.0</CFBundleVersion>
+    <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
+    <CFBundleExecutable>Jamaa</CFBundleExecutable>
     <LangVersion>latestmajor</LangVersion>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Assets\Icons\jamaa.icns" CopyToPublishDirectory="Always" />
+  </ItemGroup>
+  
+  <Target Name="CopyIconToBundle" AfterTargets="BundleApp">
+    <Copy SourceFiles="$(PublishDir)Assets/Icons/jamaa.icns" DestinationFiles="$(PublishDir)$(CFBundleName).app/Contents/Resources/jamaa.icns" />
+  </Target>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -65,7 +83,6 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
     <PackageReference Include="Mvvm.CommonInteractions.Avalonia" Version="1.0.68" />
-    <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="3.0.4" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.1" />
     <PackageReference Include="QRCode.Avalonia" Version="1.0.0" />
     <PackageReference Include="Scrutor" Version="7.0.0" />

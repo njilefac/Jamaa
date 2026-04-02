@@ -32,33 +32,35 @@ public static partial class InitializationService
 {
     private static ServiceProvider? _serviceProvider;
     private static readonly BehaviorSubject<string> StatusSubject = new("Initializing application...");
+    private static readonly BehaviorSubject<double> ProgressSubject = new(0);
     public static IObservable<string> Status => StatusSubject.AsObservable();
+    public static IObservable<double> Progress => ProgressSubject.AsObservable();
 
     public static async Task<Shell> InitializeAsync(IClassicDesktopStyleApplicationLifetime lifeTime)
     {
-        await UpdateStatus("Setting up logging...");
+        await UpdateStatus("Setting up logging...", 5);
         SetupLogging();
 
-        await UpdateStatus("Building configuration...");
+        await UpdateStatus("Building configuration...", 15);
         var configuration = BuildConfiguration();
 
-        await UpdateStatus("Creating service provider...");
+        await UpdateStatus("Creating service provider...", 30);
         _serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
-        await UpdateStatus("Registering routes...");
+        await UpdateStatus("Registering routes...", 45);
         var routes = _serviceProvider.GetRequiredService<IRouteRegistry>();
         RegisterRoutes(routes);
 
-        await UpdateStatus("Starting background services...");
+        await UpdateStatus("Starting background services...", 60);
         await StartBackgroundServicesAsync(_serviceProvider);
 
         var logger = _serviceProvider.GetRequiredService<ILogger<Program>>();
         try
         {
-            await UpdateStatus("Updating database...");
+            await UpdateStatus("Updating database...", 75);
             UpdateDatabase(logger, _serviceProvider);
             
-            await UpdateStatus("Setting up diagnostics...");
+            await UpdateStatus("Setting up diagnostics...", 90);
             SetupDiagnostics(_serviceProvider);
         }
         catch (Exception)
@@ -68,7 +70,7 @@ public static partial class InitializationService
 
         Messages.Culture = CultureInfo.CurrentUICulture;
 
-        await UpdateStatus("Finalizing initialization...");
+        await UpdateStatus("Finalizing initialization...", 100);
         return CreateAndConfigureMainWindow(_serviceProvider);
     }
 
@@ -89,9 +91,10 @@ public static partial class InitializationService
         }
     }
 
-    private static async Task UpdateStatus(string status)
+    private static async Task UpdateStatus(string status, double progress)
     {
         StatusSubject.OnNext(status);
+        ProgressSubject.OnNext(progress);
         await Task.Yield();
     }
 

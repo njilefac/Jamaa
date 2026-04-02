@@ -314,6 +314,7 @@
                         <Style Selector="ToolTip">
                             <Setter Property="Background" Value="{DynamicResource ValidationErrorBackground}" />
                             <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource ValidationErrorForeground}" />
                         </Style>
                     </Canvas.Styles>
                     <ToolTip.Tip>

@@ -10,16 +10,37 @@
     x:DataType="shared:SplashViewModel"
     SystemDecorations="None"
     WindowStartupLocation="CenterScreen"
+    Icon="avares://Jamaa/Assets/Icons/jamaa.png"
     >
-    <Panel>
-        <Image Source="avares://Jamaa/Assets/splash.png" Stretch="UniformToFill" />
-        <TextBlock
-            Margin="0,0,0,20"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Bottom"
-            FontSize="14"
-            Foreground="White"
-            Text="{Binding Status}"
+    <Grid RowDefinitions="*,Auto">
+        <Image
+            Grid.Row="0"
+            Source="avares://Jamaa/Assets/splash.png"
+            Stretch="UniformToFill"
             />
-    </Panel>
+        <StackPanel
+            Grid.Row="1"
+            Margin="0,10,0,10"
+            Background="Transparent"
+            >
+            <TextBlock
+                Margin="0,0,0,5"
+                HorizontalAlignment="Center"
+                FontSize="14"
+                Foreground="{DynamicResource TextControlForeground}"
+                Text="{Binding Status}"
+                />
+            <ProgressBar
+                Height="4"
+                HorizontalAlignment="Stretch"
+                IsIndeterminate="False"
+                Minimum="0"
+                Maximum="100"
+                Value="{Binding Progress}"
+                Foreground="{DynamicResource ProgressBarForeground}"
+                Background="Transparent"
+                BorderThickness="0"
+                />
+        </StackPanel>
+    </Grid>
 </husk:AppWindow>
