@@ -8,4 +8,5 @@
     <controls:ImageIconSource Source="/Assets/Icons/basic/credit_card.png" x:Key="Icons.Finances" />
     <controls:ImageIconSource Source="/Assets/Icons/basic/settings.png" x:Key="Icons.Settings" />
     <controls:ImageIconSource Source="/Assets/Icons/edit/search_small.png" x:Key="Icons.Search" />
+    <controls:ImageIconSource Source="/Assets/Icons/chart/bar_chart.png" x:Key="Icons.Analytics" />
 </ResourceDictionary>

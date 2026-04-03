@@ -7,6 +7,7 @@
     xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
+    xmlns:fluent="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Resources>
@@ -20,26 +21,27 @@
             Margin="16">
             <Button.Flyout>
                 <Flyout Placement="BottomEdgeAlignedLeft">
-                    <ListBox
+                    <ItemsControl
                         Background="Transparent"
-                        BorderThickness="0"
                         ItemsSource="{Binding AvailableWidgets}"
                         Width="200">
-                        <ListBox.ItemTemplate>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid>
+                                <Button
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Command="{Binding $parent[UserControl].((dashboard:DashboardViewModel)DataContext).AddWidgetCommand}"
+                                    CommandParameter="{Binding}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left">
                                     <TextBlock
                                         Margin="8"
                                         Text="{Binding Title}"
                                         VerticalAlignment="Center" />
-                                    <Button
-                                        Command="{Binding $parent[UserControl].((dashboard:DashboardViewModel)DataContext).AddWidgetCommand}"
-                                        CommandParameter="{Binding}"
-                                        Opacity="0" />
-                                </Grid>
+                                </Button>
                             </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </Flyout>
             </Button.Flyout>
         </Button>
@@ -69,7 +71,7 @@
             </Interaction.Behaviors>
 
             <ItemsControl.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate DataType="{x:Type dashboard:WidgetViewModelBase}">
                     <Grid Margin="8" x:Name="WidgetContainer">
 
                         <Border
@@ -95,12 +97,27 @@
                                         IsVisible="{Binding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                                 </Grid>
 
-                                <TextBlock
-                                    Foreground="Gray"
-                                    Grid.Row="1"
-                                    HorizontalAlignment="Center"
-                                    Text="Widget Content Here"
-                                    VerticalAlignment="Center" />
+                                <ContentControl Content="{Binding}" Grid.Row="1">
+                                    <ContentControl.DataTemplates>
+                                        <DataTemplate DataType="{x:Type dashboard:AnalyticsWidgetViewModel}">
+                                            <Panel Margin="16">
+                                                <fluent:IconSourceElement
+                                                    HorizontalAlignment="Stretch"
+                                                    IconSource="{StaticResource Icons.Analytics}"
+                                                    Opacity="0.8"
+                                                    VerticalAlignment="Stretch" />
+                                            </Panel>
+                                        </DataTemplate>
+
+                                        <DataTemplate DataType="{x:Type dashboard:WidgetViewModelBase}">
+                                            <TextBlock
+                                                Foreground="Gray"
+                                                HorizontalAlignment="Center"
+                                                Text="Widget Content Here"
+                                                VerticalAlignment="Center" />
+                                        </DataTemplate>
+                                    </ContentControl.DataTemplates>
+                                </ContentControl>
                             </Grid>
                         </Border>
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -22,10 +23,33 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
     public DashboardViewModel()
     {
         LoadLayout();
-        
-        // Populate available widgets menu
-        AvailableWidgets.Add(new AnalyticsWidgetViewModel());
-        AvailableWidgets.Add(new BookkeepingWidgetViewModel());
+        UpdateAvailableWidgets();
+    }
+
+    private void UpdateAvailableWidgets()
+    {
+        // Define all possible non-empty widget types
+        var allPossibleWidgets = new List<WidgetViewModelBase>
+        {
+            new AnalyticsWidgetViewModel(),
+            new BookkeepingWidgetViewModel()
+        };
+
+        // Get types of currently active widgets
+        var activeTypes = ActiveWidgets
+            .Where(w => w is not EmptyCellViewModel)
+            .Select(w => w.GetType())
+            .ToHashSet();
+
+        // Clear and refill AvailableWidgets with types not in activeTypes
+        AvailableWidgets.Clear();
+        foreach (var widget in allPossibleWidgets)
+        {
+            if (!activeTypes.Contains(widget.GetType()))
+            {
+                AvailableWidgets.Add(widget);
+            }
+        }
     }
 
     [RelayCommand]
@@ -42,7 +66,7 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
 
             ActiveWidgets.Remove(emptyCell);
             ActiveWidgets.Add(widget);
-            AvailableWidgets.Remove(widget);
+            UpdateAvailableWidgets();
             SaveLayout();
         }
     }
@@ -60,20 +84,25 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         };
 
         ActiveWidgets.Remove(widget);
-        AvailableWidgets.Add(widget);
         ActiveWidgets.Add(emptyCell);
+        UpdateAvailableWidgets();
         SaveLayout();
     }
 
     public void SaveLayout()
     {
         var options = new JsonSerializerOptions { WriteIndented = true };
-        string jsonString = JsonSerializer.Serialize(ActiveWidgets, options);
+        // Ignore empty widgets during serialization
+        var widgetsToSave = ActiveWidgets.Where(w => w is not EmptyCellViewModel).ToList();
+        string jsonString = JsonSerializer.Serialize(widgetsToSave, options);
         File.WriteAllText(LayoutFilePath, jsonString);
     }
 
     private void LoadLayout()
     {
+        // Load default grid first to have all slots filled with EmptyCellViewModel
+        LoadDefaultGrid();
+
         if (File.Exists(LayoutFilePath))
         {
             try
@@ -83,20 +112,28 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
 
                 if (loadedWidgets != null && loadedWidgets.Any())
                 {
-                    ActiveWidgets.Clear();
                     foreach (var widget in loadedWidgets)
                     {
                         widget.ParentViewModel = this;
                         widget.RemoveCommand = new RelayCommand<WidgetViewModelBase>(RemoveWidget);
-                        ActiveWidgets.Add(widget);
+
+                        // Find the corresponding empty cell to replace
+                        var emptyCell = ActiveWidgets.FirstOrDefault(w => 
+                            w is EmptyCellViewModel && 
+                            w.Row == widget.Row && 
+                            w.Column == widget.Column);
+
+                        if (emptyCell != null)
+                        {
+                            ActiveWidgets.Remove(emptyCell);
+                            ActiveWidgets.Add(widget);
+                        }
                     }
                     return;
                 }
             }
-            catch { /* Corrupt JSON, fall through to default */ }
+            catch { /* Corrupt JSON, fall through to default grid already loaded */ }
         }
-
-        LoadDefaultGrid();
     }
 
     private void LoadDefaultGrid()
