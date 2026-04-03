@@ -24,8 +24,10 @@
                 <ResourceInclude Source="/Themes/JamaaTheme.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:MemberProfileCommandArgsConverter x:Key="MemberProfileCommandArgsConverter" />
+            <converters:MultiValueConverter x:Key="MultiValueConverter" />
             <converters:ByteArrayToBitmapConverter x:Key="ByteArrayToBitmapConverter" />
             <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+            <converters:CompareBoxSizeConverter x:Key="CompareBoxSizeConverter" />
             <converters:IncrementConverter x:Key="IncrementConverter" />
         </ResourceDictionary>
     </Application.Resources>

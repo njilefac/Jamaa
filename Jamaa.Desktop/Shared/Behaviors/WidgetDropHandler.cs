@@ -65,7 +65,18 @@ public class WidgetDropHandler : IDropHandler
         if (dragged == target) return false;
         if (dragged.ParentViewModel is not { } vm) return false;
 
-        // Check if dragged widget will fit in target's location
+        // In Bento Box, widgets can only be dropped into slots that match their allowed size
+        // AND the widget currently in that slot (target) must be able to move to the dragged widget's current slot.
+        
+        // 1. Can dragged widget go to target's slot?
+        var targetBoxSize = (target.Column == 1) ? BoxSize.Wide : BoxSize.Small;
+        if (dragged.AllowedBoxSize != targetBoxSize) return false;
+
+        // 2. Can target widget go to dragged widget's slot?
+        var draggedBoxSize = (dragged.Column == 1) ? BoxSize.Wide : BoxSize.Small;
+        if (target.AllowedBoxSize != draggedBoxSize) return false;
+
+        // Check if dragged widget will fit in target's location (spans)
         if (target.Column + dragged.ColumnSpan > vm.MaxColumns || target.Row + dragged.RowSpan > vm.MaxRows) return false;
 
         // Check if target widget will fit in dragged widget's old location

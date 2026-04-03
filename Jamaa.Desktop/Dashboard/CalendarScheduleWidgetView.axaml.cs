@@ -3,9 +3,9 @@ using Avalonia.Markup.Xaml;
 
 namespace Jamaa.Desktop.Dashboard;
 
-public partial class WidgetView : UserControl
+public partial class CalendarScheduleWidgetView : UserControl
 {
-    public WidgetView()
+    public CalendarScheduleWidgetView()
     {
         InitializeComponent();
     }

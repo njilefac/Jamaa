@@ -15,7 +15,7 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
     private const string LayoutFilePath = "jamaa_dashboard_layout.json";
 
     public int MaxColumns { get; } = 3;
-    public int MaxRows { get; } = 3;
+    public int MaxRows { get; } = 2;
 
     public ObservableCollection<WidgetViewModelBase> ActiveWidgets { get; set; } = [];
     public ObservableCollection<WidgetViewModelBase> AvailableWidgets { get; set; } = [];
@@ -26,9 +26,9 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         UpdateAvailableWidgets();
     }
 
-    private bool CanAddWidget(WidgetViewModelBase? widget)
+    private bool CanAddWidget(object? parameter)
     {
-        return AvailableWidgets.Any() && ActiveWidgets.OfType<EmptyCellViewModel>().Any();
+        return AvailableWidgets.Any();
     }
 
     private void UpdateAvailableWidgets()
@@ -38,7 +38,8 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         {
             new ReportingAndAnalyticsWidgetViewModel(),
             new BookkeepingWidgetViewModel(),
-            new RecentActivityFeedWidgetViewModel()
+            new RecentActivityFeedWidgetViewModel(),
+            new CalendarScheduleWidgetViewModel()
         };
 
         // Get types of currently active widgets
@@ -61,40 +62,47 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
     }
 
     [RelayCommand(CanExecute = nameof(CanAddWidget))]
-    private void AddWidget(WidgetViewModelBase? widget)
+    private void AddWidget(object? parameter)
     {
-        if (widget == null) return;
+        if (parameter is not object[] values || values.Length != 2) return;
+        if (values[0] is not EmptyCellViewModel cell || values[1] is not WidgetViewModelBase widgetToAdd) return;
 
-        // Find the first empty cell to replace (lowest row, then lowest column)
-        var emptyCell = ActiveWidgets
-            .OfType<EmptyCellViewModel>()
-            .OrderBy(w => w.Row)
-            .ThenBy(w => w.Column)
-            .FirstOrDefault();
+        widgetToAdd.Row = cell.Row;
+        widgetToAdd.Column = cell.Column;
+        widgetToAdd.ParentViewModel = this;
+        widgetToAdd.RemoveCommand = new RelayCommand<WidgetViewModelBase>(RemoveWidget);
 
-        if (emptyCell != null)
-        {
-            widget.Row = emptyCell.Row;
-            widget.Column = emptyCell.Column;
-            widget.ParentViewModel = this;
-            widget.RemoveCommand = new RelayCommand<WidgetViewModelBase>(RemoveWidget);
+        ActiveWidgets.Remove(cell);
+        ActiveWidgets.Add(widgetToAdd);
+        UpdateAvailableWidgets();
+        SaveLayout();
+    }
 
-            ActiveWidgets.Remove(emptyCell);
-            ActiveWidgets.Add(widget);
-            UpdateAvailableWidgets();
-            SaveLayout();
-        }
+    [RelayCommand]
+    private void ReplaceWidget(object? parameter)
+    {
+        if (parameter is not object[] values || values.Length != 2) return;
+        if (values[0] is not WidgetViewModelBase oldWidget || values[1] is not WidgetViewModelBase newWidget) return;
+
+        newWidget.Row = oldWidget.Row;
+        newWidget.Column = oldWidget.Column;
+        newWidget.ParentViewModel = this;
+        newWidget.RemoveCommand = new RelayCommand<WidgetViewModelBase>(RemoveWidget);
+
+        ActiveWidgets.Remove(oldWidget);
+        ActiveWidgets.Add(newWidget);
+        UpdateAvailableWidgets();
+        SaveLayout();
     }
 
     private void RemoveWidget(WidgetViewModelBase? widget)
     {
         if (widget == null) return;
         
-        // Replace with an empty cell
-        var emptyCell = new EmptyCellViewModel
+        // Replace with an empty cell of the same size
+        var boxSize = (widget.Column == 1) ? BoxSize.Wide : BoxSize.Small;
+        var emptyCell = new EmptyCellViewModel(widget.Row, widget.Column, boxSize)
         {
-            Row = widget.Row,
-            Column = widget.Column,
             ParentViewModel = this
         };
 
@@ -158,9 +166,10 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         {
             for (var c = 0; c < MaxColumns; c++)
             {
-                ActiveWidgets.Add(new EmptyCellViewModel
+                var boxSize = (c == 1) ? BoxSize.Wide : BoxSize.Small;
+                ActiveWidgets.Add(new EmptyCellViewModel(r, c, boxSize)
                 {
-                    Row = r, Column = c, ParentViewModel = this
+                    ParentViewModel = this
                 });
             }
         }

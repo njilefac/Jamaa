@@ -5,12 +5,19 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Jamaa.Desktop.Dashboard;
 
+    public enum BoxSize
+    {
+        Small,
+        Wide
+    }
+
     // Tell the JSON serializer how to handle the different widget types
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
     [JsonDerivedType(typeof(EmptyCellViewModel), "empty")]
     [JsonDerivedType(typeof(ReportingAndAnalyticsWidgetViewModel), "reportingandanalytics")]
     [JsonDerivedType(typeof(BookkeepingWidgetViewModel), "bookkeeping")]
     [JsonDerivedType(typeof(RecentActivityFeedWidgetViewModel), "recentactivity")]
+    [JsonDerivedType(typeof(CalendarScheduleWidgetViewModel), "calendarschedule")]
     public abstract partial class WidgetViewModelBase : ObservableObject
     {
         public string Id { get; init; } = Guid.NewGuid().ToString();
@@ -23,12 +30,8 @@ namespace Jamaa.Desktop.Dashboard;
         [ObservableProperty] private int _rowSpan = 1;
         [ObservableProperty] private int _columnSpan = 1;
 
-        // Resize Configuration Flags
-        [ObservableProperty] private bool _isMultiColumn = false;
-        [ObservableProperty] private bool _isMultiRow = false;
-
-        public int MinColumnSpan { get; set; } = 1;
-        public int MinRowSpan { get; set; } = 1;
+        // Bento Box Configuration
+        [ObservableProperty] private BoxSize _allowedBoxSize = BoxSize.Small;
 
         // Ignore these during JSON serialization to prevent circular references
         [JsonIgnore] public DashboardViewModel? ParentViewModel { get; set; }
@@ -38,7 +41,14 @@ namespace Jamaa.Desktop.Dashboard;
 
 public partial class EmptyCellViewModel : WidgetViewModelBase
 {
-    public EmptyCellViewModel() { Title = "Empty Slot"; }
+    public EmptyCellViewModel() { Title = string.Empty; }
+    public EmptyCellViewModel(int row, int column, BoxSize size)
+    {
+        Title = string.Empty;
+        Row = row;
+        Column = column;
+        AllowedBoxSize = size;
+    }
 }
 
 public partial class ReportingAndAnalyticsWidgetViewModel : WidgetViewModelBase
@@ -46,8 +56,7 @@ public partial class ReportingAndAnalyticsWidgetViewModel : WidgetViewModelBase
     public ReportingAndAnalyticsWidgetViewModel() 
     { 
         Title = "Analytics"; 
-        IsMultiColumn = true; 
-        IsMultiRow = true; 
+        AllowedBoxSize = BoxSize.Wide;
     }
 }
 
@@ -56,7 +65,7 @@ public partial class BookkeepingWidgetViewModel : WidgetViewModelBase
     public BookkeepingWidgetViewModel() 
     { 
         Title = "Financial Summary"; 
-        IsMultiColumn = true; 
+        AllowedBoxSize = BoxSize.Wide;
     }
 }
 
@@ -65,6 +74,15 @@ public partial class RecentActivityFeedWidgetViewModel : WidgetViewModelBase
     public RecentActivityFeedWidgetViewModel()
     {
         Title = "Recent Activity";
-        IsMultiRow = true;
+        AllowedBoxSize = BoxSize.Small;
+    }
+}
+
+public partial class CalendarScheduleWidgetViewModel : WidgetViewModelBase
+{
+    public CalendarScheduleWidgetViewModel()
+    {
+        Title = "Calendar Schedule";
+        AllowedBoxSize = BoxSize.Wide;
     }
 }

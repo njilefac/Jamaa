@@ -13,43 +13,8 @@
         <behaviors:WidgetDropHandler x:Key="WidgetDropHandler" />
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto, *">
-        <Button
-            Command="{Binding AddWidgetCommand}"
-            Content="Add Widget"
-            Grid.Row="0"
-            Margin="16">
-            <Button.Flyout>
-                <Flyout Placement="BottomEdgeAlignedLeft">
-                    <ItemsControl
-                        Background="Transparent"
-                        ItemsSource="{Binding AvailableWidgets}"
-                        Width="200">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Button
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Command="{Binding $parent[UserControl].((dashboard:DashboardViewModel)DataContext).AddWidgetCommand}"
-                                    CommandParameter="{Binding}"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Left">
-                                    <TextBlock
-                                        Margin="8"
-                                        Text="{Binding Title}"
-                                        VerticalAlignment="Center" />
-                                </Button>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Flyout>
-            </Button.Flyout>
-        </Button>
-
-        <ItemsControl
-            Classes="dashboard grid"
-            Grid.Row="1"
-            ItemsSource="{Binding ActiveWidgets}">
+    <Grid>
+        <ItemsControl Classes="dashboard grid" ItemsSource="{Binding ActiveWidgets}">
 
             <ItemsControl.Styles>
                 <Style Selector="ItemsControl &gt; ContentPresenter">
@@ -62,7 +27,7 @@
 
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="*,*,*" />
+                    <Grid ColumnDefinitions="*,2*,*" RowDefinitions="*,*" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
 

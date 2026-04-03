@@ -231,5 +231,11 @@
       <DependentUpon>MemberCarousel.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Dashboard\DashboardViewModel.cs">
+      <DependentUpon>Dashboard.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\WidgetViewModelBase.cs">
+      <DependentUpon>WidgetView.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>
