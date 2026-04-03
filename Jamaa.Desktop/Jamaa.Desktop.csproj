@@ -238,4 +238,13 @@
       <DependentUpon>WidgetView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Assets\Resources\Messages.en.resx">
+      <DependentUpon>Messages.resx</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Assets\Resources\Messages.fr-fr.resx">
+      <DependentUpon>Messages.resx</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

@@ -28,18 +28,12 @@ public class WidgetDropHandler : IDropHandler
         {
             var tempRow = dragged.Row;
             var tempCol = dragged.Column;
-            var tempRowSpan = dragged.RowSpan;
-            var tempColSpan = dragged.ColumnSpan;
 
             dragged.Row = target.Row;
             dragged.Column = target.Column;
-            dragged.RowSpan = target.RowSpan;
-            dragged.ColumnSpan = target.ColumnSpan;
 
             target.Row = tempRow;
             target.Column = tempCol;
-            target.RowSpan = tempRowSpan;
-            target.ColumnSpan = tempColSpan;
 
             vm.SaveLayout();
         }
@@ -74,12 +68,6 @@ public class WidgetDropHandler : IDropHandler
 
         // 2. Can target widget go to dragged widget's slot?
         var draggedBoxSize = (dragged.Column == 1) ? BoxSize.Wide : BoxSize.Small;
-        if (target.AllowedBoxSize != draggedBoxSize) return false;
-
-        // Check if dragged widget will fit in target's location (spans)
-        if (target.Column + dragged.ColumnSpan > vm.MaxColumns || target.Row + dragged.RowSpan > vm.MaxRows) return false;
-
-        // Check if target widget will fit in dragged widget's old location
-        return dragged.Column + target.ColumnSpan <= vm.MaxColumns && dragged.Row + target.RowSpan <= vm.MaxRows;
+        return target.AllowedBoxSize == draggedBoxSize;
     }
 }

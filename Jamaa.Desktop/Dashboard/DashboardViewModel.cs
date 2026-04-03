@@ -28,6 +28,10 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
 
     private bool CanAddWidget(object? parameter)
     {
+        if (parameter is object[] values && values.Length == 2 && values[0] is EmptyCellViewModel cell)
+        {
+            return cell.HasCompatibleWidgets;
+        }
         return AvailableWidgets.Any();
     }
 
@@ -48,17 +52,29 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
             .Select(w => w.GetType())
             .ToHashSet();
 
-        // Clear and refill AvailableWidgets with types not in activeTypes
+        // Filter and refill AvailableWidgets with types not in activeTypes
         AvailableWidgets.Clear();
         foreach (var widget in allPossibleWidgets)
         {
             if (!activeTypes.Contains(widget.GetType()))
             {
+                widget.ParentViewModel = this;
                 AvailableWidgets.Add(widget);
             }
         }
+
+        foreach (var widget in ActiveWidgets)
+        {
+            widget.NotifyCompatibilityChanged();
+        }
         
         AddWidgetCommand.NotifyCanExecuteChanged();
+        ReplaceWidgetCommand.NotifyCanExecuteChanged();
+    }
+
+    public IEnumerable<WidgetViewModelBase> GetCompatibleWidgets(BoxSize size)
+    {
+        return AvailableWidgets.Where(w => w.AllowedBoxSize == size);
     }
 
     [RelayCommand(CanExecute = nameof(CanAddWidget))]
@@ -78,7 +94,7 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         SaveLayout();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanReplaceWidget))]
     private void ReplaceWidget(object? parameter)
     {
         if (parameter is not object[] values || values.Length != 2) return;
@@ -95,9 +111,24 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         SaveLayout();
     }
 
+    private bool CanReplaceWidget(object? parameter)
+    {
+        if (parameter is WidgetViewModelBase widget)
+        {
+            return widget.HasCompatibleWidgets;
+        }
+
+        if (parameter is object[] { Length: 2 } values && values[0] is WidgetViewModelBase oldWidget)
+        {
+            return oldWidget.HasCompatibleWidgets;
+        }
+
+        return false;
+    }
+
     private void RemoveWidget(WidgetViewModelBase? widget)
     {
-        if (widget == null) return;
+        if (widget == null || !widget.IsRemovable) return;
         
         // Replace with an empty cell of the same size
         var boxSize = (widget.Column == 1) ? BoxSize.Wide : BoxSize.Small;
@@ -167,10 +198,23 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
             for (var c = 0; c < MaxColumns; c++)
             {
                 var boxSize = (c == 1) ? BoxSize.Wide : BoxSize.Small;
-                ActiveWidgets.Add(new EmptyCellViewModel(r, c, boxSize)
+                WidgetViewModelBase widget = (r, c) switch
                 {
-                    ParentViewModel = this
-                });
+                    (1, 0) => new RecentActivityFeedWidgetViewModel(),
+                    (0, 1) => new BookkeepingWidgetViewModel(),
+                    (1, 1) => new CalendarScheduleWidgetViewModel(),
+                    _ => new EmptyCellViewModel(r, c, boxSize)
+                };
+
+                widget.Row = r;
+                widget.Column = c;
+                widget.ParentViewModel = this;
+                if (widget is not EmptyCellViewModel)
+                {
+                    widget.RemoveCommand = new RelayCommand<WidgetViewModelBase>(RemoveWidget);
+                }
+
+                ActiveWidgets.Add(widget);
             }
         }
     }

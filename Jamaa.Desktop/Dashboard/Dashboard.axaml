@@ -20,8 +20,6 @@
                 <Style Selector="ItemsControl &gt; ContentPresenter">
                     <Setter Property="Grid.Row" Value="{Binding Row}" />
                     <Setter Property="Grid.Column" Value="{Binding Column}" />
-                    <Setter Property="Grid.RowSpan" Value="{Binding RowSpan}" />
-                    <Setter Property="Grid.ColumnSpan" Value="{Binding ColumnSpan}" />
                 </Style>
             </ItemsControl.Styles>
 

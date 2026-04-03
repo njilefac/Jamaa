@@ -32,26 +32,24 @@
                                 <MenuItem
                                     Command="{Binding RemoveCommand}"
                                     CommandParameter="{Binding}"
-                                    Header="Remove" />
-                                <MenuItem Header="Replace Widget">
+                                    Header="Remove"
+                                    IsVisible="{Binding IsRemovable}" />
+                                <MenuItem
+                                    Command="{Binding ParentViewModel.ReplaceWidgetCommand}"
+                                    CommandParameter="{Binding}"
+                                    Header="Replace Widget">
                                     <ListBox
                                         Background="Transparent"
                                         BorderThickness="0"
-                                        ItemsSource="{Binding ParentViewModel.AvailableWidgets}"
+                                        ItemsSource="{Binding CompatibleWidgets}"
                                         Margin="4"
                                         MaxHeight="300">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
-                                                <MenuItem Command="{Binding $parent[UserControl].((dashboard:DashboardViewModel)DataContext).ReplaceWidgetCommand}" Header="{Binding Title}">
-                                                    <MenuItem.IsVisible>
-                                                        <MultiBinding Converter="{StaticResource CompareBoxSizeConverter}">
-                                                            <Binding Path="AllowedBoxSize" />
-                                                            <Binding Path="$parent[UserControl;1].((dashboard:WidgetViewModelBase)DataContext).AllowedBoxSize" />
-                                                        </MultiBinding>
-                                                    </MenuItem.IsVisible>
+                                                <MenuItem Command="{Binding ParentViewModel.ReplaceWidgetCommand}" Header="{Binding Title}">
                                                     <MenuItem.CommandParameter>
                                                         <MultiBinding Converter="{StaticResource MultiValueConverter}">
-                                                            <Binding Path="$parent[UserControl;1].DataContext" />
+                                                            <Binding Path="$parent[UserControl].DataContext" />
                                                             <Binding />
                                                         </MultiBinding>
                                                     </MenuItem.CommandParameter>
@@ -73,6 +71,37 @@
                                 BorderThickness="0"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch">
+                                <Button.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <StackPanel Spacing="8" Width="200">
+                                            <TextBlock FontWeight="Bold" Text="{Binding FlyoutTitle}" />
+                                            <ListBox
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                IsVisible="{Binding HasCompatibleWidgets, FallbackValue=False}"
+                                                ItemsSource="{Binding CompatibleWidgets}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Button
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            Command="{Binding ParentViewModel.AddWidgetCommand}"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Left">
+                                                            <Button.CommandParameter>
+                                                                <MultiBinding Converter="{StaticResource MultiValueConverter}">
+                                                                    <Binding Path="$parent[UserControl].DataContext" />
+                                                                    <Binding />
+                                                                </MultiBinding>
+                                                            </Button.CommandParameter>
+                                                            <TextBlock Text="{Binding Title}" />
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
                                 <Panel>
                                     <TextBlock
                                         FontSize="64"
