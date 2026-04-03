@@ -33,13 +33,7 @@
                 <ContentControl Content="{Binding}" Grid.Row="1">
                     <ContentControl.DataTemplates>
                         <DataTemplate DataType="{x:Type dashboard:AnalyticsWidgetViewModel}">
-                            <Panel Margin="16">
-                                <fluent:IconSourceElement
-                                    HorizontalAlignment="Stretch"
-                                    IconSource="{StaticResource Icons.Analytics}"
-                                    Opacity="0.8"
-                                    VerticalAlignment="Stretch" />
-                            </Panel>
+                            <dashboard:AnalyticsWidgetView />
                         </DataTemplate>
 
                         <DataTemplate DataType="{x:Type dashboard:WidgetViewModelBase}">
@@ -55,18 +49,18 @@
         </Border>
 
         <Thumb
-            Background="Transparent"
+            Background="#40808080"
             Cursor="SizeWestEast"
             DragCompleted="OnWidgetResizeCompleted"
             HorizontalAlignment="Right"
             IsVisible="{Binding IsMultiColumn}"
             VerticalAlignment="Stretch"
-            Width="8" />
+            Width="4" />
         <Thumb
-            Background="Transparent"
+            Background="#40808080"
             Cursor="SizeNorthSouth"
             DragCompleted="OnWidgetResizeCompleted"
-            Height="8"
+            Height="4"
             HorizontalAlignment="Stretch"
             IsVisible="{Binding IsMultiRow}"
             VerticalAlignment="Bottom" />
