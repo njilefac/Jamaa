@@ -16,6 +16,7 @@
 
     <Grid RowDefinitions="Auto, *">
         <Button
+            Command="{Binding AddWidgetCommand}"
             Content="Add Widget"
             Grid.Row="0"
             Margin="16">
@@ -47,9 +48,9 @@
         </Button>
 
         <ItemsControl
+            Classes="dashboard grid"
             Grid.Row="1"
-            ItemsSource="{Binding ActiveWidgets}"
-            Margin="16">
+            ItemsSource="{Binding ActiveWidgets}">
 
             <ItemsControl.Styles>
                 <Style Selector="ItemsControl &gt; ContentPresenter">
@@ -74,11 +75,7 @@
                 <DataTemplate DataType="{x:Type dashboard:WidgetViewModelBase}">
                     <Grid Margin="8" x:Name="WidgetContainer">
 
-                        <Border
-                            Background="White"
-                            BorderBrush="LightGray"
-                            BorderThickness="1"
-                            CornerRadius="8">
+                        <Border Classes="dashboard widget container">
                             <Interaction.Behaviors>
                                 <ContextDragBehavior Context="{Binding}" />
                             </Interaction.Behaviors>
@@ -88,7 +85,7 @@
                                     ColumnDefinitions="*,Auto"
                                     Grid.Row="0"
                                     Margin="8">
-                                    <TextBlock FontWeight="Bold" Text="{Binding Title}" />
+                                    <TextBlock Classes="dashboard widget title" Text="{Binding Title}" />
                                     <Button
                                         Command="{Binding RemoveCommand}"
                                         CommandParameter="{Binding}"

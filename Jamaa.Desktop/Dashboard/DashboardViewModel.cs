@@ -26,6 +26,11 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         UpdateAvailableWidgets();
     }
 
+    private bool CanAddWidget(WidgetViewModelBase? widget)
+    {
+        return AvailableWidgets.Any() && ActiveWidgets.OfType<EmptyCellViewModel>().Any();
+    }
+
     private void UpdateAvailableWidgets()
     {
         // Define all possible non-empty widget types
@@ -50,13 +55,22 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
                 AvailableWidgets.Add(widget);
             }
         }
+        
+        AddWidgetCommand.NotifyCanExecuteChanged();
     }
 
-    [RelayCommand]
-    private void AddWidget(WidgetViewModelBase widget)
+    [RelayCommand(CanExecute = nameof(CanAddWidget))]
+    private void AddWidget(WidgetViewModelBase? widget)
     {
-        // Find the first empty cell to replace
-        var emptyCell = ActiveWidgets.FirstOrDefault(w => w is EmptyCellViewModel);
+        if (widget == null) return;
+
+        // Find the first empty cell to replace (lowest row, then lowest column)
+        var emptyCell = ActiveWidgets
+            .OfType<EmptyCellViewModel>()
+            .OrderBy(w => w.Row)
+            .ThenBy(w => w.Column)
+            .FirstOrDefault();
+
         if (emptyCell != null)
         {
             widget.Row = emptyCell.Row;
