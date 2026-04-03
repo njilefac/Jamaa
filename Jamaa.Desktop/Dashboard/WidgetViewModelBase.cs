@@ -16,6 +16,8 @@ namespace Jamaa.Desktop.Dashboard;
     [JsonDerivedType(typeof(RecentActivityFeedWidgetViewModel), "recentactivity")]
     [JsonDerivedType(typeof(CalendarScheduleWidgetViewModel), "calendarschedule")]
     [JsonDerivedType(typeof(AlertsAndNotificationsWidgetViewModel), "alerts")]
+    [JsonDerivedType(typeof(QuickActionsWidgetViewModel), "quickactions")]
+    [JsonDerivedType(typeof(MembershipStatsWidgetViewModel), "membershipstats")]
     public abstract partial class WidgetViewModelBase : ObservableObject
     {
         public string Id { get; init; } = Guid.NewGuid().ToString();

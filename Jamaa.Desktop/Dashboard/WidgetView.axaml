@@ -134,6 +134,14 @@
                             <dashboard:AlertsAndNotificationsWidgetView />
                         </DataTemplate>
 
+                        <DataTemplate DataType="{x:Type dashboard:QuickActionsWidgetViewModel}">
+                            <dashboard:QuickActionsWidgetView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:MembershipStatsWidgetViewModel}">
+                            <dashboard:MembershipStatsWidgetView />
+                        </DataTemplate>
+
                         <DataTemplate DataType="{x:Type dashboard:WidgetViewModelBase}">
                             <TextBlock
                                 Foreground="Gray"

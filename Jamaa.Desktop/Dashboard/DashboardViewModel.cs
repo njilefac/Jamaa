@@ -44,7 +44,9 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
             new BookkeepingWidgetViewModel(),
             new RecentActivityFeedWidgetViewModel(),
             new CalendarScheduleWidgetViewModel(),
-            new AlertsAndNotificationsWidgetViewModel()
+            new AlertsAndNotificationsWidgetViewModel(),
+            new QuickActionsWidgetViewModel(),
+            new MembershipStatsWidgetViewModel()
         };
 
         // Get types of currently active widgets
@@ -222,6 +224,7 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
                     (0, 1) => new BookkeepingWidgetViewModel(),
                     (1, 1) => new CalendarScheduleWidgetViewModel(),
                     (0, 2) => new AlertsAndNotificationsWidgetViewModel(),
+                    (1, 2) => new QuickActionsWidgetViewModel(),
                     _ => new EmptyCellViewModel(r, c, boxSize)
                 };
 
