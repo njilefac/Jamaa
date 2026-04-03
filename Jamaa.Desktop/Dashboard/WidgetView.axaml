@@ -1,0 +1,74 @@
+<UserControl
+    d:DesignHeight="300"
+    d:DesignWidth="300"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Dashboard.WidgetView"
+    x:DataType="dashboard:WidgetViewModelBase"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
+    xmlns:fluent="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="8" x:Name="WidgetContainer">
+        <Border Classes="dashboard widget container">
+            <Interaction.Behaviors>
+                <ContextDragBehavior Context="{Binding}" />
+            </Interaction.Behaviors>
+
+            <Grid RowDefinitions="Auto, *">
+                <Grid
+                    ColumnDefinitions="*,Auto"
+                    Grid.Row="0"
+                    Margin="8">
+                    <TextBlock Classes="dashboard widget title" Text="{Binding Title}" />
+                    <Button
+                        Command="{Binding RemoveCommand}"
+                        CommandParameter="{Binding}"
+                        Content="X"
+                        Grid.Column="1"
+                        IsVisible="{Binding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </Grid>
+
+                <ContentControl Content="{Binding}" Grid.Row="1">
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType="{x:Type dashboard:AnalyticsWidgetViewModel}">
+                            <Panel Margin="16">
+                                <fluent:IconSourceElement
+                                    HorizontalAlignment="Stretch"
+                                    IconSource="{StaticResource Icons.Analytics}"
+                                    Opacity="0.8"
+                                    VerticalAlignment="Stretch" />
+                            </Panel>
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:WidgetViewModelBase}">
+                            <TextBlock
+                                Foreground="Gray"
+                                HorizontalAlignment="Center"
+                                Text="Widget Content Here"
+                                VerticalAlignment="Center" />
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
+            </Grid>
+        </Border>
+
+        <Thumb
+            Background="Transparent"
+            Cursor="SizeWestEast"
+            DragCompleted="OnWidgetResizeCompleted"
+            HorizontalAlignment="Right"
+            IsVisible="{Binding IsMultiColumn}"
+            VerticalAlignment="Stretch"
+            Width="8" />
+        <Thumb
+            Background="Transparent"
+            Cursor="SizeNorthSouth"
+            DragCompleted="OnWidgetResizeCompleted"
+            Height="8"
+            HorizontalAlignment="Stretch"
+            IsVisible="{Binding IsMultiRow}"
+            VerticalAlignment="Bottom" />
+    </Grid>
+</UserControl>
