@@ -183,21 +183,20 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
 
                 if (loadedWidgets != null && loadedWidgets.Any())
                 {
-                    InitializeEmptyGrid();
+                    LoadDefaultGrid();
                     foreach (var widget in loadedWidgets)
                     {
                         widget.ParentViewModel = this;
                         widget.RemoveCommand = new RelayCommand<WidgetViewModelBase>(RemoveWidget);
 
-                        // Find the corresponding empty cell to replace
-                        var emptyCell = ActiveWidgets.FirstOrDefault(w => 
-                            w is EmptyCellViewModel && 
+                        // Find the corresponding widget to replace
+                        var existingWidget = ActiveWidgets.FirstOrDefault(w => 
                             w.Row == widget.Row && 
                             w.Column == widget.Column);
 
-                        if (emptyCell != null)
+                        if (existingWidget != null)
                         {
-                            ActiveWidgets.Remove(emptyCell);
+                            ActiveWidgets.Remove(existingWidget);
                             ActiveWidgets.Add(widget);
                         }
                     }
