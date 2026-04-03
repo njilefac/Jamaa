@@ -6,6 +6,5 @@ public partial class RecentActivityFeedWidgetViewModel : WidgetViewModelBase
     {
         Title = "Recent Activity";
         AllowedBoxSize = BoxSize.Small;
-        IsRemovable = false;
     }
 }

@@ -130,6 +130,10 @@
                             <dashboard:CalendarScheduleWidgetView />
                         </DataTemplate>
 
+                        <DataTemplate DataType="{x:Type dashboard:AlertsAndNotificationsWidgetViewModel}">
+                            <dashboard:AlertsAndNotificationsWidgetView />
+                        </DataTemplate>
+
                         <DataTemplate DataType="{x:Type dashboard:WidgetViewModelBase}">
                             <TextBlock
                                 Foreground="Gray"

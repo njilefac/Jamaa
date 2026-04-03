@@ -43,7 +43,8 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
             new ReportingAndAnalyticsWidgetViewModel(),
             new BookkeepingWidgetViewModel(),
             new RecentActivityFeedWidgetViewModel(),
-            new CalendarScheduleWidgetViewModel()
+            new CalendarScheduleWidgetViewModel(),
+            new AlertsAndNotificationsWidgetViewModel()
         };
 
         // Get types of currently active widgets
@@ -152,11 +153,25 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         File.WriteAllText(LayoutFilePath, jsonString);
     }
 
+    private void InitializeEmptyGrid()
+    {
+        ActiveWidgets.Clear();
+        for (var r = 0; r < MaxRows; r++)
+        {
+            for (var c = 0; c < MaxColumns; c++)
+            {
+                var boxSize = (c == 1) ? BoxSize.Wide : BoxSize.Small;
+                var emptyCell = new EmptyCellViewModel(r, c, boxSize)
+                {
+                    ParentViewModel = this
+                };
+                ActiveWidgets.Add(emptyCell);
+            }
+        }
+    }
+
     private void LoadLayout()
     {
-        // Load default grid first to have all slots filled with EmptyCellViewModel
-        LoadDefaultGrid();
-
         if (File.Exists(LayoutFilePath))
         {
             try
@@ -166,6 +181,7 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
 
                 if (loadedWidgets != null && loadedWidgets.Any())
                 {
+                    InitializeEmptyGrid();
                     foreach (var widget in loadedWidgets)
                     {
                         widget.ParentViewModel = this;
@@ -186,8 +202,10 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
                     return;
                 }
             }
-            catch { /* Corrupt JSON, fall through to default grid already loaded */ }
+            catch { /* Corrupt JSON, fall through to default grid */ }
         }
+        
+        LoadDefaultGrid();
     }
 
     private void LoadDefaultGrid()
@@ -203,6 +221,7 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
                     (1, 0) => new RecentActivityFeedWidgetViewModel(),
                     (0, 1) => new BookkeepingWidgetViewModel(),
                     (1, 1) => new CalendarScheduleWidgetViewModel(),
+                    (0, 2) => new AlertsAndNotificationsWidgetViewModel(),
                     _ => new EmptyCellViewModel(r, c, boxSize)
                 };
 
