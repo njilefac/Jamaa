@@ -3,9 +3,9 @@ using Avalonia.Markup.Xaml;
 
 namespace Jamaa.Desktop.Dashboard;
 
-public partial class AnalyticsWidgetView : UserControl
+public partial class ReportingAndAnalyticsWidgetView : UserControl
 {
-    public AnalyticsWidgetView()
+    public ReportingAndAnalyticsWidgetView()
     {
         InitializeComponent();
     }

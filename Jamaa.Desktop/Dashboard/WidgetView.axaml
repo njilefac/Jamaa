@@ -32,8 +32,16 @@
 
                 <ContentControl Content="{Binding}" Grid.Row="1">
                     <ContentControl.DataTemplates>
-                        <DataTemplate DataType="{x:Type dashboard:AnalyticsWidgetViewModel}">
-                            <dashboard:AnalyticsWidgetView />
+                        <DataTemplate DataType="{x:Type dashboard:ReportingAndAnalyticsWidgetViewModel}">
+                            <dashboard:ReportingAndAnalyticsWidgetView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:BookkeepingWidgetViewModel}">
+                            <dashboard:BookkeepingWidgetView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:RecentActivityFeedWidgetViewModel}">
+                            <dashboard:RecentActivityFeedWidgetView />
                         </DataTemplate>
 
                         <DataTemplate DataType="{x:Type dashboard:WidgetViewModelBase}">

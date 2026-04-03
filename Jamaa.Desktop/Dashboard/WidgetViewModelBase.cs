@@ -8,8 +8,9 @@ namespace Jamaa.Desktop.Dashboard;
     // Tell the JSON serializer how to handle the different widget types
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
     [JsonDerivedType(typeof(EmptyCellViewModel), "empty")]
-    [JsonDerivedType(typeof(AnalyticsWidgetViewModel), "analytics")]
+    [JsonDerivedType(typeof(ReportingAndAnalyticsWidgetViewModel), "reportingandanalytics")]
     [JsonDerivedType(typeof(BookkeepingWidgetViewModel), "bookkeeping")]
+    [JsonDerivedType(typeof(RecentActivityFeedWidgetViewModel), "recentactivity")]
     public abstract partial class WidgetViewModelBase : ObservableObject
     {
         public string Id { get; init; } = Guid.NewGuid().ToString();
@@ -40,9 +41,9 @@ public partial class EmptyCellViewModel : WidgetViewModelBase
     public EmptyCellViewModel() { Title = "Empty Slot"; }
 }
 
-public partial class AnalyticsWidgetViewModel : WidgetViewModelBase
+public partial class ReportingAndAnalyticsWidgetViewModel : WidgetViewModelBase
 {
-    public AnalyticsWidgetViewModel() 
+    public ReportingAndAnalyticsWidgetViewModel() 
     { 
         Title = "Analytics"; 
         IsMultiColumn = true; 
@@ -56,5 +57,14 @@ public partial class BookkeepingWidgetViewModel : WidgetViewModelBase
     { 
         Title = "Financial Summary"; 
         IsMultiColumn = true; 
+    }
+}
+
+public partial class RecentActivityFeedWidgetViewModel : WidgetViewModelBase
+{
+    public RecentActivityFeedWidgetViewModel()
+    {
+        Title = "Recent Activity";
+        IsMultiRow = true;
     }
 }

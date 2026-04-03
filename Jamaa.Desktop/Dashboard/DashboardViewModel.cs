@@ -36,8 +36,9 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         // Define all possible non-empty widget types
         var allPossibleWidgets = new List<WidgetViewModelBase>
         {
-            new AnalyticsWidgetViewModel(),
-            new BookkeepingWidgetViewModel()
+            new ReportingAndAnalyticsWidgetViewModel(),
+            new BookkeepingWidgetViewModel(),
+            new RecentActivityFeedWidgetViewModel()
         };
 
         // Get types of currently active widgets
