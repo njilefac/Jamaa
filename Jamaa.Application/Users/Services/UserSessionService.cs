@@ -8,7 +8,7 @@ namespace Jamaa.Application.Users.Services;
 
 public class UserSessionService(ILogger<UserSessionService> logger, IUserRepository users) : IUserSessionService
 {
-    private static readonly UserSession? NullSession = new(false, "none", null);
+    private static readonly UserSession? NullSession = new(false, "none", null, null);
     private readonly Subject<UserSession?> _userSessions = new();
     public IObservable<UserSession?> UserSessions => _userSessions;
     public UserSession? CurrentUserSession { get; private set; }
@@ -29,9 +29,9 @@ public class UserSessionService(ILogger<UserSessionService> logger, IUserReposit
         logger.LogDebug("authenticated!");
 
         logger.LogDebug("creating user session...");
-        var userSession = new UserSession(true, credentials.UserName, organisation);
-        _userSessions.OnNext(userSession);
+        var userSession = new UserSession(true, credentials.UserName, matchingUser.Id, organisation);
         CurrentUserSession = userSession;
+        _userSessions.OnNext(userSession);
         logger.LogDebug("user session created");
 
         return await Task.FromResult(userSession);
@@ -39,8 +39,8 @@ public class UserSessionService(ILogger<UserSessionService> logger, IUserReposit
 
     public async Task<bool> EndSession()
     {
-        _userSessions.OnNext(null);
         CurrentUserSession = null;
+        _userSessions.OnNext(null);
         logger.LogDebug("user session terminated.");
         return await Task.FromResult(true);
     }

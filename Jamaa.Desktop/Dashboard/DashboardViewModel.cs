@@ -1,29 +1,52 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Domain.Users;
+using Jamaa.Application.Users.Services;
+using Jamaa.Desktop.Security.Events;
 using Jamaa.Desktop.Shared;
 
 namespace Jamaa.Desktop.Dashboard;
 
-public partial class DashboardViewModel : ObservableObject, IApplicationModule
+public partial class DashboardViewModel : ObservableObject, 
+    IApplicationModule,
+    IRecipient<UserLoggedOut>,
+    IRecipient<UserAuthenticated>
 {
-    private const string LayoutFilePath = "jamaa_dashboard_layout.json";
+    private readonly IUserSessionService _userSessionService;
+    private readonly IUserRepository _userRepository;
 
-    public int MaxColumns { get; } = 3;
-    public int MaxRows { get; } = 2;
+    private static int MaxColumns => 3;
+    private static int MaxRows => 2;
 
     public ObservableCollection<WidgetViewModelBase> ActiveWidgets { get; set; } = [];
     public ObservableCollection<WidgetViewModelBase> AvailableWidgets { get; set; } = [];
 
-    public DashboardViewModel()
+    public DashboardViewModel(IUserSessionService userSessionService, IUserRepository userRepository)
     {
-        LoadLayout();
+        _userSessionService = userSessionService;
+        _userRepository = userRepository;
+        
+        // Register first so we can receive messages
+        WeakReferenceMessenger.Default.RegisterAll(this);
+
         UpdateAvailableWidgets();
+    }
+
+    public void Receive(UserLoggedOut message)
+    {
+        _ = SaveLayout();
+    }
+
+    public void Receive(UserAuthenticated message)
+    {
+        _ = LoadLayout(message.Session);
     }
 
     private bool CanAddWidget(object? parameter)
@@ -94,7 +117,7 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         ActiveWidgets.Remove(cell);
         ActiveWidgets.Add(widgetToAdd);
         UpdateAvailableWidgets();
-        SaveLayout();
+        _ = SaveLayout();
     }
 
     [RelayCommand(CanExecute = nameof(CanReplaceWidget))]
@@ -111,7 +134,7 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         ActiveWidgets.Remove(oldWidget);
         ActiveWidgets.Add(newWidget);
         UpdateAvailableWidgets();
-        SaveLayout();
+        _ = SaveLayout();
     }
 
     private bool CanReplaceWidget(object? parameter)
@@ -143,70 +166,70 @@ public partial class DashboardViewModel : ObservableObject, IApplicationModule
         ActiveWidgets.Remove(widget);
         ActiveWidgets.Add(emptyCell);
         UpdateAvailableWidgets();
-        SaveLayout();
+        _ = SaveLayout();
     }
 
-    public void SaveLayout()
+    public async Task SaveLayout()
     {
+        var session = _userSessionService.CurrentUserSession;
+        if (session?.UserId == null) return;
+
         var options = new JsonSerializerOptions { WriteIndented = true };
         // Ignore empty widgets during serialization
         var widgetsToSave = ActiveWidgets.Where(w => w is not EmptyCellViewModel).ToList();
         string jsonString = JsonSerializer.Serialize(widgetsToSave, options);
-        File.WriteAllText(LayoutFilePath, jsonString);
-    }
 
-    private void InitializeEmptyGrid()
-    {
-        ActiveWidgets.Clear();
-        for (var r = 0; r < MaxRows; r++)
+        var user = await _userRepository.GetById(session.UserId.Value);
+        if (user != null)
         {
-            for (var c = 0; c < MaxColumns; c++)
-            {
-                var boxSize = (c == 1) ? BoxSize.Wide : BoxSize.Small;
-                var emptyCell = new EmptyCellViewModel(r, c, boxSize)
-                {
-                    ParentViewModel = this
-                };
-                ActiveWidgets.Add(emptyCell);
-            }
+            user.DashboardLayout = jsonString;
+            await _userRepository.Update(user);
         }
     }
 
-    private void LoadLayout()
+    internal async Task LoadLayout(Jamaa.Application.Users.UserSession? session = null)
     {
-        if (File.Exists(LayoutFilePath))
+        session ??= _userSessionService.CurrentUserSession;
+        if (session is { IsAuthenticated: true, UserId: not null })
         {
             try
             {
-                string jsonString = File.ReadAllText(LayoutFilePath);
-                var loadedWidgets = JsonSerializer.Deserialize<ObservableCollection<WidgetViewModelBase>>(jsonString);
+                var user = await _userRepository.GetById(session.UserId.Value);
+                var jsonString = user?.DashboardLayout;
 
-                if (loadedWidgets != null && loadedWidgets.Any())
+                if (!string.IsNullOrEmpty(jsonString))
                 {
-                    LoadDefaultGrid();
-                    foreach (var widget in loadedWidgets)
+                    var loadedWidgets = JsonSerializer.Deserialize<ObservableCollection<WidgetViewModelBase>>(jsonString);
+
+                    if (loadedWidgets != null && loadedWidgets.Any())
                     {
-                        widget.ParentViewModel = this;
-                        widget.RemoveCommand = new RelayCommand<WidgetViewModelBase>(RemoveWidget);
-
-                        // Find the corresponding widget to replace
-                        var existingWidget = ActiveWidgets.FirstOrDefault(w => 
-                            w.Row == widget.Row && 
-                            w.Column == widget.Column);
-
-                        if (existingWidget != null)
+                        LoadDefaultGrid();
+                        foreach (var widget in loadedWidgets)
                         {
-                            ActiveWidgets.Remove(existingWidget);
-                            ActiveWidgets.Add(widget);
+                            widget.ParentViewModel = this;
+                            widget.RemoveCommand = new RelayCommand<WidgetViewModelBase>(RemoveWidget);
+
+                            // Find the corresponding widget to replace
+                            var existingWidget = ActiveWidgets.FirstOrDefault(w => 
+                                w.Row == widget.Row && 
+                                w.Column == widget.Column);
+
+                            if (existingWidget != null)
+                            {
+                                ActiveWidgets.Remove(existingWidget);
+                                ActiveWidgets.Add(widget);
+                            }
                         }
+                        UpdateAvailableWidgets();
+                        return;
                     }
-                    return;
                 }
             }
-            catch { /* Corrupt JSON, fall through to default grid */ }
+            catch { /* Corrupt JSON or DB error, fall through to default grid */ }
         }
         
         LoadDefaultGrid();
+        UpdateAvailableWidgets();
     }
 
     private void LoadDefaultGrid()

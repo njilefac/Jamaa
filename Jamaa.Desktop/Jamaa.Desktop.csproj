@@ -110,6 +110,10 @@
   </ItemGroup>
   
   <ItemGroup>
+    <InternalsVisibleTo Include="UnitTests" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <AvaloniaResource Include="Assets\Resources\Messages.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Messages.Designer.cs</LastGenOutput>

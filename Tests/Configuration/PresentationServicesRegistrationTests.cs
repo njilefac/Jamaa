@@ -8,6 +8,7 @@ using Jamaa.Application.Users.Services;
 using Jamaa.Application.Setup;
 using NSubstitute;
 using Microsoft.Extensions.Logging;
+using Domain.Users;
 using Jamaa.Desktop.Services.Notifications;
 
 namespace UnitTests.Configuration;
@@ -23,6 +24,8 @@ public class PresentationServicesRegistrationTests
         // Mock dependencies for other services registered in RegisterPresentationServices
         services.AddSingleton(Substitute.For<ISetupService>());
         services.AddSingleton(Substitute.For<ILogger<Jamaa.Desktop.Program>>());
+        services.AddSingleton(Substitute.For<ILogger<UserSessionService>>());
+        services.AddSingleton(Substitute.For<IUserRepository>());
         
         // Register presentation services
         services.RegisterPresentationServices();

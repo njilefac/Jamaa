@@ -31,6 +31,8 @@ namespace Jamaa.Desktop.Dashboard;
         // Bento Box Configuration
         [ObservableProperty] private BoxSize _allowedBoxSize = BoxSize.Small;
         [ObservableProperty] private bool _isRemovable = true;
+        [ObservableProperty] private bool _isDraggingOver;
+        [ObservableProperty] private bool _isValidDrop;
 
         // Ignore these during JSON serialization to prevent circular references
         [JsonIgnore] public DashboardViewModel? ParentViewModel { get; set; }

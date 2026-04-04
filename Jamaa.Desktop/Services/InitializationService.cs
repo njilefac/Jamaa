@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using Jamaa.Application.Shared.Logging;
+using Jamaa.Application.Users.Services;
 using Jamaa.Data.Configuration;
 using Jamaa.Desktop.Assets.Resources;
 using Jamaa.Desktop.Events;
@@ -78,6 +79,17 @@ public static partial class InitializationService
     public static async Task ShutdownAsync()
     {
         if (_serviceProvider == null) return;
+
+        // Ensure dashboard layout is saved before shutdown
+        var userSessionService = _serviceProvider.GetService<IUserSessionService>();
+        if (userSessionService?.CurrentUserSession?.IsAuthenticated == true)
+        {
+            var dashboard = _serviceProvider.GetService<DashboardViewModel>();
+            if (dashboard != null)
+            {
+                await dashboard.SaveLayout();
+            }
+        }
 
         var akkaService = _serviceProvider.GetService<IHostedService>();
         if (akkaService != null)

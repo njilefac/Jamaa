@@ -9,17 +9,70 @@ public class WidgetDropHandler : IDropHandler
 {
     public void Enter(object? sender, DragEventArgs e, object? sourceContext, object? targetContext)
     {
-        e.DragEffects = ValidateDrop(sourceContext, targetContext) ? DragDropEffects.Move : DragDropEffects.None;
+        var isValid = ValidateDrop(sourceContext, targetContext);
+        e.DragEffects = isValid ? DragDropEffects.Move : DragDropEffects.None;
         e.Handled = true;
+
+        if (targetContext is WidgetViewModelBase target)
+        {
+            target.IsDraggingOver = true;
+            target.IsValidDrop = isValid;
+        }
     }
 
     public void Over(object? sender, DragEventArgs e, object? sourceContext, object? targetContext)
     {
-        e.DragEffects = ValidateDrop(sourceContext, targetContext) ? DragDropEffects.Move : DragDropEffects.None;
+        var isValid = ValidateDrop(sourceContext, targetContext);
+        e.DragEffects = isValid ? DragDropEffects.Move : DragDropEffects.None;
         e.Handled = true;
+
+        if (targetContext is WidgetViewModelBase target)
+        {
+            target.IsDraggingOver = true;
+            target.IsValidDrop = isValid;
+        }
     }
 
     public void Drop(object? sender, DragEventArgs e, object? sourceContext, object? targetContext)
+    {
+        if (targetContext is WidgetViewModelBase target)
+        {
+            target.IsDraggingOver = false;
+        }
+
+        if (ValidateDrop(sourceContext, targetContext) && 
+            sourceContext is WidgetViewModelBase dragged && 
+            targetContext is WidgetViewModelBase targetWidget &&
+            dragged.ParentViewModel is { } vm)
+        {
+            var tempRow = dragged.Row;
+            var tempCol = dragged.Column;
+
+            dragged.Row = targetWidget.Row;
+            dragged.Column = targetWidget.Column;
+
+            targetWidget.Row = tempRow;
+            targetWidget.Column = tempCol;
+
+            _ = vm.SaveLayout();
+        }
+        e.Handled = true;
+    }
+
+    public void Leave(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Avalonia.Controls.Control { DataContext: WidgetViewModelBase target })
+        {
+            target.IsDraggingOver = false;
+        }
+    }
+
+    public bool Validate(object? sender, DragEventArgs e, object? sourceContext, object? targetContext, object? state)
+    {
+        return ValidateDrop(sourceContext, targetContext);
+    }
+
+    public bool Execute(object? sender, DragEventArgs e, object? sourceContext, object? targetContext, object? state)
     {
         if (ValidateDrop(sourceContext, targetContext) && 
             sourceContext is WidgetViewModelBase dragged && 
@@ -35,20 +88,10 @@ public class WidgetDropHandler : IDropHandler
             target.Row = tempRow;
             target.Column = tempCol;
 
-            vm.SaveLayout();
+            _ = vm.SaveLayout();
+            return true;
         }
-        e.Handled = true;
-    }
-
-    public void Leave(object? sender, RoutedEventArgs e) { }
-    public bool Validate(object? sender, DragEventArgs e, object? sourceContext, object? targetContext, object? state)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public bool Execute(object? sender, DragEventArgs e, object? sourceContext, object? targetContext, object? state)
-    {
-        throw new System.NotImplementedException();
+        return false;
     }
 
     public void Cancel(object? sender, RoutedEventArgs e) { }

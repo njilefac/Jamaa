@@ -25,9 +25,27 @@ public class UserRepository(JamaaDbContext dbContext) : IUserRepository
         return UserData.Map(result.Entity);
     }
 
-    public Task<User> Update(User user)
+    public async Task<User> Update(User user)
     {
-        throw new NotImplementedException();
+        var existingUserData = await dbContext.Users.FindAsync(user.Account.Id);
+        if (existingUserData == null)
+        {
+            throw new KeyNotFoundException($"User with ID {user.Account.Id} not found.");
+        }
+
+        // Update properties of the tracked entity
+        existingUserData.DashboardLayout = user.DashboardLayout;
+        existingUserData.UserName = user.Account.Credentials.UserName;
+        existingUserData.Password = user.Account.Credentials.Password;
+        existingUserData.Email = user.Account.Email;
+        existingUserData.FirstName = user.FirstName;
+        existingUserData.MiddleName = user.MiddleName;
+        existingUserData.LastName = user.LastName;
+        existingUserData.IsActive = user.Account.IsActive ?? false;
+        existingUserData.IsSuperUser = user.Account.IsSuperUser ?? false;
+
+        await dbContext.SaveChangesAsync();
+        return UserData.Map(existingUserData);
     }
 
     public Task<bool> Delete(User user)
@@ -35,9 +53,10 @@ public class UserRepository(JamaaDbContext dbContext) : IUserRepository
         throw new NotImplementedException();
     }
 
-    public Task<User> GetById(Guid id)
+    public async Task<User?> GetById(Guid id)
     {
-        throw new NotImplementedException();
+        var userData = await dbContext.Users.FindAsync(id);
+        return userData != null ? UserData.Map(userData) : null;
     }
 
     public async Task<User?> SingleOrDefault(Predicate<User> matchesCondition)

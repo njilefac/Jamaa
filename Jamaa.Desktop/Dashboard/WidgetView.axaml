@@ -5,14 +5,19 @@
     x:Class="Jamaa.Desktop.Dashboard.WidgetView"
     x:DataType="dashboard:WidgetViewModelBase"
     xmlns="https://github.com/avaloniaui"
+    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <behaviors:WidgetDropHandler x:Key="WidgetDropHandler" />
+    </UserControl.Resources>
     <Grid Margin="8" x:Name="WidgetContainer">
         <Border Classes="dashboard widget container">
             <Interaction.Behaviors>
                 <ContextDragBehavior Context="{Binding}" />
+                <ContextDropBehavior Handler="{StaticResource WidgetDropHandler}" />
             </Interaction.Behaviors>
 
             <Grid RowDefinitions="Auto, *">
@@ -154,5 +159,33 @@
             </Grid>
         </Border>
 
+        <!--  Drop Feedback  -->
+        <Border
+            BorderBrush="Green"
+            BorderThickness="2"
+            CornerRadius="8"
+            IsHitTestVisible="False">
+            <Border.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="IsDraggingOver" />
+                    <Binding Path="IsValidDrop" />
+                </MultiBinding>
+            </Border.IsVisible>
+        </Border>
+
+        <Panel Background="#80D3D3D3" IsHitTestVisible="False">
+            <Panel.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="IsDraggingOver" />
+                    <Binding Converter="{x:Static BoolConverters.Not}" Path="IsValidDrop" />
+                </MultiBinding>
+            </Panel.IsVisible>
+            <PathIcon
+                Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12C20,13.76 19.42,15.38 18.46,16.69L7.31,5.54C8.62,4.58 10.24,4 12,4M4,12A8,8 0 0,1 12,4C13.76,4 15.38,4.58 16.69,5.54L5.54,16.69C4.58,15.38 4,13.76 4,12M12,20A8,8 0 0,1 4,12C4,10.24 4.58,8.62 5.54,7.31L16.69,18.46C15.38,19.42 13.76,20 12,20Z"
+                Foreground="Gray"
+                Height="64"
+                Opacity="0.5"
+                Width="64" />
+        </Panel>
     </Grid>
 </UserControl>

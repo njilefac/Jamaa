@@ -78,5 +78,7 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
             .Property(e => e.IsActive).IsRequired();
         modelBuilder.Entity<UserData>()
             .Property(e => e.IsSuperUser).IsRequired();
+        modelBuilder.Entity<UserData>()
+            .Property(e => e.DashboardLayout).IsRequired(false);
     }
 }
