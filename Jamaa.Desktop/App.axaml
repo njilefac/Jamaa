@@ -1,9 +1,11 @@
 <Application
+    Name="Libota Desktop"
+    RequestedThemeVariant="Default"
     x:Class="Jamaa.Desktop.App"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
+    xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
     xmlns:events-View-Models="clr-namespace:Jamaa.Desktop.Events"
     xmlns:finances-View-Models="clr-namespace:Jamaa.Desktop.Finances"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
@@ -14,9 +16,7 @@
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     xmlns:sty="using:FluentAvalonia.Styling"
     xmlns:u-semi="clr-namespace:Ursa.Themes.Semi;assembly=Ursa.Themes.Semi"
-    Name="Libota Desktop"
-    RequestedThemeVariant="Default"
-    >
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Application.Resources>
         <ResourceDictionary>
@@ -24,9 +24,11 @@
                 <ResourceInclude Source="/Themes/JamaaTheme.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:MemberProfileCommandArgsConverter x:Key="MemberProfileCommandArgsConverter" />
+            <converters:MultiValueConverter x:Key="MultiValueConverter" />
             <converters:ByteArrayToBitmapConverter x:Key="ByteArrayToBitmapConverter" />
             <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
             <converters:IncrementConverter x:Key="IncrementConverter" />
+            <converters:HalfWidthConverter x:Key="HalfWidthConverter" />
         </ResourceDictionary>
     </Application.Resources>
 
@@ -43,6 +45,9 @@
     <Application.DataTemplates>
         <DataTemplate DataType="{x:Type shared:ShellViewModel}">
             <shared:Shell />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type dashboard:DashboardViewModel}">
+            <dashboard:Dashboard />
         </DataTemplate>
         <DataTemplate DataType="{x:Type shared:MainMenuViewModel}">
             <shared:MainMenu />

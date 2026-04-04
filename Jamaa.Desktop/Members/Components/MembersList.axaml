@@ -8,6 +8,7 @@
     x:Class="Jamaa.Desktop.Members.Components.MembersList"
     xmlns="https://github.com/avaloniaui"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
+    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:services="clr-namespace:Jamaa.Desktop.Members.Services"
@@ -47,19 +48,15 @@
 
     <Panel>
         <Grid RowDefinitions="60,*,60">
-            <StackPanel
-                Grid.Row="0"
-                HorizontalAlignment="Center"
-                Orientation="Horizontal"
-                Spacing="10"
-                VerticalAlignment="Center">
+            <Grid Grid.Row="0">
                 <TextBox
-                    Name="SearchTermTextBox"
                     Classes="toolbar item"
                     Focusable="True"
                     HorizontalAlignment="Center"
                     HorizontalContentAlignment="Center"
+                    Name="SearchTermTextBox"
                     Text="{Binding SearchTerm}"
+                    VerticalAlignment="Center"
                     Watermark="Find members">
                     <TextBox.InnerLeftContent>
                         <Image
@@ -68,29 +65,33 @@
                             Width="40" />
                     </TextBox.InnerLeftContent>
                 </TextBox>
-                <HeaderedContentControl Classes="toolbar group" Header="Display Mode">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <ToggleButton
-                            Classes="toolbar item"
-                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Card}}"
-                            ToolTip.Tip="Card View">
-                            <Image Source="avares://Jamaa/Assets/Icons/grid/grid.png" />
-                        </ToggleButton>
-                        <ToggleButton
-                            Classes="toolbar item"
-                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.List}}"
-                            ToolTip.Tip="List View">
-                            <Image Source="avares://Jamaa/Assets/Icons/edit/list_ul.png" />
-                        </ToggleButton>
-                        <ToggleButton
-                            Classes="toolbar item"
-                            IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Carousel}}"
-                            ToolTip.Tip="Carousel View">
-                            <Image Source="avares://Jamaa/Assets/Icons/basic/carousel-64.png" />
-                        </ToggleButton>
-                    </StackPanel>
-                </HeaderedContentControl>
-            </StackPanel>
+
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    Margin="0,0,20,0"
+                    Orientation="Horizontal"
+                    Spacing="12"
+                    VerticalAlignment="Center">
+                    <ToggleButton
+                        Classes="toolbar item"
+                        IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.List}}"
+                        ToolTip.Tip="List View">
+                        <Image Source="avares://Jamaa/Assets/Icons/edit/list_ul.png" />
+                    </ToggleButton>
+                    <ToggleButton
+                        Classes="toolbar item"
+                        IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Card}}"
+                        ToolTip.Tip="Card View">
+                        <Image Source="avares://Jamaa/Assets/Icons/grid/grid.png" />
+                    </ToggleButton>
+                    <ToggleButton
+                        Classes="toolbar item"
+                        IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static values:MemberListDisplayMode.Carousel}}"
+                        ToolTip.Tip="Carousel View">
+                        <Image Source="avares://Jamaa/Assets/Icons/basic/carousel-64.png" />
+                    </ToggleButton>
+                </StackPanel>
+            </Grid>
 
             <ContentControl
                 Content="{Binding}"

@@ -1,0 +1,191 @@
+<UserControl
+    d:DesignHeight="300"
+    d:DesignWidth="300"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Dashboard.WidgetView"
+    x:DataType="dashboard:WidgetViewModelBase"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <behaviors:WidgetDropHandler x:Key="WidgetDropHandler" />
+    </UserControl.Resources>
+    <Grid Margin="8" x:Name="WidgetContainer">
+        <Border Classes="dashboard widget container">
+            <Interaction.Behaviors>
+                <ContextDragBehavior Context="{Binding}" />
+                <ContextDropBehavior Handler="{StaticResource WidgetDropHandler}" />
+            </Interaction.Behaviors>
+
+            <Grid RowDefinitions="Auto, *">
+                <Grid
+                    ColumnDefinitions="*,Auto"
+                    Grid.Row="0"
+                    IsVisible="{Binding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                    Margin="8">
+                    <TextBlock Classes="dashboard widget title" Text="{Binding Title}" />
+                    <Button
+                        Classes="dashboard widget options"
+                        Content="..."
+                        Grid.Column="1">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <MenuItem Header="Settings" />
+                                <MenuItem
+                                    Command="{Binding RemoveCommand}"
+                                    CommandParameter="{Binding}"
+                                    Header="Remove"
+                                    IsVisible="{Binding IsRemovable}" />
+                                <MenuItem
+                                    Command="{Binding ParentViewModel.ReplaceWidgetCommand}"
+                                    CommandParameter="{Binding}"
+                                    Header="Replace Widget">
+                                    <ListBox
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        ItemsSource="{Binding CompatibleWidgets}"
+                                        Margin="4"
+                                        MaxHeight="300">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <MenuItem Command="{Binding ParentViewModel.ReplaceWidgetCommand}" Header="{Binding Title}">
+                                                    <MenuItem.CommandParameter>
+                                                        <MultiBinding Converter="{StaticResource MultiValueConverter}">
+                                                            <Binding Path="$parent[UserControl].DataContext" />
+                                                            <Binding />
+                                                        </MultiBinding>
+                                                    </MenuItem.CommandParameter>
+                                                </MenuItem>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </MenuItem>
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                </Grid>
+
+                <ContentControl Content="{Binding}" Grid.Row="1">
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType="{x:Type dashboard:EmptyCellViewModel}">
+                            <Button
+                                Background="Transparent"
+                                BorderThickness="0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                                <Button.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <StackPanel Spacing="8" Width="200">
+                                            <TextBlock FontWeight="Bold" Text="{Binding FlyoutTitle}" />
+                                            <ListBox
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                IsVisible="{Binding HasCompatibleWidgets, FallbackValue=False}"
+                                                ItemsSource="{Binding CompatibleWidgets}">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Button
+                                                            Background="Transparent"
+                                                            BorderThickness="0"
+                                                            Command="{Binding ParentViewModel.AddWidgetCommand}"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Left">
+                                                            <Button.CommandParameter>
+                                                                <MultiBinding Converter="{StaticResource MultiValueConverter}">
+                                                                    <Binding Path="$parent[UserControl].DataContext" />
+                                                                    <Binding />
+                                                                </MultiBinding>
+                                                            </Button.CommandParameter>
+                                                            <TextBlock Text="{Binding Title}" />
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                                <Panel>
+                                    <TextBlock
+                                        FontSize="64"
+                                        FontWeight="Heavy"
+                                        Foreground="Gray"
+                                        HorizontalAlignment="Center"
+                                        Text="+"
+                                        VerticalAlignment="Center" />
+                                </Panel>
+                            </Button>
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:ReportingAndAnalyticsWidgetViewModel}">
+                            <dashboard:ReportingAndAnalyticsWidgetView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:BookkeepingWidgetViewModel}">
+                            <dashboard:BookkeepingWidgetView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:RecentActivityFeedWidgetViewModel}">
+                            <dashboard:RecentActivityFeedWidgetView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:CalendarScheduleWidgetViewModel}">
+                            <dashboard:CalendarScheduleWidgetView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:AlertsAndNotificationsWidgetViewModel}">
+                            <dashboard:AlertsAndNotificationsWidgetView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:QuickActionsWidgetViewModel}">
+                            <dashboard:QuickActionsWidgetView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:MembershipStatsWidgetViewModel}">
+                            <dashboard:MembershipStatsWidgetView />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type dashboard:WidgetViewModelBase}">
+                            <TextBlock
+                                Foreground="Gray"
+                                HorizontalAlignment="Center"
+                                Text="Widget Content Here"
+                                VerticalAlignment="Center" />
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
+            </Grid>
+        </Border>
+
+        <!--  Drop Feedback  -->
+        <Border
+            BorderBrush="Green"
+            BorderThickness="4"
+            CornerRadius="8"
+            IsHitTestVisible="False">
+            <Border.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="IsDraggingOver" />
+                    <Binding Path="IsValidDrop" />
+                </MultiBinding>
+            </Border.IsVisible>
+        </Border>
+
+        <Panel Background="#80D3D3D3" IsHitTestVisible="False">
+            <Panel.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="IsDraggingOver" />
+                    <Binding Converter="{x:Static BoolConverters.Not}" Path="IsValidDrop" />
+                </MultiBinding>
+            </Panel.IsVisible>
+            <PathIcon
+                Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12C20,13.76 19.42,15.38 18.46,16.69L7.31,5.54C8.62,4.58 10.24,4 12,4M4,12A8,8 0 0,1 12,4C13.76,4 15.38,4.58 16.69,5.54L5.54,16.69C4.58,15.38 4,13.76 4,12M12,20A8,8 0 0,1 4,12C4,10.24 4.58,8.62 5.54,7.31L16.69,18.46C15.38,19.42 13.76,20 12,20Z"
+                Foreground="Gray"
+                Height="64"
+                Opacity="0.5"
+                Width="64" />
+        </Panel>
+    </Grid>
+</UserControl>

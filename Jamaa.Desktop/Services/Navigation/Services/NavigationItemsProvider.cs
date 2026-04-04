@@ -12,6 +12,7 @@ public class NavigationItemsProvider : INavigationItemsProvider
         //TODO: Load dynamically based on user permissions
         return
         [
+            new NavigationItemModel(Routes.Dashboard, "Home", "Icons.Home"),
             new NavigationItemModel(Routes.MembersOverview, "Members", "Icons.Members"),
             new NavigationItemModel(Routes.EventsOverview, "Events", "Icons.Calendar"),
             new NavigationItemModel(Routes.FinancesOverview, "Finances", "Icons.Finances")

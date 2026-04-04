@@ -110,5 +110,17 @@ namespace Jamaa.Desktop.Assets.Resources {
                 return ResourceManager.GetString("login_authentication_failed_message", resourceCulture);
             }
         }
+        
+        internal static string dashboard_available_widgets {
+            get {
+                return ResourceManager.GetString("dashboard_available_widgets", resourceCulture);
+            }
+        }
+        
+        internal static string dashboard_no_widgets_available {
+            get {
+                return ResourceManager.GetString("dashboard_no_widgets_available", resourceCulture);
+            }
+        }
     }
 }

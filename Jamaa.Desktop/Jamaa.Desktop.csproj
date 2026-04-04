@@ -8,10 +8,28 @@
     <PackageId>Jamaa</PackageId>
     <Authors>Wilfred Azamo</Authors>
     <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <AssemblyName>Jamaa</AssemblyName>
+    <ApplicationIcon>Assets/Icons/jamaa.ico</ApplicationIcon>
+    <CFBundleIconFile>Assets/Icons/jamaa.icns</CFBundleIconFile>
+    <CFBundleName>Jamaa</CFBundleName>
+    <CFBundleDisplayName>Jamaa</CFBundleDisplayName>
+    <CFBundleIdentifier>com.nubiasystems.jamaa</CFBundleIdentifier>
+    <CFBundleVersion>1.0.0</CFBundleVersion>
+    <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
+    <CFBundleExecutable>Jamaa</CFBundleExecutable>
     <LangVersion>latestmajor</LangVersion>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Assets\Icons\jamaa.icns" CopyToPublishDirectory="Always" />
+  </ItemGroup>
+  
+  <Target Name="CopyIconToBundle" AfterTargets="BundleApp">
+    <Copy SourceFiles="$(PublishDir)Assets/Icons/jamaa.icns" DestinationFiles="$(PublishDir)$(CFBundleName).app/Contents/Resources/jamaa.icns" />
+  </Target>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -65,7 +83,6 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
     <PackageReference Include="Mvvm.CommonInteractions.Avalonia" Version="1.0.68" />
-    <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="3.0.4" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.1" />
     <PackageReference Include="QRCode.Avalonia" Version="1.0.0" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
@@ -90,6 +107,10 @@
     <PackageReference Remove="Microsoft.Maui.Controls.Compatibility" />
     <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5" />
     <PackageReference Include="Xaml.Behaviors.Interactions.DragAndDrop.DataGrid" Version="11.3.9.5" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="UnitTests" />
   </ItemGroup>
   
   <ItemGroup>
@@ -214,5 +235,41 @@
       <DependentUpon>MemberCarousel.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Dashboard\DashboardViewModel.cs">
+      <DependentUpon>Dashboard.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\WidgetViewModelBase.cs">
+      <DependentUpon>WidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\AlertsAndNotificationsWidgetViewModel.cs">
+      <DependentUpon>AlertsAndNotificationsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\BookkeepingWidgetViewModel.cs">
+      <DependentUpon>BookkeepingWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\CalendarScheduleWidgetViewModel.cs">
+      <DependentUpon>CalendarScheduleWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\MembershipStatsWidgetViewModel.cs">
+      <DependentUpon>MembershipStatsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\QuickActionsWidgetViewModel.cs">
+      <DependentUpon>QuickActionsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\ReportingAndAnalyticsWidgetViewModel.cs">
+      <DependentUpon>ReportingAndAnalyticsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\RecentActivityFeedWidgetViewModel.cs">
+      <DependentUpon>RecentActivityFeedWidgetView.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Assets\Resources\Messages.en.resx">
+      <DependentUpon>Messages.resx</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Assets\Resources\Messages.fr-fr.resx">
+      <DependentUpon>Messages.resx</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

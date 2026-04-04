@@ -1,0 +1,48 @@
+<UserControl
+    d:DesignHeight="150"
+    d:DesignWidth="150"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Dashboard.MembershipStatsWidgetView"
+    x:DataType="dashboard:MembershipStatsWidgetViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="12" RowDefinitions="*,*,*">
+        <StackPanel Grid.Row="0">
+            <TextBlock
+                Classes="dashboard widget text secondary"
+                FontSize="12"
+                Text="Total Members" />
+            <TextBlock
+                Classes="dashboard widget text primary"
+                FontSize="18"
+                FontWeight="Bold"
+                Text="{Binding TotalMembers}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1">
+            <TextBlock
+                Classes="dashboard widget text secondary"
+                FontSize="12"
+                Text="New (This Month)" />
+            <TextBlock
+                Classes="dashboard widget text primary"
+                FontSize="18"
+                FontWeight="Bold"
+                Foreground="Green"
+                Text="{Binding NewMembersThisMonth}" />
+        </StackPanel>
+        <StackPanel Grid.Row="2">
+            <TextBlock
+                Classes="dashboard widget text secondary"
+                FontSize="12"
+                Text="Active Members" />
+            <TextBlock
+                Classes="dashboard widget text primary"
+                FontSize="18"
+                FontWeight="Bold"
+                Text="{Binding ActiveMembers}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

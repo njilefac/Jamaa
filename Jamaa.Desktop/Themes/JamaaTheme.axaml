@@ -40,6 +40,7 @@
             <!--  Validation  -->
             <SolidColorBrush x:Key="ValidationErrorBackground" Color="#FEF2F2" />
             <SolidColorBrush x:Key="ValidationErrorBrush" Color="#EF4444" />
+            <SolidColorBrush x:Key="ValidationErrorForeground" Color="#991B1B" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <Color x:Key="JamaaPrimaryColor">#479EF5</Color>
@@ -77,6 +78,7 @@
             <!--  Validation  -->
             <SolidColorBrush x:Key="ValidationErrorBackground" Color="#442726" />
             <SolidColorBrush x:Key="ValidationErrorBrush" Color="#F1707B" />
+            <SolidColorBrush x:Key="ValidationErrorForeground" Color="#FFFFFF" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
