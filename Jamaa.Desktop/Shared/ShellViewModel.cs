@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Jamaa.Application.Setup;
 using Jamaa.Application.Users.Services;
+using Jamaa.Desktop.Dashboard;
 using Jamaa.Desktop.Security.Events;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Values;
@@ -27,7 +28,7 @@ public partial class ShellViewModel : ObservableObject,
     private readonly Dictionary<string, object?> _viewModelCache = new();
     private const string ApplicationName = "Jamaa Desktop";
 
-    public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService, IRouteResolver routeResolver)
+    public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService, IRouteResolver routeResolver, DashboardViewModel dashboardViewModel)
     {
         _setupService = setupService;
         _routeResolver = routeResolver;
@@ -70,7 +71,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(UserAuthenticated message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.Dashboard);
+        ActiveContent = GetViewModelForRoute(Routes.Home);
     }
     
     public void Receive(OrganisationCreated message)
@@ -80,7 +81,7 @@ public partial class ShellViewModel : ObservableObject,
     
     public void Receive(SuperUserCreated message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.Dashboard);
+        ActiveContent = GetViewModelForRoute(Routes.Home);
     }
     
     private object? GetViewModelForRoute(string path )

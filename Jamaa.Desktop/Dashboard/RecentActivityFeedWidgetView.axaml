@@ -1,0 +1,64 @@
+<UserControl
+    d:DesignHeight="300"
+    d:DesignWidth="300"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Dashboard.RecentActivityFeedWidgetView"
+    x:DataType="dashboard:RecentActivityFeedWidgetViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="16">
+        <StackPanel Spacing="12">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse
+                    Fill="LightBlue"
+                    Height="32"
+                    Width="32" />
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Text="John Doe" />
+                    <TextBlock
+                        FontSize="10"
+                        Foreground="Gray"
+                        Text="Added a new member · 2h ago" />
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse
+                    Fill="LightGreen"
+                    Height="32"
+                    Width="32" />
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Text="Jane Smith" />
+                    <TextBlock
+                        FontSize="10"
+                        Foreground="Gray"
+                        Text="Recorded a payment · 4h ago" />
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse
+                    Fill="LightYellow"
+                    Height="32"
+                    Width="32" />
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Text="System" />
+                    <TextBlock
+                        FontSize="10"
+                        Foreground="Gray"
+                        Text="Backup completed · 1d ago" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

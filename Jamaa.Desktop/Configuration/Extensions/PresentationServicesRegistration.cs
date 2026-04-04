@@ -29,6 +29,9 @@ public static class PresentationServicesRegistration
             services.AddSingleton<INotificationService>(sp => sp.GetRequiredService<AvaloniaNotificationService>());
             services.AddSingleton<Shared.Shell>();
 
+            // Ensure DashboardViewModel is a singleton to persist its state and handle shutdown/logout correctly
+            services.AddSingleton<Dashboard.DashboardViewModel>();
+
             return services;
         }
 
@@ -39,7 +42,8 @@ public static class PresentationServicesRegistration
                 .FromAssemblyOf<App>()
                 .AddClasses(c => c.Where(t =>
                     t.IsAssignableTo(typeof(ObservableObject))
-                    && !t.IsAssignableTo(typeof(Avalonia.Controls.Control))))
+                    && !t.IsAssignableTo(typeof(Avalonia.Controls.Control))
+                    && t != typeof(Dashboard.DashboardViewModel))) // Exclude DashboardViewModel as it's registered as singleton
                 .AsSelfWithInterfaces()
                 .WithTransientLifetime());
 

@@ -51,4 +51,10 @@
     <data name="login_authentication_failed_message" xml:space="preserve">
         <value>Invalid username or password. Please try again.</value>
     </data>
+    <data name="dashboard_available_widgets" xml:space="preserve">
+        <value>Available Widgets</value>
+    </data>
+    <data name="dashboard_no_widgets_available" xml:space="preserve">
+        <value>No Widgets available</value>
+    </data>
 </root>
