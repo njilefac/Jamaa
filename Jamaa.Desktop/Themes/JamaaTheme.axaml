@@ -1,0 +1,95 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="/Assets/Resources/Icons.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <Color x:Key="JamaaPrimaryColor">#2563EB</Color>
+            <Color x:Key="JamaaSecondaryColor">#3B82F6</Color>
+            <Color x:Key="JamaaAccentColor">#2563EB</Color>
+
+            <!--  System Accent Overrides  -->
+            <Color x:Key="SystemAccentColor">#2563EB</Color>
+            <Color x:Key="SystemAccentColorLight1">#3B82F6</Color>
+            <Color x:Key="SystemAccentColorLight2">#60A5FA</Color>
+            <Color x:Key="SystemAccentColorLight3">#93C5FD</Color>
+            <Color x:Key="SystemAccentColorDark1">#1D4ED8</Color>
+            <Color x:Key="SystemAccentColorDark2">#1E40AF</Color>
+            <Color x:Key="SystemAccentColorDark3">#1E3A8A</Color>
+
+            <SolidColorBrush x:Key="JamaaPrimaryBrush" Color="{StaticResource JamaaPrimaryColor}" />
+            <SolidColorBrush x:Key="JamaaAccentBrush" Color="{StaticResource JamaaAccentColor}" />
+
+            <!--  Backgrounds  -->
+            <SolidColorBrush x:Key="AppBackgroundColor" Color="#F1F5F9" />
+            <SolidColorBrush x:Key="AppSurfaceColor" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="AppHeaderBackground" Color="#F8FAFC" />
+            <SolidColorBrush x:Key="AppCardBackground" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="AppLayerBackground" Color="#E2E8F0" />
+
+            <!--  Borders & Dividers  -->
+            <SolidColorBrush x:Key="AppBorderColor" Color="#CBD5E1" />
+            <SolidColorBrush x:Key="AppDividerColor" Color="#E2E8F0" />
+
+            <!--  Text  -->
+            <SolidColorBrush x:Key="AppTextPrimary" Color="#0F172A" />
+            <SolidColorBrush x:Key="AppTextSecondary" Color="#475569" />
+            <SolidColorBrush x:Key="AppTextDisabled" Color="#94A3B8" />
+
+            <!--  Validation  -->
+            <SolidColorBrush x:Key="ValidationErrorBackground" Color="#FEF2F2" />
+            <SolidColorBrush x:Key="ValidationErrorBrush" Color="#EF4444" />
+            <SolidColorBrush x:Key="ValidationErrorForeground" Color="#991B1B" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <Color x:Key="JamaaPrimaryColor">#479EF5</Color>
+            <Color x:Key="JamaaSecondaryColor">#67AFE8</Color>
+            <Color x:Key="JamaaAccentColor">#479EF5</Color>
+
+            <!--  System Accent Overrides  -->
+            <Color x:Key="SystemAccentColor">#479EF5</Color>
+            <Color x:Key="SystemAccentColorLight1">#67AFE8</Color>
+            <Color x:Key="SystemAccentColorLight2">#87C1F2</Color>
+            <Color x:Key="SystemAccentColorLight3">#A7D2F5</Color>
+            <Color x:Key="SystemAccentColorDark1">#2E88D8</Color>
+            <Color x:Key="SystemAccentColorDark2">#1572BC</Color>
+            <Color x:Key="SystemAccentColorDark3">#005C9F</Color>
+
+            <SolidColorBrush x:Key="JamaaPrimaryBrush" Color="{StaticResource JamaaPrimaryColor}" />
+            <SolidColorBrush x:Key="JamaaAccentBrush" Color="{StaticResource JamaaAccentColor}" />
+
+            <!--  Backgrounds  -->
+            <SolidColorBrush x:Key="AppBackgroundColor" Color="#202020" />
+            <SolidColorBrush x:Key="AppSurfaceColor" Color="#2B2B2B" />
+            <SolidColorBrush x:Key="AppHeaderBackground" Color="#252525" />
+            <SolidColorBrush x:Key="AppCardBackground" Color="#2C2C2C" />
+            <SolidColorBrush x:Key="AppLayerBackground" Color="#1C1C1C" />
+
+            <!--  Borders & Dividers  -->
+            <SolidColorBrush x:Key="AppBorderColor" Color="#3E3E3E" />
+            <SolidColorBrush x:Key="AppDividerColor" Color="#323232" />
+
+            <!--  Text  -->
+            <SolidColorBrush x:Key="AppTextPrimary" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="AppTextSecondary" Color="#D2D0CE" />
+            <SolidColorBrush x:Key="AppTextDisabled" Color="#484644" />
+
+            <!--  Validation  -->
+            <SolidColorBrush x:Key="ValidationErrorBackground" Color="#442726" />
+            <SolidColorBrush x:Key="ValidationErrorBrush" Color="#F1707B" />
+            <SolidColorBrush x:Key="ValidationErrorForeground" Color="#FFFFFF" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!--  Standard Fluent-like Corner Radii  -->
+    <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+    <CornerRadius x:Key="CardCornerRadius">6</CornerRadius>
+
+    <!--  Standard Fluent-like Spacings  -->
+    <Thickness x:Key="StandardPadding">12</Thickness>
+    <Thickness x:Key="CardPadding">16</Thickness>
+    <Thickness x:Key="SectionMargin">0,0,0,24</Thickness>
+
+</ResourceDictionary>

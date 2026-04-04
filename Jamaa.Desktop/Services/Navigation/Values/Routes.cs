@@ -2,7 +2,8 @@ namespace Jamaa.Desktop.Services.Navigation.Values;
 
 public static class Routes
 {
-    public const string Home = "/";
+    public const string Shell = "/";
+    public const string Home = "/home";
     public const string Dashboard = "/dashboard";
     public const string MembersOverview = "/members";
     public const string MembersList = "/members/list";

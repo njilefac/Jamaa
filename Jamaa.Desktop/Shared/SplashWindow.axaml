@@ -1,25 +1,24 @@
 <husk:AppWindow
+    Classes="splash-window"
     x:Class="Jamaa.Desktop.Shared.SplashWindow"
+    x:DataType="shared:SplashViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
-    Title="Libota"
-    Width="600"
-    Height="400"
-    x:DataType="shared:SplashViewModel"
-    SystemDecorations="None"
-    WindowStartupLocation="CenterScreen"
-    >
-    <Panel>
-        <Image Source="avares://Jamaa/Assets/splash.png" Stretch="UniformToFill" />
-        <TextBlock
-            Margin="0,0,0,20"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Bottom"
-            FontSize="14"
-            Foreground="White"
-            Text="{Binding Status}"
-            />
-    </Panel>
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid RowDefinitions="*,Auto">
+        <Image
+            Classes="splash-image"
+            Grid.Row="0"
+            Source="avares://Jamaa/Assets/splash.png" />
+        <Border
+            Background="{DynamicResource AppHeaderBackground}"
+            Grid.Row="1"
+            Padding="10">
+            <StackPanel Classes="splash-status-container">
+                <TextBlock Classes="splash-status-text" Text="{Binding Status}" />
+                <ProgressBar Classes="splash-progress-bar" Value="{Binding Progress}" />
+            </StackPanel>
+        </Border>
+    </Grid>
 </husk:AppWindow>

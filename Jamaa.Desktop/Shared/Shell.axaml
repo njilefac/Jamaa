@@ -9,9 +9,9 @@
     Title="{Binding ApplicationTitle}"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="shared:Shell"
+    x:DataType="shared:ShellViewModel"
     Background="Transparent"
-    Icon="/Assets/Icons/avalonia-logo.ico"
+    Icon="avares://Jamaa/Assets/Icons/jamaa.png"
     ShowActivated="True"
     TransparencyLevelHint="Blur, Mica"
     WindowStartupLocation="CenterScreen"
@@ -19,7 +19,7 @@
     mc:Ignorable="d"
     >
     <Grid ColumnDefinitions="*" RowDefinitions="Auto,*,35">
-        <shared:MainMenu Grid.Row="0" Content="{Binding MainMenuViewModel}" />
+        <shared:MainMenu Grid.Row="0" Content="{Binding MainMenu}" />
         <Panel Grid.Row="1">
             <ContentControl
                 HorizontalContentAlignment="Stretch"

@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace Jamaa.Desktop.Shared;
+namespace Jamaa.Desktop.Dashboard;
 
-public partial class Dashboard : UserControl
+public partial class AlertsAndNotificationsWidgetView : UserControl
 {
-    public Dashboard()
+    public AlertsAndNotificationsWidgetView()
     {
         InitializeComponent();
     }

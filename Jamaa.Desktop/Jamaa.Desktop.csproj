@@ -8,10 +8,28 @@
     <PackageId>Jamaa</PackageId>
     <Authors>Wilfred Azamo</Authors>
     <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <AssemblyName>Jamaa</AssemblyName>
+    <ApplicationIcon>Assets/Icons/jamaa.ico</ApplicationIcon>
+    <CFBundleIconFile>Assets/Icons/jamaa.icns</CFBundleIconFile>
+    <CFBundleName>Jamaa</CFBundleName>
+    <CFBundleDisplayName>Jamaa</CFBundleDisplayName>
+    <CFBundleIdentifier>com.nubiasystems.jamaa</CFBundleIdentifier>
+    <CFBundleVersion>1.0.0</CFBundleVersion>
+    <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
+    <CFBundleExecutable>Jamaa</CFBundleExecutable>
     <LangVersion>latestmajor</LangVersion>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Assets\Icons\jamaa.icns" CopyToPublishDirectory="Always" />
+  </ItemGroup>
+  
+  <Target Name="CopyIconToBundle" AfterTargets="BundleApp">
+    <Copy SourceFiles="$(PublishDir)Assets/Icons/jamaa.icns" DestinationFiles="$(PublishDir)$(CFBundleName).app/Contents/Resources/jamaa.icns" />
+  </Target>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -25,23 +43,23 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects> <!-- optional for .NET Framework -->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Akka.Persistence.Hosting" Version="1.5.62" />
-    <PackageReference Include="Akka.Persistence.Sql.Hosting" Version="1.5.60.1" />
+    <PackageReference Include="Akka.Persistence.Hosting" Version="1.5.64" />
+    <PackageReference Include="Akka.Persistence.Sql.Hosting" Version="1.5.62" />
     <PackageReference Include="Akka.Persistence.Sqlite" Version="1.5.39" />
     <PackageReference Include="Avalonia.Labs.Notifications" Version="11.3.1" />
     <PackageReference Include="Avalonia.Labs.Panels" Version="11.3.1" />
     <PackageReference Include="Avalonia.Labs.Qr" Version="11.3.1" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
-    <PackageReference Include="Avalonia" Version="11.3.12" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.13" />
+    <PackageReference Include="Avalonia" Version="11.3.13" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.13" />
     <PackageReference Include="Avalonia.MonoMac" Version="0.6.1" />
     <PackageReference Include="CalendarControl.Avalonia" Version="11.2.5" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Dotnet.Bundle" Version="0.9.13" />
     <PackageReference Include="DynamicData" Version="9.4.31" />
     <PackageReference Include="FluentAvalonia.BreadcrumbBar" Version="2.0.2" />
     <PackageReference Include="FluentAvaloniaUI" Version="2.5.0" />
-    <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="2.0.320" />
+    <PackageReference Include="FluentIcons.Avalonia.Fluent" Version="2.0.321" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Huskui.Avalonia" Version="0.10.3" />
@@ -65,8 +83,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
     <PackageReference Include="Mvvm.CommonInteractions.Avalonia" Version="1.0.68" />
-    <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="3.0.4" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.1" />
     <PackageReference Include="QRCode.Avalonia" Version="1.0.0" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
     <PackageReference Include="Semi.Avalonia" Version="11.3.7.3" />
@@ -90,6 +107,10 @@
     <PackageReference Remove="Microsoft.Maui.Controls.Compatibility" />
     <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5" />
     <PackageReference Include="Xaml.Behaviors.Interactions.DragAndDrop.DataGrid" Version="11.3.9.5" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="UnitTests" />
   </ItemGroup>
   
   <ItemGroup>
@@ -136,8 +157,8 @@
     <Compile Update="Shared\MainMenuViewModel.cs">
       <DependentUpon>MainMenu.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Shared\DashboardViewModel.cs">
-      <DependentUpon>Dashboard.axaml</DependentUpon>
+    <Compile Update="Shared\MainWindowViewModel.cs">
+      <DependentUpon>MainWindow.axaml</DependentUpon>
     </Compile>
     <Compile Update="Setup\CreateOrganisationViewModel.cs">
       <DependentUpon>CreateOrganisationScreen.axaml</DependentUpon>
@@ -152,7 +173,7 @@
       <DependentUpon>LoginScreen.axaml</DependentUpon>
     </Compile>
     <Compile Update="Shared\ModuleSelected.cs">
-      <DependentUpon>Dashboard.axaml</DependentUpon>
+      <DependentUpon>MainWindow.axaml</DependentUpon>
     </Compile>
     <Compile Update="Members\Components\MembersSummaryPane.axaml.cs">
       <DependentUpon>MembersSummaryPane.axaml</DependentUpon>
@@ -214,5 +235,41 @@
       <DependentUpon>MemberCarousel.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Dashboard\DashboardViewModel.cs">
+      <DependentUpon>Dashboard.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\WidgetViewModelBase.cs">
+      <DependentUpon>WidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\AlertsAndNotificationsWidgetViewModel.cs">
+      <DependentUpon>AlertsAndNotificationsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\BookkeepingWidgetViewModel.cs">
+      <DependentUpon>BookkeepingWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\CalendarScheduleWidgetViewModel.cs">
+      <DependentUpon>CalendarScheduleWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\MembershipStatsWidgetViewModel.cs">
+      <DependentUpon>MembershipStatsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\QuickActionsWidgetViewModel.cs">
+      <DependentUpon>QuickActionsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\ReportingAndAnalyticsWidgetViewModel.cs">
+      <DependentUpon>ReportingAndAnalyticsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\RecentActivityFeedWidgetViewModel.cs">
+      <DependentUpon>RecentActivityFeedWidgetView.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Assets\Resources\Messages.en.resx">
+      <DependentUpon>Messages.resx</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Assets\Resources\Messages.fr-fr.resx">
+      <DependentUpon>Messages.resx</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

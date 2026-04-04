@@ -6,12 +6,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Jamaa.Application.Setup;
 using Jamaa.Application.Users.Services;
+using Jamaa.Desktop.Dashboard;
 using Jamaa.Desktop.Security.Events;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Setup;
 using JetBrains.Annotations;
-using Jamaa.Desktop.Security;
 
 namespace Jamaa.Desktop.Shared;
 
@@ -28,11 +28,11 @@ public partial class ShellViewModel : ObservableObject,
     private readonly Dictionary<string, object?> _viewModelCache = new();
     private const string ApplicationName = "Jamaa Desktop";
 
-    public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService, IRouteResolver routeResolver)
+    public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService, IRouteResolver routeResolver, DashboardViewModel dashboardViewModel)
     {
         _setupService = setupService;
         _routeResolver = routeResolver;
-        _mainMenuViewModel = new MainMenuViewModel(userSessionService);
+        _mainMenu = new MainMenuViewModel(userSessionService);
 
         WeakReferenceMessenger.Default.RegisterAll(this);
 
@@ -50,7 +50,7 @@ public partial class ShellViewModel : ObservableObject,
     }
 
     [ObservableProperty] private string? _applicationTitle = ApplicationName;
-    [ObservableProperty] private ObservableObject _mainMenuViewModel;
+    [ObservableProperty] private ObservableObject _mainMenu;
     [ObservableProperty] private object? _activeContent;
 
     public void Dispose()
@@ -71,7 +71,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(UserAuthenticated message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.Dashboard);
+        ActiveContent = GetViewModelForRoute(Routes.Home);
     }
     
     public void Receive(OrganisationCreated message)
@@ -81,7 +81,7 @@ public partial class ShellViewModel : ObservableObject,
     
     public void Receive(SuperUserCreated message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.Dashboard);
+        ActiveContent = GetViewModelForRoute(Routes.Home);
     }
     
     private object? GetViewModelForRoute(string path )
