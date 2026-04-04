@@ -1,36 +1,34 @@
 <UserControl
+    HorizontalAlignment="Stretch"
+    HorizontalContentAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    VerticalContentAlignment="Stretch"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Shared.MainWindow"
+    x:DataType="shared:MainWindowViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:Jamaa.Desktop.Services.Navigation.Models"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
-    HorizontalAlignment="Stretch"
-    VerticalAlignment="Stretch"
-    HorizontalContentAlignment="Stretch"
-    VerticalContentAlignment="Stretch"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    x:DataType="shared:MainWindowViewModel"
-    mc:Ignorable="d"
-    >
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <UserControl.Resources>
         <converters:JamaaIconSourceConverter x:Key="IconSourceConverter" />
     </UserControl.Resources>
 
     <controls:NavigationView
-        Margin="0"
-        Padding="0"
-        VerticalAlignment="Stretch"
         Header="{Binding}"
+        Margin="0"
         MenuItemsSource="{Binding MenuItems}"
+        Padding="0"
         PaneDisplayMode="Auto"
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-        >
+        VerticalAlignment="Stretch">
         <controls:NavigationView.Content>
             <Border Background="{DynamicResource AppLayerBackground}">
                 <ContentControl Content="{Binding ActiveModule}" />
@@ -42,17 +40,15 @@
                 <controls:NavigationViewItem
                     Content="{Binding Title}"
                     IconSource="{Binding Icon, Converter={StaticResource IconSourceConverter}}"
-                    Tag="{Binding TargetRoute}"
-                    />
+                    Tag="{Binding TargetRoute}" />
             </DataTemplate>
         </controls:NavigationView.MenuItemTemplate>
         <controls:NavigationView.HeaderTemplate>
             <DataTemplate>
                 <shared:DashboardHeader
-                    Title="{Binding ActiveModule.Title}"
                     Classes="module header"
                     DataContext="{Binding ActiveModule}"
-                    />
+                    Title="{Binding ActiveModule.Title}" />
             </DataTemplate>
         </controls:NavigationView.HeaderTemplate>
     </controls:NavigationView>

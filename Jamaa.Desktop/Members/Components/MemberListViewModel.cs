@@ -247,7 +247,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     [ObservableProperty] private object _activeContent;
     [ObservableProperty] private ObservableCollectionExtended<MemberViewModel> _members = [];
     [ObservableProperty]
-    private MemberListDisplayMode _displayMode = MemberListDisplayMode.Card;
+    private MemberListDisplayMode _displayMode = MemberListDisplayMode.List;
 
     private MemberViewModel? _lastSelectedMember;
 

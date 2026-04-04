@@ -17,6 +17,8 @@ public class UserData
     public bool IsActive { get; set; }
     public bool IsSuperUser { get; set; }
 
+    public string? DashboardLayout { get; set; }
+
 
     public static User Map(UserData data)
     {
@@ -30,7 +32,9 @@ public class UserData
             data.MiddleName,
             data.LastName,
             data.IsSuperUser,
-            data.IsActive
+            data.IsActive,
+            data.DashboardLayout,
+            data.Id
         );
     }
 
@@ -48,7 +52,8 @@ public class UserData
             MiddleName = user.MiddleName,
             LastName = user.LastName,
             IsActive = user.Account.IsActive ?? false,
-            IsSuperUser = user.Account.IsSuperUser ?? false
+            IsSuperUser = user.Account.IsSuperUser ?? false,
+            DashboardLayout = user.DashboardLayout
         };
     }
 }

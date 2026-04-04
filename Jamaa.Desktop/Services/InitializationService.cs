@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using Jamaa.Application.Shared.Logging;
+using Jamaa.Application.Users.Services;
 using Jamaa.Data.Configuration;
 using Jamaa.Desktop.Assets.Resources;
 using Jamaa.Desktop.Events;
@@ -18,6 +19,7 @@ using Jamaa.Desktop.Services.Navigation.Models;
 using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Shared;
 using Jamaa.Desktop.Configuration.Extensions;
+using Jamaa.Desktop.Dashboard;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,33 +34,35 @@ public static partial class InitializationService
 {
     private static ServiceProvider? _serviceProvider;
     private static readonly BehaviorSubject<string> StatusSubject = new("Initializing application...");
+    private static readonly BehaviorSubject<double> ProgressSubject = new(0);
     public static IObservable<string> Status => StatusSubject.AsObservable();
+    public static IObservable<double> Progress => ProgressSubject.AsObservable();
 
     public static async Task<Shell> InitializeAsync(IClassicDesktopStyleApplicationLifetime lifeTime)
     {
-        await UpdateStatus("Setting up logging...");
+        await UpdateStatus("Setting up logging...", 5);
         SetupLogging();
 
-        await UpdateStatus("Building configuration...");
+        await UpdateStatus("Building configuration...", 15);
         var configuration = BuildConfiguration();
 
-        await UpdateStatus("Creating service provider...");
+        await UpdateStatus("Creating service provider...", 30);
         _serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
-        await UpdateStatus("Registering routes...");
+        await UpdateStatus("Registering routes...", 45);
         var routes = _serviceProvider.GetRequiredService<IRouteRegistry>();
         RegisterRoutes(routes);
 
-        await UpdateStatus("Starting background services...");
+        await UpdateStatus("Starting background services...", 60);
         await StartBackgroundServicesAsync(_serviceProvider);
 
         var logger = _serviceProvider.GetRequiredService<ILogger<Program>>();
         try
         {
-            await UpdateStatus("Updating database...");
+            await UpdateStatus("Updating database...", 75);
             UpdateDatabase(logger, _serviceProvider);
             
-            await UpdateStatus("Setting up diagnostics...");
+            await UpdateStatus("Setting up diagnostics...", 90);
             SetupDiagnostics(_serviceProvider);
         }
         catch (Exception)
@@ -68,13 +72,24 @@ public static partial class InitializationService
 
         Messages.Culture = CultureInfo.CurrentUICulture;
 
-        await UpdateStatus("Finalizing initialization...");
+        await UpdateStatus("Finalizing initialization...", 100);
         return CreateAndConfigureMainWindow(_serviceProvider);
     }
 
     public static async Task ShutdownAsync()
     {
         if (_serviceProvider == null) return;
+
+        // Ensure dashboard layout is saved before shutdown
+        var userSessionService = _serviceProvider.GetService<IUserSessionService>();
+        if (userSessionService?.CurrentUserSession?.IsAuthenticated == true)
+        {
+            var dashboard = _serviceProvider.GetService<DashboardViewModel>();
+            if (dashboard != null)
+            {
+                await dashboard.SaveLayout();
+            }
+        }
 
         var akkaService = _serviceProvider.GetService<IHostedService>();
         if (akkaService != null)
@@ -89,9 +104,10 @@ public static partial class InitializationService
         }
     }
 
-    private static async Task UpdateStatus(string status)
+    private static async Task UpdateStatus(string status, double progress)
     {
         StatusSubject.OnNext(status);
+        ProgressSubject.OnNext(progress);
         await Task.Yield();
     }
 
@@ -139,13 +155,14 @@ public static partial class InitializationService
 
     private static void RegisterRoutes(IRouteRegistry routes)
     {
-        routes.Register(new RouteMap(Path: Routes.Home, ViewModel: typeof(ShellViewModel), Nested:
+        routes.Register(new RouteMap(Path: Routes.Shell, ViewModel: typeof(ShellViewModel), Nested:
         [
             new RouteMap(Path: Routes.CreateOrganisation, ViewModel: typeof(Setup.CreateOrganisationViewModel)),
             new RouteMap(Path: Routes.CreateSuperUser, ViewModel: typeof(Setup.CreateSuperUserViewModel)),
             new RouteMap(Path: Routes.Login, ViewModel: typeof(Security.LoginScreenViewModel)),
-            new RouteMap(Path: Routes.Dashboard, ViewModel: typeof(Shared.MainWindowViewModel), Nested:
+            new RouteMap(Path: Routes.Home, ViewModel: typeof(MainWindowViewModel), Nested:
             [
+                new RouteMap(Path: Routes.Dashboard, ViewModel: typeof(DashboardViewModel), IsDefault: true),
                 new RouteMap(Path: Routes.MembersOverview, ViewModel: typeof(Members.Pages.MembersOverviewViewModel), Nested:
                     [
                         new RouteMap(Path: Routes.MembersList, ViewModel: typeof(Members.Components.MemberListViewModel)),
