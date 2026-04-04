@@ -210,15 +210,31 @@ public partial class DashboardViewModel : ObservableObject,
                             widget.RemoveCommand = new RelayCommand<WidgetViewModelBase>(RemoveWidget);
 
                             // Find the corresponding widget to replace
-                            var existingWidget = ActiveWidgets.FirstOrDefault(w => 
+                            var existingWidgetAtPosition = ActiveWidgets.FirstOrDefault(w => 
                                 w.Row == widget.Row && 
                                 w.Column == widget.Column);
 
-                            if (existingWidget != null)
+                            // Find if this widget type already exists in another position from the default grid
+                            var existingSameTypeWidget = ActiveWidgets.FirstOrDefault(w => 
+                                w.GetType() == widget.GetType() && 
+                                (w.Row != widget.Row || w.Column != widget.Column));
+
+                            if (existingSameTypeWidget != null)
                             {
-                                ActiveWidgets.Remove(existingWidget);
-                                ActiveWidgets.Add(widget);
+                                var boxSize = (existingSameTypeWidget.Column == 1) ? BoxSize.Wide : BoxSize.Small;
+                                var emptyCell = new EmptyCellViewModel(existingSameTypeWidget.Row, existingSameTypeWidget.Column, boxSize)
+                                {
+                                    ParentViewModel = this
+                                };
+                                ActiveWidgets.Remove(existingSameTypeWidget);
+                                ActiveWidgets.Add(emptyCell);
                             }
+
+                            if (existingWidgetAtPosition != null)
+                            {
+                                ActiveWidgets.Remove(existingWidgetAtPosition);
+                            }
+                            ActiveWidgets.Add(widget);
                         }
                         UpdateAvailableWidgets();
                         return;
@@ -242,6 +258,7 @@ public partial class DashboardViewModel : ObservableObject,
                 var boxSize = (c == 1) ? BoxSize.Wide : BoxSize.Small;
                 WidgetViewModelBase widget = (r, c) switch
                 {
+                    (0, 0) => new MembershipStatsWidgetViewModel(),
                     (1, 0) => new RecentActivityFeedWidgetViewModel(),
                     (0, 1) => new BookkeepingWidgetViewModel(),
                     (1, 1) => new CalendarScheduleWidgetViewModel(),
@@ -261,6 +278,14 @@ public partial class DashboardViewModel : ObservableObject,
                 ActiveWidgets.Add(widget);
             }
         }
+    }
+
+    [RelayCommand]
+    private async Task ResetLayout()
+    {
+        LoadDefaultGrid();
+        UpdateAvailableWidgets();
+        await SaveLayout();
     }
 
     public Guid Id => Guid.Parse("30081491-B585-464D-AED1-BA3782D0E939");

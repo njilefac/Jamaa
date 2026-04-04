@@ -1,13 +1,14 @@
 using CommunityToolkit.Mvvm.Input;
+using System.Text.Json.Serialization;
 using System.Windows.Input;
 
 namespace Jamaa.Desktop.Dashboard;
 
 public partial class QuickActionsWidgetViewModel : WidgetViewModelBase
 {
-    public ICommand RegisterMemberCommand { get; }
-    public ICommand ReceiveMoneyCommand { get; }
-    public ICommand SpendMoneyCommand { get; }
+    [JsonIgnore] public ICommand RegisterMemberCommand { get; }
+    [JsonIgnore] public ICommand ReceiveMoneyCommand { get; }
+    [JsonIgnore] public ICommand SpendMoneyCommand { get; }
 
     public QuickActionsWidgetViewModel()
     {

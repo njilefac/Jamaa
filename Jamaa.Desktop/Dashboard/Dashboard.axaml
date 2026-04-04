@@ -3,14 +3,26 @@
     d:DesignWidth="800"
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Dashboard.Dashboard"
+    x:DataType="dashboard:DashboardViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid>
-        <ItemsControl Classes="dashboard grid" ItemsSource="{Binding ActiveWidgets}">
+    <Grid RowDefinitions="Auto, *">
+        <StackPanel
+            Grid.Row="0"
+            HorizontalAlignment="Left"
+            Margin="8"
+            Orientation="Horizontal"
+            Width="{Binding $parent[UserControl].Bounds.Width, Converter={StaticResource HalfWidthConverter}}">
+            <Button Command="{Binding ResetLayoutCommand}" Content="Reset Layout" />
+        </StackPanel>
+
+        <ItemsControl
+            Classes="dashboard grid"
+            Grid.Row="1"
+            ItemsSource="{Binding ActiveWidgets}">
 
             <ItemsControl.Styles>
                 <Style Selector="ItemsControl &gt; ContentPresenter">

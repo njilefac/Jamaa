@@ -28,6 +28,7 @@
             <converters:ByteArrayToBitmapConverter x:Key="ByteArrayToBitmapConverter" />
             <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
             <converters:IncrementConverter x:Key="IncrementConverter" />
+            <converters:HalfWidthConverter x:Key="HalfWidthConverter" />
         </ResourceDictionary>
     </Application.Resources>
 

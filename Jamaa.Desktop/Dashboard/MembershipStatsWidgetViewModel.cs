@@ -1,13 +1,13 @@
-using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Jamaa.Desktop.Dashboard;
 
 public partial class MembershipStatsWidgetViewModel : WidgetViewModelBase
 {
-    [ObservableProperty] private int _totalMembers;
-    [ObservableProperty] private int _newMembersThisMonth;
-    [ObservableProperty] private int _activeMembers;
+    [property: JsonIgnore] [ObservableProperty] private int _totalMembers;
+    [property: JsonIgnore] [ObservableProperty] private int _newMembersThisMonth;
+    [property: JsonIgnore] [ObservableProperty] private int _activeMembers;
 
     public MembershipStatsWidgetViewModel()
     {

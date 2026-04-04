@@ -20,19 +20,19 @@ namespace Jamaa.Desktop.Dashboard;
     [JsonDerivedType(typeof(MembershipStatsWidgetViewModel), "membershipstats")]
     public abstract partial class WidgetViewModelBase : ObservableObject
     {
-        public string Id { get; init; } = Guid.NewGuid().ToString();
-
-        [ObservableProperty] private string _title = string.Empty;
+        [JsonIgnore] public string Id { get; init; } = Guid.NewGuid().ToString();
+        
+        [property: JsonIgnore] [ObservableProperty] private string _title = string.Empty;
 
         // Grid Coordinates
         [ObservableProperty] private int _row;
         [ObservableProperty] private int _column;
 
         // Bento Box Configuration
-        [ObservableProperty] private BoxSize _allowedBoxSize = BoxSize.Small;
-        [ObservableProperty] private bool _isRemovable = true;
-        [ObservableProperty] private bool _isDraggingOver;
-        [ObservableProperty] private bool _isValidDrop;
+        [property: JsonIgnore] [ObservableProperty] private BoxSize _allowedBoxSize = BoxSize.Small;
+        [property: JsonIgnore] [ObservableProperty] private bool _isRemovable = true;
+        [property: JsonIgnore] [ObservableProperty] private bool _isDraggingOver;
+        [property: JsonIgnore] [ObservableProperty] private bool _isValidDrop;
 
         // Ignore these during JSON serialization to prevent circular references
         [JsonIgnore] public DashboardViewModel? ParentViewModel { get; set; }
