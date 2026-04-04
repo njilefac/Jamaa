@@ -241,6 +241,27 @@
     <Compile Update="Dashboard\WidgetViewModelBase.cs">
       <DependentUpon>WidgetView.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Dashboard\AlertsAndNotificationsWidgetViewModel.cs">
+      <DependentUpon>AlertsAndNotificationsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\BookkeepingWidgetViewModel.cs">
+      <DependentUpon>BookkeepingWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\CalendarScheduleWidgetViewModel.cs">
+      <DependentUpon>CalendarScheduleWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\MembershipStatsWidgetViewModel.cs">
+      <DependentUpon>MembershipStatsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\QuickActionsWidgetViewModel.cs">
+      <DependentUpon>QuickActionsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\ReportingAndAnalyticsWidgetViewModel.cs">
+      <DependentUpon>ReportingAndAnalyticsWidgetView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Dashboard\RecentActivityFeedWidgetViewModel.cs">
+      <DependentUpon>RecentActivityFeedWidgetView.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   
   <ItemGroup>

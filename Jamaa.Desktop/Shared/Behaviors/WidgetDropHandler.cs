@@ -26,11 +26,12 @@ public class WidgetDropHandler : IDropHandler
         e.DragEffects = isValid ? DragDropEffects.Move : DragDropEffects.None;
         e.Handled = true;
 
-        if (targetContext is WidgetViewModelBase target)
+        if (targetContext is not WidgetViewModelBase target)
         {
-            target.IsDraggingOver = true;
-            target.IsValidDrop = isValid;
+            return;
         }
+        target.IsDraggingOver = true;
+        target.IsValidDrop = isValid;
     }
 
     public void Drop(object? sender, DragEventArgs e, object? sourceContext, object? targetContext)
