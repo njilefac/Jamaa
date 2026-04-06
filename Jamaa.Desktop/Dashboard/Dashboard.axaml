@@ -33,7 +33,7 @@
 
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Grid ColumnDefinitions="*,2*,*" RowDefinitions="*,*" />
+                    <Grid ColumnDefinitions="*,3*,*" RowDefinitions="*,*" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
 
