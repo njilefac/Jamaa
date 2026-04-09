@@ -262,6 +262,12 @@
     <Compile Update="Dashboard\RecentActivityFeedWidgetViewModel.cs">
       <DependentUpon>RecentActivityFeedWidgetView.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Accounting\AccountingDashboardViewModel.cs">
+      <DependentUpon>AccountingDashboard.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\AccountingDashboard.axaml.cs">
+      <DependentUpon>AccountingDashboard.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   
   <ItemGroup>

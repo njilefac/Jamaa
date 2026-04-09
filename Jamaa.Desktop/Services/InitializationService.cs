@@ -11,9 +11,9 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Jamaa.Application.Shared.Logging;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Configuration;
+using Jamaa.Desktop.Accounting;
 using Jamaa.Desktop.Assets.Resources;
 using Jamaa.Desktop.Events;
-using Jamaa.Desktop.Finances;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Models;
 using Jamaa.Desktop.Services.Navigation.Values;
@@ -170,7 +170,7 @@ public static partial class InitializationService
                     ]
                 ),
                 new RouteMap(Path: Routes.EventsOverview, ViewModel: typeof(EventsOverviewPageViewModel)),
-                new RouteMap(Path: Routes.FinancesOverview, ViewModel: typeof(FinanceOverviewPageViewModel)),
+                new RouteMap(Path: Routes.AccountingOverview, ViewModel: typeof(AccountingDashboardViewModel)),
             ]),
         ]));
     }

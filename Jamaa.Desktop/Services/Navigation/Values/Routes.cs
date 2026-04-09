@@ -12,7 +12,11 @@ public static class Routes
     public const string CreateSuperUser = "/setup/create-super-user";
     public const string Login = "/login";
     public const string EventsOverview = "/events";
-    public const string FinancesOverview = "/finances";
+    public const string AccountingOverview = "/accounting";
+    public const string AccountingDashboard = "/accounting/dashboard";
+    public const string ChartOfAccounts = "/accounting/chart-of-accounts";
+    public const string AccountingTransactions = "/accounting/transactions";
+    public const string AccountingReports = "/accounting/reports";
     public const string Settings = "/settings";
     public const string OrganisationContactDetails = "/settings/organisation-contact-details";
 }

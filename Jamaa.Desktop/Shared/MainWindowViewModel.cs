@@ -31,10 +31,8 @@ public partial class MainWindowViewModel : ObservableValidator,
 
     partial void OnSelectedItemChanged(NavigationItemModel? value)
     {
-        if (value == null)
+        if (value == null || (value.SubItems != null && value.SubItems.Any()))
         {
-            
-            
             return;
         }
         WeakReferenceMessenger.Default.Send(new ModuleSelected(value.TargetRoute));
