@@ -170,7 +170,7 @@ public static partial class InitializationService
                     ]
                 ),
                 new RouteMap(Path: Routes.EventsOverview, ViewModel: typeof(EventsOverviewPageViewModel)),
-                new RouteMap(Path: Routes.AccountingOverview, ViewModel: typeof(AccountingDashboardViewModel)),
+                new RouteMap(Path: Routes.AccountingDashboard, ViewModel: typeof(AccountingDashboardViewModel)),
             ]),
         ]));
     }

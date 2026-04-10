@@ -20,7 +20,7 @@ public class NavigationItemsProvider : INavigationItemsProvider
                 new NavigationItemModel(Routes.AccountingTransactions, "Journal Entries", "Icons.Accounting"),
                 new NavigationItemModel(Routes.ChartOfAccounts, "Chart of Accounts", "Icons.Accounting"),
                 new NavigationItemModel(Routes.AccountingReports, "Reports", "Icons.Analytics"),
-            ])
+            ]),
         ];
     }
 }
