@@ -1,0 +1,91 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Accounting.ChartOfAccountsPage"
+    x:DataType="vm:ChartOfAccountsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:vm="clr-namespace:Jamaa.Desktop.Accounting"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Margin="20" Spacing="20">
+        <TextBlock Classes="h1" Text="{Binding PageTitle}" />
+
+        <Grid ColumnDefinitions="*, 300">
+            <!--  Left Column: Accounts Tree  -->
+            <StackPanel
+                Grid.Column="0"
+                Margin="0,0,20,0"
+                Spacing="10">
+                <TextBlock Classes="h2" Text="Accounts" />
+                <Border
+                    BorderBrush="{DynamicResource SemiGrey1}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                    <TreeView Height="400" ItemsSource="{Binding Accounts}">
+                        <TreeView.ItemTemplate>
+                            <TreeDataTemplate ItemsSource="{Binding SubAccounts}">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock
+                                        FontWeight="Bold"
+                                        Text="{Binding Code}"
+                                        Width="50" />
+                                    <TextBlock Text="{Binding Name}" />
+                                    <TextBlock
+                                        Foreground="{DynamicResource SemiGrey5}"
+                                        Margin="20,0,0,0"
+                                        Text="{Binding Type}" />
+                                </StackPanel>
+                            </TreeDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Border>
+            </StackPanel>
+
+            <!--  Right Column: Quick Add Form  -->
+            <StackPanel Grid.Column="1" Spacing="20">
+                <Border Classes="Card" Padding="15">
+                    <StackPanel Spacing="15">
+                        <TextBlock Classes="h2" Text="Quick Add" />
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Classes="form-label" Text="Account Type" />
+                            <ComboBox
+                                HorizontalAlignment="Stretch"
+                                ItemsSource="{Binding AccountTypes}"
+                                SelectedItem="{Binding SelectedAccountType}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Classes="form-label" Text="Parent Account" />
+                            <ComboBox
+                                HorizontalAlignment="Stretch"
+                                ItemsSource="{Binding Accounts}"
+                                SelectedItem="{Binding SelectedParentAccount}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Classes="form-label" Text="Account Code" />
+                            <TextBox Text="{Binding AccountCode}" Watermark="Enter code..." />
+                        </StackPanel>
+
+                        <Button
+                            Classes="Primary"
+                            Command="{Binding AddAccountCommand}"
+                            Content="Add Account"
+                            HorizontalAlignment="Right" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>

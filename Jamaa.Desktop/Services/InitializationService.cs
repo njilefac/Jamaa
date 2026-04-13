@@ -50,27 +50,18 @@ public static partial class InitializationService
         _serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
         await UpdateStatus("Registering routes...", 45);
-        var routes = _serviceProvider.GetRequiredService<IRouteRegistry>();
-        RegisterRoutes(routes);
+        RegisterRoutes(_serviceProvider.GetRequiredService<IRouteRegistry>());
 
         await UpdateStatus("Starting background services...", 60);
         await StartBackgroundServicesAsync(_serviceProvider);
 
-        var logger = _serviceProvider.GetRequiredService<ILogger<Program>>();
-        try
-        {
-            await UpdateStatus("Updating database...", 75);
-            UpdateDatabase(logger, _serviceProvider);
-            
-            await UpdateStatus("Setting up diagnostics...", 90);
-            SetupDiagnostics(_serviceProvider);
-        }
-        catch (Exception)
-        {
-            LogException(logger);
-        }
+        await UpdateStatus("Updating database...", 75);
+        UpdateDatabaseSafely(_serviceProvider);
 
-        Messages.Culture = CultureInfo.CurrentUICulture;
+        await UpdateStatus("Setting up diagnostics...", 90);
+        SetupDiagnostics(_serviceProvider);
+
+        SetApplicationCulture();
 
         await UpdateStatus("Finalizing initialization...", 100);
         return CreateAndConfigureMainWindow(_serviceProvider);
@@ -80,25 +71,51 @@ public static partial class InitializationService
     {
         if (_serviceProvider == null) return;
 
-        // Ensure dashboard layout is saved before shutdown
-        var userSessionService = _serviceProvider.GetService<IUserSessionService>();
-        if (userSessionService?.CurrentUserSession?.IsAuthenticated == true)
-        {
-            var dashboard = _serviceProvider.GetService<DashboardViewModel>();
-            if (dashboard != null)
-            {
-                await dashboard.SaveLayout();
-            }
-        }
+        await SaveDashboardLayoutAsync(_serviceProvider);
+        await StopBackgroundServicesAsync(_serviceProvider);
+        DisposeServiceProvider(_serviceProvider);
+    }
 
-        var akkaService = _serviceProvider.GetService<IHostedService>();
+    private static void UpdateDatabaseSafely(IServiceProvider serviceProvider)
+    {
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        try
+        {
+            UpdateDatabase(serviceProvider, logger);
+        }
+        catch (Exception)
+        {
+            LogException(logger);
+        }
+    }
+
+    private static void SetApplicationCulture() => Messages.Culture = CultureInfo.CurrentUICulture;
+
+    private static async Task SaveDashboardLayoutAsync(IServiceProvider serviceProvider)
+    {
+        var userSessionService = serviceProvider.GetService<IUserSessionService>();
+        if (userSessionService?.CurrentUserSession?.IsAuthenticated != true) return;
+
+        var dashboard = serviceProvider.GetService<DashboardViewModel>();
+        if (dashboard != null)
+        {
+            await dashboard.SaveLayout();
+        }
+    }
+
+    private static async Task StopBackgroundServicesAsync(IServiceProvider serviceProvider)
+    {
+        var akkaService = serviceProvider.GetService<IHostedService>();
         if (akkaService != null)
         {
             // Stop background services but avoid UI thread dependencies during disposal if not on UI thread
             await akkaService.StopAsync(CancellationToken.None).ConfigureAwait(false);
         }
+    }
 
-        if (_serviceProvider is IDisposable disposable)
+    private static void DisposeServiceProvider(IServiceProvider? serviceProvider)
+    {
+        if (serviceProvider is IDisposable disposable)
         {
             disposable.Dispose();
         }
@@ -171,6 +188,7 @@ public static partial class InitializationService
                 ),
                 new RouteMap(Path: Routes.EventsOverview, ViewModel: typeof(EventsOverviewPageViewModel)),
                 new RouteMap(Path: Routes.AccountingDashboard, ViewModel: typeof(AccountingDashboardViewModel)),
+                new RouteMap(Path: Routes.ChartOfAccounts, ViewModel: typeof(ChartOfAccountsViewModel)),
             ]),
         ]));
     }
@@ -184,22 +202,30 @@ public static partial class InitializationService
         return mainWindow;
     }
 
-    private static void UpdateDatabase(ILogger<Program> logger, IServiceProvider serviceProvider)
+    private static void UpdateDatabase(IServiceProvider serviceProvider, ILogger<Program> logger)
     {
         var dataContext = serviceProvider.GetService<JamaaDbContext>();
         if (dataContext == null) return;
 
-        var pendingMigrations = dataContext.Database.GetPendingMigrations().ToArray();
+        var pendingMigrations = GetPendingMigrations(dataContext);
         if (pendingMigrations.Length != 0)
         {
-            LogApplyingPendingMigrations(logger, string.Join(", ", pendingMigrations));
-            dataContext.Database.Migrate();
-            LogTheDatabaseWasUpgraded(logger);
+            ApplyMigrations(dataContext, logger, pendingMigrations);
         }
         else
         {
             LogDatabaseIsUpToDate(logger);
         }
+    }
+
+    private static string[] GetPendingMigrations(JamaaDbContext dataContext) => 
+        dataContext.Database.GetPendingMigrations().ToArray();
+
+    private static void ApplyMigrations(JamaaDbContext dataContext, ILogger<Program> logger, string[] pendingMigrations)
+    {
+        LogApplyingPendingMigrations(logger, string.Join(", ", pendingMigrations));
+        dataContext.Database.Migrate();
+        LogTheDatabaseWasUpgraded(logger);
     }
 
     // Since LoggerMessage is partial, we'd need to put this in a partial class 

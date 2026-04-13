@@ -73,6 +73,9 @@
         <DataTemplate DataType="{x:Type accounting:AccountingDashboardViewModel}">
             <accounting:AccountingDashboard />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:ChartOfAccountsViewModel}">
+            <accounting:ChartOfAccountsPage />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type components:MemberListViewModel}">
             <components:MembersList />
         </DataTemplate>
