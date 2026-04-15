@@ -23,7 +23,8 @@ public static class ServiceCollectionExtensions
 {
     extension(ServiceCollection services)
     {
-        public ServiceCollection ConfigureAkka(IClassicDesktopStyleApplicationLifetime applicationLifetime, IConfigurationRoot configuration)
+        public ServiceCollection ConfigureAkka(IClassicDesktopStyleApplicationLifetime applicationLifetime,
+            IConfigurationRoot configuration)
         {
             services.AddSingleton<IHostApplicationLifetime>(new AvaloniaApplicationLifeTime(applicationLifetime));
 
@@ -33,7 +34,8 @@ public static class ServiceCollectionExtensions
                 {
                     var commandProcessor = system.ActorOf(resolver.Props<CommandProcessor>(), "command-processor");
 
-                    var organisationEventsProjector = system.ActorOf(resolver.Props<OrganisationProjection>(), "organisation-events-projector");
+                    var organisationEventsProjector = system.ActorOf(resolver.Props<OrganisationProjection>(),
+                        "organisation-events-projector");
 
 
                     registry.Register<CommandProcessor>(commandProcessor);
@@ -45,7 +47,7 @@ public static class ServiceCollectionExtensions
                         {
                             applicationLifetime.Shutdown();
                         }
-                        catch(TaskCanceledException)
+                        catch (TaskCanceledException)
                         {
                             // Ignore, the application is already shutting down
                         }
@@ -63,14 +65,12 @@ public static class ServiceCollectionExtensions
                     b.AddLogger<SerilogLogger>();
                 });
 
-                var connectionString = $"Data Source={Path.Combine(Directory.GetCurrentDirectory(),
-                    configuration.GetSection("Database:DataFile").Value ?? throw new InvalidOperationException())};";
+                var connectionString = $"Data Source={ResolveDataPath(configuration) ?? throw new InvalidOperationException()};";
 
-            
-            
+
                 builder.WithSqlPersistence(connectionString,
                     ProviderName.SQLiteMS,
-                    journalBuilder:b =>
+                    journalBuilder: b =>
                     {
                         b.AddWriteEventAdapter<LibotaEventTagger>("organisation-event-tagger", [typeof(ILibotaEvent)]);
                     },
@@ -85,7 +85,11 @@ public static class ServiceCollectionExtensions
         {
             services.AddLogging();
 
-            services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
+            services.Configure<DatabaseOptions>(options =>
+            {
+                configuration.GetSection("Database").Bind(options);
+                options.DataFile = ResolveDataPath(configuration);
+            });
 
             services
                 .RegisterApplicationServices()
@@ -101,5 +105,23 @@ public static class ServiceCollectionExtensions
 
             return services;
         }
+    }
+
+    private static string ResolveDataPath(IConfigurationRoot configurationRoot)
+    {
+        var baseAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        var jamaaDataFolder = Path.Combine(baseAppData, "Jamaa");
+
+        if (!Directory.Exists(jamaaDataFolder))
+        {
+            Directory.CreateDirectory(jamaaDataFolder);
+        }
+
+        var dbFileName = configurationRoot.GetSection("Database:DataFile").Value
+                         ?? throw new InvalidOperationException("Database filename missing in config.");
+
+        var dbPath = Path.Combine(jamaaDataFolder, dbFileName);
+        return dbPath;
     }
 }

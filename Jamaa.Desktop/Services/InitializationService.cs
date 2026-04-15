@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -11,9 +10,9 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Jamaa.Application.Shared.Logging;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Configuration;
+using Jamaa.Desktop.Accounting;
 using Jamaa.Desktop.Assets.Resources;
 using Jamaa.Desktop.Events;
-using Jamaa.Desktop.Finances;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Models;
 using Jamaa.Desktop.Services.Navigation.Values;
@@ -50,27 +49,18 @@ public static partial class InitializationService
         _serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
         await UpdateStatus("Registering routes...", 45);
-        var routes = _serviceProvider.GetRequiredService<IRouteRegistry>();
-        RegisterRoutes(routes);
+        RegisterRoutes(_serviceProvider.GetRequiredService<IRouteRegistry>());
 
-        await UpdateStatus("Starting background services...", 60);
+        await UpdateStatus("Updating database...", 60);
+        UpdateDatabaseSafely(_serviceProvider);
+
+        await UpdateStatus("Starting background services...", 75);
         await StartBackgroundServicesAsync(_serviceProvider);
 
-        var logger = _serviceProvider.GetRequiredService<ILogger<Program>>();
-        try
-        {
-            await UpdateStatus("Updating database...", 75);
-            UpdateDatabase(logger, _serviceProvider);
-            
-            await UpdateStatus("Setting up diagnostics...", 90);
-            SetupDiagnostics(_serviceProvider);
-        }
-        catch (Exception)
-        {
-            LogException(logger);
-        }
+        await UpdateStatus("Setting up diagnostics...", 90);
+        SetupDiagnostics(_serviceProvider);
 
-        Messages.Culture = CultureInfo.CurrentUICulture;
+        SetApplicationCulture();
 
         await UpdateStatus("Finalizing initialization...", 100);
         return CreateAndConfigureMainWindow(_serviceProvider);
@@ -80,25 +70,51 @@ public static partial class InitializationService
     {
         if (_serviceProvider == null) return;
 
-        // Ensure dashboard layout is saved before shutdown
-        var userSessionService = _serviceProvider.GetService<IUserSessionService>();
-        if (userSessionService?.CurrentUserSession?.IsAuthenticated == true)
-        {
-            var dashboard = _serviceProvider.GetService<DashboardViewModel>();
-            if (dashboard != null)
-            {
-                await dashboard.SaveLayout();
-            }
-        }
+        await SaveDashboardLayoutAsync(_serviceProvider);
+        await StopBackgroundServicesAsync(_serviceProvider);
+        DisposeServiceProvider(_serviceProvider);
+    }
 
-        var akkaService = _serviceProvider.GetService<IHostedService>();
+    private static void UpdateDatabaseSafely(IServiceProvider serviceProvider)
+    {
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        try
+        {
+            UpdateDatabase(serviceProvider, logger);
+        }
+        catch (Exception)
+        {
+            LogException(logger);
+        }
+    }
+
+    private static void SetApplicationCulture() => Messages.Culture = CultureInfo.CurrentUICulture;
+
+    private static async Task SaveDashboardLayoutAsync(IServiceProvider serviceProvider)
+    {
+        var userSessionService = serviceProvider.GetService<IUserSessionService>();
+        if (userSessionService?.CurrentUserSession?.IsAuthenticated != true) return;
+
+        var dashboard = serviceProvider.GetService<DashboardViewModel>();
+        if (dashboard != null)
+        {
+            await dashboard.SaveLayout();
+        }
+    }
+
+    private static async Task StopBackgroundServicesAsync(IServiceProvider serviceProvider)
+    {
+        var akkaService = serviceProvider.GetService<IHostedService>();
         if (akkaService != null)
         {
             // Stop background services but avoid UI thread dependencies during disposal if not on UI thread
             await akkaService.StopAsync(CancellationToken.None).ConfigureAwait(false);
         }
+    }
 
-        if (_serviceProvider is IDisposable disposable)
+    private static void DisposeServiceProvider(IServiceProvider? serviceProvider)
+    {
+        if (serviceProvider is IDisposable disposable)
         {
             disposable.Dispose();
         }
@@ -122,11 +138,15 @@ public static partial class InitializationService
 
     private static IConfigurationRoot BuildConfiguration()
     {
-        var environment = Environment.GetEnvironmentVariable("Environment") ?? "Development";
+        var baseDir = AppContext.BaseDirectory;
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") 
+            ?? Environment.GetEnvironmentVariable("Environment") 
+            ?? "Production";
 
         return new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile($"appSettings.{environment}.json", false, true)
+            .SetBasePath(baseDir)
+            .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"appSettings.{environment}.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .Build();
     }
@@ -170,7 +190,11 @@ public static partial class InitializationService
                     ]
                 ),
                 new RouteMap(Path: Routes.EventsOverview, ViewModel: typeof(EventsOverviewPageViewModel)),
-                new RouteMap(Path: Routes.FinancesOverview, ViewModel: typeof(FinanceOverviewPageViewModel)),
+                new RouteMap(Path: Routes.AccountingDashboard, ViewModel: typeof(AccountingDashboardViewModel)),
+                new RouteMap(Path: Routes.AccountingTransactions, ViewModel: typeof(JournalEntriesViewModel)),
+                new RouteMap(Path: Routes.BankReconciliation, ViewModel: typeof(BankReconciliationViewModel)),
+                new RouteMap(Path: Routes.ChartOfAccounts, ViewModel: typeof(ChartOfAccountsViewModel)),
+                new RouteMap(Path: Routes.AccountingReports, ViewModel: typeof(AccountingReportsViewModel)),
             ]),
         ]));
     }
@@ -184,22 +208,30 @@ public static partial class InitializationService
         return mainWindow;
     }
 
-    private static void UpdateDatabase(ILogger<Program> logger, IServiceProvider serviceProvider)
+    private static void UpdateDatabase(IServiceProvider serviceProvider, ILogger<Program> logger)
     {
         var dataContext = serviceProvider.GetService<JamaaDbContext>();
         if (dataContext == null) return;
 
-        var pendingMigrations = dataContext.Database.GetPendingMigrations().ToArray();
+        var pendingMigrations = GetPendingMigrations(dataContext);
         if (pendingMigrations.Length != 0)
         {
-            LogApplyingPendingMigrations(logger, string.Join(", ", pendingMigrations));
-            dataContext.Database.Migrate();
-            LogTheDatabaseWasUpgraded(logger);
+            ApplyMigrations(dataContext, logger, pendingMigrations);
         }
         else
         {
             LogDatabaseIsUpToDate(logger);
         }
+    }
+
+    private static string[] GetPendingMigrations(JamaaDbContext dataContext) => 
+        dataContext.Database.GetPendingMigrations().ToArray();
+
+    private static void ApplyMigrations(JamaaDbContext dataContext, ILogger<Program> logger, string[] pendingMigrations)
+    {
+        LogApplyingPendingMigrations(logger, string.Join(", ", pendingMigrations));
+        dataContext.Database.Migrate();
+        LogTheDatabaseWasUpgraded(logger);
     }
 
     // Since LoggerMessage is partial, we'd need to put this in a partial class 
