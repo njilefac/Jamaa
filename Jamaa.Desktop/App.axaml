@@ -76,6 +76,15 @@
         <DataTemplate DataType="{x:Type accounting:ChartOfAccountsViewModel}">
             <accounting:ChartOfAccountsPage />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:JournalEntriesViewModel}">
+            <accounting:JournalEntriesPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:BankReconciliationViewModel}">
+            <accounting:BankReconciliationPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:AccountingReportsViewModel}">
+            <accounting:AccountingReportsPage />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type components:MemberListViewModel}">
             <components:MembersList />
         </DataTemplate>

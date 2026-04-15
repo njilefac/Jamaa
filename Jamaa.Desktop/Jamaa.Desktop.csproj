@@ -271,6 +271,15 @@
     <Compile Update="Accounting\ChartOfAccountsViewModel.cs">
       <DependentUpon>ChartOfAccountsPage.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Accounting\AccountingReportsViewModel.cs">
+      <DependentUpon>AccountingReportsPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\BankReconciliationViewModel.cs">
+      <DependentUpon>BankReconciliationPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\JournalEntriesViewModel.cs">
+      <DependentUpon>JournalEntriesPage.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   
   <ItemGroup>
