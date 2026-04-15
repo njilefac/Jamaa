@@ -1,9 +1,4 @@
-﻿using System;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
-using Jamaa.Desktop.Services;
-using Jamaa.Desktop.Shared;
+﻿using Avalonia;
 
 namespace Jamaa.Desktop;
 

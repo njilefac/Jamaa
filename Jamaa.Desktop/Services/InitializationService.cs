@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -52,11 +51,11 @@ public static partial class InitializationService
         await UpdateStatus("Registering routes...", 45);
         RegisterRoutes(_serviceProvider.GetRequiredService<IRouteRegistry>());
 
-        await UpdateStatus("Starting background services...", 60);
-        await StartBackgroundServicesAsync(_serviceProvider);
-
-        await UpdateStatus("Updating database...", 75);
+        await UpdateStatus("Updating database...", 60);
         UpdateDatabaseSafely(_serviceProvider);
+
+        await UpdateStatus("Starting background services...", 75);
+        await StartBackgroundServicesAsync(_serviceProvider);
 
         await UpdateStatus("Setting up diagnostics...", 90);
         SetupDiagnostics(_serviceProvider);
@@ -139,11 +138,15 @@ public static partial class InitializationService
 
     private static IConfigurationRoot BuildConfiguration()
     {
-        var environment = Environment.GetEnvironmentVariable("Environment") ?? "Development";
+        var baseDir = AppContext.BaseDirectory;
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") 
+            ?? Environment.GetEnvironmentVariable("Environment") 
+            ?? "Production";
 
         return new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile($"appSettings.{environment}.json", false, true)
+            .SetBasePath(baseDir)
+            .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile($"appSettings.{environment}.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .Build();
     }
