@@ -36,7 +36,14 @@ public partial class DashboardViewModel : ObservableObject,
         // Register first so we can receive messages
         WeakReferenceMessenger.Default.RegisterAll(this);
 
-        UpdateAvailableWidgets();
+        if (_userSessionService.CurrentUserSession is { IsAuthenticated: true })
+        {
+            _ = LoadLayout(_userSessionService.CurrentUserSession);
+        }
+        else
+        {
+            ApplyDefaultGrid();
+        }
     }
 
     public void Receive(UserLoggedOut message)
@@ -232,7 +239,7 @@ public partial class DashboardViewModel : ObservableObject,
         try
         {
             var jsonString = await FetchUserDashboardLayout(session!.UserId!.Value);
-            if (string.IsNullOrEmpty(jsonString))
+            if (jsonString == null)
             {
                 ApplyDefaultGrid();
             }
@@ -253,7 +260,11 @@ public partial class DashboardViewModel : ObservableObject,
     private async Task<string?> FetchUserDashboardLayout(Guid userId)
     {
         var user = await _userRepository.GetById(userId);
-        return user?.DashboardLayout;
+        if (user == null)
+        {
+            return null;
+        }
+        return string.IsNullOrWhiteSpace(user.DashboardLayout) ? null : user.DashboardLayout;
     }
 
     private void ApplyLoadedLayout(string jsonString)
