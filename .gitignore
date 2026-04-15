@@ -34,5 +34,8 @@ msbuild.wrn
 .idea/
 
 Libota.Desktop/libota.db
+*.dmg
+*.app
+[Pp]ublish/
 
 Libota.Desktop/Logs/

@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace Jamaa.Desktop.Finances;
+namespace Jamaa.Desktop.Accounting;
 
-public partial class FinanceOverviewPage : UserControl
+public partial class AccountingDashboard : UserControl
 {
-    public FinanceOverviewPage()
+    public AccountingDashboard()
     {
         InitializeComponent();
     }

@@ -12,6 +12,8 @@ using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Setup;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
+using Avalonia.Threading;
 
 namespace Jamaa.Desktop.Shared;
 
@@ -25,21 +27,21 @@ public partial class ShellViewModel : ObservableObject,
 {
     private readonly ISetupService _setupService;
     private readonly IRouteResolver _routeResolver;
+    private readonly ILogger<ShellViewModel> _logger;
     private readonly Dictionary<string, object?> _viewModelCache = new();
     private const string ApplicationName = "Jamaa Desktop";
 
-    public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService, IRouteResolver routeResolver, DashboardViewModel dashboardViewModel)
+    public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService,
+        IRouteResolver routeResolver, DashboardViewModel dashboardViewModel, ILogger<ShellViewModel> logger)
     {
         _setupService = setupService;
         _routeResolver = routeResolver;
+        _logger = logger;
         _mainMenu = new MainMenuViewModel(userSessionService);
 
         WeakReferenceMessenger.Default.RegisterAll(this);
 
-        DetermineInitialRoute().ContinueWith(x =>
-        {
-            ActiveContent = GetViewModelForRoute(x.Result);
-        });
+        _ = InitializeAsync();
 
         userSessionService.UserSessions.Subscribe(x =>
         {
@@ -47,6 +49,19 @@ public partial class ShellViewModel : ObservableObject,
                 ? $"{ApplicationName} -  ({x.Organisation?.Name})"
                 : ApplicationName;
         });
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            var route = await DetermineInitialRoute();
+            Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(route); });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to determine initial route");
+        }
     }
 
     [ObservableProperty] private string? _applicationTitle = ApplicationName;
@@ -61,27 +76,27 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(AuthenticationFailed message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.Login);
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Login); });
     }
 
     public void Receive(UserLoggedOut message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.Login);
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Login); });
     }
 
     public void Receive(UserAuthenticated message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.Home);
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Home); });
     }
-    
+
     public void Receive(OrganisationCreated message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.CreateSuperUser);
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.CreateSuperUser); });
     }
-    
+
     public void Receive(SuperUserCreated message)
     {
-        ActiveContent = GetViewModelForRoute(Routes.Home);
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Home); });
     }
     
     private object? GetViewModelForRoute(string path )

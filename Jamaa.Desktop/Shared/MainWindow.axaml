@@ -40,6 +40,8 @@
                 <controls:NavigationViewItem
                     Content="{Binding Title}"
                     IconSource="{Binding Icon, Converter={StaticResource IconSourceConverter}}"
+                    MenuItemsSource="{Binding SubItems}"
+                    SelectsOnInvoked="{Binding SubItems, Converter={x:Static ObjectConverters.IsNull}}"
                     Tag="{Binding TargetRoute}" />
             </DataTemplate>
         </controls:NavigationView.MenuItemTemplate>
