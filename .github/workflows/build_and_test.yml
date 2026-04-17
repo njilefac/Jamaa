@@ -32,3 +32,51 @@
           name: .NET Test Results
           path: "**/TestResults/*.trx"
           reporter: dotnet-trx
+      - name: Job Summary
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import glob
+          import os
+          import xml.etree.ElementTree as ET
+
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          files = glob.glob("**/TestResults/*.trx", recursive=True)
+
+          lines = [
+              "## .NET Test Summary",
+              "",
+              f"- TRX files found: {len(files)}",
+          ]
+
+          if files:
+              total = passed = failed = skipped = 0
+              for file_path in files:
+                  try:
+                      root = ET.parse(file_path).getroot()
+                  except ET.ParseError:
+                      continue
+
+                  for result in root.findall(".//{*}UnitTestResult"):
+                      total += 1
+                      outcome = (result.attrib.get("outcome") or "").lower()
+                      if outcome == "passed":
+                          passed += 1
+                      elif outcome == "failed":
+                          failed += 1
+                      elif outcome in ("notexecuted", "skipped"):
+                          skipped += 1
+
+              lines.extend([
+                  f"- Total: {total}",
+                  f"- Passed: {passed}",
+                  f"- Failed: {failed}",
+                  f"- Skipped: {skipped}",
+              ])
+          else:
+              lines.append("- No TRX files found. Check test logger output path.")
+
+          with open(summary_path, "a", encoding="utf-8") as f:
+              f.write("\n".join(lines) + "\n")
+          PY
