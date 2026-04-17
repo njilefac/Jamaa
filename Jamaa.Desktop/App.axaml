@@ -85,6 +85,9 @@
         <DataTemplate DataType="{x:Type accounting:AccountingReportsViewModel}">
             <accounting:AccountingReportsPage />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:AccountingConfigurationViewModel}">
+            <accounting:AccountingConfigurationPage />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type components:MemberListViewModel}">
             <components:MembersList />
         </DataTemplate>

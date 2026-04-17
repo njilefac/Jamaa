@@ -21,6 +21,7 @@ public class NavigationItemsProvider : INavigationItemsProvider
                 new NavigationItemModel(Routes.BankReconciliation, "Bank Reconciliation", "Icons.Accounting"),
                 new NavigationItemModel(Routes.ChartOfAccounts, "Chart of Accounts", "Icons.Accounting"),
                 new NavigationItemModel(Routes.AccountingReports, "Reports", "Icons.Analytics"),
+                new NavigationItemModel(Routes.AccountingConfiguration, "Configuration", "Icons.Settings"),
             ]),
         ];
     }

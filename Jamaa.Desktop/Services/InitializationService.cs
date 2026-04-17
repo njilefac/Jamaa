@@ -195,6 +195,7 @@ public static partial class InitializationService
                 new RouteMap(Path: Routes.BankReconciliation, ViewModel: typeof(BankReconciliationViewModel)),
                 new RouteMap(Path: Routes.ChartOfAccounts, ViewModel: typeof(ChartOfAccountsViewModel)),
                 new RouteMap(Path: Routes.AccountingReports, ViewModel: typeof(AccountingReportsViewModel)),
+                new RouteMap(Path: Routes.AccountingConfiguration, ViewModel: typeof(AccountingConfigurationViewModel)),
             ]),
         ]));
     }

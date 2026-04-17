@@ -65,6 +65,7 @@ Avoid hybrid methods.
 
 ## UI Guidelines (Avalonia UI)
 - Maintain strict separation between View (`.axaml`) and ViewModel (`.cs`).
+- Nest the view models under the corresponding view.
 - Use the shared styles in `Jamaa.Desktop/Styles` and themes in `Jamaa.Desktop/Themes`.
 - Icons and resources should be placed in `Jamaa.Desktop/Assets`.
 
