@@ -3,11 +3,12 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Domain.Finances.Values;
+using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Shared;
 
 namespace Jamaa.Desktop.Accounting;
 
-public partial class ChartOfAccountsViewModel : ObservableObject, IApplicationModule
+public partial class ChartOfAccountsViewModel : ObservableObject, IApplicationModule, IRouteableViewModel
 {
     public Guid Id => Guid.Parse("e2d9f6b1-8e4a-4d9c-8f3b-2a3c4d5e6f7a");
     public string Title => "Chart of Accounts";

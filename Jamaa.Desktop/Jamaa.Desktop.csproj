@@ -280,6 +280,40 @@
     <Compile Update="Accounting\JournalEntriesViewModel.cs">
       <DependentUpon>JournalEntriesPage.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Accounting\AccountingConfigurationViewModel.cs">
+      <DependentUpon>AccountingConfigurationPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\AccountingConfigurationCardViewModel.cs">
+      <DependentUpon>AccountingConfigurationPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\FiscalCalendarAndPeriodsPage.axaml.cs">
+      <DependentUpon>FiscalCalendarAndPeriodsPage.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Accounting\FiscalCalendarAndPeriodsViewModel.cs">
+      <DependentUpon>FiscalCalendarAndPeriodsPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\TaxGroupsAndAuthoritiesPage.axaml.cs">
+      <DependentUpon>TaxGroupsAndAuthoritiesPage.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Accounting\TaxGroupsAndAuthoritiesViewModel.cs">
+      <DependentUpon>TaxGroupsAndAuthoritiesPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\AutomationRulesPage.axaml.cs">
+      <DependentUpon>AutomationRulesPage.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Accounting\AutomationRulesViewModel.cs">
+      <DependentUpon>AutomationRulesPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\UserRolesAndApprovalsPage.axaml.cs">
+      <DependentUpon>UserRolesAndApprovalsPage.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Accounting\UserRolesAndApprovalsViewModel.cs">
+      <DependentUpon>UserRolesAndApprovalsPage.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   
   <ItemGroup>

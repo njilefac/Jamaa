@@ -18,6 +18,9 @@ Jamaa is an association management application built with .NET 10, C# 14, and Av
   - camelCase with underscore prefix (`_field`) for private fields, especially when used with `[ObservableProperty]`.
 - **Asynchronous Code**: Prefer `async/await` for all I/O-bound operations.
 - **Single Responsibility Principle**: Each class should have one reason to change. Keep methods focused and concise.
+- always prefer `nameof` over string literals.
+- always prefer `var` when the type is obvious from the right-hand side.
+- avoid inline styles for XAML and use shared styles and themes instead.
 
 ## Every new method/function must be classified as either Integration or Operation (IOSP).
 Integration methods orchestrate only by calling other application methods and must not contain business logic.

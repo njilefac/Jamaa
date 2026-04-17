@@ -1,31 +1,28 @@
 <UserControl
-    x:Class="Jamaa.Desktop.Shared.DashboardHeader"
+    Background="{Binding $parent[shared:ModulePageHeader].Background}"
+    Padding="10"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Shared.ModulePageHeader"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
-    Padding="10"
-    Background="{Binding $parent[shared:DashboardHeader].Background}"
-    mc:Ignorable="d"
-    >
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <TextBlock
-            x:Name="PageTitle"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
             Classes="page title"
+            HorizontalAlignment="Center"
             Text="{Binding Title}"
-            />
+            VerticalAlignment="Center"
+            x:Name="PageTitle" />
 
         <ContentControl
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center"
             Classes="module content"
             Content="{Binding HeaderContent}"
-            >
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center">
             <ContentControl.DataTemplates>
                 <DataTemplate x:DataType="components:MembersSummary">
                     <components:MembersSummaryPane />
