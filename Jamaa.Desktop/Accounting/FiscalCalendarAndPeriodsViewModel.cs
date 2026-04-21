@@ -19,9 +19,11 @@ namespace Jamaa.Desktop.Accounting;
 
 public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IApplicationModule, IRouteableViewModel, IDisposable
 {
-    private static readonly IReadOnlyList<AccountingPeriodItemViewModel> EmptyPeriods = [];
+    private static readonly ReadOnlyObservableCollection<FiscalYearEditorItemViewModel> EmptyFiscalYears =
+        new(new ObservableCollection<FiscalYearEditorItemViewModel>());
+    private static readonly ReadOnlyObservableCollection<AccountingPeriodItemViewModel> EmptyPeriods =
+        new(new ObservableCollection<AccountingPeriodItemViewModel>());
     private readonly SourceList<FiscalYearEditorItemViewModel> _fiscalYearsSource = new();
-    private readonly ReadOnlyObservableCollection<FiscalYearEditorItemViewModel> _fiscalYears;
     private readonly IDisposable _fiscalYearsSubscription;
     private readonly IDisposable _fiscalYearsStreamSubscription;
     private FiscalYearDraftSnapshot? _selectedFiscalYearSnapshot;
@@ -40,8 +42,10 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         _fiscalYearsSubscription = _fiscalYearsSource.Connect()
             .AutoRefresh(static fiscalYear => fiscalYear.StartDate)
             .Sort(SortExpressionComparer<FiscalYearEditorItemViewModel>.Descending(static fiscalYear => fiscalYear.StartDate))
-            .Bind(out _fiscalYears)
+            .Bind(out ReadOnlyObservableCollection<FiscalYearEditorItemViewModel> fiscalYearsBound)
             .Subscribe();
+
+        FiscalYears = fiscalYearsBound;
 
         _fiscalYearsStreamSubscription = _financeManagementFacade
             .GetFiscalYearsStream(_organisationId)
@@ -59,10 +63,6 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
     public Guid Id => Guid.Parse("76a6a087-42cf-4495-8d6f-48ec84f917da");
     public string Title => "Fiscal Calendar & Periods";
     public object? HeaderContent => null;
-
-    public ReadOnlyObservableCollection<FiscalYearEditorItemViewModel> FiscalYears => _fiscalYears;
-
-    public IReadOnlyList<AccountingPeriodItemViewModel> VisiblePeriods => SelectedFiscalYear?.Periods ?? EmptyPeriods;
 
     public bool HasSelectedFiscalYear => SelectedFiscalYear is not null;
 
@@ -131,6 +131,12 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
     }
 
     [ObservableProperty]
+    private ReadOnlyObservableCollection<FiscalYearEditorItemViewModel> _fiscalYears = EmptyFiscalYears;
+
+    [ObservableProperty]
+    private ReadOnlyObservableCollection<AccountingPeriodItemViewModel> _visiblePeriods = EmptyPeriods;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelectedFiscalYear))]
     [NotifyPropertyChangedFor(nameof(SelectedFiscalYearNameDisplay))]
     [NotifyPropertyChangedFor(nameof(SelectedFiscalYearTimelineDisplay))]
@@ -177,8 +183,8 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
     partial void OnSelectedFiscalYearChanged(FiscalYearEditorItemViewModel? value)
     {
         LoadDraftFromSelection(value);
-        SelectedPeriod = value?.Periods.FirstOrDefault();
-        OnPropertyChanged(nameof(VisiblePeriods));
+        VisiblePeriods = value?.Periods ?? EmptyPeriods;
+        SelectedPeriod = VisiblePeriods.FirstOrDefault();
         OnPropertyChanged(nameof(CanToggleFiscalYearLock));
     }
 
@@ -214,10 +220,19 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
             return;
         }
 
-        await _financeManagementFacade.UpdateFiscalYear(_organisationId, SelectedFiscalYear.Id.ToString(), DraftStartDate, DraftEndDate, DraftIsLocked);
-        LoadDraftFromSelection(SelectedFiscalYear);
-        SelectedPeriod = SelectedFiscalYear.Periods.FirstOrDefault();
-        StatusMessage = $"Saved {SelectedFiscalYear.Name}.";
+        // Capture before the await — SelectedFiscalYear can be nulled by re-entrant
+        // UI updates (DynamicData re-sort on StartDate change) during the async gap.
+        var fiscalYear = SelectedFiscalYear;
+        var draftStart = DraftStartDate;
+        var draftEnd = DraftEndDate;
+        var draftLocked = DraftIsLocked;
+
+        await _financeManagementFacade.UpdateFiscalYear(_organisationId, fiscalYear.Id.ToString(), draftStart, draftEnd, draftLocked);
+        ApplyDraftToSelectedFiscalYear(fiscalYear, draftStart, draftEnd, draftLocked);
+        _selectedFiscalYearSnapshot = new FiscalYearDraftSnapshot(fiscalYear.Name, draftStart, draftEnd, draftLocked);
+        SelectedFiscalYear = fiscalYear;
+        SelectedPeriod = fiscalYear.Periods.FirstOrDefault();
+        StatusMessage = $"Saved {fiscalYear.Name}.";
         RaiseSelectionStateChanged();
         // UI will update automatically via the reactive stream subscription
     }
@@ -407,6 +422,16 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         _selectedFiscalYearSnapshot = new FiscalYearDraftSnapshot(fiscalYear.Name, fiscalYear.StartDate, fiscalYear.EndDate, fiscalYear.IsLocked);
     }
 
+    // Operation: applies the current draft values to the selected fiscal year view model (optimistic update).
+    private void ApplyDraftToSelectedFiscalYear(FiscalYearEditorItemViewModel fiscalYear, DateTime startDate, DateTime endDate, bool isLocked)
+    {
+        fiscalYear.StartDate = startDate.Date;
+        fiscalYear.EndDate = endDate.Date;
+        fiscalYear.IsLocked = isLocked;
+        fiscalYear.RefreshName();
+        fiscalYear.ReplacePeriods(GenerateAccountingPeriods(startDate, endDate, isLocked));
+    }
+
     // Operation: computes the next contiguous one-year fiscal span with no gaps.
     private (DateTime StartDate, DateTime EndDate) GetNextAvailableFiscalYearRange()
     {
@@ -503,7 +528,6 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
 
     private void RaiseSelectionStateChanged()
     {
-        OnPropertyChanged(nameof(VisiblePeriods));
         OnPropertyChanged(nameof(HasSelectedFiscalYear));
         OnPropertyChanged(nameof(CanToggleFiscalYearLock));
         OnPropertyChanged(nameof(SelectedFiscalYearNameDisplay));

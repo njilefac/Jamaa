@@ -122,12 +122,13 @@ public static class FiscalYearUpdatePlanner
             return true;
         }
 
-        var adjustedPreviousEndDate = startDate.AddDays(-1);
-        if (adjustedPreviousEndDate < context.Previous.StartDate)
+        if (startDate <= context.Previous.EndDate)
         {
-            error = "Updating this fiscal year would invalidate the previous fiscal year range.";
+            error = "The new start date overlaps with the previous fiscal year.";
             return false;
         }
+
+        var adjustedPreviousEndDate = startDate.AddDays(-1);
 
         if (context.Previous.IsLocked && adjustedPreviousEndDate != context.Previous.EndDate)
         {
@@ -159,12 +160,13 @@ public static class FiscalYearUpdatePlanner
             return true;
         }
 
-        var adjustedNextStartDate = endDate.AddDays(1);
-        if (adjustedNextStartDate > context.Next.EndDate)
+        if (endDate >= context.Next.StartDate)
         {
-            error = "Updating this fiscal year would invalidate the next fiscal year range.";
+            error = "The new end date overlaps with the next fiscal year.";
             return false;
         }
+
+        var adjustedNextStartDate = endDate.AddDays(1);
 
         if (context.Next.IsLocked && adjustedNextStartDate != context.Next.StartDate)
         {

@@ -81,7 +81,51 @@ public class FiscalYearUpdatePlannerTests
         // Assert
         result.ShouldBeFalse();
         plan.ShouldBeNull();
-        error.ShouldBe("Updating this fiscal year would invalidate the previous fiscal year range.");
+        error.ShouldBe("The new start date overlaps with the previous fiscal year.");
+    }
+
+    [Fact]
+    public void ShouldRejectWhenNewEndDateOverlapsNextFiscalYear()
+    {
+        // Arrange
+        var fiscalYears = BuildContiguousYears();
+
+        // Act — try to extend FY2 into FY3's range
+        var result = FiscalYearUpdatePlanner.TryPlan(
+            fiscalYears,
+            "fy-2",
+            new DateTime(2025, 1, 1),
+            new DateTime(2026, 6, 30),
+            false,
+            out var plan,
+            out var error);
+
+        // Assert
+        result.ShouldBeFalse();
+        plan.ShouldBeNull();
+        error.ShouldBe("The new end date overlaps with the next fiscal year.");
+    }
+
+    [Fact]
+    public void ShouldRejectWhenNewStartDateOverlapsPreviousFiscalYear()
+    {
+        // Arrange
+        var fiscalYears = BuildContiguousYears();
+
+        // Act — try to extend FY2 start back into FY1's range
+        var result = FiscalYearUpdatePlanner.TryPlan(
+            fiscalYears,
+            "fy-2",
+            new DateTime(2024, 6, 30),
+            new DateTime(2025, 12, 31),
+            false,
+            out var plan,
+            out var error);
+
+        // Assert
+        result.ShouldBeFalse();
+        plan.ShouldBeNull();
+        error.ShouldBe("The new start date overlaps with the previous fiscal year.");
     }
 
     [Fact]
