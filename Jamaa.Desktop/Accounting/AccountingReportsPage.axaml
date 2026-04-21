@@ -28,7 +28,7 @@
                 <TextBlock
                     HorizontalAlignment="Center"
                     Opacity="0.5"
-                    Text="This page is under development." />
+                    Text="Reporting views will appear here as accounting data becomes available." />
             </StackPanel>
         </husk:Card>
     </Grid>

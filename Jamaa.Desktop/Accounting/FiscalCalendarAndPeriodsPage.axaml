@@ -10,26 +10,379 @@
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid RowDefinitions="Auto, *">
-        <husk:Card Margin="10">
-            <TextBlock Classes="page.box.header" Text="Fiscal Years and Accounting Periods" />
+
+    <Grid RowDefinitions="Auto,*">
+        <husk:Card Margin="10,10,10,0" Padding="18">
+            <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto">
+                <TextBlock Classes="page.box.header" Text="Fiscal Years and Accounting Periods" />
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="0,6,0,0"
+                    Opacity="0.7"
+                    Text="Fiscal years stay contiguous and periods are generated to cover the full year." />
+            </Grid>
         </husk:Card>
 
-        <husk:Card Grid.Row="1" Margin="10">
-            <StackPanel
-                HorizontalAlignment="Center"
-                Spacing="20"
-                VerticalAlignment="Center">
-                <TextBlock
-                    FontSize="24"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Center"
-                    Text="Fiscal Calendar &amp; Periods" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Opacity="0.5"
-                    Text="Manage fiscal years and accounting periods from this page." />
-            </StackPanel>
-        </husk:Card>
+        <Grid
+            ColumnDefinitions="420,10,*"
+            Grid.Row="1"
+            Margin="10">
+            <husk:Card Grid.Column="0" Padding="18">
+                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+                    <TextBlock Classes="page.box.header" Text="Fiscal years" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="0,6,0,0"
+                        Opacity="0.7"
+                        Text="Newest fiscal year first. Create, select or remove a fiscal year from this list." />
+
+                    <WrapPanel
+                        Grid.Row="2"
+                        HorizontalAlignment="Stretch"
+                        ItemSpacing="10"
+                        Margin="0,16,0,16">
+                        <Button Command="{Binding AddFiscalYearCommand}" Content="New fiscal year" />
+                        <Button Command="{Binding DeleteFiscalYearCommand}" Content="Delete selected" />
+                    </WrapPanel>
+
+                    <ListBox
+                        Classes="fiscal-years-list"
+                        Grid.Row="3"
+                        ItemsSource="{Binding FiscalYears}"
+                        SelectedItem="{Binding SelectedFiscalYear, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="accounting:FiscalYearEditorItemViewModel">
+                                <Border Classes="fiscal-year-list-item">
+                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                        <TextBlock
+                                            FontSize="16"
+                                            FontWeight="SemiBold"
+                                            Text="{Binding Name}" />
+                                        <Border
+                                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                            CornerRadius="999"
+                                            Grid.Column="1"
+                                            Padding="10,4"
+                                            VerticalAlignment="Top">
+                                            <TextBlock
+                                                FontSize="11"
+                                                FontWeight="SemiBold"
+                                                Text="{Binding StatusLabel}" />
+                                        </Border>
+                                        <TextBlock
+                                            Grid.ColumnSpan="2"
+                                            Grid.Row="1"
+                                            Margin="0,8,0,0"
+                                            Opacity="0.78"
+                                            Text="{Binding DateRangeLabel}" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Grid.ColumnSpan="2"
+                                            Grid.Row="2"
+                                            Margin="0,4,0,0"
+                                            Opacity="0.65"
+                                            Text="{Binding Subtitle}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Border
+                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                        CornerRadius="10"
+                        Grid.Row="4"
+                        Margin="0,10,0,0"
+                        Padding="12">
+                        <TextBlock
+                            FontSize="12"
+                            Opacity="0.8"
+                            Text="New fiscal years are created immediately after the newest year. Deleting a year keeps the calendar focused on contiguous coverage."
+                            TextWrapping="Wrap" />
+                    </Border>
+                </Grid>
+            </husk:Card>
+
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" />
+
+            <husk:Card Grid.Column="2" Padding="18">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                        <TextBlock
+                            FontSize="24"
+                            FontWeight="Bold"
+                            Text="{Binding SelectedFiscalYearNameDisplay}" />
+                        <Border
+                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                            CornerRadius="999"
+                            Grid.Column="1"
+                            Grid.RowSpan="2"
+                            Padding="10,4"
+                            VerticalAlignment="Center">
+                            <TextBlock FontWeight="SemiBold" Text="{Binding SelectedFiscalYearStatusDisplay}" />
+                        </Border>
+                        <TextBlock
+                            Grid.Row="1"
+                            Margin="0,6,0,0"
+                            Opacity="0.75"
+                            Text="{Binding SelectedFiscalYearTimelineDisplay}" />
+                    </Grid>
+
+                    <Border
+                        Background="{DynamicResource SystemAccentColorLight3}"
+                        CornerRadius="10"
+                        Grid.Row="1"
+                        IsVisible="{Binding HasStatusMessage}"
+                        Margin="0,14,0,0"
+                        Padding="12">
+                        <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                    </Border>
+
+                    <ScrollViewer Grid.Row="2" Margin="0,18,0,0">
+                        <StackPanel Spacing="18">
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="14">
+                                <Border Classes="fiscal-summary-card">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock
+                                            FontSize="12"
+                                            Opacity="0.65"
+                                            Text="Timeline" />
+                                        <TextBlock
+                                            FontSize="18"
+                                            FontWeight="SemiBold"
+                                            Text="{Binding TotalFiscalYearsDisplay}" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Opacity="0.7"
+                                            Text="Displayed in descending order." />
+                                    </StackPanel>
+                                </Border>
+                                <Border Classes="fiscal-summary-card" Grid.Column="1">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock
+                                            FontSize="12"
+                                            Opacity="0.65"
+                                            Text="Locking" />
+                                        <TextBlock
+                                            FontSize="18"
+                                            FontWeight="SemiBold"
+                                            Text="{Binding LockedFiscalYearsDisplay}" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Opacity="0.7"
+                                            Text="Closed years remain visible for review." />
+                                    </StackPanel>
+                                </Border>
+                                <Border Classes="fiscal-summary-card" Grid.Column="2">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock
+                                            FontSize="12"
+                                            Opacity="0.65"
+                                            Text="Generated periods" />
+                                        <TextBlock
+                                            FontSize="18"
+                                            FontWeight="SemiBold"
+                                            Text="{Binding SelectedFiscalYearPeriodCountDisplay}" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Opacity="0.7"
+                                            Text="Each period is at most one month, except the last one." />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <Border Classes="fiscal-summary-card">
+                                <Grid ColumnDefinitions="2*,*" ColumnSpacing="18">
+                                    <StackPanel Spacing="14">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="page.box.header" Text="Fiscal year editor" />
+                                            <TextBlock
+                                                Opacity="0.7"
+                                                Text="{Binding EditorHelpText}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+
+                                        <Grid
+                                            Classes="page form"
+                                            ColumnDefinitions="Auto,*"
+                                            RowDefinitions="Auto,Auto,Auto">
+                                            <TextBlock
+                                                Classes="form label"
+                                                Grid.Column="0"
+                                                Grid.Row="0"
+                                                Text="Start date" />
+                                            <CalendarDatePicker
+                                                Classes="form field"
+                                                Grid.Column="1"
+                                                Grid.Row="0"
+                                                SelectedDate="{Binding DraftStartDate, Mode=TwoWay}" />
+
+                                            <TextBlock
+                                                Classes="form label"
+                                                Grid.Column="0"
+                                                Grid.Row="1"
+                                                Text="End date" />
+                                            <CalendarDatePicker
+                                                Classes="form field"
+                                                Grid.Column="1"
+                                                Grid.Row="1"
+                                                SelectedDate="{Binding DraftEndDate, Mode=TwoWay}" />
+
+                                            <TextBlock
+                                                Classes="form label"
+                                                Grid.Column="0"
+                                                Grid.Row="2"
+                                                Text="Locked" />
+                                            <ToggleSwitch
+                                                Grid.Column="1"
+                                                Grid.Row="2"
+                                                IsChecked="{Binding DraftIsLocked, Mode=TwoWay}"
+                                                IsEnabled="{Binding CanToggleFiscalYearLock}"
+                                                OffContent="Unlocked"
+                                                OnContent="Locked"
+                                                VerticalAlignment="Center" />
+                                        </Grid>
+
+                                        <WrapPanel ItemSpacing="10">
+                                            <Button Command="{Binding SaveFiscalYearCommand}" Content="Save changes" />
+                                            <Button Command="{Binding RevertFiscalYearCommand}" Content="Reset editor" />
+                                            <Button Command="{Binding RegeneratePeriodsCommand}" Content="Regenerate periods" />
+                                        </WrapPanel>
+                                    </StackPanel>
+
+                                    <Border
+                                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                        CornerRadius="10"
+                                        Grid.Column="1"
+                                        Padding="14">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Classes="page.box.header" Text="Selection snapshot" />
+                                            <TextBlock
+                                                FontSize="18"
+                                                FontWeight="SemiBold"
+                                                Text="{Binding SelectedFiscalYearNameDisplay}"
+                                                TextWrapping="Wrap" />
+                                            <TextBlock
+                                                Opacity="0.7"
+                                                Text="{Binding SelectedFiscalYearTimelineDisplay}"
+                                                TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding SelectedFiscalYearStatusDisplay}" />
+                                            <TextBlock Text="{Binding SelectedFiscalYearPeriodCountDisplay}" />
+                                            <Separator Margin="0,4" />
+                                            <TextBlock
+                                                FontSize="12"
+                                                Opacity="0.7"
+                                                Text="Review the currently selected fiscal year, including its timeline, lock state, and generated period count."
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <Border Classes="fiscal-summary-card">
+                                <Grid ColumnDefinitions="2*,*" ColumnSpacing="18">
+                                    <StackPanel Spacing="12">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="page.box.header" Text="Accounting periods" />
+                                            <TextBlock
+                                                Opacity="0.7"
+                                                Text="Generated from the selected fiscal year. Periods are contiguous and cover the whole year without gaps."
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+
+                                        <ListBox
+                                            Classes="periods-list"
+                                            ItemsSource="{Binding VisiblePeriods}"
+                                            SelectedItem="{Binding SelectedPeriod, Mode=TwoWay}">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate x:DataType="accounting:AccountingPeriodItemViewModel">
+                                                    <Border Classes="period-list-item">
+                                                        <Grid
+                                                            ColumnDefinitions="Auto,*,Auto"
+                                                            ColumnSpacing="12"
+                                                            RowDefinitions="Auto,Auto">
+                                                            <Border
+                                                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                                                CornerRadius="999"
+                                                                Padding="10,4"
+                                                                VerticalAlignment="Top">
+                                                                <TextBlock
+                                                                    FontSize="11"
+                                                                    FontWeight="SemiBold"
+                                                                    Text="{Binding Name}" />
+                                                            </Border>
+                                                            <StackPanel Grid.Column="1" Spacing="4">
+                                                                <TextBlock FontWeight="SemiBold" Text="{Binding CoverageLabel}" />
+                                                                <TextBlock
+                                                                    FontSize="12"
+                                                                    Opacity="0.72"
+                                                                    Text="{Binding DateRangeLabel}" />
+                                                            </StackPanel>
+                                                            <StackPanel
+                                                                Grid.Column="2"
+                                                                HorizontalAlignment="Right"
+                                                                Spacing="4">
+                                                                <Border
+                                                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                                                    CornerRadius="999"
+                                                                    HorizontalAlignment="Right"
+                                                                    Padding="10,4">
+                                                                    <TextBlock
+                                                                        FontSize="11"
+                                                                        FontWeight="SemiBold"
+                                                                        Text="{Binding StatusLabel}" />
+                                                                </Border>
+                                                                <TextBlock
+                                                                    FontSize="12"
+                                                                    Opacity="0.72"
+                                                                    Text="{Binding DurationLabel}" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </StackPanel>
+
+                                    <Border
+                                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                        CornerRadius="10"
+                                        Grid.Column="1"
+                                        Padding="14">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Classes="page.box.header" Text="Selected period" />
+                                            <TextBlock
+                                                FontSize="18"
+                                                FontWeight="SemiBold"
+                                                Text="{Binding SelectedPeriodNameDisplay}"
+                                                TextWrapping="Wrap" />
+                                            <TextBlock
+                                                Opacity="0.75"
+                                                Text="{Binding SelectedPeriodCoverageDisplay}"
+                                                TextWrapping="Wrap" />
+                                            <Separator Margin="0,4" />
+                                            <TextBlock Text="{Binding SelectedPeriodDateRangeDisplay}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding SelectedPeriodDurationDisplay}" />
+                                            <TextBlock Text="{Binding SelectedPeriodStatusDisplay}" />
+                                            <ToggleSwitch
+                                                IsChecked="{Binding SelectedPeriodIsLocked, Mode=TwoWay}"
+                                                IsEnabled="{Binding CanToggleSelectedPeriodLock}"
+                                                OffContent="Unlocked"
+                                                OnContent="Locked"
+                                                VerticalAlignment="Center" />
+                                            <TextBlock
+                                                FontSize="12"
+                                                Opacity="0.7"
+                                                Text="Accounting periods are generated automatically from the selected fiscal-year range and stay aligned with that year."
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </husk:Card>
+        </Grid>
     </Grid>
 </UserControl>

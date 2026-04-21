@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Domain.Shared.Values;
+using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Models.Members;
 using Jamaa.Data.Models.Organisation;
 using Jamaa.Data.Models.Users;
@@ -13,6 +14,8 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
     private readonly DatabaseOptions _dbOptions = options.Value;
     public DbSet<UserData> Users { get; set; }
     public DbSet<OrganisationData> Organisations { get; set; }
+    public DbSet<FiscalYearData> FiscalYears { get; set; }
+    public DbSet<AccountingPeriodData> AccountingPeriods { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -56,6 +59,22 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
 
         modelBuilder.Entity<RegistrationData>().ToTable("Registrations")
             .Property(e => e.Id).ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<FiscalYearData>().ToTable("FiscalYears");
+        modelBuilder.Entity<FiscalYearData>()
+            .Property(fiscalYear => fiscalYear.Id).IsRequired();
+        modelBuilder.Entity<FiscalYearData>()
+            .Property(fiscalYear => fiscalYear.OrganisationId).IsRequired();
+        modelBuilder.Entity<FiscalYearData>()
+            .HasMany(fiscalYear => fiscalYear.Periods)
+            .WithOne(period => period.FiscalYear)
+            .HasForeignKey(period => period.FiscalYearId);
+
+        modelBuilder.Entity<AccountingPeriodData>().ToTable("AccountingPeriods");
+        modelBuilder.Entity<AccountingPeriodData>()
+            .Property(period => period.Id).IsRequired();
+        modelBuilder.Entity<AccountingPeriodData>()
+            .Property(period => period.OrganisationId).IsRequired();
     }
 
     private static void ConfigureUserMapping(ModelBuilder modelBuilder)

@@ -15,7 +15,7 @@ public partial class ChartOfAccountsViewModel : ObservableObject, IApplicationMo
     public object? HeaderContent => null;
 
     [ObservableProperty]
-    private string _pageTitle = "Chat of Accounts Manager (COA)";
+    private string _pageTitle = "Chart of Accounts";
 
     [ObservableProperty]
     private ObservableCollection<AccountItemViewModel> _accounts = [];
@@ -33,11 +33,10 @@ public partial class ChartOfAccountsViewModel : ObservableObject, IApplicationMo
 
     public ChartOfAccountsViewModel()
     {
-        // Sample data for initial display
-        LoadSampleData();
+        LoadPreviewData();
     }
 
-    private void LoadSampleData()
+    private void LoadPreviewData()
     {
         var asset = new AccountItemViewModel { Name = "Assets", Code = "1000", Type = AccountType.Asset };
         asset.SubAccounts.Add(new AccountItemViewModel { Name = "Cash", Code = "1010", Type = AccountType.Asset, Parent = asset });
@@ -56,13 +55,11 @@ public partial class ChartOfAccountsViewModel : ObservableObject, IApplicationMo
     [RelayCommand]
     private void AddAccount()
     {
-        // Logic for adding account would go here. For now, it's a stub as per IOSP
         PerformAddAccount();
     }
 
     private void PerformAddAccount()
     {
-        // This is an operation that adds the account.
-        // In a real app, this would call a service or send a command.
+        // Operation placeholder: command dispatch will be added when account management is wired up.
     }
 }

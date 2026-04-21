@@ -311,6 +311,15 @@
     <Compile Update="Accounting\UserRolesAndApprovalsViewModel.cs">
       <DependentUpon>UserRolesAndApprovalsPage.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Accounting\AccountItemViewModel.cs">
+      <DependentUpon>ChartOfAccountsPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\AccountingPeriodItemViewModel.cs">
+      <DependentUpon>FiscalCalendarAndPeriodsPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\FiscalYearEditorItemViewModel.cs">
+      <DependentUpon>FiscalCalendarAndPeriodsPage.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   
   <ItemGroup>
