@@ -1,0 +1,35 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Accounting.AutomationRulesPage"
+    x:DataType="accounting:AutomationRulesViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid RowDefinitions="Auto, *">
+        <husk:Card Margin="10">
+            <TextBlock Classes="page.box.header" Text="Automation Rules" />
+        </husk:Card>
+
+        <husk:Card Grid.Row="1" Margin="10">
+            <StackPanel
+                HorizontalAlignment="Center"
+                Spacing="20"
+                VerticalAlignment="Center">
+                <TextBlock
+                    FontSize="24"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Center"
+                    Text="Automation Rules" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Opacity="0.5"
+                    Text="Manage automation rules for accounting workflows from this page." />
+            </StackPanel>
+        </husk:Card>
+    </Grid>
+</UserControl>

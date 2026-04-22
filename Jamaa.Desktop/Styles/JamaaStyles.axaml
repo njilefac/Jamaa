@@ -1,5 +1,6 @@
 <Styles
     xmlns="https://github.com/avaloniaui"
+    xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
@@ -19,11 +20,13 @@
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
-    <Style Selector="shared|DashboardHeader.module.header">
+    <Style Selector="shared|ModulePageHeader.module.header">
         <Setter Property="Background" Value="{DynamicResource AppHeaderBackground}" />
         <Setter Property="MinHeight" Value="100" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
     </Style>
     <Style Selector="ContentControl.module.content">
         <Setter Property="HorizontalAlignment" Value="Right" />
@@ -67,6 +70,31 @@
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="FontSize" Value="14" />
     </Style>
+    <Style Selector="WrapPanel.accounting.configuration.cards">
+        <Setter Property="Margin" Value="10" />
+        <Setter Property="ItemSpacing" Value="30" />
+        <Setter Property="ItemHeight" Value="350" />
+        <Setter Property="ItemWidth" Value="350" />
+    </Style>
+    <Style Selector="husk|Card.accounting.configuration.card">
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Width" Value="300" />
+        <Setter Property="Height" Value="300" />
+        <Setter Property="Padding" Value="2" />
+    </Style>
+    <Style Selector="Button.accounting.configuration.card.button">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="TextBlock.accounting.configuration.card.title">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="FontWeight" Value="ExtraBold" />
+        <Setter Property="FontSize" Value="16" />
+    </Style>
     <Style Selector="Border.page.box">
         <Setter Property="Margin" Value="15,10,15,10" />
         <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -74,6 +102,69 @@
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Background" Value="{DynamicResource AppCardBackground}" />
         <Setter Property="Padding" Value="5" />
+    </Style>
+
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage ListBox.fiscal-years-list">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage ListBox.fiscal-years-list ListBoxItem">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0,0,0,10" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage ListBox.fiscal-years-list ListBoxItem /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage ListBox.fiscal-years-list ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage Border.fiscal-year-list-item">
+        <Setter Property="Background" Value="{DynamicResource AppCardBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="14" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage ListBox.fiscal-years-list ListBoxItem:selected Border.fiscal-year-list-item">
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight3}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage Border.fiscal-summary-card">
+        <Setter Property="Background" Value="{DynamicResource AppCardBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="14" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage Border.period-list-item">
+        <Setter Property="Background" Value="{DynamicResource AppCardBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="14" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage ListBox.periods-list">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage ListBox.periods-list ListBoxItem">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0,0,0,10" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage ListBox.periods-list ListBoxItem /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="accounting|FiscalCalendarAndPeriodsPage ListBox.periods-list ListBoxItem:selected Border.period-list-item">
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight3}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+        <Setter Property="BorderThickness" Value="2" />
     </Style>
 
     <Style Selector="husk|Card.memberlist.member-card:pointerover">
@@ -356,6 +447,15 @@
 
     <Style Selector="controls|NavigationView">
         <Setter Property="CompactPaneLength" Value="72" />
+    </Style>
+
+    <Style Selector="controls|NavigationView /template/ ContentControl#HeaderContent">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="0" />
     </Style>
 
     <Style Selector="husk|AppWindow.splash-window">

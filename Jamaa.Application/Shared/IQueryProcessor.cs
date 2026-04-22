@@ -1,5 +1,7 @@
 using Domain.Members.Queries;
+using Domain.Finances.Queries;
 using Domain.Organisation.Queries;
+using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Models.Members;
 using Jamaa.Data.Models.Organisation;
 
@@ -11,4 +13,5 @@ public interface IQueryProcessor
     Task<OrganisationData?> Get(GetOrganisationByName query);
 
     Task<IList<MemberData>> Get(GetMembersByOrganisation query);
+    Task<IList<FiscalYearData>> Get(GetFiscalYearsByOrganisation query);
 }
