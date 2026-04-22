@@ -75,6 +75,9 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
             .Property(period => period.Id).IsRequired();
         modelBuilder.Entity<AccountingPeriodData>()
             .Property(period => period.OrganisationId).IsRequired();
+        modelBuilder.Entity<AccountingPeriodData>()
+            .HasIndex(period => new { period.OrganisationId, period.StartDate, period.EndDate })
+            .IsUnique();
     }
 
     private static void ConfigureUserMapping(ModelBuilder modelBuilder)

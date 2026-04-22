@@ -52,6 +52,7 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
         Recover<AccountingPeriodCreated>(Apply);
         Recover<AccountingPeriodUpdated>(Apply);
         Recover<AccountingPeriodDeleted>(Apply);
+        Recover<FiscalYearPeriodsRegenerated>(Apply);
     }
 
     // Integration: orchestrates creation of a fiscal year and its default contiguous periods.
@@ -95,7 +96,7 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
         TrySaveSnapshot();
     }
 
-    // Operation: updates one fiscal year and fully regenerates its accounting periods.
+    // Operation: updates one fiscal year and fully regenerates its accounting periods as a single atomic event.
     private void PersistFiscalYearWithRegeneratedPeriods(
         OrganisationId organisationId,
         FiscalYearState fiscalYear,
@@ -110,22 +111,49 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
             endDate,
             isLocked), Apply);
 
-        var deletedPeriods = fiscalYear.Periods.Values
-            .Select(period => new AccountingPeriodDeleted(
-                organisationId,
-                FiscalYearId.With(fiscalYear.Id),
-                AccountingPeriodId.With(period.Id)))
+        var deletedPeriodIds = fiscalYear.Periods.Values
+            .Select(period => period.Id)
             .ToList();
-        PersistAll(deletedPeriods, Apply);
 
-        var generatedPeriods = GenerateDefaultPeriods(
+        var generatedPeriodData = GenerateDefaultPeriods(
                 organisationId,
                 FiscalYearId.With(fiscalYear.Id),
                 startDate,
                 endDate,
                 isLocked)
+            .Select(evt => new AccountingPeriodInfo(
+                evt.AccountingPeriodId.Value,
+                evt.SequenceNumber,
+                evt.StartDate,
+                evt.EndDate,
+                evt.IsLocked))
             .ToList();
-        PersistAll(generatedPeriods, Apply);
+
+        // Emit a single atomic event for period regeneration to avoid intermediate states in the read model.
+        Persist(new FiscalYearPeriodsRegenerated(
+            organisationId,
+            FiscalYearId.With(fiscalYear.Id),
+            deletedPeriodIds,
+            generatedPeriodData), Apply);
+
+        // Apply the new periods to the aggregate state.
+        foreach (var periodData in generatedPeriodData)
+        {
+            fiscalYear.Periods[periodData.Id] = new AccountingPeriodState
+            {
+                Id = periodData.Id,
+                SequenceNumber = periodData.SequenceNumber,
+                StartDate = periodData.StartDate,
+                EndDate = periodData.EndDate,
+                IsLocked = periodData.IsLocked
+            };
+        }
+
+        // Clear deleted periods from the aggregate state.
+        foreach (var periodId in deletedPeriodIds)
+        {
+            fiscalYear.Periods.Remove(periodId);
+        }
     }
 
     // Integration: removes a fiscal year when resulting timeline remains contiguous.
@@ -603,6 +631,33 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
         }
 
         fiscalYear.Periods.Remove(@event.AccountingPeriodId.Value);
+    }
+
+    private void Apply(FiscalYearPeriodsRegenerated @event)
+    {
+        if (!_state.FiscalYears.TryGetValue(@event.FiscalYearId.Value, out var fiscalYear))
+        {
+            return;
+        }
+
+        // Remove deleted periods
+        foreach (var deletedPeriodId in @event.DeletedPeriodIds)
+        {
+            fiscalYear.Periods.Remove(deletedPeriodId);
+        }
+
+        // Add created periods
+        foreach (var createdPeriod in @event.CreatedPeriods)
+        {
+            fiscalYear.Periods[createdPeriod.Id] = new AccountingPeriodState
+            {
+                Id = createdPeriod.Id,
+                SequenceNumber = createdPeriod.SequenceNumber,
+                StartDate = createdPeriod.StartDate,
+                EndDate = createdPeriod.EndDate,
+                IsLocked = createdPeriod.IsLocked
+            };
+        }
     }
 
     // Operation: generate contiguous monthly periods where only the last period can be shorter than a month.

@@ -13,10 +13,19 @@ public class FiscalCalendarQueryHandler(JamaaDbContext dbContext) : IFiscalCalen
     public async Task<IList<FiscalYearData>> Get(GetFiscalYearsByOrganisation query)
     {
         var fiscalYears = await dbContext.FiscalYears
+            .AsNoTracking()
             .Include(fiscalYear => fiscalYear.Periods)
             .Where(fiscalYear => fiscalYear.OrganisationId == query.OrganisationId.Value)
             .OrderByDescending(fiscalYear => fiscalYear.StartDate)
             .ToListAsync();
+
+        foreach (var fiscalYear in fiscalYears)
+        {
+            fiscalYear.Periods = fiscalYear.Periods
+                .OrderBy(period => period.SequenceNumber)
+                .ThenBy(period => period.StartDate)
+                .ToList();
+        }
 
         return fiscalYears;
     }

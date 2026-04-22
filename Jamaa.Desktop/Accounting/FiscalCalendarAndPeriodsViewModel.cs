@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,9 +24,9 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         new(new ObservableCollection<FiscalYearEditorItemViewModel>());
     private static readonly ReadOnlyObservableCollection<AccountingPeriodItemViewModel> EmptyPeriods =
         new(new ObservableCollection<AccountingPeriodItemViewModel>());
-    private readonly SourceList<FiscalYearEditorItemViewModel> _fiscalYearsSource = new();
+    private readonly SourceCache<FiscalYearEditorItemViewModel, Guid> _fiscalYearsSource = new(fiscalYear => fiscalYear.Id);
     private readonly IDisposable _fiscalYearsSubscription;
-    private readonly IDisposable _fiscalYearsStreamSubscription;
+    private readonly CompositeDisposable _fiscalYearSubscriptions = [];
     private FiscalYearDraftSnapshot? _selectedFiscalYearSnapshot;
     private readonly IFinanceManagementFacade _financeManagementFacade;
     private readonly string _organisationId;
@@ -41,16 +42,27 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
 
         _fiscalYearsSubscription = _fiscalYearsSource.Connect()
             .AutoRefresh(static fiscalYear => fiscalYear.StartDate)
-            .Sort(SortExpressionComparer<FiscalYearEditorItemViewModel>.Descending(static fiscalYear => fiscalYear.StartDate))
-            .Bind(out ReadOnlyObservableCollection<FiscalYearEditorItemViewModel> fiscalYearsBound)
+            .SortAndBind(
+                out ReadOnlyObservableCollection<FiscalYearEditorItemViewModel> fiscalYearsBound,
+                SortExpressionComparer<FiscalYearEditorItemViewModel>.Descending(static fiscalYear => fiscalYear.StartDate))
             .Subscribe();
 
         FiscalYears = fiscalYearsBound;
 
-        _fiscalYearsStreamSubscription = _financeManagementFacade
-            .GetFiscalYearsStream(_organisationId)
+        _fiscalYearSubscriptions.Add(_financeManagementFacade.CurrentFiscalYears
+            .Where(fiscalYear => fiscalYear.OrganisationId == _organisationId)
             .ObserveOn(syncContext)
-            .Subscribe(ApplyFiscalYears, HandleFiscalYearsStreamError);
+            .Subscribe(ApplyCurrentFiscalYear, HandleFiscalYearsStreamError));
+
+        _fiscalYearSubscriptions.Add(_financeManagementFacade.FiscalYearUpdated
+            .Where(fiscalYear => fiscalYear.OrganisationId == _organisationId)
+            .ObserveOn(syncContext)
+            .Subscribe(ApplyUpdatedFiscalYear, HandleFiscalYearsStreamError));
+
+        _fiscalYearSubscriptions.Add(_financeManagementFacade.FiscalYearDeleted
+            .Where(fiscalYear => fiscalYear.OrganisationId == _organisationId)
+            .ObserveOn(syncContext)
+            .Subscribe(ApplyDeletedFiscalYear, HandleFiscalYearsStreamError));
     }
 
     // Operation: resolves the current organisation id from the active user session
@@ -200,10 +212,8 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
     private async Task AddFiscalYear()
     {
         var (startDate, endDate) = GetNextAvailableFiscalYearRange();
-
+        StatusMessage = $"Creating fiscal year {startDate:yyyy}-{endDate:yy}...";
         await _financeManagementFacade.CreateFiscalYear(_organisationId, startDate, endDate, false);
-        StatusMessage = $"Created fiscal year {startDate:yyyy}-{endDate:yy}";
-        // UI will update automatically via the reactive stream subscription
     }
 
     [RelayCommand(CanExecute = nameof(CanSaveFiscalYear))]
@@ -227,14 +237,8 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         var draftEnd = DraftEndDate;
         var draftLocked = DraftIsLocked;
 
+        StatusMessage = $"Saving {fiscalYear.Name}...";
         await _financeManagementFacade.UpdateFiscalYear(_organisationId, fiscalYear.Id.ToString(), draftStart, draftEnd, draftLocked);
-        ApplyDraftToSelectedFiscalYear(fiscalYear, draftStart, draftEnd, draftLocked);
-        _selectedFiscalYearSnapshot = new FiscalYearDraftSnapshot(fiscalYear.Name, draftStart, draftEnd, draftLocked);
-        SelectedFiscalYear = fiscalYear;
-        SelectedPeriod = fiscalYear.Periods.FirstOrDefault();
-        StatusMessage = $"Saved {fiscalYear.Name}.";
-        RaiseSelectionStateChanged();
-        // UI will update automatically via the reactive stream subscription
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteFiscalYear))]
@@ -252,10 +256,8 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         }
 
         var deletedFiscalYear = SelectedFiscalYear;
+        StatusMessage = $"Deleting {deletedFiscalYear.Name}...";
         await _financeManagementFacade.DeleteFiscalYear(_organisationId, deletedFiscalYear.Id.ToString());
-        SelectedFiscalYear = FiscalYears.FirstOrDefault();
-        StatusMessage = $"Deleted {deletedFiscalYear.Name}.";
-        // UI will update automatically via the reactive stream subscription
     }
 
     [RelayCommand(CanExecute = nameof(CanRevertFiscalYear))]
@@ -370,32 +372,120 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         return SelectedPeriod is { IsLocked: true };
     }
 
-    // Operation: projects streamed fiscal-year data into UI view models.
-    private void ApplyFiscalYears(IList<FiscalYearData> fiscalYearData)
+    // Integration: applies one current fiscal year from the facade current-state stream.
+    private void ApplyCurrentFiscalYear(FiscalYearData fiscalYearData)
     {
-        var selectedFiscalYearId = SelectedFiscalYear?.Id;
-
-        _fiscalYearsSource.Edit(updater =>
+        var viewModel = MapToFiscalYearItem(fiscalYearData);
+        if (viewModel is null)
         {
-            updater.Clear();
-            foreach (var fyData in fiscalYearData.OrderByDescending(fy => fy.StartDate))
-            {
-                var periods = fyData.Periods
-                    .OrderBy(p => p.SequenceNumber)
-                    .Select(p => new AccountingPeriodItemViewModel(p.Id, p.SequenceNumber, p.StartDate, p.EndDate, p.IsLocked))
-                    .ToList();
+            return;
+        }
 
-                var viewModel = new FiscalYearEditorItemViewModel(Guid.Parse(fyData.Id), fyData.StartDate, fyData.EndDate, fyData.IsLocked);
-                viewModel.ReplacePeriods(periods);
-                updater.Add(viewModel);
-            }
-        });
+        _fiscalYearsSource.AddOrUpdate(viewModel);
 
-        SelectedFiscalYear = selectedFiscalYearId is null
-            ? FiscalYears.FirstOrDefault()
-            : FiscalYears.FirstOrDefault(fiscalYear => fiscalYear.Id == selectedFiscalYearId) ?? FiscalYears.FirstOrDefault();
+        if (SelectedFiscalYear is null)
+        {
+            SelectedFiscalYear = FiscalYears.FirstOrDefault(fiscalYear => fiscalYear.Id == viewModel.Id) ?? FiscalYears.FirstOrDefault();
+        }
 
         RaiseCollectionSummaryChanged();
+    }
+
+    // Integration: applies one updated fiscal year from the facade update stream.
+    private void ApplyUpdatedFiscalYear(FiscalYearData fiscalYearData)
+    {
+        if (!Guid.TryParse(fiscalYearData.Id, out var fiscalYearId))
+        {
+            return;
+        }
+
+        var existingFiscalYear = _fiscalYearsSource.Lookup(fiscalYearId);
+        if (!existingFiscalYear.HasValue)
+        {
+            var viewModel = MapToFiscalYearItem(fiscalYearData);
+            if (viewModel is null)
+            {
+                return;
+            }
+
+            _fiscalYearsSource.AddOrUpdate(viewModel);
+            RaiseCollectionSummaryChanged();
+            return;
+        }
+
+        var selectedPeriodId = SelectedFiscalYear?.Id == fiscalYearId ? SelectedPeriod?.Id : null;
+        existingFiscalYear.Value.StartDate = fiscalYearData.StartDate;
+        existingFiscalYear.Value.EndDate = fiscalYearData.EndDate;
+        existingFiscalYear.Value.IsLocked = fiscalYearData.IsLocked;
+        existingFiscalYear.Value.RefreshName();
+        existingFiscalYear.Value.ReplacePeriods(MapToAccountingPeriods(fiscalYearData));
+
+        if (SelectedFiscalYear?.Id == fiscalYearId)
+        {
+            VisiblePeriods = existingFiscalYear.Value.Periods;
+            SelectedPeriod = selectedPeriodId is null
+                ? existingFiscalYear.Value.Periods.FirstOrDefault()
+                : existingFiscalYear.Value.Periods.FirstOrDefault(period => period.Id == selectedPeriodId) ?? existingFiscalYear.Value.Periods.FirstOrDefault();
+
+            LoadDraftFromSelection(existingFiscalYear.Value);
+            StatusMessage = $"Saved {existingFiscalYear.Value.Name}.";
+        }
+
+        RaiseSelectionStateChanged();
+        RaiseCollectionSummaryChanged();
+    }
+
+    // Integration: applies one deleted fiscal year from the facade delete stream.
+    private void ApplyDeletedFiscalYear(FiscalYearData fiscalYearData)
+    {
+        if (!Guid.TryParse(fiscalYearData.Id, out var fiscalYearId))
+        {
+            return;
+        }
+
+        var deletedFiscalYear = _fiscalYearsSource.Lookup(fiscalYearId);
+        if (!deletedFiscalYear.HasValue)
+        {
+            return;
+        }
+
+        _fiscalYearsSource.RemoveKey(fiscalYearId);
+        if (SelectedFiscalYear?.Id == fiscalYearId)
+        {
+            SelectedFiscalYear = FiscalYears.FirstOrDefault();
+        }
+
+        StatusMessage = $"Deleted {deletedFiscalYear.Value.Name}.";
+        RaiseCollectionSummaryChanged();
+    }
+
+    // Operation: maps one fiscal-year data object into its view-model representation.
+    private static FiscalYearEditorItemViewModel? MapToFiscalYearItem(FiscalYearData fiscalYearData)
+    {
+        if (!Guid.TryParse(fiscalYearData.Id, out var fiscalYearId))
+        {
+            return null;
+        }
+
+        var viewModel = new FiscalYearEditorItemViewModel(
+            fiscalYearId,
+            fiscalYearData.StartDate,
+            fiscalYearData.EndDate,
+            fiscalYearData.IsLocked);
+
+        viewModel.ReplacePeriods(MapToAccountingPeriods(fiscalYearData));
+        return viewModel;
+    }
+
+    // Operation: maps persisted accounting periods into period view models.
+    private static IReadOnlyList<AccountingPeriodItemViewModel> MapToAccountingPeriods(FiscalYearData fiscalYearData)
+    {
+        return fiscalYearData.Periods
+            .GroupBy(period => new { StartDate = period.StartDate.Date, EndDate = period.EndDate.Date })
+            .Select(group => group.OrderBy(period => period.SequenceNumber).First())
+            .OrderBy(period => period.SequenceNumber)
+            .Select(period => new AccountingPeriodItemViewModel(period.Id, period.SequenceNumber, period.StartDate, period.EndDate, period.IsLocked))
+            .ToList();
     }
 
     // Operation: surfaces stream failures in the status banner.
@@ -422,15 +512,6 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         _selectedFiscalYearSnapshot = new FiscalYearDraftSnapshot(fiscalYear.Name, fiscalYear.StartDate, fiscalYear.EndDate, fiscalYear.IsLocked);
     }
 
-    // Operation: applies the current draft values to the selected fiscal year view model (optimistic update).
-    private void ApplyDraftToSelectedFiscalYear(FiscalYearEditorItemViewModel fiscalYear, DateTime startDate, DateTime endDate, bool isLocked)
-    {
-        fiscalYear.StartDate = startDate.Date;
-        fiscalYear.EndDate = endDate.Date;
-        fiscalYear.IsLocked = isLocked;
-        fiscalYear.RefreshName();
-        fiscalYear.ReplacePeriods(GenerateAccountingPeriods(startDate, endDate, isLocked));
-    }
 
     // Operation: computes the next contiguous one-year fiscal span with no gaps.
     private (DateTime StartDate, DateTime EndDate) GetNextAvailableFiscalYearRange()
@@ -513,7 +594,7 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
 
     public void Dispose()
     {
-        _fiscalYearsStreamSubscription.Dispose();
+        _fiscalYearSubscriptions.Dispose();
         _fiscalYearsSubscription.Dispose();
         _fiscalYearsSource.Dispose();
     }

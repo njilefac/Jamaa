@@ -16,7 +16,9 @@ public interface IFinanceManagementFacade
     // Read operations (one-off query)
     Task<IList<FiscalYearData>> GetFiscalYears(string organisationId);
 
-    // Reactive streams (push new data when underlying data changes)
-    IObservable<IList<FiscalYearData>> GetFiscalYearsStream(string organisationId);
+    // Reactive streams (push fiscal-year changes and current state)
+    IObservable<FiscalYearData> CurrentFiscalYears { get; }
+    IObservable<FiscalYearData> FiscalYearUpdated { get; }
+    IObservable<FiscalYearData> FiscalYearDeleted { get; }
 }
 

@@ -5,11 +5,13 @@ using Domain.Finances.Values;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Commands;
 using Jamaa.Application.Shared;
+using Jamaa.Application.Users;
+using Jamaa.Application.Users.Services;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Notifiers;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace Jamaa.Application.Finances;
 
@@ -17,17 +19,62 @@ public class FinanceManagementFacade : IFinanceManagementFacade
 {
     private readonly IActorRef _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
-    private readonly IDataChangeNotifier _dataChangeNotifier;
-    private readonly Dictionary<string, IObservable<IList<FiscalYearData>>> _fiscalYearStreams = [];
+    private readonly ReplaySubject<FiscalYearData> _currentFiscalYears;
+    private string? _lastSeededOrganisationId;
 
     public FinanceManagementFacade(
         IRequiredActor<CommandProcessor> commandProcessorProvider,
         IQueryProcessor queryProcessor,
-        IDataChangeNotifier dataChangeNotifier)
+        IDataChangeNotifier dataChangeNotifier,
+        IUserSessionService userSessionService)
     {
         _commandProcessor = commandProcessorProvider.ActorRef;
         _queryProcessor = queryProcessor;
-        _dataChangeNotifier = dataChangeNotifier;
+
+        _currentFiscalYears = new ReplaySubject<FiscalYearData>();
+        CurrentFiscalYears = _currentFiscalYears;
+
+        dataChangeNotifier.Insertions
+            .OfType<FiscalYearData>()
+            .Subscribe(_currentFiscalYears.OnNext);
+
+        FiscalYearUpdated = BuildFiscalYearUpdates(dataChangeNotifier);
+        FiscalYearDeleted = dataChangeNotifier.Deletions.OfType<FiscalYearData>();
+
+        // Subscribe after stream fields are initialized and seed from the already-authenticated session.
+        userSessionService.UserSessions
+            .StartWith(userSessionService.CurrentUserSession)
+            .Subscribe(InitializeCurrentFiscalYears);
+    }
+
+    public IObservable<FiscalYearData> CurrentFiscalYears { get; }
+
+    public IObservable<FiscalYearData> FiscalYearUpdated { get; }
+
+    public IObservable<FiscalYearData> FiscalYearDeleted { get; }
+
+    // Integration: seeds the current-fiscal-year stream from the active session organisation.
+    private async void InitializeCurrentFiscalYears(UserSession? session)
+    {
+        var organisationId = session?.Organisation?.Id;
+        if (string.IsNullOrWhiteSpace(organisationId))
+        {
+            return;
+        }
+
+        // Guard: skip re-seeding if the same session is re-emitted in succession.
+        if (organisationId == _lastSeededOrganisationId)
+        {
+            return;
+        }
+
+        _lastSeededOrganisationId = organisationId;
+
+        var existingFiscalYears = await GetFiscalYears(organisationId);
+        foreach (var fiscalYear in existingFiscalYears)
+        {
+            _currentFiscalYears.OnNext(fiscalYear);
+        }
     }
 
     // Integration: dispatches intent to the finance aggregate stream.
@@ -119,68 +166,45 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         return _queryProcessor.Get(new GetFiscalYearsByOrganisation(OrganisationId.With(organisationId)));
     }
 
-    // Operation: returns a reactive stream of fiscal years for an organisation
-    public IObservable<IList<FiscalYearData>> GetFiscalYearsStream(string organisationId)
+    // Operation: merges direct fiscal-year updates with period-driven fiscal-year refreshes.
+    private IObservable<FiscalYearData> BuildFiscalYearUpdates(IDataChangeNotifier dataChangeNotifier)
     {
-        if (_fiscalYearStreams.TryGetValue(organisationId, out var existingStream))
-        {
-            return existingStream;
-        }
+        var fiscalYearUpdates = dataChangeNotifier.Updates.OfType<FiscalYearData>();
 
-        var financeChanges = Observable.Merge(
-            _dataChangeNotifier.Insertions
-                .OfType<FiscalYearData>()
-                .Where(fiscalYear => fiscalYear.OrganisationId == organisationId)
-                .Select(_ => Unit.Default),
-            _dataChangeNotifier.Updates
-                .OfType<FiscalYearData>()
-                .Where(fiscalYear => fiscalYear.OrganisationId == organisationId)
-                .Select(_ => Unit.Default),
-            _dataChangeNotifier.Deletions
-                .OfType<FiscalYearData>()
-                .Where(fiscalYear => fiscalYear.OrganisationId == organisationId)
-                .Select(_ => Unit.Default),
-            _dataChangeNotifier.Insertions
-                .OfType<AccountingPeriodData>()
-                .Where(period => period.OrganisationId == organisationId)
-                .Select(_ => Unit.Default),
-            _dataChangeNotifier.Updates
-                .OfType<AccountingPeriodData>()
-                .Where(period => period.OrganisationId == organisationId)
-                .Select(_ => Unit.Default),
-            _dataChangeNotifier.Deletions
-                .OfType<AccountingPeriodData>()
-                .Where(period => period.OrganisationId == organisationId)
-                .Select(_ => Unit.Default));
+        var periodDrivenUpdates = Observable.Merge(
+                dataChangeNotifier.Insertions.OfType<AccountingPeriodData>(),
+                dataChangeNotifier.Updates.OfType<AccountingPeriodData>(),
+                dataChangeNotifier.Deletions.OfType<AccountingPeriodData>())
+            .Select(period => (period.OrganisationId, period.FiscalYearId))
+            .GroupBy(period => $"{period.OrganisationId}:{period.FiscalYearId}")
+            .SelectMany(group => group
+                .Throttle(TimeSpan.FromMilliseconds(120))
+                .SelectMany(period => Observable.FromAsync(() => GetFiscalYearById(period.OrganisationId, period.FiscalYearId)))
+                .Where(fiscalYear => fiscalYear is not null)
+                .Select(fiscalYear => fiscalYear!));
 
-        var stream = Observable.Return(Unit.Default)
-            .Merge(financeChanges)
-            .SelectMany(_ => Observable.FromAsync(() => GetFiscalYears(organisationId)))
-            .DistinctUntilChanged(BuildFiscalYearsSnapshotKey)
-            .Replay(1)
-            .RefCount();
-
-        _fiscalYearStreams[organisationId] = stream;
-        return stream;
+        return fiscalYearUpdates
+            .Merge(periodDrivenUpdates)
+            .DistinctUntilChanged(BuildFiscalYearSnapshotKey);
     }
 
-    // Operation: builds a deterministic snapshot key for fiscal-year payload deduplication.
-    private static string BuildFiscalYearsSnapshotKey(IList<FiscalYearData> fiscalYears)
+    // Operation: resolves one fiscal year by identifier from the organisation read model.
+    private async Task<FiscalYearData?> GetFiscalYearById(string organisationId, string fiscalYearId)
     {
-        var fiscalYearTokens = fiscalYears
-            .OrderBy(fiscalYear => fiscalYear.Id)
-            .Select(fiscalYear =>
-            {
-                var periodTokens = (fiscalYear.Periods ?? [])
-                    .OrderBy(period => period.SequenceNumber)
-                    .ThenBy(period => period.Id)
-                    .Select(period =>
-                        $"{period.Id}|{period.SequenceNumber}|{period.StartDate:O}|{period.EndDate:O}|{(period.IsLocked ? 1 : 0)}");
+        var fiscalYears = await GetFiscalYears(organisationId);
+        return fiscalYears.FirstOrDefault(fiscalYear => fiscalYear.Id == fiscalYearId);
+    }
 
-                return $"{fiscalYear.Id}|{fiscalYear.OrganisationId}|{fiscalYear.StartDate:O}|{fiscalYear.EndDate:O}|{(fiscalYear.IsLocked ? 1 : 0)}|[{string.Join(";", periodTokens)}]";
-            });
+    // Operation: builds a deterministic key for fiscal-year payload deduplication.
+    private static string BuildFiscalYearSnapshotKey(FiscalYearData fiscalYear)
+    {
+        var periodTokens = (fiscalYear.Periods ?? [])
+            .OrderBy(period => period.SequenceNumber)
+            .ThenBy(period => period.Id)
+            .Select(period =>
+                $"{period.Id}|{period.SequenceNumber}|{period.StartDate:O}|{period.EndDate:O}|{(period.IsLocked ? 1 : 0)}");
 
-        return string.Join("#", fiscalYearTokens);
+        return $"{fiscalYear.Id}|{fiscalYear.OrganisationId}|{fiscalYear.StartDate:O}|{fiscalYear.EndDate:O}|{(fiscalYear.IsLocked ? 1 : 0)}|[{string.Join(";", periodTokens)}]";
     }
 }
 

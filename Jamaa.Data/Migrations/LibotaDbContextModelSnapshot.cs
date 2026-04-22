@@ -46,6 +46,9 @@ namespace Jamaa.Data.Migrations
 
                     b.HasIndex("FiscalYearId");
 
+                    b.HasIndex("OrganisationId", "StartDate", "EndDate")
+                        .IsUnique();
+
                     b.ToTable("AccountingPeriods");
                 });
 
