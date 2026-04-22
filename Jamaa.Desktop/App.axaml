@@ -85,6 +85,21 @@
         <DataTemplate DataType="{x:Type accounting:AccountingReportsViewModel}">
             <accounting:AccountingReportsPage />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:AccountingConfigurationViewModel}">
+            <accounting:AccountingConfigurationPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:FiscalCalendarAndPeriodsViewModel}">
+            <accounting:FiscalCalendarAndPeriodsPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:TaxGroupsAndAuthoritiesViewModel}">
+            <accounting:TaxGroupsAndAuthoritiesPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:AutomationRulesViewModel}">
+            <accounting:AutomationRulesPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:UserRolesAndApprovalsViewModel}">
+            <accounting:UserRolesAndApprovalsPage />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type components:MemberListViewModel}">
             <components:MembersList />
         </DataTemplate>

@@ -4,9 +4,11 @@ using Akka.Persistence.Sql.Query;
 using Akka.Streams;
 using Akka.Streams.Dsl;
 using Domain.Organisation.Values;
+using Jamaa.Application.Finances.Events;
 using Jamaa.Application.Members.Events;
 using Jamaa.Application.Organisation.Events;
 using Jamaa.Data.Configuration;
+using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Models.Members;
 using Jamaa.Data.Models.Organisation;
 using Microsoft.EntityFrameworkCore;
@@ -93,8 +95,207 @@ public class OrganisationProjection : ReceivePersistentActor
             MemberUpdated memberUpdated => Handle(memberUpdated, dbContext),
             MemberRegistrationUpdated registrationUpdated => Handle(registrationUpdated, dbContext),
             MemberRegistrationEnded registrationEnded => Handle(registrationEnded, dbContext),
+            FiscalYearCreated fiscalYearCreated => Handle(fiscalYearCreated, dbContext),
+            FiscalYearUpdated fiscalYearUpdated => Handle(fiscalYearUpdated, dbContext),
+            FiscalYearDeleted fiscalYearDeleted => Handle(fiscalYearDeleted, dbContext),
+            FiscalYearPeriodsRegenerated fiscalYearPeriodsRegenerated => Handle(fiscalYearPeriodsRegenerated, dbContext),
+            AccountingPeriodCreated accountingPeriodCreated => Handle(accountingPeriodCreated, dbContext),
+            AccountingPeriodUpdated accountingPeriodUpdated => Handle(accountingPeriodUpdated, dbContext),
+            AccountingPeriodDeleted accountingPeriodDeleted => Handle(accountingPeriodDeleted, dbContext),
             _ => Task.CompletedTask
         };
+    }
+
+    private async Task Handle(FiscalYearCreated @event, JamaaDbContext dbContext)
+    {
+        var exists = await dbContext.FiscalYears.AnyAsync(fiscalYear => fiscalYear.Id == @event.FiscalYearId.Value);
+        if (exists)
+        {
+            return;
+        }
+
+        dbContext.FiscalYears.Add(new FiscalYearData
+        {
+            Id = @event.FiscalYearId.Value,
+            OrganisationId = @event.OrganisationId.Value,
+            StartDate = @event.StartDate,
+            EndDate = @event.EndDate,
+            IsLocked = @event.IsLocked
+        });
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private async Task Handle(FiscalYearUpdated @event, JamaaDbContext dbContext)
+    {
+        var fiscalYear = await dbContext.FiscalYears
+            .Include(current => current.Periods)
+            .FirstOrDefaultAsync(current => current.Id == @event.FiscalYearId.Value);
+        if (fiscalYear is null)
+        {
+            return;
+        }
+
+        fiscalYear.StartDate = @event.StartDate;
+        fiscalYear.EndDate = @event.EndDate;
+        fiscalYear.IsLocked = @event.IsLocked;
+
+        if (fiscalYear.IsLocked)
+        {
+            foreach (var period in fiscalYear.Periods)
+            {
+                period.IsLocked = true;
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private async Task Handle(FiscalYearDeleted @event, JamaaDbContext dbContext)
+    {
+        var fiscalYear = await dbContext.FiscalYears
+            .Include(current => current.Periods)
+            .FirstOrDefaultAsync(current => current.Id == @event.FiscalYearId.Value);
+
+        if (fiscalYear is null)
+        {
+            return;
+        }
+
+        dbContext.AccountingPeriods.RemoveRange(fiscalYear.Periods);
+        dbContext.FiscalYears.Remove(fiscalYear);
+        await dbContext.SaveChangesAsync();
+    }
+
+    // Operation: atomically replaces all periods for a fiscal year during regeneration.
+    private async Task Handle(FiscalYearPeriodsRegenerated @event, JamaaDbContext dbContext)
+    {
+        var fiscalYear = await dbContext.FiscalYears
+            .Include(current => current.Periods)
+            .FirstOrDefaultAsync(current => current.Id == @event.FiscalYearId.Value);
+
+        if (fiscalYear is null)
+        {
+            return;
+        }
+
+        // Replace all periods for the fiscal year so no stale rows remain in the read model.
+        dbContext.AccountingPeriods.RemoveRange(fiscalYear.Periods);
+        await dbContext.SaveChangesAsync();
+
+        var uniquePeriods = BuildUniqueAccountingPeriods(@event.CreatedPeriods);
+
+        // Create all new periods, skipping any pre-existing natural-key duplicate.
+        foreach (var periodData in uniquePeriods)
+        {
+            var existsByNaturalKey = await dbContext.AccountingPeriods.AnyAsync(period =>
+                period.OrganisationId == @event.OrganisationId.Value &&
+                period.StartDate == periodData.StartDate &&
+                period.EndDate == periodData.EndDate);
+            if (existsByNaturalKey)
+            {
+                continue;
+            }
+
+            dbContext.AccountingPeriods.Add(new AccountingPeriodData
+            {
+                Id = periodData.Id,
+                FiscalYearId = @event.FiscalYearId.Value,
+                OrganisationId = @event.OrganisationId.Value,
+                SequenceNumber = periodData.SequenceNumber,
+                StartDate = periodData.StartDate,
+                EndDate = periodData.EndDate,
+                IsLocked = periodData.IsLocked
+            });
+        }
+
+        // Save all changes atomically
+        await dbContext.SaveChangesAsync();
+    }
+
+    // Operation: deduplicates periods by date-range key and keeps deterministic sequence ordering.
+    public static IReadOnlyList<AccountingPeriodInfo> BuildUniqueAccountingPeriods(IReadOnlyList<AccountingPeriodInfo> periods)
+    {
+        return periods
+            .GroupBy(period => new { StartDate = period.StartDate.Date, EndDate = period.EndDate.Date })
+            .Select(group => group.OrderBy(period => period.SequenceNumber).First())
+            .OrderBy(period => period.SequenceNumber)
+            .ToList();
+    }
+
+    private async Task Handle(AccountingPeriodCreated @event, JamaaDbContext dbContext)
+    {
+        var fiscalYear = await dbContext.FiscalYears.FirstOrDefaultAsync(current => current.Id == @event.FiscalYearId.Value);
+        if (fiscalYear is null)
+        {
+            return;
+        }
+
+        var exists = await dbContext.AccountingPeriods.AnyAsync(period => period.Id == @event.AccountingPeriodId.Value);
+        if (exists)
+        {
+            return;
+        }
+
+        var duplicateNaturalKeyExists = await dbContext.AccountingPeriods.AnyAsync(period =>
+            period.OrganisationId == @event.OrganisationId.Value &&
+            period.StartDate == @event.StartDate &&
+            period.EndDate == @event.EndDate);
+        if (duplicateNaturalKeyExists)
+        {
+            return;
+        }
+
+        dbContext.AccountingPeriods.Add(new AccountingPeriodData
+        {
+            Id = @event.AccountingPeriodId.Value,
+            FiscalYearId = @event.FiscalYearId.Value,
+            OrganisationId = @event.OrganisationId.Value,
+            SequenceNumber = @event.SequenceNumber,
+            StartDate = @event.StartDate,
+            EndDate = @event.EndDate,
+            IsLocked = @event.IsLocked
+        });
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private async Task Handle(AccountingPeriodUpdated @event, JamaaDbContext dbContext)
+    {
+        var period = await dbContext.AccountingPeriods.FirstOrDefaultAsync(current => current.Id == @event.AccountingPeriodId.Value);
+        if (period is null)
+        {
+            return;
+        }
+
+        var duplicateNaturalKeyExists = await dbContext.AccountingPeriods.AnyAsync(current =>
+            current.Id != @event.AccountingPeriodId.Value &&
+            current.OrganisationId == @event.OrganisationId.Value &&
+            current.StartDate == @event.StartDate &&
+            current.EndDate == @event.EndDate);
+        if (duplicateNaturalKeyExists)
+        {
+            return;
+        }
+
+        period.SequenceNumber = @event.SequenceNumber;
+        period.StartDate = @event.StartDate;
+        period.EndDate = @event.EndDate;
+        period.IsLocked = @event.IsLocked;
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private async Task Handle(AccountingPeriodDeleted @event, JamaaDbContext dbContext)
+    {
+        var period = await dbContext.AccountingPeriods.FirstOrDefaultAsync(current => current.Id == @event.AccountingPeriodId.Value);
+        if (period is null)
+        {
+            return;
+        }
+
+        dbContext.AccountingPeriods.Remove(period);
+        await dbContext.SaveChangesAsync();
     }
 
     private async Task Handle(MemberRegistrationEnded @event, JamaaDbContext dbContext)

@@ -28,7 +28,7 @@
                 <TextBlock
                     HorizontalAlignment="Center"
                     Opacity="0.5"
-                    Text="This page is under development." />
+                    Text="Bank reconciliation workflows will appear here once statement matching is wired in." />
             </StackPanel>
         </husk:Card>
     </Grid>

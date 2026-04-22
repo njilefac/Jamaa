@@ -1,0 +1,63 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Accounting.AccountingConfigurationPage"
+    x:DataType="accounting:AccountingConfigurationViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
+    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia.BreadcrumbBar"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:local="clr-namespace:Jamaa.Desktop.Services.Navigation.Models"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid RowDefinitions="Auto,*">
+        <controls:BreadcrumbBar Grid.Row="0" ItemsSource="{Binding Breadcrumbs}">
+            <controls:BreadcrumbBar.ItemTemplate>
+                <DataTemplate x:DataType="local:BreadcrumbItemModel">
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{Binding ClickCommand}"
+                        Content="{Binding Title}"
+                        IsEnabled="{Binding IsActive}"
+                        Padding="0" />
+                </DataTemplate>
+            </controls:BreadcrumbBar.ItemTemplate>
+        </controls:BreadcrumbBar>
+
+        <ItemsControl
+            Grid.Row="1"
+            IsVisible="{Binding IsConfigurationCardsVisible}"
+            ItemsSource="{Binding ConfigurationCards}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel
+                        Classes="accounting configuration cards"
+                        HorizontalAlignment="Center"
+                        ItemHeight="300"
+                        ItemWidth="300"
+                        Margin="12"
+                        Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type accounting:AccountingConfigurationCardViewModel}">
+                    <husk:Card Classes="accounting configuration card">
+                        <Button Classes="accounting configuration card button" Command="{Binding OpenCommand}">
+                            <TextBlock Classes="accounting configuration card title" Text="{Binding Title}" />
+                        </Button>
+                    </husk:Card>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ContentControl
+            Content="{Binding ActiveContent}"
+            Grid.Row="1"
+            IsVisible="{Binding IsSubPageVisible}" />
+    </Grid>
+</UserControl>

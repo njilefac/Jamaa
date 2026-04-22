@@ -1,4 +1,6 @@
 using Akka.Actor;
+using Jamaa.Application.Finances.Aggregates;
+using Jamaa.Application.Finances.Commands;
 using Domain.Organisation.Values;
 using Jamaa.Application.Organisation.Aggregates;
 using Jamaa.Application.Organisation.Commands;
@@ -15,6 +17,54 @@ public class CommandProcessor : ReceiveActor
         ReceiveAsync<CreateOrganisation>(OnCreateOrganisation);
         ReceiveAsync<RegisterMember>(OnRegisterMember);
         ReceiveAsync<UpdateMember>(OnUpdateMember);
+        ReceiveAsync<CreateFiscalYear>(OnCreateFiscalYear);
+        ReceiveAsync<UpdateFiscalYear>(OnUpdateFiscalYear);
+        ReceiveAsync<DeleteFiscalYear>(OnDeleteFiscalYear);
+        ReceiveAsync<CreateAccountingPeriod>(OnCreateAccountingPeriod);
+        ReceiveAsync<UpdateAccountingPeriod>(OnUpdateAccountingPeriod);
+        ReceiveAsync<DeleteAccountingPeriod>(OnDeleteAccountingPeriod);
+    }
+
+    private Task OnCreateFiscalYear(CreateFiscalYear command)
+    {
+        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        fiscalCalendar.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnUpdateFiscalYear(UpdateFiscalYear command)
+    {
+        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        fiscalCalendar.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnDeleteFiscalYear(DeleteFiscalYear command)
+    {
+        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        fiscalCalendar.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnCreateAccountingPeriod(CreateAccountingPeriod command)
+    {
+        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        fiscalCalendar.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnUpdateAccountingPeriod(UpdateAccountingPeriod command)
+    {
+        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        fiscalCalendar.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnDeleteAccountingPeriod(DeleteAccountingPeriod command)
+    {
+        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        fiscalCalendar.Tell(command);
+        return Task.CompletedTask;
     }
 
     private Task OnUpdateMember(UpdateMember command)

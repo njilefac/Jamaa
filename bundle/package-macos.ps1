@@ -1,5 +1,6 @@
 # --- Static Configuration ---
 $solutionRoot = Get-Location
+$scriptRoot   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectPath  = "$solutionRoot/Jamaa.Desktop/Jamaa.Desktop.csproj"
 $projectName  = "Jamaa.Desktop"  # The binary name produced by the project
 $bundleName   = "Jamaa"
@@ -10,7 +11,7 @@ $iconPath     = "$solutionRoot/Jamaa.Desktop/Assets/Icons/jamaa.icns"
 # Output Paths
 $publishDir   = "$solutionRoot/publish"
 $appPath      = "$solutionRoot/$bundleName.app"
-$dmgName      = "$bundleName-Installer.dmg"
+$dmgName      = "$scriptRoot/$bundleName-Installer.dmg"
 
 Write-Host "🏗️  Starting build for $bundleName ($runtime)..." -ForegroundColor Yellow
 
@@ -101,7 +102,15 @@ if ($IsMacOS) {
     hdiutil create -volname "$bundleName" -srcfolder $dmgStage -ov -format UDZO $dmgName
     
     Remove-Item -Recurse -Force $dmgStage
-    Write-Host "`n✅ Success! DMG created: $dmgName" -ForegroundColor Green
+
+    if ($LASTEXITCODE -eq 0) {
+        if (Test-Path $appPath) { Remove-Item -Recurse -Force $appPath }
+        Write-Host "`n✅ Success! DMG created: $dmgName" -ForegroundColor Green
+        Write-Host "🧹 Removed temporary app bundle: $appPath" -ForegroundColor DarkGray
+    } else {
+        Write-Error "DMG creation failed. Keeping app bundle at: $appPath"
+        exit
+    }
 } else {
     Write-Warning "`n⚠️  Run on macOS to complete Signing and DMG creation."
     Write-Host "✅ .app bundle prepared at $appPath" -ForegroundColor Green

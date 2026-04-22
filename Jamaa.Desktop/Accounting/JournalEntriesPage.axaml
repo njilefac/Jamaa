@@ -28,7 +28,7 @@
                 <TextBlock
                     HorizontalAlignment="Center"
                     Opacity="0.5"
-                    Text="This page is under development." />
+                    Text="Journal entry creation and review will be available here in a later iteration." />
             </StackPanel>
         </husk:Card>
     </Grid>

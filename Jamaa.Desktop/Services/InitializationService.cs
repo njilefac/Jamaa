@@ -193,8 +193,15 @@ public static partial class InitializationService
                 new RouteMap(Path: Routes.AccountingDashboard, ViewModel: typeof(AccountingDashboardViewModel)),
                 new RouteMap(Path: Routes.AccountingTransactions, ViewModel: typeof(JournalEntriesViewModel)),
                 new RouteMap(Path: Routes.BankReconciliation, ViewModel: typeof(BankReconciliationViewModel)),
-                new RouteMap(Path: Routes.ChartOfAccounts, ViewModel: typeof(ChartOfAccountsViewModel)),
                 new RouteMap(Path: Routes.AccountingReports, ViewModel: typeof(AccountingReportsViewModel)),
+                new RouteMap(Path: Routes.AccountingConfiguration, ViewModel: typeof(AccountingConfigurationViewModel), Nested:
+                [
+                    new RouteMap(Path: Routes.FiscalCalendarAndPeriods, ViewModel: typeof(FiscalCalendarAndPeriodsViewModel)),
+                    new RouteMap(Path: Routes.ChartOfAccounts, ViewModel: typeof(ChartOfAccountsViewModel)),
+                    new RouteMap(Path: Routes.TaxGroupsAndAuthorities, ViewModel: typeof(TaxGroupsAndAuthoritiesViewModel)),
+                    new RouteMap(Path: Routes.AutomationRules, ViewModel: typeof(AutomationRulesViewModel)),
+                    new RouteMap(Path: Routes.UserRolesAndApprovals, ViewModel: typeof(UserRolesAndApprovalsViewModel)),
+                ]),
             ]),
         ]));
     }

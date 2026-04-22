@@ -1,4 +1,5 @@
 using Castle.DynamicProxy;
+using Jamaa.Application.Finances;
 using Jamaa.Application.Organisation;
 using Jamaa.Application.Security.Authorization;
 using Jamaa.Application.Setup;
@@ -20,6 +21,7 @@ public static class ApplicationServicesRegistration
         services.AddProxiedScoped<ISetupService, SetupService>();
 
         services.AddProxiedSingleton<IOrganisationManagementFacade, OrganisationManagementFacade>();
+        services.AddProxiedSingleton<IFinanceManagementFacade, FinanceManagementFacade>();
 
         services.AddSingleton<IQueryProcessor, QueryProcessor>();
 

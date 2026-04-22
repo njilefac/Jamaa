@@ -47,7 +47,7 @@
         </controls:NavigationView.MenuItemTemplate>
         <controls:NavigationView.HeaderTemplate>
             <DataTemplate>
-                <shared:DashboardHeader
+                <shared:ModulePageHeader
                     Classes="module header"
                     DataContext="{Binding ActiveModule}"
                     Title="{Binding ActiveModule.Title}" />

@@ -17,6 +17,64 @@ namespace Jamaa.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
 
+            modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingPeriodData", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FiscalYearId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("OrganisationId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SequenceNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FiscalYearId");
+
+                    b.HasIndex("OrganisationId", "StartDate", "EndDate")
+                        .IsUnique();
+
+                    b.ToTable("AccountingPeriods");
+                });
+
+            modelBuilder.Entity("Jamaa.Data.Models.Finances.FiscalYearData", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("OrganisationId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FiscalYears");
+                });
+
             modelBuilder.Entity("Jamaa.Data.Models.Members.MemberData", b =>
                 {
                     b.Property<string>("Id")
@@ -152,6 +210,17 @@ namespace Jamaa.Data.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingPeriodData", b =>
+                {
+                    b.HasOne("Jamaa.Data.Models.Finances.FiscalYearData", "FiscalYear")
+                        .WithMany("Periods")
+                        .HasForeignKey("FiscalYearId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FiscalYear");
+                });
+
             modelBuilder.Entity("Jamaa.Data.Models.Members.MemberData", b =>
                 {
                     b.HasOne("Jamaa.Data.Models.Organisation.OrganisationData", "Organisation")
@@ -180,6 +249,11 @@ namespace Jamaa.Data.Migrations
                     b.Navigation("Member");
 
                     b.Navigation("Organisation");
+                });
+
+            modelBuilder.Entity("Jamaa.Data.Models.Finances.FiscalYearData", b =>
+                {
+                    b.Navigation("Periods");
                 });
 
             modelBuilder.Entity("Jamaa.Data.Models.Members.MemberData", b =>

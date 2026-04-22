@@ -5,12 +5,12 @@ using Avalonia.Markup.Xaml;
 
 namespace Jamaa.Desktop.Shared;
 
-public partial class DashboardHeader : UserControl
+public partial class ModulePageHeader : UserControl
 {
     public static readonly StyledProperty<string?> TitleProperty =
-        AvaloniaProperty.Register<DashboardHeader, string?>(nameof(Title));
+        AvaloniaProperty.Register<ModulePageHeader, string?>(nameof(Title));
 
-    public DashboardHeader()
+    public ModulePageHeader()
     {
         InitializeComponent();
     }
