@@ -349,7 +349,9 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
 
     private bool CanDeleteFiscalYear()
     {
-        return SelectedFiscalYear is not null;
+        return SelectedFiscalYear is not null &&
+               FiscalYears.Count > 1 &&
+               FiscalYears.Any(fiscalYear => fiscalYear.Id == SelectedFiscalYear.Id);
     }
 
     private bool CanRevertFiscalYear()
@@ -450,12 +452,19 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         }
 
         _fiscalYearsSource.RemoveKey(fiscalYearId);
-        if (SelectedFiscalYear?.Id == fiscalYearId)
+
+        // Normalize selection after removal so subsequent delete clicks target an existing row.
+        var replacementSelection = FiscalYears.FirstOrDefault(fiscalYear => fiscalYear.Id != fiscalYearId);
+        var selectedFiscalYearWasRemoved = SelectedFiscalYear?.Id == fiscalYearId;
+        var selectedFiscalYearIsStale = SelectedFiscalYear is not null &&
+                                        FiscalYears.All(fiscalYear => fiscalYear.Id != SelectedFiscalYear.Id);
+        if (selectedFiscalYearWasRemoved || selectedFiscalYearIsStale)
         {
-            SelectedFiscalYear = FiscalYears.FirstOrDefault();
+            SelectedFiscalYear = replacementSelection;
         }
 
         StatusMessage = $"Deleted {deletedFiscalYear.Value.Name}.";
+        RaiseSelectionStateChanged();
         RaiseCollectionSummaryChanged();
     }
 
@@ -605,6 +614,7 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         OnPropertyChanged(nameof(LockedFiscalYearsDisplay));
         OnPropertyChanged(nameof(OpenFiscalYearsDisplay));
         OnPropertyChanged(nameof(SelectedFiscalYearPeriodCountDisplay));
+        DeleteFiscalYearCommand.NotifyCanExecuteChanged();
     }
 
     private void RaiseSelectionStateChanged()

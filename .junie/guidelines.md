@@ -17,6 +17,7 @@ Jamaa is an association management application built with .NET 10, C# 14, and Av
   - PascalCase for classes, methods, and public properties.
   - camelCase with underscore prefix (`_field`) for private fields, especially when used with `[ObservableProperty]`.
 - **Asynchronous Code**: Prefer `async/await` for all I/O-bound operations.
+- **Async Return Types**: Never use `async void`; use `Task`/`Task<T>` instead. If fire-and-forget is required, use an explicit wrapper that handles exceptions.
 - **Single Responsibility Principle**: Each class should have one reason to change. Keep methods focused and concise.
 - always prefer `nameof` over string literals.
 - always prefer `var` when the type is obvious from the right-hand side.

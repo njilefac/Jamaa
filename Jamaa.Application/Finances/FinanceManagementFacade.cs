@@ -9,7 +9,7 @@ using Jamaa.Application.Users;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Notifiers;
-using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -44,7 +44,9 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         // Subscribe after stream fields are initialized and seed from the already-authenticated session.
         userSessionService.UserSessions
             .StartWith(userSessionService.CurrentUserSession)
-            .Subscribe(InitializeCurrentFiscalYears);
+            .Select(SeedFiscalYearsSafely)
+            .Concat()
+            .Subscribe(_ => { });
     }
 
     public IObservable<FiscalYearData> CurrentFiscalYears { get; }
@@ -53,8 +55,21 @@ public class FinanceManagementFacade : IFinanceManagementFacade
 
     public IObservable<FiscalYearData> FiscalYearDeleted { get; }
 
+    // Integration: builds a safe async seeding step for one session emission.
+    private static IObservable<Unit> SeedFiscalYearsSafely(UserSession? session, Func<UserSession?, Task> seedFiscalYears)
+    {
+        return Observable.FromAsync(() => seedFiscalYears(session))
+            .Catch<Unit, Exception>(_ => Observable.Empty<Unit>());
+    }
+
+    // Integration: builds the seeding workflow for one session while keeping the stream alive on failure.
+    private IObservable<Unit> SeedFiscalYearsSafely(UserSession? session)
+    {
+        return SeedFiscalYearsSafely(session, InitializeCurrentFiscalYearsAsync);
+    }
+
     // Integration: seeds the current-fiscal-year stream from the active session organisation.
-    private async void InitializeCurrentFiscalYears(UserSession? session)
+    private async Task InitializeCurrentFiscalYearsAsync(UserSession? session)
     {
         var organisationId = session?.Organisation?.Id;
         if (string.IsNullOrWhiteSpace(organisationId))
@@ -68,13 +83,13 @@ public class FinanceManagementFacade : IFinanceManagementFacade
             return;
         }
 
-        _lastSeededOrganisationId = organisationId;
-
         var existingFiscalYears = await GetFiscalYears(organisationId);
         foreach (var fiscalYear in existingFiscalYears)
         {
             _currentFiscalYears.OnNext(fiscalYear);
         }
+
+        _lastSeededOrganisationId = organisationId;
     }
 
     // Integration: dispatches intent to the finance aggregate stream.

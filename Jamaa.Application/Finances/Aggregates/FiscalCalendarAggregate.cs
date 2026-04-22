@@ -70,7 +70,7 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
 
         PersistCreatedFiscalYear(command, startDate, endDate);
 
-        TrySaveSnapshot();
+        DeferAsync(true, _ => TrySaveSnapshot());
     }
 
     // Integration: updates fiscal year boundaries and regenerates periods to preserve full-year coverage.
@@ -93,7 +93,7 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
 
         PersistPlannedFiscalYearUpdates(command.OrganisationId, existingFiscalYear, plan);
 
-        TrySaveSnapshot();
+        DeferAsync(true, _ => TrySaveSnapshot());
     }
 
     // Operation: updates one fiscal year and fully regenerates its accounting periods as a single atomic event.
@@ -170,7 +170,7 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
         }
 
         PersistDeletedFiscalYear(command, fiscalYear);
-        TrySaveSnapshot();
+        DeferAsync(true, _ => TrySaveSnapshot());
     }
 
     // Operation: resolves one fiscal year from aggregate state.
@@ -349,7 +349,7 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
             return;
 
         PersistCreatedAccountingPeriod(command, fiscalYear);
-        TrySaveSnapshot();
+        DeferAsync(true, _ => TrySaveSnapshot());
     }
 
     // Integration: updates a period after validating full fiscal-year coverage is preserved.
@@ -365,7 +365,7 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
             return;
 
         PersistUpdatedAccountingPeriod(command, fiscalYear);
-        TrySaveSnapshot();
+        DeferAsync(true, _ => TrySaveSnapshot());
     }
 
     // Integration: deletes a period after validating full fiscal-year coverage remains intact.
@@ -381,7 +381,7 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
             return;
 
         PersistDeletedAccountingPeriod(command, fiscalYear);
-        TrySaveSnapshot();
+        DeferAsync(true, _ => TrySaveSnapshot());
     }
 
     // Operation: resolves a fiscal year from state, rejecting if locked or missing.
@@ -593,7 +593,7 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
         if (!_state.FiscalYears.TryGetValue(@event.FiscalYearId.Value, out var fiscalYear))
         {
             return;
-        }
+        }  
 
         fiscalYear.Periods[@event.AccountingPeriodId.Value] = new AccountingPeriodState
         {

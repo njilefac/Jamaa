@@ -44,6 +44,11 @@ For clean code, design principles, and implementation heuristics, also apply `.j
    - PascalCase: classes, methods, public properties
    - camelCase with `_` prefix: private fields
 
+7. **Async Return Types**:
+   - Never use `async void` methods
+   - Use `Task` or `Task<T>` instead
+   - If fire-and-forget is required, use an explicit non-`async void` wrapper that handles errors
+
 ## Clean Code & Design Principles
 
 - Apply the clean code and design guidance from `.junie/guidelines.md` in all generated code.
