@@ -502,4 +502,44 @@
         <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ControlStrongStrokeColorDefaultBrush}" />
     </Style>
+
+    <Style Selector="WrapPanel.dashboard.shortcut.cards">
+        <Setter Property="ItemSpacing" Value="12" />
+    </Style>
+    <Style Selector="husk|Card.dashboard.shortcut">
+        <Setter Property="Width" Value="140" />
+        <Setter Property="Height" Value="140" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="Background" Value="{DynamicResource AppCardBackground}" />
+    </Style>
+    <Style Selector="Button.dashboard.shortcut.button">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Button.dashboard.shortcut.button:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+    </Style>
+
+    <Style Selector="WrapPanel.dashboard.metric.cards">
+        <Setter Property="ItemSpacing" Value="16" />
+    </Style>
+    <Style Selector="husk|Card.dashboard.metric.card">
+        <Setter Property="Width" Value="280" />
+        <Setter Property="MinHeight" Value="180" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="Background" Value="{DynamicResource AppCardBackground}" />
+    </Style>
+    <Style Selector="Button.dashboard.metric.card.button">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Button.dashboard.metric.card.button:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+    </Style>
 </Styles>

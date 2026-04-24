@@ -56,6 +56,7 @@ public partial class MembersOverviewViewModel : ObservableValidator,
         }
     }
 
+
     private void NavigateTo(IRouteableViewModel state)
     {
         if (ActiveContent == state) return;
