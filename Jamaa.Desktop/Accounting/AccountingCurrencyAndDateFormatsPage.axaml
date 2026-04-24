@@ -1,0 +1,97 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Accounting.AccountingCurrencyAndDateFormatsPage"
+    x:DataType="accounting:AccountingCurrencyAndDateFormatsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid RowDefinitions="Auto,*">
+        <husk:Card Margin="10,10,10,0" Padding="18">
+            <Grid RowDefinitions="Auto,Auto">
+                <TextBlock Classes="page.box.header" Text="Currency and Date Format Settings" />
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="0,6,0,0"
+                    Opacity="0.7"
+                    Text="Define the organization functional currency, preferred date format, and decimal precision for accounting reports." />
+            </Grid>
+        </husk:Card>
+
+        <husk:Card
+            Grid.Row="1"
+            Margin="10"
+            Padding="18">
+            <ScrollViewer>
+                <StackPanel Spacing="16">
+                    <Grid
+                        Classes="page form"
+                        ColumnDefinitions="Auto,*"
+                        RowDefinitions="Auto,Auto,Auto">
+                        <TextBlock
+                            Classes="form label"
+                            Grid.Column="0"
+                            Grid.Row="0"
+                            Text="Base currency" />
+                        <ComboBox
+                            Classes="form field"
+                            Grid.Column="1"
+                            Grid.Row="0"
+                            ItemsSource="{Binding BaseCurrencyOptions}"
+                            SelectedItem="{Binding SelectedBaseCurrency, Mode=TwoWay}" />
+
+                        <TextBlock
+                            Classes="form label"
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            Text="Date format" />
+                        <ComboBox
+                            Classes="form field"
+                            Grid.Column="1"
+                            Grid.Row="1"
+                            ItemsSource="{Binding DateFormatOptions}"
+                            SelectedItem="{Binding SelectedDateFormat, Mode=TwoWay}" />
+
+                        <TextBlock
+                            Classes="form label"
+                            Grid.Column="0"
+                            Grid.Row="2"
+                            Text="Decimal precision" />
+                        <ComboBox
+                            Classes="form field"
+                            Grid.Column="1"
+                            Grid.Row="2"
+                            ItemsSource="{Binding DecimalPrecisionOptions}"
+                            SelectedItem="{Binding SelectedDecimalPrecision, Mode=TwoWay}" />
+                    </Grid>
+
+                    <Border
+                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                        CornerRadius="10"
+                        Padding="14">
+                        <StackPanel Spacing="6">
+                            <TextBlock Classes="page.box.header" Text="Preview" />
+                            <TextBlock FontWeight="SemiBold" Text="{Binding FormattingPreview}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border
+                        Background="{DynamicResource SystemAccentColorLight3}"
+                        CornerRadius="10"
+                        Padding="12">
+                        <TextBlock
+                            Opacity="0.9"
+                            Text="These settings are intended for Global Administrator configuration. Persistence and role enforcement will be added in a follow-up application layer story."
+                            TextWrapping="Wrap" />
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </husk:Card>
+    </Grid>
+</UserControl>
+

@@ -18,6 +18,7 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
 {
     private readonly IRouteResolver _routeResolver;
     private readonly IRelayCommand _openFiscalCalendarAndPeriodsCommand;
+    private readonly IRelayCommand _openCurrencyAndDateFormatsCommand;
     private readonly IRelayCommand _openChartOfAccountsCommand;
     private readonly IRelayCommand _openTaxGroupsAndAuthoritiesCommand;
     private readonly IRelayCommand _openAutomationRulesCommand;
@@ -28,6 +29,7 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
     {
         _routeResolver = routeResolver;
         _openFiscalCalendarAndPeriodsCommand = new RelayCommand(OpenFiscalCalendarAndPeriods);
+        _openCurrencyAndDateFormatsCommand = new RelayCommand(OpenCurrencyAndDateFormats);
         _openChartOfAccountsCommand = new RelayCommand(OpenChartOfAccounts);
         _openTaxGroupsAndAuthoritiesCommand = new RelayCommand(OpenTaxGroupsAndAuthorities);
         _openAutomationRulesCommand = new RelayCommand(OpenAutomationRules);
@@ -51,6 +53,7 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
     private IReadOnlyList<AccountingConfigurationCardViewModel> CreateConfigurationCards() =>
     [
         new("Fiscal Calendar & Periods", _openFiscalCalendarAndPeriodsCommand),
+        new("Currency & Date Formats", _openCurrencyAndDateFormatsCommand),
         new("COA Structure & Mappings", _openChartOfAccountsCommand),
         new("Tax Groups & Authorities", _openTaxGroupsAndAuthoritiesCommand),
         new("Automation Rules", _openAutomationRulesCommand),
@@ -60,6 +63,11 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
     private void OpenFiscalCalendarAndPeriods()
     {
         RequestNavigation(Routes.FiscalCalendarAndPeriods);
+    }
+
+    private void OpenCurrencyAndDateFormats()
+    {
+        RequestNavigation(Routes.AccountingCurrencyAndDateFormats);
     }
 
     private void OpenChartOfAccounts()
@@ -107,6 +115,7 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
         return route switch
         {
             Routes.FiscalCalendarAndPeriods => "Fiscal Calendar & Periods",
+            Routes.AccountingCurrencyAndDateFormats => "Currency & Date Formats",
             Routes.ChartOfAccounts => "COA Structure & Mappings",
             Routes.TaxGroupsAndAuthorities => "Tax Groups & Authorities",
             Routes.AutomationRules => "Automation Rules",
