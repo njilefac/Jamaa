@@ -38,7 +38,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     public Interaction<MemberEndRegistrationViewModel, DialogResponse<RegistrationStatus>> ConfirmEndRegistration { get; } = new();
     public Interaction<Unit, Unit> FocusSearch { get; } = new();
     public SelectionModel<MemberViewModel> Selection { get; }
-    public string Title => "Overview";
+    public string Title => "Members";
 
 
     public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
