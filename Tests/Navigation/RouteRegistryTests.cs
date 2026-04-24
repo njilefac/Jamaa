@@ -59,4 +59,24 @@ public class RouteRegistryTests
         resolved.ShouldNotBeNull();
         resolved.Path.ShouldBe("/a/b/c");
     }
+
+    [Fact]
+    public void Resolve_ShouldFindTopLevelRouteEvenIfAlsoDuplicatedInNested()
+    {
+        // Arrange — Verifies a route registered both at top level and nested can be resolved at top level
+        var registry = new RouteRegistry();
+        var parent = new RouteMap("/parent", typeof(object), 
+            Nested: [new RouteMap("/parent/child", typeof(object))]);
+        var topLevelChild = new RouteMap("/parent/child", typeof(object));
+        
+        registry.Register(parent);
+        registry.Register(topLevelChild);
+
+        // Act
+        var resolved = registry.Resolve("/parent/child");
+
+        // Assert
+        resolved.ShouldNotBeNull();
+        resolved.Path.ShouldBe("/parent/child");
+    }
 }

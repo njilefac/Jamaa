@@ -14,7 +14,7 @@ public static class Routes
     public const string EventsOverview = "/events";
     public const string AccountingOverview = "/accounting";
     public const string AccountingDashboard = "/accounting/dashboard";
-    public const string ChartOfAccounts = "/accounting/chart-of-accounts";
+    public const string ChartOfAccounts = "/accounting/configuration/chart-of-accounts";
     public const string AccountingTransactions = "/accounting/transactions";
     public const string BankReconciliation = "/accounting/bank-reconciliation";
     public const string AccountingReports = "/accounting/reports";

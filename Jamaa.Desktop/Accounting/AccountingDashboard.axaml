@@ -1,91 +1,151 @@
 <UserControl
-    d:DesignHeight="600"
-    d:DesignWidth="1000"
+    d:DesignHeight="800"
+    d:DesignWidth="1200"
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Accounting.AccountingDashboard"
-    x:DataType="accounting:AccountingDashboardViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
+    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia.BreadcrumbBar"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:local="clr-namespace:Jamaa.Desktop.Services.Navigation.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid ColumnDefinitions="*, *, *, *" RowDefinitions="Auto, *">
-        <husk:Card
-            Grid.Column="0"
-            Grid.Row="0"
-            Margin="10">
-            <StackPanel Spacing="5">
-                <TextBlock Classes="page.box.header" Text="Total Revenue" />
-                <TextBlock
-                    FontSize="24"
-                    FontWeight="Bold"
-                    Text="$0.00" />
-            </StackPanel>
-        </husk:Card>
 
-        <husk:Card
-            Grid.Column="1"
-            Grid.Row="0"
-            Margin="10">
-            <StackPanel Spacing="5">
-                <TextBlock Classes="page.box.header" Text="Total Expenses" />
-                <TextBlock
-                    FontSize="24"
-                    FontWeight="Bold"
-                    Text="$0.00" />
-            </StackPanel>
-        </husk:Card>
+    <Grid RowDefinitions="Auto,*">
+        <controls:BreadcrumbBar Grid.Row="0" ItemsSource="{Binding Breadcrumbs}">
+            <controls:BreadcrumbBar.ItemTemplate>
+                <DataTemplate x:DataType="local:BreadcrumbItemModel">
+                    <Button
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Command="{Binding ClickCommand}"
+                        Content="{Binding Title}"
+                        IsEnabled="{Binding IsActive}"
+                        Padding="0" />
+                </DataTemplate>
+            </controls:BreadcrumbBar.ItemTemplate>
+        </controls:BreadcrumbBar>
 
-        <husk:Card
-            Grid.Column="2"
-            Grid.Row="0"
-            Margin="10">
-            <StackPanel Spacing="5">
-                <TextBlock Classes="page.box.header" Text="Net Profit" />
-                <TextBlock
-                    FontSize="24"
-                    FontWeight="Bold"
-                    Text="$0.00" />
-            </StackPanel>
-        </husk:Card>
+        <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}">
+            <TabItem Header="Dashboard">
+                <ScrollViewer>
+                    <StackPanel Margin="20,20,20,20">
+                        <StackPanel Margin="0,0,0,20">
+                            <TextBlock
+                                FontSize="32"
+                                FontWeight="Bold"
+                                Text="General Ledger Dashboard" />
+                            <TextBlock
+                                Margin="0,8,0,0"
+                                Opacity="0.7"
+                                Text="Welcome to your financial hub. Track metrics, manage journal entries, and reconcile accounts from here."
+                                TextWrapping="Wrap" />
+                        </StackPanel>
 
-        <husk:Card
-            Grid.Column="3"
-            Grid.Row="0"
-            Grid.RowSpan="2"
-            Margin="10">
-            <DockPanel>
-                <TextBlock
-                    Classes="page.box.header"
-                    DockPanel.Dock="Top"
-                    Margin="0,0,0,10"
-                    Text="Pending Tasks" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Opacity="0.5"
-                    Text="No pending tasks"
-                    VerticalAlignment="Center" />
-            </DockPanel>
-        </husk:Card>
+                        <StackPanel Margin="0,0,0,20">
+                            <TextBlock
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,12"
+                                Text="Quick Actions" />
+                            <ItemsControl ItemsSource="{Binding ActionShortcuts}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Classes="dashboard shortcut cards" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type accounting:DashboardShortcutViewModel}">
+                                        <husk:Card Classes="dashboard shortcut">
+                                            <Button
+                                                Classes="dashboard shortcut button"
+                                                Command="{Binding Action}"
+                                                Cursor="Hand">
+                                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock
+                                                        FontSize="24"
+                                                        HorizontalAlignment="Center"
+                                                        Margin="0,0,0,8"
+                                                        Text="{Binding Icon}" />
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        FontWeight="Medium"
+                                                        Text="{Binding Title}"
+                                                        TextAlignment="Center"
+                                                        TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Button>
+                                        </husk:Card>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
 
-        <husk:Card
-            Grid.Column="0"
-            Grid.ColumnSpan="3"
-            Grid.Row="1"
-            Margin="10">
-            <DockPanel>
-                <TextBlock
-                    Classes="page.box.header"
-                    DockPanel.Dock="Top"
-                    Margin="0,0,0,10"
-                    Text="Recent Activity" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Opacity="0.5"
-                    Text="No recent activity"
-                    VerticalAlignment="Center" />
-            </DockPanel>
-        </husk:Card>
+                        <StackPanel>
+                            <TextBlock
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,12"
+                                Text="Key Metrics" />
+                            <ItemsControl ItemsSource="{Binding MetricCards}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Classes="dashboard metric cards" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type accounting:DashboardMetricCardViewModel}">
+                                        <husk:Card Classes="dashboard metric card">
+                                            <Button
+                                                Classes="dashboard metric card button"
+                                                Command="{Binding NavigateCommand}"
+                                                Cursor="Hand">
+                                                <DockPanel LastChildFill="True">
+                                                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                                                        <TextBlock
+                                                            FontSize="32"
+                                                            FontWeight="Bold"
+                                                            Foreground="{DynamicResource SystemAccentColor}"
+                                                            Text="{Binding MetricValue}" />
+                                                        <TextBlock
+                                                            FontSize="14"
+                                                            FontWeight="SemiBold"
+                                                            Margin="0,4,0,0"
+                                                            Text="{Binding MetricLabel}" />
+                                                    </StackPanel>
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        Opacity="0.7"
+                                                        Text="{Binding Description}"
+                                                        TextWrapping="Wrap" />
+                                                </DockPanel>
+                                            </Button>
+                                        </husk:Card>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Journal Entries">
+                <ContentControl Content="{Binding JournalEntriesContent}" />
+            </TabItem>
+
+            <TabItem Header="Bank Reconciliation">
+                <ContentControl Content="{Binding BankReconciliationContent}" />
+            </TabItem>
+
+            <TabItem Header="Reports">
+                <ContentControl Content="{Binding ReportsContent}" />
+            </TabItem>
+
+
+            <TabItem Header="Configuration">
+                <ContentControl Content="{Binding ConfigurationContent}" />
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

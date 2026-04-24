@@ -15,13 +15,7 @@ public class NavigationItemsProvider : INavigationItemsProvider
             new NavigationItemModel(Routes.Dashboard, "Home", "Icons.Home"),
             new NavigationItemModel(Routes.MembersOverview, "Members", "Icons.Members"),
             new NavigationItemModel(Routes.EventsOverview, "Events", "Icons.Calendar"),
-            new NavigationItemModel(Routes.AccountingOverview, "Accounting", "Icons.Accounting", SubItems:[
-                new NavigationItemModel(Routes.AccountingDashboard, "Overview", "Icons.Accounting"),
-                new NavigationItemModel(Routes.AccountingTransactions, "Journal Entries", "Icons.Accounting"),
-                new NavigationItemModel(Routes.BankReconciliation, "Bank Reconciliation", "Icons.Accounting"),
-                new NavigationItemModel(Routes.AccountingReports, "Reports", "Icons.Analytics"),
-                new NavigationItemModel(Routes.AccountingConfiguration, "Configuration", "Icons.Settings"),
-            ]),
+            new NavigationItemModel(Routes.AccountingDashboard, "Accounting", "Icons.Accounting"),
         ];
     }
 }
