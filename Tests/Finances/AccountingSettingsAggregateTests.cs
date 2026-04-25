@@ -1,4 +1,6 @@
 using Jamaa.Application.Finances.Aggregates;
+using Jamaa.Application.Finances.Values;
+using System.Linq;
 using Shouldly;
 using Xunit;
 
@@ -152,6 +154,59 @@ public class AccountingSettingsAggregateTests
 
         result.ShouldBeFalse();
         error.ShouldNotBeEmpty();
+    }
+
+    // --- TryValidateAvailableCurrencies ---
+
+    [Fact]
+    public void TryValidateAvailableCurrencies_ShouldReturnTrue_ForNonEmptyValidList()
+    {
+        var result = AccountingSettingsAggregate.TryValidateAvailableCurrencies(
+        [
+            new Currency("USD", "$"),
+            new Currency("kes", "KSh"),
+            new Currency("EUR", "EUR")
+        ], out var error);
+
+        result.ShouldBeTrue();
+        error.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TryValidateAvailableCurrencies_ShouldReturnFalse_WhenListIsEmpty()
+    {
+        var result = AccountingSettingsAggregate.TryValidateAvailableCurrencies([], out var error);
+
+        result.ShouldBeFalse();
+        error.ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void TryValidateAvailableCurrencies_ShouldReturnFalse_WhenAnyCurrencyIsInvalid()
+    {
+        var result = AccountingSettingsAggregate.TryValidateAvailableCurrencies(
+        [
+            new Currency("USD", "$"),
+            new Currency(" ", "")
+        ], out var error);
+
+        result.ShouldBeFalse();
+        error.ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void NormalizeCurrencies_ShouldReturnDistinctUppercaseSortedValues()
+    {
+        var normalized = AccountingSettingsAggregate.NormalizeCurrencies(
+        [
+            new Currency("kes", "KSh"),
+            new Currency("USD", "$"),
+            new Currency(" usd ", "US$"),
+            new Currency("EUR", "EUR")
+        ]);
+
+        normalized.Select(currency => currency.Code).ShouldBe(["EUR", "KES", "USD"]);
+        normalized.First(currency => currency.Code == "USD").Symbol.ShouldBe("$");
     }
 }
 

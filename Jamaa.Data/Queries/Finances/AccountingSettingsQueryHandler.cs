@@ -13,6 +13,7 @@ public class AccountingSettingsQueryHandler(JamaaDbContext dbContext) : IAccount
     {
         return dbContext.AccountingSettings
             .AsNoTracking()
+            .Include(settings => settings.AvailableCurrencies)
             .FirstOrDefaultAsync(settings => settings.OrganisationId == query.OrganisationId.Value);
     }
 }

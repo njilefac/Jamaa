@@ -3,6 +3,7 @@ using Akka.Persistence.Query;
 using Akka.Persistence.Sql.Query;
 using Akka.Streams;
 using Akka.Streams.Dsl;
+using System.Linq;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Events;
 using Jamaa.Application.Members.Events;
@@ -303,6 +304,7 @@ public class OrganisationProjection : ReceivePersistentActor
     private async Task Handle(AccountingSettingsUpdated @event, JamaaDbContext dbContext)
     {
         var existing = await dbContext.AccountingSettings
+            .Include(settings => settings.AvailableCurrencies)
             .FirstOrDefaultAsync(settings => settings.OrganisationId == @event.OrganisationId.Value);
 
         if (existing is null)
@@ -312,7 +314,15 @@ public class OrganisationProjection : ReceivePersistentActor
                 OrganisationId = @event.OrganisationId.Value,
                 BaseCurrency = @event.BaseCurrency,
                 DateFormat = @event.DateFormat,
-                DecimalPrecision = @event.DecimalPrecision
+                DecimalPrecision = @event.DecimalPrecision,
+                AvailableCurrencies = (@event.AvailableCurrencies ?? [])
+                    .Select(currency => new AccountingAvailableCurrencyData
+                    {
+                        OrganisationId = @event.OrganisationId.Value,
+                        CurrencyCode = currency.Code,
+                        CurrencySymbol = currency.Symbol
+                    })
+                    .ToList()
             });
         }
         else
@@ -320,6 +330,16 @@ public class OrganisationProjection : ReceivePersistentActor
             existing.BaseCurrency = @event.BaseCurrency;
             existing.DateFormat = @event.DateFormat;
             existing.DecimalPrecision = @event.DecimalPrecision;
+
+            dbContext.AccountingAvailableCurrencies.RemoveRange(existing.AvailableCurrencies);
+            existing.AvailableCurrencies = (@event.AvailableCurrencies ?? [])
+                .Select(currency => new AccountingAvailableCurrencyData
+                {
+                    OrganisationId = @event.OrganisationId.Value,
+                    CurrencyCode = currency.Code,
+                    CurrencySymbol = currency.Symbol
+                })
+                .ToList();
         }
 
         await dbContext.SaveChangesAsync();

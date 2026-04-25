@@ -35,7 +35,7 @@
                             <Grid
                                 Classes="page form"
                                 ColumnDefinitions="Auto,*"
-                                RowDefinitions="Auto,Auto,Auto">
+                                RowDefinitions="Auto,Auto,Auto,Auto">
                                 <TextBlock
                                     Classes="form label"
                                     Grid.Column="0"
@@ -46,7 +46,14 @@
                                     Grid.Column="1"
                                     Grid.Row="0"
                                     ItemsSource="{Binding BaseCurrencyOptions}"
-                                    SelectedItem="{Binding SelectedBaseCurrency, Mode=TwoWay}" />
+                                    SelectedValue="{Binding SelectedBaseCurrency, Mode=TwoWay}"
+                                    SelectedValueBinding="{Binding CurrencyCode}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding CurrencyCode}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
 
                                 <TextBlock
                                     Classes="form label"
@@ -71,6 +78,44 @@
                                     Grid.Row="2"
                                     ItemsSource="{Binding DecimalPrecisionOptions}"
                                     SelectedItem="{Binding SelectedDecimalPrecision, Mode=TwoWay}" />
+
+                                <TextBlock
+                                    Classes="form label"
+                                    Grid.Column="0"
+                                    Grid.Row="3"
+                                    Text="Available currencies" />
+
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Grid.Row="3"
+                                    Spacing="8">
+                                    <WrapPanel ItemSpacing="8">
+                                        <TextBox
+                                            MinWidth="120"
+                                            Text="{Binding NewCurrencyCode, Mode=TwoWay}"
+                                            Watermark="e.g. UGX" />
+                                        <TextBox
+                                            MinWidth="120"
+                                            Text="{Binding NewCurrencySymbol, Mode=TwoWay}"
+                                            Watermark="e.g. Ush" />
+                                        <Button Command="{Binding AddCurrencyCommand}" Content="Add currency" />
+                                    </WrapPanel>
+
+                                    <WrapPanel ItemSpacing="8">
+                                        <ComboBox
+                                            ItemsSource="{Binding AvailableCurrencies}"
+                                            MinWidth="160"
+                                            SelectedValue="{Binding SelectedAvailableCurrencyCode, Mode=TwoWay}"
+                                            SelectedValueBinding="{Binding CurrencyCode}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding CurrencyCode}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <Button Command="{Binding RemoveSelectedCurrencyCommand}" Content="Remove selected" />
+                                    </WrapPanel>
+                                </StackPanel>
                             </Grid>
 
                             <Border
@@ -106,7 +151,7 @@
                         Padding="12">
                         <TextBlock
                             Opacity="0.9"
-                            Text="These settings are intended for Global Administrator configuration. Persistence and role enforcement will be added in a follow-up application layer story."
+                            Text="Manage your organisation's allowed currencies here. The selected base currency must be in this list, and all changes are persisted after save."
                             TextWrapping="Wrap" />
                     </Border>
                 </StackPanel>

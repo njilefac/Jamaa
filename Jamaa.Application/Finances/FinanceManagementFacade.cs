@@ -4,14 +4,17 @@ using Domain.Finances.Queries;
 using Domain.Finances.Values;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Commands;
+using Jamaa.Application.Finances.Values;
 using Jamaa.Application.Shared;
 using Jamaa.Application.Users;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Notifiers;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using AppCurrency = Jamaa.Application.Finances.Values.Currency;
 
 namespace Jamaa.Application.Finances;
 
@@ -44,13 +47,9 @@ public class FinanceManagementFacade : IFinanceManagementFacade
 
         _currentAccountingSettings = new BehaviorSubject<AccountingSettingsData?>(null);
         CurrentAccountingSettings = _currentAccountingSettings;
-        AccountingSettingsUpdated = dataChangeNotifier.Updates.OfType<AccountingSettingsData>();
+        AccountingSettingsUpdated = BuildAccountingSettingsUpdates(dataChangeNotifier);
 
-        dataChangeNotifier.Insertions
-            .OfType<AccountingSettingsData>()
-            .Subscribe(_currentAccountingSettings.OnNext);
-        dataChangeNotifier.Updates
-            .OfType<AccountingSettingsData>()
+        AccountingSettingsUpdated
             .Subscribe(_currentAccountingSettings.OnNext);
 
         // Subscribe after stream fields are initialized and seed from the already-authenticated session.
@@ -214,13 +213,14 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     }
 
     // Integration: dispatches accounting settings update intent.
-    public Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat, int decimalPrecision)
+    public Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat, int decimalPrecision, IReadOnlyList<AppCurrency> availableCurrencies)
     {
         var command = new UpdateAccountingSettings(
             OrganisationId.With(organisationId),
             baseCurrency,
             dateFormat,
-            decimalPrecision);
+            decimalPrecision,
+            availableCurrencies?.ToList() ?? []);
 
         _commandProcessor.Tell(command);
         return Task.CompletedTask;
@@ -236,6 +236,124 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     public Task<AccountingSettingsData?> GetAccountingSettings(string organisationId)
     {
         return _queryProcessor.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
+    }
+
+    // Operation: merges direct settings row changes with currency-list row changes into full settings snapshots.
+    private IObservable<AccountingSettingsData> BuildAccountingSettingsUpdates(IDataChangeNotifier dataChangeNotifier)
+    {
+        var directSettingsChanges = Observable.Merge(
+                dataChangeNotifier.Insertions.OfType<AccountingSettingsData>(),
+                dataChangeNotifier.Updates.OfType<AccountingSettingsData>())
+            .Where(settings => !string.IsNullOrWhiteSpace(settings.OrganisationId));
+
+        var currencyInsertedOrUpdated = Observable.Merge(
+                dataChangeNotifier.Insertions.OfType<AccountingAvailableCurrencyData>(),
+                dataChangeNotifier.Updates.OfType<AccountingAvailableCurrencyData>())
+            .Select(currency => BuildSettingsFromCurrencyChange(currency, isDelete: false))
+            .Where(settings => settings is not null)
+            .Select(settings => settings!);
+
+        var currencyDeleted = dataChangeNotifier.Deletions
+            .OfType<AccountingAvailableCurrencyData>()
+            .Select(currency => BuildSettingsFromCurrencyChange(currency, isDelete: true))
+            .Where(settings => settings is not null)
+            .Select(settings => settings!);
+
+        var currencyDrivenSettingsChanges = currencyInsertedOrUpdated
+            .Merge(currencyDeleted)
+            .Throttle(TimeSpan.FromMilliseconds(80));
+
+        return directSettingsChanges
+            .Merge(currencyDrivenSettingsChanges)
+            .DistinctUntilChanged(settings => BuildAccountingSettingsSnapshotKey(settings));
+    }
+
+    // Operation: builds an updated accounting-settings snapshot from one currency-row change using in-memory state.
+    private AccountingSettingsData? BuildSettingsFromCurrencyChange(AccountingAvailableCurrencyData currencyChange, bool isDelete)
+    {
+        var current = _currentAccountingSettings.Value;
+        if (current is null || current.OrganisationId != currencyChange.OrganisationId)
+        {
+            return null;
+        }
+
+        var currencyCode = currencyChange.CurrencyCode?.Trim().ToUpperInvariant();
+        var currencySymbol = currencyChange.CurrencySymbol?.Trim();
+        if (string.IsNullOrWhiteSpace(currencyCode))
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(currencySymbol))
+        {
+            currencySymbol = currencyCode;
+        }
+
+        var clonedCurrencies = (current.AvailableCurrencies ?? [])
+            .Select(currency => new AccountingAvailableCurrencyData
+            {
+                OrganisationId = current.OrganisationId,
+                CurrencyCode = currency.CurrencyCode.Trim().ToUpperInvariant(),
+                CurrencySymbol = string.IsNullOrWhiteSpace(currency.CurrencySymbol)
+                    ? currency.CurrencyCode.Trim().ToUpperInvariant()
+                    : currency.CurrencySymbol.Trim()
+            })
+            .GroupBy(currency => currency.CurrencyCode)
+            .Select(group => group.First())
+            .ToList();
+
+        if (isDelete)
+        {
+            clonedCurrencies.RemoveAll(currency => currency.CurrencyCode == currencyCode);
+        }
+        else if (clonedCurrencies.All(currency => currency.CurrencyCode != currencyCode))
+        {
+            clonedCurrencies.Add(new AccountingAvailableCurrencyData
+            {
+                OrganisationId = current.OrganisationId,
+                CurrencyCode = currencyCode,
+                CurrencySymbol = currencySymbol
+            });
+        }
+
+        if (clonedCurrencies.Count == 0)
+        {
+            clonedCurrencies.Add(new AccountingAvailableCurrencyData
+            {
+                OrganisationId = current.OrganisationId,
+                CurrencyCode = current.BaseCurrency,
+                CurrencySymbol = current.BaseCurrency
+            });
+        }
+
+        clonedCurrencies = clonedCurrencies
+            .OrderBy(currency => currency.CurrencyCode)
+            .ToList();
+
+        var baseCurrency = current.BaseCurrency;
+        if (clonedCurrencies.All(currency => currency.CurrencyCode != baseCurrency))
+        {
+            baseCurrency = clonedCurrencies[0].CurrencyCode;
+        }
+
+        return new AccountingSettingsData
+        {
+            OrganisationId = current.OrganisationId,
+            BaseCurrency = baseCurrency,
+            DateFormat = current.DateFormat,
+            DecimalPrecision = current.DecimalPrecision,
+            AvailableCurrencies = clonedCurrencies
+        };
+    }
+
+    // Operation: builds a deterministic key for accounting-settings deduplication across row and list changes.
+    private static string BuildAccountingSettingsSnapshotKey(AccountingSettingsData settings)
+    {
+        var currencies = (settings.AvailableCurrencies ?? [])
+            .OrderBy(currency => currency.CurrencyCode)
+            .Select(currency => $"{currency.CurrencyCode}:{currency.CurrencySymbol}");
+
+        return $"{settings.OrganisationId}|{settings.BaseCurrency}|{settings.DateFormat}|{settings.DecimalPrecision}|[{string.Join(';', currencies)}]";
     }
 
     // Operation: merges direct fiscal-year updates with period-driven fiscal-year refreshes.

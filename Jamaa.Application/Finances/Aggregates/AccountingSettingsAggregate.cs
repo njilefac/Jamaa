@@ -1,8 +1,11 @@
 using Akka.Actor;
 using Akka.Persistence;
+using System.Collections.Generic;
+using System.Linq;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Commands;
 using Jamaa.Application.Finances.Events;
+using Jamaa.Application.Finances.Values;
 
 namespace Jamaa.Application.Finances.Aggregates;
 
@@ -64,11 +67,27 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
             return;
         }
 
+        if (!TryValidateAvailableCurrencies(command.AvailableCurrencies, out var currenciesError))
+        {
+            Sender.Tell(currenciesError, Self);
+            return;
+        }
+
+        var normalizedCurrencies = NormalizeCurrencies(command.AvailableCurrencies);
+        var normalizedBaseCurrency = command.BaseCurrency.Trim().ToUpperInvariant();
+
+        if (!normalizedCurrencies.Any(currency => currency.Code == normalizedBaseCurrency))
+        {
+            Sender.Tell("Base currency must be part of the available currencies list.", Self);
+            return;
+        }
+
         var @event = new AccountingSettingsUpdated(
             command.OrganisationId,
-            command.BaseCurrency,
-            command.DateFormat,
-            command.DecimalPrecision);
+            normalizedBaseCurrency,
+            command.DateFormat.Trim(),
+            command.DecimalPrecision,
+            normalizedCurrencies);
 
         Persist(@event, Apply);
         DeferAsync(true, _ => TrySaveSnapshot());
@@ -79,6 +98,7 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
         _state.BaseCurrency = @event.BaseCurrency;
         _state.DateFormat = @event.DateFormat;
         _state.DecimalPrecision = @event.DecimalPrecision;
+        _state.AvailableCurrencies = [.. (@event.AvailableCurrencies ?? [])];
     }
 
     // Operation: validates that the base currency is a non-empty, known ISO 4217 code.
@@ -126,6 +146,74 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
         return true;
     }
 
+    // Operation: validates that one available currency item has both valid code and symbol.
+    public static bool TryValidateAvailableCurrency(Currency currency, out string error)
+    {
+        if (!TryValidateBaseCurrency(currency.Code, out error))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(currency.Symbol))
+        {
+            error = "Currency symbol must not be empty.";
+            return false;
+        }
+
+        if (currency.Symbol.Length > 10)
+        {
+            error = "Currency symbol must be at most 10 characters.";
+            return false;
+        }
+
+        error = string.Empty;
+        return true;
+    }
+
+    // Operation: validates that the managed available currency list is present and has valid entries.
+    public static bool TryValidateAvailableCurrencies(IReadOnlyList<Currency> currencies, out string error)
+    {
+        if (currencies is null || currencies.Count == 0)
+        {
+            error = "At least one available currency is required.";
+            return false;
+        }
+
+        var normalizedCodes = new HashSet<string>();
+        foreach (var currency in currencies)
+        {
+            if (!TryValidateAvailableCurrency(currency, out error))
+            {
+                return false;
+            }
+
+            normalizedCodes.Add(currency.Code.Trim().ToUpperInvariant());
+        }
+
+        if (normalizedCodes.Count == 0)
+        {
+            error = "At least one available currency is required.";
+            return false;
+        }
+
+        error = string.Empty;
+        return true;
+    }
+
+    // Operation: normalizes currencies to uppercase code, trimmed symbol, and distinct by code in stable order.
+    public static List<Currency> NormalizeCurrencies(IReadOnlyList<Currency> currencies)
+    {
+        return currencies
+            .Select(currency => new Currency(
+                currency.Code.Trim().ToUpperInvariant(),
+                currency.Symbol.Trim()))
+            .Where(currency => !string.IsNullOrWhiteSpace(currency.Code) && !string.IsNullOrWhiteSpace(currency.Symbol))
+            .GroupBy(currency => currency.Code)
+            .Select(group => group.First())
+            .OrderBy(currency => currency.Code)
+            .ToList();
+    }
+
     private void TrySaveSnapshot()
     {
         if (LastSequenceNr % 20 == 0)
@@ -139,15 +227,28 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
         public string BaseCurrency { get; set; } = "USD";
         public string DateFormat { get; set; } = "DD/MM/YYYY";
         public int DecimalPrecision { get; set; } = 2;
+        public List<Currency> AvailableCurrencies { get; set; } =
+        [
+            new Currency("USD", "$"),
+            new Currency("KES", "KSh"),
+            new Currency("EUR", "EUR")
+        ];
 
         public AccountingSettingsState Clone() =>
-            new() { BaseCurrency = BaseCurrency, DateFormat = DateFormat, DecimalPrecision = DecimalPrecision };
+            new()
+            {
+                BaseCurrency = BaseCurrency,
+                DateFormat = DateFormat,
+                DecimalPrecision = DecimalPrecision,
+                AvailableCurrencies = [.. AvailableCurrencies]
+            };
 
         public void CopyFrom(AccountingSettingsState other)
         {
             BaseCurrency = other.BaseCurrency;
             DateFormat = other.DateFormat;
             DecimalPrecision = other.DecimalPrecision;
+            AvailableCurrencies = [.. other.AvailableCurrencies];
         }
     }
 }
