@@ -29,56 +29,76 @@
             Padding="18">
             <ScrollViewer>
                 <StackPanel Spacing="16">
-                    <Grid
-                        Classes="page form"
-                        ColumnDefinitions="Auto,*"
-                        RowDefinitions="Auto,Auto,Auto">
-                        <TextBlock
-                            Classes="form label"
-                            Grid.Column="0"
-                            Grid.Row="0"
-                            Text="Base currency" />
-                        <ComboBox
-                            Classes="form field"
-                            Grid.Column="1"
-                            Grid.Row="0"
-                            ItemsSource="{Binding BaseCurrencyOptions}"
-                            SelectedItem="{Binding SelectedBaseCurrency, Mode=TwoWay}" />
 
-                        <TextBlock
-                            Classes="form label"
-                            Grid.Column="0"
-                            Grid.Row="1"
-                            Text="Date format" />
-                        <ComboBox
-                            Classes="form field"
-                            Grid.Column="1"
-                            Grid.Row="1"
-                            ItemsSource="{Binding DateFormatOptions}"
-                            SelectedItem="{Binding SelectedDateFormat, Mode=TwoWay}" />
+                    <Expander Header="Functional Currency &amp; Date Formats" IsExpanded="True">
+                        <StackPanel Margin="0,12,0,0" Spacing="16">
+                            <Grid
+                                Classes="page form"
+                                ColumnDefinitions="Auto,*"
+                                RowDefinitions="Auto,Auto,Auto">
+                                <TextBlock
+                                    Classes="form label"
+                                    Grid.Column="0"
+                                    Grid.Row="0"
+                                    Text="Base currency" />
+                                <ComboBox
+                                    Classes="form field"
+                                    Grid.Column="1"
+                                    Grid.Row="0"
+                                    ItemsSource="{Binding BaseCurrencyOptions}"
+                                    SelectedItem="{Binding SelectedBaseCurrency, Mode=TwoWay}" />
 
-                        <TextBlock
-                            Classes="form label"
-                            Grid.Column="0"
-                            Grid.Row="2"
-                            Text="Decimal precision" />
-                        <ComboBox
-                            Classes="form field"
-                            Grid.Column="1"
-                            Grid.Row="2"
-                            ItemsSource="{Binding DecimalPrecisionOptions}"
-                            SelectedItem="{Binding SelectedDecimalPrecision, Mode=TwoWay}" />
-                    </Grid>
+                                <TextBlock
+                                    Classes="form label"
+                                    Grid.Column="0"
+                                    Grid.Row="1"
+                                    Text="Date format" />
+                                <ComboBox
+                                    Classes="form field"
+                                    Grid.Column="1"
+                                    Grid.Row="1"
+                                    ItemsSource="{Binding DateFormatOptions}"
+                                    SelectedItem="{Binding SelectedDateFormat, Mode=TwoWay}" />
 
-                    <Border
-                        Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                        CornerRadius="10"
-                        Padding="14">
-                        <StackPanel Spacing="6">
-                            <TextBlock Classes="page.box.header" Text="Preview" />
-                            <TextBlock FontWeight="SemiBold" Text="{Binding FormattingPreview}" />
+                                <TextBlock
+                                    Classes="form label"
+                                    Grid.Column="0"
+                                    Grid.Row="2"
+                                    Text="Decimal precision" />
+                                <ComboBox
+                                    Classes="form field"
+                                    Grid.Column="1"
+                                    Grid.Row="2"
+                                    ItemsSource="{Binding DecimalPrecisionOptions}"
+                                    SelectedItem="{Binding SelectedDecimalPrecision, Mode=TwoWay}" />
+                            </Grid>
+
+                            <Border
+                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                CornerRadius="10"
+                                Padding="14">
+                                <StackPanel Spacing="6">
+                                    <TextBlock
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        Text="Preview" />
+                                    <TextBlock FontWeight="SemiBold" Text="{Binding FormattingPreview}" />
+                                </StackPanel>
+                            </Border>
+
+                            <WrapPanel ItemSpacing="10">
+                                <Button Command="{Binding SaveSettingsCommand}" Content="Save settings" />
+                            </WrapPanel>
+
+                            <Border
+                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                CornerRadius="10"
+                                IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                Padding="12">
+                                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                            </Border>
                         </StackPanel>
-                    </Border>
+                    </Expander>
 
                     <Border
                         Background="{DynamicResource SystemAccentColorLight3}"
@@ -94,4 +114,6 @@
         </husk:Card>
     </Grid>
 </UserControl>
+
+
 

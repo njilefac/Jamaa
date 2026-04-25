@@ -13,12 +13,19 @@ public interface IFinanceManagementFacade
     Task UpdateAccountingPeriod(string organisationId, string fiscalYearId, string accountingPeriodId, int sequenceNumber, DateTime startDate, DateTime endDate, bool isLocked);
     Task DeleteAccountingPeriod(string organisationId, string fiscalYearId, string accountingPeriodId);
 
+    Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat, int decimalPrecision);
+
     // Read operations (one-off query)
     Task<IList<FiscalYearData>> GetFiscalYears(string organisationId);
+    Task<AccountingSettingsData?> GetAccountingSettings(string organisationId);
 
     // Reactive streams (push fiscal-year changes and current state)
     IObservable<FiscalYearData> CurrentFiscalYears { get; }
     IObservable<FiscalYearData> FiscalYearUpdated { get; }
     IObservable<FiscalYearData> FiscalYearDeleted { get; }
+
+    // Reactive streams (push accounting settings changes)
+    IObservable<AccountingSettingsData?> CurrentAccountingSettings { get; }
+    IObservable<AccountingSettingsData> AccountingSettingsUpdated { get; }
 }
 

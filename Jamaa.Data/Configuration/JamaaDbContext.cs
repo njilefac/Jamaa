@@ -16,6 +16,7 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
     public DbSet<OrganisationData> Organisations { get; set; }
     public DbSet<FiscalYearData> FiscalYears { get; set; }
     public DbSet<AccountingPeriodData> AccountingPeriods { get; set; }
+    public DbSet<AccountingSettingsData> AccountingSettings { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -78,6 +79,14 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
         modelBuilder.Entity<AccountingPeriodData>()
             .HasIndex(period => new { period.OrganisationId, period.StartDate, period.EndDate })
             .IsUnique();
+
+        modelBuilder.Entity<AccountingSettingsData>().ToTable("AccountingSettings");
+        modelBuilder.Entity<AccountingSettingsData>()
+            .HasKey(settings => settings.OrganisationId);
+        modelBuilder.Entity<AccountingSettingsData>()
+            .Property(settings => settings.BaseCurrency).IsRequired();
+        modelBuilder.Entity<AccountingSettingsData>()
+            .Property(settings => settings.DateFormat).IsRequired();
     }
 
     private static void ConfigureUserMapping(ModelBuilder modelBuilder)

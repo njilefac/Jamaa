@@ -29,6 +29,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Jamaa.Domain\Jamaa.Domain.csproj" />
+
+    <ProjectReference Include="..\Jamaa.Application\Jamaa.Application.csproj" />
+    <ProjectReference Include="..\Jamaa.Data\Jamaa.Data.csproj" />
     <ProjectReference Include="..\Jamaa.Desktop\Jamaa.Desktop.csproj" />
   </ItemGroup>
 </Project>

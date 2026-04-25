@@ -23,6 +23,7 @@ public static class DataServiceCollectionExtensions
         services.AddScoped<IOrganisationQueryHandler, OrganisationQueryHandler>();
         services.AddScoped<IMembersQueryHandler, MembersQueryHandler>();
         services.AddScoped<IFiscalCalendarQueryHandler, FiscalCalendarQueryHandler>();
+        services.AddScoped<IAccountingSettingsQueryHandler, AccountingSettingsQueryHandler>();
         services.AddScoped<IFiscalYearRepository, FiscalYearRepository>();
         services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
         services.AddSingleton<IDataChangeNotifier, DataChangeNotifier>();

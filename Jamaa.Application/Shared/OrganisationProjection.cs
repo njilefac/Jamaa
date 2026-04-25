@@ -102,6 +102,7 @@ public class OrganisationProjection : ReceivePersistentActor
             AccountingPeriodCreated accountingPeriodCreated => Handle(accountingPeriodCreated, dbContext),
             AccountingPeriodUpdated accountingPeriodUpdated => Handle(accountingPeriodUpdated, dbContext),
             AccountingPeriodDeleted accountingPeriodDeleted => Handle(accountingPeriodDeleted, dbContext),
+            AccountingSettingsUpdated accountingSettingsUpdated => Handle(accountingSettingsUpdated, dbContext),
             _ => Task.CompletedTask
         };
     }
@@ -295,6 +296,32 @@ public class OrganisationProjection : ReceivePersistentActor
         }
 
         dbContext.AccountingPeriods.Remove(period);
+        await dbContext.SaveChangesAsync();
+    }
+
+    // Operation: upserts the accounting settings read model row for one organisation.
+    private async Task Handle(AccountingSettingsUpdated @event, JamaaDbContext dbContext)
+    {
+        var existing = await dbContext.AccountingSettings
+            .FirstOrDefaultAsync(settings => settings.OrganisationId == @event.OrganisationId.Value);
+
+        if (existing is null)
+        {
+            dbContext.AccountingSettings.Add(new Data.Models.Finances.AccountingSettingsData
+            {
+                OrganisationId = @event.OrganisationId.Value,
+                BaseCurrency = @event.BaseCurrency,
+                DateFormat = @event.DateFormat,
+                DecimalPrecision = @event.DecimalPrecision
+            });
+        }
+        else
+        {
+            existing.BaseCurrency = @event.BaseCurrency;
+            existing.DateFormat = @event.DateFormat;
+            existing.DecimalPrecision = @event.DecimalPrecision;
+        }
+
         await dbContext.SaveChangesAsync();
     }
 
