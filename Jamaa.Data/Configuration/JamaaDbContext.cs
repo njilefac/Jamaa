@@ -16,6 +16,8 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
     public DbSet<OrganisationData> Organisations { get; set; }
     public DbSet<FiscalYearData> FiscalYears { get; set; }
     public DbSet<AccountingPeriodData> AccountingPeriods { get; set; }
+    public DbSet<AccountingSettingsData> AccountingSettings { get; set; }
+    public DbSet<AccountingAvailableCurrencyData> AccountingAvailableCurrencies { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -78,6 +80,27 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
         modelBuilder.Entity<AccountingPeriodData>()
             .HasIndex(period => new { period.OrganisationId, period.StartDate, period.EndDate })
             .IsUnique();
+
+        modelBuilder.Entity<AccountingSettingsData>().ToTable("AccountingSettings");
+        modelBuilder.Entity<AccountingSettingsData>()
+            .HasKey(settings => settings.OrganisationId);
+        modelBuilder.Entity<AccountingSettingsData>()
+            .Property(settings => settings.BaseCurrency).IsRequired();
+        modelBuilder.Entity<AccountingSettingsData>()
+            .Property(settings => settings.DateFormat).IsRequired();
+        modelBuilder.Entity<AccountingSettingsData>()
+            .HasMany(settings => settings.AvailableCurrencies)
+            .WithOne(currency => currency.AccountingSettings)
+            .HasForeignKey(currency => currency.OrganisationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AccountingAvailableCurrencyData>().ToTable("AccountingAvailableCurrencies");
+        modelBuilder.Entity<AccountingAvailableCurrencyData>()
+            .HasKey(currency => new { currency.OrganisationId, currency.CurrencyCode });
+        modelBuilder.Entity<AccountingAvailableCurrencyData>()
+            .Property(currency => currency.CurrencyCode).IsRequired();
+        modelBuilder.Entity<AccountingAvailableCurrencyData>()
+            .Property(currency => currency.CurrencySymbol).IsRequired();
     }
 
     private static void ConfigureUserMapping(ModelBuilder modelBuilder)

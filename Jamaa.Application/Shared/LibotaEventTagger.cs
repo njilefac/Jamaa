@@ -35,6 +35,7 @@ public sealed class LibotaEventTagger : IWriteEventAdapter
             AccountingPeriodUpdated accountingPeriodUpdated => new Tagged(accountingPeriodUpdated, new[] { OrganisationEvent, FinanceChanged }),
             AccountingPeriodDeleted accountingPeriodDeleted => new Tagged(accountingPeriodDeleted, new[] { OrganisationEvent, FinanceChanged }),
             FiscalYearPeriodsRegenerated fiscalYearPeriodsRegenerated => new Tagged(fiscalYearPeriodsRegenerated, new[] { OrganisationEvent, FinanceChanged }),
+            AccountingSettingsUpdated accountingSettingsUpdated => new Tagged(accountingSettingsUpdated, new[] { OrganisationEvent, FinanceChanged }),
             _ => evt
         };
     }

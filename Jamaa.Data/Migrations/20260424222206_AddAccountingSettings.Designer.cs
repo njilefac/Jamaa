@@ -3,6 +3,7 @@ using System;
 using Jamaa.Data.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,29 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jamaa.Data.Migrations
 {
     [DbContext(typeof(JamaaDbContext))]
-    partial class LibotaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260424222206_AddAccountingSettings")]
+    partial class AddAccountingSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.6");
-
-            modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingAvailableCurrencyData", b =>
-                {
-                    b.Property<string>("OrganisationId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CurrencyCode")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CurrencySymbol")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("OrganisationId", "CurrencyCode");
-
-                    b.ToTable("AccountingAvailableCurrencies", (string)null);
-                });
 
             modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingPeriodData", b =>
                 {
@@ -248,17 +234,6 @@ namespace Jamaa.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingAvailableCurrencyData", b =>
-                {
-                    b.HasOne("Jamaa.Data.Models.Finances.AccountingSettingsData", "AccountingSettings")
-                        .WithMany("AvailableCurrencies")
-                        .HasForeignKey("OrganisationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AccountingSettings");
-                });
-
             modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingPeriodData", b =>
                 {
                     b.HasOne("Jamaa.Data.Models.Finances.FiscalYearData", "FiscalYear")
@@ -298,11 +273,6 @@ namespace Jamaa.Data.Migrations
                     b.Navigation("Member");
 
                     b.Navigation("Organisation");
-                });
-
-            modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingSettingsData", b =>
-                {
-                    b.Navigation("AvailableCurrencies");
                 });
 
             modelBuilder.Entity("Jamaa.Data.Models.Finances.FiscalYearData", b =>

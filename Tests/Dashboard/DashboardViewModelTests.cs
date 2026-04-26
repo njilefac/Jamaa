@@ -8,7 +8,7 @@ using Jamaa.Desktop.Dashboard;
 using NSubstitute;
 using Xunit;
 
-namespace Tests.Dashboard;
+namespace UnitTests.Dashboard;
 
 public class DashboardViewModelTests
 {

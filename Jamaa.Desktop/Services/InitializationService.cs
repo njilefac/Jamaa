@@ -197,6 +197,7 @@ public static partial class InitializationService
                 new RouteMap(Path: Routes.AccountingReports, ViewModel: typeof(AccountingReportsViewModel)),
                 new RouteMap(Path: Routes.AccountingConfiguration, ViewModel: typeof(AccountingConfigurationViewModel), Nested:
                 [
+                    new RouteMap(Path: Routes.AccountingCurrencyAndDateFormats, ViewModel: typeof(AccountingCurrencyAndDateFormatsViewModel)),
                     new RouteMap(Path: Routes.FiscalCalendarAndPeriods, ViewModel: typeof(FiscalCalendarAndPeriodsViewModel)),
                     new RouteMap(Path: Routes.ChartOfAccounts, ViewModel: typeof(ChartOfAccountsViewModel)),
                     new RouteMap(Path: Routes.TaxGroupsAndAuthorities, ViewModel: typeof(TaxGroupsAndAuthoritiesViewModel)),

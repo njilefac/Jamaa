@@ -12,6 +12,7 @@ using Jamaa.Data.Notifiers;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using AppCurrency = Jamaa.Application.Finances.Values.Currency;
 
 namespace Jamaa.Application.Finances;
 
@@ -20,6 +21,7 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     private readonly IActorRef _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly ReplaySubject<FiscalYearData> _currentFiscalYears;
+    private readonly BehaviorSubject<AccountingSettingsData?> _currentAccountingSettings;
     private string? _lastSeededOrganisationId;
 
     public FinanceManagementFacade(
@@ -41,19 +43,32 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         FiscalYearUpdated = BuildFiscalYearUpdates(dataChangeNotifier);
         FiscalYearDeleted = dataChangeNotifier.Deletions.OfType<FiscalYearData>();
 
+        _currentAccountingSettings = new BehaviorSubject<AccountingSettingsData?>(null);
+        CurrentAccountingSettings = _currentAccountingSettings;
+        AccountingSettingsUpdated = BuildAccountingSettingsUpdates(dataChangeNotifier);
+
+        AccountingSettingsUpdated
+            .Subscribe(_currentAccountingSettings.OnNext);
+
         // Subscribe after stream fields are initialized and seed from the already-authenticated session.
         userSessionService.UserSessions
             .StartWith(userSessionService.CurrentUserSession)
             .Select(SeedFiscalYearsSafely)
             .Concat()
             .Subscribe(_ => { });
+
+        userSessionService.UserSessions
+            .StartWith(userSessionService.CurrentUserSession)
+            .Select(SeedAccountingSettingsSafely)
+            .Concat()
+            .Subscribe(_ => { });
     }
 
     public IObservable<FiscalYearData> CurrentFiscalYears { get; }
-
     public IObservable<FiscalYearData> FiscalYearUpdated { get; }
-
     public IObservable<FiscalYearData> FiscalYearDeleted { get; }
+    public IObservable<AccountingSettingsData?> CurrentAccountingSettings { get; }
+    public IObservable<AccountingSettingsData> AccountingSettingsUpdated { get; }
 
     // Integration: builds a safe async seeding step for one session emission.
     private static IObservable<Unit> SeedFiscalYearsSafely(UserSession? session, Func<UserSession?, Task> seedFiscalYears)
@@ -90,6 +105,26 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         }
 
         _lastSeededOrganisationId = organisationId;
+    }
+
+    // Integration: wraps accounting settings seeding safely so stream errors don't terminate the session pipeline.
+    private IObservable<Unit> SeedAccountingSettingsSafely(UserSession? session)
+    {
+        return Observable.FromAsync(() => InitializeCurrentAccountingSettingsAsync(session))
+            .Catch<Unit, Exception>(_ => Observable.Empty<Unit>());
+    }
+
+    // Integration: seeds the current-accounting-settings stream from the active session organisation.
+    private async Task InitializeCurrentAccountingSettingsAsync(UserSession? session)
+    {
+        var organisationId = session?.Organisation?.Id;
+        if (string.IsNullOrWhiteSpace(organisationId))
+        {
+            return;
+        }
+
+        var existing = await GetAccountingSettings(organisationId);
+        _currentAccountingSettings.OnNext(existing);
     }
 
     // Integration: dispatches intent to the finance aggregate stream.
@@ -175,10 +210,68 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         return Task.CompletedTask;
     }
 
+    // Integration: dispatches accounting settings update intent.
+    public Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat, int decimalPrecision, IReadOnlyList<AppCurrency> availableCurrencies)
+    {
+        var command = new UpdateAccountingSettings(
+            OrganisationId.With(organisationId),
+            baseCurrency,
+            dateFormat,
+            decimalPrecision,
+            availableCurrencies?.ToList() ?? []);
+
+        _commandProcessor.Tell(command);
+        return Task.CompletedTask;
+    }
+
     // Integration: reads the materialized fiscal-year view.
     public Task<IList<FiscalYearData>> GetFiscalYears(string organisationId)
     {
         return _queryProcessor.Get(new GetFiscalYearsByOrganisation(OrganisationId.With(organisationId)));
+    }
+
+    // Integration: reads the materialized accounting settings view.
+    public Task<AccountingSettingsData?> GetAccountingSettings(string organisationId)
+    {
+        return _queryProcessor.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
+    }
+
+    // Operation: emits canonical accounting-settings snapshots by reloading the read model after settings/currency row changes.
+    private IObservable<AccountingSettingsData> BuildAccountingSettingsUpdates(IDataChangeNotifier dataChangeNotifier)
+    {
+        var settingsOrganisationChanges = Observable.Merge(
+                dataChangeNotifier.Insertions.OfType<AccountingSettingsData>(),
+                dataChangeNotifier.Updates.OfType<AccountingSettingsData>())
+            .Select(settings => settings.OrganisationId);
+
+        var currencyOrganisationChanges = Observable.Merge(
+                dataChangeNotifier.Insertions.OfType<AccountingAvailableCurrencyData>(),
+                dataChangeNotifier.Updates.OfType<AccountingAvailableCurrencyData>(),
+                dataChangeNotifier.Deletions.OfType<AccountingAvailableCurrencyData>())
+            .Select(currency => currency.OrganisationId);
+
+        var triggeredReloads = settingsOrganisationChanges
+            .Merge(currencyOrganisationChanges)
+            .Where(organisationId => !string.IsNullOrWhiteSpace(organisationId))
+            .GroupBy(organisationId => organisationId)
+            .SelectMany(group => group
+                .Throttle(TimeSpan.FromMilliseconds(80))
+                .SelectMany(organisationId => Observable.FromAsync(() => GetAccountingSettings(organisationId))
+                    .Catch<AccountingSettingsData?, Exception>(_ => Observable.Empty<AccountingSettingsData?>())));
+
+        return triggeredReloads
+            .Where(settings => settings is not null)
+            .Select(settings => settings!);
+    }
+
+    // Operation: builds a deterministic key for accounting-settings deduplication across row and list changes.
+    private static string BuildAccountingSettingsSnapshotKey(AccountingSettingsData settings)
+    {
+        var currencies = (settings.AvailableCurrencies ?? [])
+            .OrderBy(currency => currency.CurrencyCode)
+            .Select(currency => $"{currency.CurrencyCode}:{currency.CurrencySymbol}");
+
+        return $"{settings.OrganisationId}|{settings.BaseCurrency}|{settings.DateFormat}|{settings.DecimalPrecision}|[{string.Join(';', currencies)}]";
     }
 
     // Operation: merges direct fiscal-year updates with period-driven fiscal-year refreshes.
@@ -222,5 +315,3 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         return $"{fiscalYear.Id}|{fiscalYear.OrganisationId}|{fiscalYear.StartDate:O}|{fiscalYear.EndDate:O}|{(fiscalYear.IsLocked ? 1 : 0)}|[{string.Join(";", periodTokens)}]";
     }
 }
-
-

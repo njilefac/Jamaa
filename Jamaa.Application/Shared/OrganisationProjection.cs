@@ -3,6 +3,7 @@ using Akka.Persistence.Query;
 using Akka.Persistence.Sql.Query;
 using Akka.Streams;
 using Akka.Streams.Dsl;
+using System.Linq;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Events;
 using Jamaa.Application.Members.Events;
@@ -102,6 +103,7 @@ public class OrganisationProjection : ReceivePersistentActor
             AccountingPeriodCreated accountingPeriodCreated => Handle(accountingPeriodCreated, dbContext),
             AccountingPeriodUpdated accountingPeriodUpdated => Handle(accountingPeriodUpdated, dbContext),
             AccountingPeriodDeleted accountingPeriodDeleted => Handle(accountingPeriodDeleted, dbContext),
+            AccountingSettingsUpdated accountingSettingsUpdated => Handle(accountingSettingsUpdated, dbContext),
             _ => Task.CompletedTask
         };
     }
@@ -295,6 +297,51 @@ public class OrganisationProjection : ReceivePersistentActor
         }
 
         dbContext.AccountingPeriods.Remove(period);
+        await dbContext.SaveChangesAsync();
+    }
+
+    // Operation: upserts the accounting settings read model row for one organisation.
+    private async Task Handle(AccountingSettingsUpdated @event, JamaaDbContext dbContext)
+    {
+        var existing = await dbContext.AccountingSettings
+            .Include(settings => settings.AvailableCurrencies)
+            .FirstOrDefaultAsync(settings => settings.OrganisationId == @event.OrganisationId.Value);
+
+        if (existing is null)
+        {
+            dbContext.AccountingSettings.Add(new Data.Models.Finances.AccountingSettingsData
+            {
+                OrganisationId = @event.OrganisationId.Value,
+                BaseCurrency = @event.BaseCurrency,
+                DateFormat = @event.DateFormat,
+                DecimalPrecision = @event.DecimalPrecision,
+                AvailableCurrencies = (@event.AvailableCurrencies ?? [])
+                    .Select(currency => new AccountingAvailableCurrencyData
+                    {
+                        OrganisationId = @event.OrganisationId.Value,
+                        CurrencyCode = currency.Code,
+                        CurrencySymbol = currency.Symbol
+                    })
+                    .ToList()
+            });
+        }
+        else
+        {
+            existing.BaseCurrency = @event.BaseCurrency;
+            existing.DateFormat = @event.DateFormat;
+            existing.DecimalPrecision = @event.DecimalPrecision;
+
+            dbContext.AccountingAvailableCurrencies.RemoveRange(existing.AvailableCurrencies);
+            existing.AvailableCurrencies = (@event.AvailableCurrencies ?? [])
+                .Select(currency => new AccountingAvailableCurrencyData
+                {
+                    OrganisationId = @event.OrganisationId.Value,
+                    CurrencyCode = currency.Code,
+                    CurrencySymbol = currency.Symbol
+                })
+                .ToList();
+        }
+
         await dbContext.SaveChangesAsync();
     }
 
