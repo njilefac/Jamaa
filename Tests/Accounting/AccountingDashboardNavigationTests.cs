@@ -43,6 +43,18 @@ public class AccountingDashboardNavigationTests
     }
 
     [Fact]
+    public void CreateActionShortcuts_ShouldIncludeTotalExpensesShortcut()
+    {
+        var routeResolver = Substitute.For<IRouteResolver>();
+        var viewModel = new AccountingDashboardViewModel(routeResolver);
+
+        var totalExpensesShortcut = viewModel.ActionShortcuts.Single(s => s.Title == "Total Expenses");
+
+        totalExpensesShortcut.ShouldNotBeNull();
+        totalExpensesShortcut.Action.ShouldNotBeNull();
+    }
+
+    [Fact]
     public void Constructor_ShouldSelectDashboardTabAndShowBreadcrumbHierarchy()
     {
         // Arrange
@@ -138,6 +150,25 @@ public class AccountingDashboardNavigationTests
         viewModel.Breadcrumbs[0].Title.ShouldBe("Accounting");
         viewModel.Breadcrumbs[1].Title.ShouldBe("Configuration");
         viewModel.Breadcrumbs[2].Title.ShouldBe("Fiscal Calendar & Periods");
+    }
+
+    [Fact]
+    public void TotalExpensesShortcut_ShouldNavigateToJournalEntriesWithExpenseFilter()
+    {
+        var routeResolver = Substitute.For<IRouteResolver>();
+        var journalEntriesViewModel = new JournalEntriesViewModel();
+        routeResolver.Resolve(Routes.AccountingTransactions, Arg.Any<object?>()).Returns(journalEntriesViewModel);
+        var viewModel = new AccountingDashboardViewModel(routeResolver);
+
+        var totalExpensesShortcut = viewModel.ActionShortcuts.Single(s => s.Title == "Total Expenses");
+        totalExpensesShortcut.Action.Execute(null);
+
+        viewModel.SelectedTabIndex.ShouldBe(1);
+        viewModel.Breadcrumbs.Count.ShouldBe(2);
+        viewModel.Breadcrumbs[0].Title.ShouldBe("Accounting");
+        viewModel.Breadcrumbs[1].Title.ShouldBe("Journal Entries");
+        journalEntriesViewModel.ExpenseAccountsOnly.ShouldBeTrue();
+        journalEntriesViewModel.VisibleEntries.All(entry => entry.IsExpenseAccount).ShouldBeTrue();
     }
 
     private sealed class TestRouteableModule(string title) : IRouteableViewModel, IApplicationModule
