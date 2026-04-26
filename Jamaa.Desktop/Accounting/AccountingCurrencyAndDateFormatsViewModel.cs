@@ -157,6 +157,19 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         }
     }
 
+    public string CurrencyPreview
+    {
+        get
+        {
+            var exampleAmount = 1234567.0m.ToString($"N{SelectedDecimalPrecision}", CultureInfo.InvariantCulture);
+            var symbol = ResolveBaseCurrencySymbol();
+            return $"{symbol} {exampleAmount}";
+        }
+    }
+
+    public string DatePreview =>
+        new DateTime(2026, 4, 24).ToString(ResolveDotNetDateFormat(SelectedDateFormat), CultureInfo.InvariantCulture);
+
     [RelayCommand(CanExecute = nameof(CanSaveBaseSettings))]
     private Task SaveBaseSettings() =>
         DispatchSettingsSaveAsync(
@@ -597,6 +610,8 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         OnPropertyChanged(nameof(HasUnsavedBaseSettingsChanges));
         OnPropertyChanged(nameof(HasUnsavedCurrencyChanges));
         OnPropertyChanged(nameof(FormattingPreview));
+        OnPropertyChanged(nameof(CurrencyPreview));
+        OnPropertyChanged(nameof(DatePreview));
         SaveBaseSettingsCommand.NotifyCanExecuteChanged();
         SaveAvailableCurrenciesCommand.NotifyCanExecuteChanged();
         AddCurrencyCommand.NotifyCanExecuteChanged();
