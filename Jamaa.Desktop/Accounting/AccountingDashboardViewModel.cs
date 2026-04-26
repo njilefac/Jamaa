@@ -47,6 +47,7 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
     private IReadOnlyList<DashboardShortcutViewModel> CreateActionShortcuts() =>
     [
         new("New Journal Entry", "📝", new RelayCommand(NavigateToJournalEntries)),
+        new("Total Expenses", "💸", new RelayCommand(NavigateToTotalExpenses)),
         new("Reconcile Bank", "🏦", new RelayCommand(NavigateToBankReconciliation)),
         new("View Reports", "📊", new RelayCommand(NavigateToReports)),
         new("Accounting Configuration", "🛠", new RelayCommand(NavigateToAccountingConfiguration))
@@ -70,7 +71,11 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
         NavigateTo(GetRouteForTabIndex(value));
     }
 
-    private void NavigateToJournalEntries() => NavigateTo(Routes.AccountingTransactions);
+    private void NavigateToJournalEntries() =>
+        NavigateTo(Routes.AccountingTransactions, JournalEntriesNavigationRequest.AllAccounts());
+
+    private void NavigateToTotalExpenses() =>
+        NavigateTo(Routes.AccountingTransactions, JournalEntriesNavigationRequest.OnlyExpenseAccounts());
 
     private void NavigateToBankReconciliation() => NavigateTo(Routes.BankReconciliation);
 
@@ -239,7 +244,13 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
             case Routes.AccountingDashboard:
                 break;
             case Routes.AccountingTransactions:
-                EnsureResolvedContentIsNotNull(EnsureJournalEntriesContent());
+                var journalEntriesContent = EnsureJournalEntriesContent();
+                EnsureResolvedContentIsNotNull(journalEntriesContent);
+                if (journalEntriesContent is JournalEntriesViewModel journalEntriesViewModel)
+                {
+                    var filter = parameter as JournalEntriesNavigationRequest ?? JournalEntriesNavigationRequest.AllAccounts();
+                    journalEntriesViewModel.ApplyNavigationFilter(filter);
+                }
                 break;
             case Routes.BankReconciliation:
                 EnsureResolvedContentIsNotNull(EnsureBankReconciliationContent());
