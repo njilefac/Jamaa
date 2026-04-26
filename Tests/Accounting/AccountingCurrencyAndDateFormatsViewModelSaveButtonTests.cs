@@ -11,6 +11,7 @@ using Jamaa.Application.Users.Services;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Models.Organisation;
 using Jamaa.Desktop.Accounting;
+using Jamaa.Desktop.Services.Notifications;
 using NSubstitute;
 using Shouldly;
 using Xunit;
@@ -31,6 +32,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
     private const string OrgId = "org-save-button-test";
 
     private readonly IFinanceManagementFacade _facade;
+    private readonly INotificationService _notificationService;
     private readonly BehaviorSubject<AccountingSettingsData?> _currentSettingsSubject;
     private readonly Subject<AccountingSettingsData> _settingsUpdatedSubject;
     private readonly AccountingCurrencyAndDateFormatsViewModel _vm;
@@ -41,6 +43,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         _settingsUpdatedSubject = new Subject<AccountingSettingsData>();
 
         _facade = Substitute.For<IFinanceManagementFacade>();
+        _notificationService = Substitute.For<INotificationService>();
         _facade.CurrentAccountingSettings.Returns(_currentSettingsSubject.AsObservable());
         _facade.AccountingSettingsUpdated.Returns(_settingsUpdatedSubject.AsObservable());
         _facade.UpdateAccountingSettings(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<IReadOnlyList<Currency>>())
@@ -51,7 +54,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         var userSessionService = Substitute.For<IUserSessionService>();
         userSessionService.CurrentUserSession.Returns(session);
 
-        _vm = new AccountingCurrencyAndDateFormatsViewModel(_facade, userSessionService);
+        _vm = new AccountingCurrencyAndDateFormatsViewModel(_facade, userSessionService, _notificationService);
     }
 
     public void Dispose()
@@ -141,7 +144,8 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
     public async Task SaveButton_IsDisabled_WhenNoSettingsHaveBeenLoaded()
     {
         // No push to _currentSettingsSubject yet → _hasPersistedSnapshot is false
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeFalse();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeFalse();
+        _vm.SaveAvailableCurrenciesCommand.CanExecute(null).ShouldBeFalse();
 
         await Task.CompletedTask; // suppress async warning
     }
@@ -152,7 +156,8 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         await PushPersistedSettings("USD", "DD/MM/YYYY", 2);
 
         // Selections are identical to persisted snapshot → no unsaved changes
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeFalse();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeFalse();
+        _vm.SaveAvailableCurrenciesCommand.CanExecute(null).ShouldBeFalse();
     }
 
     [Fact]
@@ -161,10 +166,10 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         await PushPersistedSettings("USD", "DD/MM/YYYY", 2);
 
         _vm.SelectedBaseCurrency = "KES"; // change
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeTrue();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeTrue();
 
         _vm.SelectedBaseCurrency = "USD"; // revert
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeFalse();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeFalse();
     }
 
     // --------------------------------------------------------------------------
@@ -178,7 +183,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
 
         _vm.SelectedBaseCurrency = "KES";
 
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeTrue();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeTrue();
     }
 
     [Fact]
@@ -188,7 +193,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
 
         _vm.SelectedDateFormat = "MM/DD/YYYY";
 
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeTrue();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeTrue();
     }
 
     [Fact]
@@ -198,11 +203,11 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
 
         _vm.SelectedDecimalPrecision = 4;
 
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeTrue();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeTrue();
     }
 
     [Fact]
-    public async Task SaveButton_IsEnabled_WhenAvailableCurrencyIsAdded()
+    public async Task SaveCurrencyButton_IsEnabled_WhenAvailableCurrencyIsAdded()
     {
         await PushPersistedSettings("USD", "DD/MM/YYYY", 2);
 
@@ -211,26 +216,52 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         _vm.AddCurrencyCommand.Execute(null);
 
         _vm.AvailableCurrencies.Any(c => c.CurrencyCode == "TZS").ShouldBeTrue();
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeTrue();
+        _vm.SaveAvailableCurrenciesCommand.CanExecute(null).ShouldBeTrue();
     }
 
     [Fact]
-    public async Task RemovingBaseCurrency_SelectsAnotherCurrencyAndKeepsStateValid()
+    public async Task BaseCurrency_RemainsSelected_WhenAvailableCurrenciesChange()
+    {
+        await PushPersistedSettings("USD", "DD/MM/YYYY", 2);
+        _vm.SelectedBaseCurrency = "KES";
+
+        _vm.NewCurrencyCode = "TZS";
+        _vm.NewCurrencySymbol = "TSh";
+        _vm.AddCurrencyCommand.Execute(null);
+
+        _vm.SelectedBaseCurrency.ShouldBe("KES");
+        _vm.AvailableCurrencies.Any(c => c.CurrencyCode == "KES").ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task RemovingBaseCurrency_IsBlocked_AndShowsGuidance()
     {
         await PushPersistedSettings("USD", "DD/MM/YYYY", 2);
         _vm.SelectedAvailableCurrencyCode = "USD";
 
         _vm.RemoveSelectedCurrencyCommand.Execute(null);
 
-        _vm.SelectedBaseCurrency.ShouldNotBe("USD");
+        _vm.AvailableCurrencies.Any(c => c.CurrencyCode == "USD").ShouldBeTrue();
+        _vm.SelectedBaseCurrency.ShouldBe("USD");
         _vm.IsSelectionValid.ShouldBeTrue();
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeTrue();
+        _vm.HasCurrencyErrorStatus.ShouldBeTrue();
+        _vm.CurrencyStatusMessage.ShouldContain("Select another base currency, save settings, then remove this currency.");
+
+        _notificationService.Received(1).Show(
+            "Cannot remove base currency",
+            Arg.Is<string>(message => message.Contains("Select another base currency, save settings, then remove this currency.")),
+            NotificationType.Warning,
+            null,
+            null,
+            null);
+
+        _vm.SaveAvailableCurrenciesCommand.CanExecute(null).ShouldBeFalse();
     }
 
     [Fact]
-    public async Task SaveButton_IsEnabled_WhenFirstCurrencyIsAdded_WithoutPersistedSnapshot()
+    public async Task SaveCurrencyButton_IsEnabled_WhenFirstCurrencyIsAdded_WithoutPersistedSnapshot()
     {
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeFalse();
+        _vm.SaveAvailableCurrenciesCommand.CanExecute(null).ShouldBeFalse();
 
         _vm.NewCurrencyCode = "KES";
         _vm.NewCurrencySymbol = "KSh";
@@ -239,7 +270,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         _vm.AvailableCurrencies.Select(c => c.CurrencyCode).ShouldContain("KES");
         _vm.SelectedBaseCurrency.ShouldBe("KES");
         _vm.IsSelectionValid.ShouldBeTrue();
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeTrue();
+        _vm.SaveAvailableCurrenciesCommand.CanExecute(null).ShouldBeTrue();
 
         await Task.CompletedTask;
     }
@@ -271,13 +302,13 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         await PushPersistedSettings("USD", "DD/MM/YYYY", 2);
         _vm.SelectedBaseCurrency = "EUR";
 
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeTrue();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeTrue();
 
-        var saveTask = _vm.SaveSettingsCommand.ExecuteAsync(null);
+        var saveTask = _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
         await ConfirmPersistenceFromStream("EUR", "DD/MM/YYYY", 2);
         await saveTask;
 
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeFalse();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeFalse();
         _vm.IsSaving.ShouldBeFalse();
         _vm.IsAwaitingPersistenceConfirmation.ShouldBeFalse();
         _vm.HasErrorStatus.ShouldBeFalse();
@@ -289,12 +320,24 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         await PushPersistedSettings("USD", "DD/MM/YYYY", 2);
         _vm.SelectedDateFormat = "YYYY-MM-DD";
 
-        var saveTask = _vm.SaveSettingsCommand.ExecuteAsync(null);
+        var saveTask = _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
         await ConfirmPersistenceFromStream("USD", "YYYY-MM-DD", 2);
         await saveTask;
 
-        _vm.StatusMessage.ShouldBe("Settings saved successfully.");
+        _vm.StatusMessage.ShouldBe("Saved successfully.");
         _vm.HasStatusMessage.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task BaseCurrency_Recovers_WhenSelectionIsClearedByUi()
+    {
+        await PushPersistedSettings("KES", "DD/MM/YYYY", 2);
+
+        // Simulates transient ComboBox reset during item-source refresh.
+        _vm.SelectedBaseCurrency = string.Empty;
+
+        _vm.SelectedBaseCurrency.ShouldBe("KES");
+        _vm.IsSelectionValid.ShouldBeTrue();
     }
 
     // --------------------------------------------------------------------------
@@ -308,11 +351,11 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         _vm.SelectedBaseCurrency = "GBP";
 
         // Start the save but don't confirm persistence yet
-        var saveTask = _vm.SaveSettingsCommand.ExecuteAsync(null);
-        await Task.Delay(50); // give SaveSettings time to set IsSaving = true
+        var saveTask = _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
+        await Task.Delay(50); // give SaveBaseSettings time to set IsSaving = true
 
         _vm.IsSaving.ShouldBeTrue();
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeFalse();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeFalse();
 
         // Unblock the task
         await ConfirmPersistenceFromStream("GBP", "DD/MM/YYYY", 2);
@@ -332,7 +375,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         _facade.UpdateAccountingSettings(OrgId, "ZAR", "DD/MM/YYYY", 2, Arg.Any<IReadOnlyList<Currency>>())
             .Returns(Task.FromException(new InvalidOperationException("Simulated dispatch failure")));
 
-        await _vm.SaveSettingsCommand.ExecuteAsync(null);
+        await _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
 
         _vm.HasErrorStatus.ShouldBeTrue();
         _vm.StatusMessage.ShouldContain("Simulated dispatch failure");
@@ -348,11 +391,11 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         _facade.UpdateAccountingSettings(OrgId, "NGN", "DD/MM/YYYY", 2, Arg.Any<IReadOnlyList<Currency>>())
             .Returns(Task.FromException(new InvalidOperationException("Transient error")));
 
-        await _vm.SaveSettingsCommand.ExecuteAsync(null);
+        await _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
 
         // After a failed save the persisted snapshot didn't change,
         // so the UI still has unsaved changes → Save should be re-enabled.
-        _vm.SaveSettingsCommand.CanExecute(null).ShouldBeTrue();
+        _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeTrue();
     }
 
     [Fact]
@@ -364,18 +407,18 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         // First attempt fails
         _facade.UpdateAccountingSettings(OrgId, "GBP", "DD/MM/YYYY", 2, Arg.Any<IReadOnlyList<Currency>>())
             .Returns(Task.FromException(new InvalidOperationException("First failure")));
-        await _vm.SaveSettingsCommand.ExecuteAsync(null);
+        await _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
         _vm.HasErrorStatus.ShouldBeTrue();
 
         // Second attempt succeeds
         _facade.UpdateAccountingSettings(OrgId, "GBP", "DD/MM/YYYY", 2, Arg.Any<IReadOnlyList<Currency>>())
             .Returns(Task.CompletedTask);
-        var saveTask = _vm.SaveSettingsCommand.ExecuteAsync(null);
+        var saveTask = _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
         await ConfirmPersistenceFromStream("GBP", "DD/MM/YYYY", 2);
         await saveTask;
 
         _vm.HasErrorStatus.ShouldBeFalse();
-        _vm.StatusMessage.ShouldBe("Settings saved successfully.");
+        _vm.StatusMessage.ShouldBe("Saved successfully.");
     }
 }
 

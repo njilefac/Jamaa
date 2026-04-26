@@ -28,14 +28,15 @@
             Margin="10"
             Padding="18">
             <ScrollViewer>
-                <StackPanel Spacing="16">
+                <StackPanel Spacing="20">
 
-                    <Expander Header="Functional Currency &amp; Date Formats" IsExpanded="True">
+                    <!--  Section 1: Base Currency & Date Formats  -->
+                    <Expander Header="Base Currency &amp; Date Formats" IsExpanded="True">
                         <StackPanel Margin="0,12,0,0" Spacing="16">
                             <Grid
                                 Classes="page form"
                                 ColumnDefinitions="Auto,*"
-                                RowDefinitions="Auto,Auto,Auto,Auto">
+                                RowDefinitions="Auto,Auto,Auto">
                                 <TextBlock
                                     Classes="form label"
                                     Grid.Column="0"
@@ -50,7 +51,9 @@
                                     SelectedValueBinding="{Binding CurrencyCode}">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding CurrencyCode}" />
+                                            <TextBlock>
+                                                <Run Text="{Binding CurrencyCode}" /><Run Text=" (" /><Run Text="{Binding CurrencySymbol}" /><Run Text=")" />
+                                            </TextBlock>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
@@ -78,44 +81,6 @@
                                     Grid.Row="2"
                                     ItemsSource="{Binding DecimalPrecisionOptions}"
                                     SelectedItem="{Binding SelectedDecimalPrecision, Mode=TwoWay}" />
-
-                                <TextBlock
-                                    Classes="form label"
-                                    Grid.Column="0"
-                                    Grid.Row="3"
-                                    Text="Available currencies" />
-
-                                <StackPanel
-                                    Grid.Column="1"
-                                    Grid.Row="3"
-                                    Spacing="8">
-                                    <WrapPanel ItemSpacing="8">
-                                        <TextBox
-                                            MinWidth="120"
-                                            Text="{Binding NewCurrencyCode, Mode=TwoWay}"
-                                            Watermark="e.g. UGX" />
-                                        <TextBox
-                                            MinWidth="120"
-                                            Text="{Binding NewCurrencySymbol, Mode=TwoWay}"
-                                            Watermark="e.g. Ush" />
-                                        <Button Command="{Binding AddCurrencyCommand}" Content="Add currency" />
-                                    </WrapPanel>
-
-                                    <WrapPanel ItemSpacing="8">
-                                        <ComboBox
-                                            ItemsSource="{Binding AvailableCurrencies}"
-                                            MinWidth="160"
-                                            SelectedValue="{Binding SelectedAvailableCurrencyCode, Mode=TwoWay}"
-                                            SelectedValueBinding="{Binding CurrencyCode}">
-                                            <ComboBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding CurrencyCode}" />
-                                                </DataTemplate>
-                                            </ComboBox.ItemTemplate>
-                                        </ComboBox>
-                                        <Button Command="{Binding RemoveSelectedCurrencyCommand}" Content="Remove selected" />
-                                    </WrapPanel>
-                                </StackPanel>
                             </Grid>
 
                             <Border
@@ -132,7 +97,7 @@
                             </Border>
 
                             <WrapPanel ItemSpacing="10">
-                                <Button Command="{Binding SaveSettingsCommand}" Content="Save settings" />
+                                <Button Command="{Binding SaveBaseSettingsCommand}" Content="Save settings" />
                             </WrapPanel>
 
                             <Border
@@ -145,15 +110,89 @@
                         </StackPanel>
                     </Expander>
 
-                    <Border
-                        Background="{DynamicResource SystemAccentColorLight3}"
-                        CornerRadius="10"
-                        Padding="12">
-                        <TextBlock
-                            Opacity="0.9"
-                            Text="Manage your organisation's allowed currencies here. The selected base currency must be in this list, and all changes are persisted after save."
-                            TextWrapping="Wrap" />
-                    </Border>
+                    <!--  Section 2: Available Currencies  -->
+                    <Expander Header="Available Currencies" IsExpanded="True">
+                        <StackPanel Margin="0,12,0,0" Spacing="16">
+
+                            <Border
+                                Background="{DynamicResource SystemAccentColorLight3}"
+                                CornerRadius="10"
+                                Padding="12">
+                                <TextBlock
+                                    Opacity="0.9"
+                                    Text="Manage your organisation's allowed currencies here. The selected base currency must be in this list and cannot be removed until you choose and save a different base currency."
+                                    TextWrapping="Wrap" />
+                            </Border>
+
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    Opacity="0.7"
+                                    Text="Add currency" />
+                                <WrapPanel ItemSpacing="8">
+                                    <TextBox
+                                        MinWidth="120"
+                                        Text="{Binding NewCurrencyCode, Mode=TwoWay}"
+                                        Watermark="e.g. UGX" />
+                                    <TextBox
+                                        MinWidth="120"
+                                        Text="{Binding NewCurrencySymbol, Mode=TwoWay}"
+                                        Watermark="e.g. Ush" />
+                                    <Button Command="{Binding AddCurrencyCommand}" Content="Add currency" />
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    Opacity="0.7"
+                                    Text="Current available currencies" />
+                                <Border
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="10"
+                                    Padding="8">
+                                    <ListBox
+                                        Height="220"
+                                        ItemsSource="{Binding AvailableCurrencies}"
+                                        SelectedValue="{Binding SelectedAvailableCurrencyCode, Mode=TwoWay}"
+                                        SelectedValueBinding="{Binding CurrencyCode}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock>
+                                                    <Run Text="{Binding CurrencyCode}" /><Run Text=" (" /><Run Text="{Binding CurrencySymbol}" /><Run Text=")" />
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    Opacity="0.7"
+                                    Text="Remove currency" />
+                                <WrapPanel ItemSpacing="8">
+                                    <TextBlock Text="Select a currency in the list above, then remove it." VerticalAlignment="Center" />
+                                    <Button Command="{Binding RemoveSelectedCurrencyCommand}" Content="Remove selected" />
+                                </WrapPanel>
+                            </StackPanel>
+
+                            <WrapPanel ItemSpacing="10">
+                                <Button Command="{Binding SaveAvailableCurrenciesCommand}" Content="Save currency list" />
+                            </WrapPanel>
+
+                            <Border
+                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                CornerRadius="10"
+                                IsVisible="{Binding CurrencyStatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                Padding="12">
+                                <TextBlock Text="{Binding CurrencyStatusMessage}" TextWrapping="Wrap" />
+                            </Border>
+
+                        </StackPanel>
+                    </Expander>
+
                 </StackPanel>
             </ScrollViewer>
         </husk:Card>
