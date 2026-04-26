@@ -242,22 +242,22 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
 
         if (!IsValidCurrencyCode(normalizedCode))
         {
-            HasErrorStatus = true;
-            StatusMessage = "Currency code must be 3 to 10 uppercase letters (A-Z).";
+            HasCurrencyErrorStatus = true;
+            CurrencyStatusMessage = "Currency code must be 3 to 10 uppercase letters (A-Z).";
             return;
         }
 
         if (!IsValidCurrencySymbol(normalizedSymbol))
         {
-            HasErrorStatus = true;
-            StatusMessage = "Currency symbol must not be empty and must be at most 10 characters.";
+            HasCurrencyErrorStatus = true;
+            CurrencyStatusMessage = "Currency symbol must not be empty and must be at most 10 characters.";
             return;
         }
 
         if (AvailableCurrencies.Any(currency => currency.CurrencyCode == normalizedCode))
         {
-            HasErrorStatus = true;
-            StatusMessage = $"Currency '{normalizedCode}' already exists.";
+            HasCurrencyErrorStatus = true;
+            CurrencyStatusMessage = $"Currency '{normalizedCode}' already exists.";
             return;
         }
 
@@ -279,6 +279,8 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         NewCurrencySymbol = string.Empty;
         HasErrorStatus = false;
         StatusMessage = string.Empty;
+        HasCurrencyErrorStatus = false;
+        CurrencyStatusMessage = string.Empty;
         RefreshSaveState();
     }
 
@@ -306,8 +308,8 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
 
         if (AvailableCurrencies.Count <= 1)
         {
-            HasErrorStatus = true;
-            StatusMessage = "At least one available currency is required.";
+            HasCurrencyErrorStatus = true;
+            CurrencyStatusMessage = "At least one available currency is required.";
             return;
         }
 
@@ -327,6 +329,8 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         SelectedAvailableCurrencyCode = AvailableCurrencies.FirstOrDefault()?.CurrencyCode ?? string.Empty;
         HasErrorStatus = false;
         StatusMessage = string.Empty;
+        HasCurrencyErrorStatus = false;
+        CurrencyStatusMessage = string.Empty;
         RefreshSaveState();
     }
 

@@ -234,6 +234,26 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
     }
 
     [Fact]
+    public async Task AddingCurrency_ClearsExistingCurrencyErrorMessage()
+    {
+        await PushPersistedSettings("USD", "DD/MM/YYYY", 2);
+
+        // Create a currency-section error first.
+        _vm.SelectedAvailableCurrencyCode = "USD";
+        _vm.RemoveSelectedCurrencyCommand.Execute(null);
+        _vm.HasCurrencyErrorStatus.ShouldBeTrue();
+
+        // Successful add should clear the stale error banner.
+        _vm.NewCurrencyCode = "TZS";
+        _vm.NewCurrencySymbol = "TSh";
+        _vm.AddCurrencyCommand.Execute(null);
+
+        _vm.AvailableCurrencies.Any(c => c.CurrencyCode == "TZS").ShouldBeTrue();
+        _vm.HasCurrencyErrorStatus.ShouldBeFalse();
+        _vm.CurrencyStatusMessage.ShouldBe(string.Empty);
+    }
+
+    [Fact]
     public async Task RemovingBaseCurrency_IsBlocked_AndShowsGuidance()
     {
         await PushPersistedSettings("USD", "DD/MM/YYYY", 2);

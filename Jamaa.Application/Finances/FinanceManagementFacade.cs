@@ -4,13 +4,11 @@ using Domain.Finances.Queries;
 using Domain.Finances.Values;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Commands;
-using Jamaa.Application.Finances.Values;
 using Jamaa.Application.Shared;
 using Jamaa.Application.Users;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Notifiers;
-using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -238,15 +236,32 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         return _queryProcessor.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
     }
 
-    // Operation: emits canonical accounting-settings snapshots from direct settings-row changes.
+    // Operation: emits canonical accounting-settings snapshots by reloading the read model after settings/currency row changes.
     private IObservable<AccountingSettingsData> BuildAccountingSettingsUpdates(IDataChangeNotifier dataChangeNotifier)
     {
-        var directSettingsChanges = Observable.Merge(
+        var settingsOrganisationChanges = Observable.Merge(
                 dataChangeNotifier.Insertions.OfType<AccountingSettingsData>(),
                 dataChangeNotifier.Updates.OfType<AccountingSettingsData>())
-            .Where(settings => !string.IsNullOrWhiteSpace(settings.OrganisationId));
-        return directSettingsChanges
-            .DistinctUntilChanged(settings => BuildAccountingSettingsSnapshotKey(settings));
+            .Select(settings => settings.OrganisationId);
+
+        var currencyOrganisationChanges = Observable.Merge(
+                dataChangeNotifier.Insertions.OfType<AccountingAvailableCurrencyData>(),
+                dataChangeNotifier.Updates.OfType<AccountingAvailableCurrencyData>(),
+                dataChangeNotifier.Deletions.OfType<AccountingAvailableCurrencyData>())
+            .Select(currency => currency.OrganisationId);
+
+        var triggeredReloads = settingsOrganisationChanges
+            .Merge(currencyOrganisationChanges)
+            .Where(organisationId => !string.IsNullOrWhiteSpace(organisationId))
+            .GroupBy(organisationId => organisationId)
+            .SelectMany(group => group
+                .Throttle(TimeSpan.FromMilliseconds(80))
+                .SelectMany(organisationId => Observable.FromAsync(() => GetAccountingSettings(organisationId))
+                    .Catch<AccountingSettingsData?, Exception>(_ => Observable.Empty<AccountingSettingsData?>())));
+
+        return triggeredReloads
+            .Where(settings => settings is not null)
+            .Select(settings => settings!);
     }
 
     // Operation: builds a deterministic key for accounting-settings deduplication across row and list changes.
