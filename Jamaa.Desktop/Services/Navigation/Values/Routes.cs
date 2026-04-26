@@ -19,6 +19,7 @@ public static class Routes
     public const string BankReconciliation = "/accounting/bank-reconciliation";
     public const string AccountingReports = "/accounting/reports";
     public const string AccountingConfiguration = "/accounting/configuration";
+    public const string AccountingCurrencyAndDateFormats = "/accounting/configuration/currency-date-formats";
     public const string FiscalCalendarAndPeriods = "/accounting/configuration/fiscal-calendar-periods";
     public const string TaxGroupsAndAuthorities = "/accounting/configuration/tax-groups-authorities";
     public const string AutomationRules = "/accounting/configuration/automation-rules";

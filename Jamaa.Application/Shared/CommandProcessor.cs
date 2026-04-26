@@ -23,6 +23,7 @@ public class CommandProcessor : ReceiveActor
         ReceiveAsync<CreateAccountingPeriod>(OnCreateAccountingPeriod);
         ReceiveAsync<UpdateAccountingPeriod>(OnUpdateAccountingPeriod);
         ReceiveAsync<DeleteAccountingPeriod>(OnDeleteAccountingPeriod);
+        ReceiveAsync<UpdateAccountingSettings>(OnUpdateAccountingSettings);
     }
 
     private Task OnCreateFiscalYear(CreateFiscalYear command)
@@ -64,6 +65,13 @@ public class CommandProcessor : ReceiveActor
     {
         var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
         fiscalCalendar.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnUpdateAccountingSettings(UpdateAccountingSettings command)
+    {
+        var settingsAggregate = Context.ActorOf(AccountingSettingsAggregate.Props(command.OrganisationId));
+        settingsAggregate.Tell(command);
         return Task.CompletedTask;
     }
 
