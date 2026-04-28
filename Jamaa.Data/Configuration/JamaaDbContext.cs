@@ -18,6 +18,7 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
     public DbSet<AccountingPeriodData> AccountingPeriods { get; set; }
     public DbSet<AccountingSettingsData> AccountingSettings { get; set; }
     public DbSet<AccountingAvailableCurrencyData> AccountingAvailableCurrencies { get; set; }
+    public DbSet<AccountData> Accounts { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -101,6 +102,24 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
             .Property(currency => currency.CurrencyCode).IsRequired();
         modelBuilder.Entity<AccountingAvailableCurrencyData>()
             .Property(currency => currency.CurrencySymbol).IsRequired();
+
+        modelBuilder.Entity<AccountData>().ToTable("Accounts");
+        modelBuilder.Entity<AccountData>()
+            .HasKey(a => a.Id);
+        modelBuilder.Entity<AccountData>()
+            .Property(a => a.OrganisationId).IsRequired();
+        modelBuilder.Entity<AccountData>()
+            .Property(a => a.Code).IsRequired();
+        modelBuilder.Entity<AccountData>()
+            .Property(a => a.Name).IsRequired();
+        modelBuilder.Entity<AccountData>()
+            .HasIndex(a => new { a.OrganisationId, a.Code })
+            .IsUnique();
+        modelBuilder.Entity<AccountData>()
+            .HasOne(a => a.Parent)
+            .WithMany()
+            .HasForeignKey(a => a.ParentId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private static void ConfigureUserMapping(ModelBuilder modelBuilder)

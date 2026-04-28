@@ -59,11 +59,31 @@
                             <TextBox Text="{Binding AccountCode}" Watermark="Enter code..." />
                         </StackPanel>
 
-                        <Button
-                            Classes="Primary"
-                            Command="{Binding AddAccountCommand}"
-                            Content="Add Account"
-                            HorizontalAlignment="Right" />
+                        <StackPanel Spacing="5">
+                            <TextBlock Classes="form-label" Text="Account Name" />
+                            <TextBox Text="{Binding AccountName}" Watermark="Enter name..." />
+                        </StackPanel>
+
+                        <StackPanel Spacing="10">
+                            <Button
+                                Classes="Primary"
+                                Command="{Binding AddAccountCommand}"
+                                Content="{Binding ActionButtonText}"
+                                HorizontalAlignment="Stretch" />
+                            <Button
+                                Command="{Binding DeleteAccountCommand}"
+                                Content="Delete"
+                                HorizontalAlignment="Stretch"
+                                IsVisible="{Binding SelectedAccount, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                        </StackPanel>
+
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{DynamicResource SemiRed6}"
+                            HorizontalAlignment="Center"
+                            IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                            Text="{Binding StatusMessage}"
+                            TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
             </StackPanel>

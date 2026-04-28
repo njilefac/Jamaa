@@ -17,9 +17,15 @@ public interface IFinanceManagementFacade
 
     Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat, int decimalPrecision, IReadOnlyList<Currency> availableCurrencies);
 
+    // Account operations
+    Task CreateAccount(string organisationId, string code, string name, string type, string? parentId);
+    Task UpdateAccount(string organisationId, string accountId, string code, string name, string type, string? parentId);
+    Task DeleteAccount(string organisationId, string accountId);
+
     // Read operations (one-off query)
     Task<IList<FiscalYearData>> GetFiscalYears(string organisationId);
     Task<AccountingSettingsData?> GetAccountingSettings(string organisationId);
+    Task<IList<AccountData>> GetAccounts(string organisationId);
 
     // Reactive streams (push fiscal-year changes and current state)
     IObservable<FiscalYearData> CurrentFiscalYears { get; }
@@ -29,5 +35,10 @@ public interface IFinanceManagementFacade
     // Reactive streams (push accounting settings changes)
     IObservable<AccountingSettingsData?> CurrentAccountingSettings { get; }
     IObservable<AccountingSettingsData> AccountingSettingsUpdated { get; }
+
+    // Reactive streams (push account changes)
+    IObservable<AccountData> CurrentAccounts { get; }
+    IObservable<AccountData> AccountUpdated { get; }
+    IObservable<AccountData> AccountDeleted { get; }
 }
 

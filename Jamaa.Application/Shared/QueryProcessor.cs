@@ -14,7 +14,8 @@ public class QueryProcessor(
     IOrganisationQueryHandler organisationQueryHandler,
     IMembersQueryHandler membersQueryHandler,
     IFiscalCalendarQueryHandler fiscalCalendarQueryHandler,
-    IAccountingSettingsQueryHandler accountingSettingsQueryHandler)
+    IAccountingSettingsQueryHandler accountingSettingsQueryHandler,
+    IAccountQueryHandler accountQueryHandler)
     : IQueryProcessor
 {
     public Task<List<OrganisationData>> Get(GetAllOrganisations query) =>
@@ -31,4 +32,7 @@ public class QueryProcessor(
 
     public Task<AccountingSettingsData?> Get(GetAccountingSettingsByOrganisation query) =>
         accountingSettingsQueryHandler.Get(query);
+
+    public Task<IList<AccountData>> Get(GetAccountsByOrganisation query) =>
+        accountQueryHandler.Get(query);
 }

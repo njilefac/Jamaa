@@ -24,6 +24,9 @@ public class CommandProcessor : ReceiveActor
         ReceiveAsync<UpdateAccountingPeriod>(OnUpdateAccountingPeriod);
         ReceiveAsync<DeleteAccountingPeriod>(OnDeleteAccountingPeriod);
         ReceiveAsync<UpdateAccountingSettings>(OnUpdateAccountingSettings);
+        ReceiveAsync<CreateAccount>(OnCreateAccount);
+        ReceiveAsync<UpdateAccount>(OnUpdateAccount);
+        ReceiveAsync<DeleteAccount>(OnDeleteAccount);
     }
 
     private Task OnCreateFiscalYear(CreateFiscalYear command)
@@ -79,6 +82,27 @@ public class CommandProcessor : ReceiveActor
     {
         var organisation = Context.ActorOf(OrganisationAggregate.Props(command.OrganisationId, _queryProcessor));
         organisation.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnCreateAccount(CreateAccount command)
+    {
+        var account = Context.ActorOf(AccountAggregate.Props(command.OrganisationId));
+        account.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnUpdateAccount(UpdateAccount command)
+    {
+        var account = Context.ActorOf(AccountAggregate.Props(command.OrganisationId));
+        account.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnDeleteAccount(DeleteAccount command)
+    {
+        var account = Context.ActorOf(AccountAggregate.Props(command.OrganisationId));
+        account.Tell(command);
         return Task.CompletedTask;
     }
 

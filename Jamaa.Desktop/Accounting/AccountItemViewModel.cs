@@ -6,6 +6,8 @@ namespace Jamaa.Desktop.Accounting;
 
 public partial class AccountItemViewModel : ObservableObject
 {
+    public string Id { get; set; } = string.Empty;
+
     [ObservableProperty]
     private string _name = string.Empty;
 

@@ -104,6 +104,9 @@ public class OrganisationProjection : ReceivePersistentActor
             AccountingPeriodUpdated accountingPeriodUpdated => Handle(accountingPeriodUpdated, dbContext),
             AccountingPeriodDeleted accountingPeriodDeleted => Handle(accountingPeriodDeleted, dbContext),
             AccountingSettingsUpdated accountingSettingsUpdated => Handle(accountingSettingsUpdated, dbContext),
+            AccountCreated accountCreated => Handle(accountCreated, dbContext),
+            AccountUpdated accountUpdated => Handle(accountUpdated, dbContext),
+            AccountDeleted accountDeleted => Handle(accountDeleted, dbContext),
             _ => Task.CompletedTask
         };
     }
@@ -437,6 +440,45 @@ public class OrganisationProjection : ReceivePersistentActor
             Description = @event.Description,
             Members = new List<MemberData>()
         });
+        await dbContext.SaveChangesAsync();
+    }
+
+    private async Task Handle(AccountCreated @event, JamaaDbContext dbContext)
+    {
+        var exists = await dbContext.Accounts.AnyAsync(a => a.Id == @event.AccountId.Value);
+        if (exists) return;
+
+        dbContext.Accounts.Add(new AccountData
+        {
+            Id = @event.AccountId.Value,
+            OrganisationId = @event.OrganisationId.Value,
+            Code = @event.Code,
+            Name = @event.Name,
+            Type = @event.Type,
+            ParentId = @event.ParentId?.Value
+        });
+        await dbContext.SaveChangesAsync();
+    }
+
+    private async Task Handle(AccountUpdated @event, JamaaDbContext dbContext)
+    {
+        var account = await dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == @event.AccountId.Value);
+        if (account == null) return;
+
+        account.Code = @event.Code;
+        account.Name = @event.Name;
+        account.Type = @event.Type;
+        account.ParentId = @event.ParentId?.Value;
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private async Task Handle(AccountDeleted @event, JamaaDbContext dbContext)
+    {
+        var account = await dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == @event.AccountId.Value);
+        if (account == null) return;
+
+        dbContext.Accounts.Remove(account);
         await dbContext.SaveChangesAsync();
     }
 
