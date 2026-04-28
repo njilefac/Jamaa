@@ -1,5 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using Avalonia.Controls;
+using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Domain.Finances.Values;
@@ -21,19 +26,116 @@ public partial class ChartOfAccountsViewModel : ObservableObject, IApplicationMo
     private ObservableCollection<AccountItemViewModel> _accounts = [];
 
     [ObservableProperty]
+    private AccountItemViewModel? _selectedAccount;
+
+    [ObservableProperty]
     private AccountType? _selectedAccountType;
 
     [ObservableProperty]
     private AccountItemViewModel? _selectedParentAccount;
+
+    public ObservableCollection<AccountItemViewModel> FilteredParentAccounts { get; } = [];
 
     [ObservableProperty]
     private string _accountCode = string.Empty;
 
     public AccountType[] AccountTypes { get; } = Enum.GetValues<AccountType>();
 
+    [ObservableProperty]
+    private HierarchicalTreeDataGridSource<AccountItemViewModel>? _source;
+
     public ChartOfAccountsViewModel()
     {
         LoadPreviewData();
+        RefreshFilteredParentAccounts();
+        InitializeSource();
+    }
+
+    private void InitializeSource()
+    {
+        Source = new HierarchicalTreeDataGridSource<AccountItemViewModel>(Accounts)
+        {
+            Columns =
+            {
+                new HierarchicalExpanderColumn<AccountItemViewModel>(
+                    new TextColumn<AccountItemViewModel, string>("Code", x => x.Code, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                    x => x.SubAccounts),
+                new TextColumn<AccountItemViewModel, string>("Name", x => x.Name, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                new TextColumn<AccountItemViewModel, string>("Type", x => x.TypeName, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+            }
+        };
+
+        var selection = new TreeDataGridRowSelectionModel<AccountItemViewModel>(Source)
+        {
+            SingleSelect = true
+        };
+
+        Source.Selection = selection;
+
+        selection.SelectionChanged += (s, e) =>
+        {
+            SelectedAccount = selection.SelectedItem;
+        };
+    }
+
+    partial void OnSelectedAccountChanged(AccountItemViewModel? value)
+    {
+        RefreshFilteredParentAccounts();
+    }
+    partial void OnSelectedAccountTypeChanged(AccountType? value) => RefreshFilteredParentAccounts();
+
+    private void RefreshFilteredParentAccounts()
+    {
+        FilteredParentAccounts.Clear();
+        var allAccounts = GetAllAccounts(Accounts);
+        foreach (var account in allAccounts)
+        {
+            if (CanBeParent(account))
+            {
+                FilteredParentAccounts.Add(account);
+            }
+        }
+    }
+
+    private IEnumerable<AccountItemViewModel> GetAllAccounts(IEnumerable<AccountItemViewModel> roots)
+    {
+        foreach (var root in roots)
+        {
+            yield return root;
+            foreach (var child in GetAllAccounts(root.SubAccounts))
+            {
+                yield return child;
+            }
+        }
+    }
+
+    private bool CanBeParent(AccountItemViewModel potentialParent)
+    {
+        // 1. Must be of the selected type
+        if (SelectedAccountType.HasValue && potentialParent.Type != SelectedAccountType.Value)
+            return false;
+
+        // 2. Cannot be itself
+        if (SelectedAccount != null && potentialParent == SelectedAccount)
+            return false;
+
+        // 3. No cycles
+        if (SelectedAccount != null && IsDescendantOf(potentialParent, SelectedAccount))
+            return false;
+
+        return true;
+    }
+
+    private bool IsDescendantOf(AccountItemViewModel node, AccountItemViewModel potentialAncestor)
+    {
+        var current = node.Parent;
+        while (current != null)
+        {
+            if (current == potentialAncestor)
+                return true;
+            current = current.Parent;
+        }
+        return false;
     }
 
     private void LoadPreviewData()

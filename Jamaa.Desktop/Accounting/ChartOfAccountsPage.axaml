@@ -23,23 +23,7 @@
                     BorderBrush="{DynamicResource SemiGrey1}"
                     BorderThickness="1"
                     CornerRadius="4">
-                    <TreeView Height="400" ItemsSource="{Binding Accounts}">
-                        <TreeView.ItemTemplate>
-                            <TreeDataTemplate ItemsSource="{Binding SubAccounts}">
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <TextBlock
-                                        FontWeight="Bold"
-                                        Text="{Binding Code}"
-                                        Width="50" />
-                                    <TextBlock Text="{Binding Name}" />
-                                    <TextBlock
-                                        Foreground="{DynamicResource SemiGrey5}"
-                                        Margin="20,0,0,0"
-                                        Text="{Binding Type}" />
-                                </StackPanel>
-                            </TreeDataTemplate>
-                        </TreeView.ItemTemplate>
-                    </TreeView>
+                    <TreeDataGrid Height="400" Source="{Binding Source}" />
                 </Border>
             </StackPanel>
 
@@ -60,7 +44,7 @@
                             <TextBlock Classes="form-label" Text="Parent Account" />
                             <ComboBox
                                 HorizontalAlignment="Stretch"
-                                ItemsSource="{Binding Accounts}"
+                                ItemsSource="{Binding FilteredParentAccounts}"
                                 SelectedItem="{Binding SelectedParentAccount}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>

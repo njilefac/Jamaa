@@ -18,5 +18,7 @@ public partial class AccountItemViewModel : ObservableObject
     [ObservableProperty]
     private AccountItemViewModel? _parent;
 
+    public string TypeName => Type.ToString();
+
     public ObservableCollection<AccountItemViewModel> SubAccounts { get; } = [];
 }
