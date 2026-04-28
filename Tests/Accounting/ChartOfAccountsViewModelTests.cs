@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -54,6 +56,8 @@ public class ChartOfAccountsViewModelTests
         viewModel.AccountName.ShouldBe("Cash");
         viewModel.SelectedAccountType.ShouldBe(AccountType.Asset);
         viewModel.ActionButtonText.ShouldBe("Save Changes");
+        viewModel.FormTitle.ShouldBe("Edit Account");
+        viewModel.IsEditMode.ShouldBeTrue();
     }
 
     [Fact]
@@ -125,6 +129,23 @@ public class ChartOfAccountsViewModelTests
             
         viewModel.StatusMessage.ShouldBe("Account created successfully.");
     }
+
+    [Fact]
+    public void ResetFormCommand_ShouldClearSelectionAndFields()
+    {
+        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        viewModel.SelectedAccount = new AccountItemViewModel { Id = "acc-1", Code = "1000", Name = "Cash", Type = AccountType.Asset };
+        viewModel.AccountCode = "1000";
+        viewModel.AccountName = "Cash";
+
+        viewModel.ResetFormCommand.Execute(null);
+
+        viewModel.SelectedAccount.ShouldBeNull();
+        viewModel.AccountCode.ShouldBe(string.Empty);
+        viewModel.AccountName.ShouldBe(string.Empty);
+        viewModel.FormTitle.ShouldBe("Add New Account");
+        viewModel.IsEditMode.ShouldBeFalse();
+    }
     [Fact]
     public async Task DeleteAccountCommand_ShouldCallDeleteAccount_AndReloadAccounts()
     {
@@ -172,5 +193,106 @@ public class ChartOfAccountsViewModelTests
         viewModel.Accounts.ShouldBeEmpty();
         viewModel.StatusMessage.ShouldBe("Account deleted successfully.");
         viewModel.SelectedAccount.ShouldBeNull();
+    }
+
+    [Fact]
+    public void SelectedAccount_WithParent_ShouldPopulateParentAccount()
+    {
+        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        
+        var parentAccount = new AccountItemViewModel
+        {
+            Id = "parent-1",
+            Code = "1000",
+            Name = "Assets",
+            Type = AccountType.Asset
+        };
+
+        var childAccount = new AccountItemViewModel
+        {
+            Id = "child-1",
+            Code = "1010",
+            Name = "Cash",
+            Type = AccountType.Asset,
+            Parent = parentAccount
+        };
+
+        // We need to simulate that parentAccount is in the list of available accounts
+        // so that it can be selected in the FilteredParentAccounts.
+        // But first, let's see if the property itself is set.
+        
+        viewModel.SelectedAccount = childAccount;
+
+        viewModel.AccountCode.ShouldBe("1010");
+        viewModel.AccountName.ShouldBe("Cash");
+        viewModel.SelectedAccountType.ShouldBe(AccountType.Asset);
+        // It is null initially because parentAccount is not in the tree yet
+        viewModel.SelectedParentAccount.ShouldBeNull();
+        
+        // Check if FilteredParentAccounts contains the parent
+        // Actually we need to populate Accounts first for RefreshFilteredParentAccounts to find it
+        var accountsField = typeof(ChartOfAccountsViewModel).GetField("_accounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var accountsList = new ObservableCollection<AccountItemViewModel> { parentAccount, childAccount };
+        accountsField.SetValue(viewModel, accountsList);
+        
+        // Trigger refresh
+        var refreshMethod = typeof(ChartOfAccountsViewModel).GetMethod("RefreshFilteredParentAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        refreshMethod.Invoke(viewModel, null);
+
+        // Re-select to trigger mapping
+        viewModel.SelectedAccount = null;
+        viewModel.SelectedAccount = childAccount;
+
+        viewModel.FilteredParentAccounts.ShouldContain(p => p.Id == "parent-1");
+        
+        // Important: SelectedParentAccount MUST be the same reference as the one in FilteredParentAccounts
+        // for the Avalonia ComboBox to show it as selected.
+        var parentInList = viewModel.FilteredParentAccounts.First(p => p.Id == "parent-1");
+        viewModel.SelectedParentAccount.ShouldBeSameAs(parentInList);
+    }
+
+    [Fact]
+    public void SelectedAccount_WithParent_ShouldPopulateParentAccount_EvenIfReferenceIsDifferent()
+    {
+        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        
+        var parentAccountInTree = new AccountItemViewModel
+        {
+            Id = "parent-1",
+            Code = "1000",
+            Name = "Assets",
+            Type = AccountType.Asset
+        };
+
+        var parentAccountFromSelected = new AccountItemViewModel
+        {
+            Id = "parent-1",
+            Code = "1000",
+            Name = "Assets",
+            Type = AccountType.Asset
+        };
+
+        var childAccount = new AccountItemViewModel
+        {
+            Id = "child-1",
+            Code = "1010",
+            Name = "Cash",
+            Type = AccountType.Asset,
+            Parent = parentAccountFromSelected
+        };
+
+        // Populate the tree with parentAccountInTree
+        var accountsField = typeof(ChartOfAccountsViewModel).GetField("_accounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var accountsList = new ObservableCollection<AccountItemViewModel> { parentAccountInTree };
+        accountsField.SetValue(viewModel, accountsList);
+        
+        // Select the child account
+        viewModel.SelectedAccount = childAccount;
+
+        // Verify that SelectedParentAccount was mapped to the reference in the list
+        viewModel.SelectedParentAccount.ShouldNotBeNull();
+        viewModel.SelectedParentAccount.Id.ShouldBe("parent-1");
+        viewModel.SelectedParentAccount.ShouldBeSameAs(parentAccountInTree);
+        viewModel.SelectedParentAccount.ShouldNotBeSameAs(parentAccountFromSelected);
     }
 }

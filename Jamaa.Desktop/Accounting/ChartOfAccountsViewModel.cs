@@ -58,6 +58,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     private string _statusMessage = string.Empty;
 
     public string ActionButtonText => SelectedAccount == null ? "Add Account" : "Save Changes";
+    public string FormTitle => SelectedAccount == null ? "Add New Account" : "Edit Account";
+    public bool IsEditMode => SelectedAccount != null;
 
     public AccountType[] AccountTypes { get; } = Enum.GetValues<AccountType>();
 
@@ -172,24 +174,39 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             AccountCode = value.Code;
             AccountName = value.Name;
             SelectedAccountType = value.Type;
-            SelectedParentAccount = value.Parent;
+            
+            RefreshFilteredParentAccounts();
+
+            // Map parent to the reference in our collection for Avalonia selection to work
+            if (value.Parent != null)
+            {
+                SelectedParentAccount = FilteredParentAccounts
+                    .FirstOrDefault(a => a.Id == value.Parent.Id);
+            }
+            else
+            {
+                SelectedParentAccount = null;
+            }
         }
         else
         {
             AccountCode = string.Empty;
             AccountName = string.Empty;
             SelectedAccountType = null;
+            RefreshFilteredParentAccounts();
             SelectedParentAccount = null;
         }
 
-        RefreshFilteredParentAccounts();
         OnPropertyChanged(nameof(ActionButtonText));
+        OnPropertyChanged(nameof(FormTitle));
+        OnPropertyChanged(nameof(IsEditMode));
     }
 
     partial void OnSelectedAccountTypeChanged(AccountType? value) => RefreshFilteredParentAccounts();
 
     private void RefreshFilteredParentAccounts()
     {
+        var previousSelection = SelectedParentAccount;
         FilteredParentAccounts.Clear();
         var allAccounts = GetAllAccounts(Accounts);
         foreach (var account in allAccounts)
@@ -198,6 +215,12 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             {
                 FilteredParentAccounts.Add(account);
             }
+        }
+        
+        // Try to restore selection if it's still valid in the new filtered list
+        if (previousSelection != null)
+        {
+            SelectedParentAccount = FilteredParentAccounts.FirstOrDefault(a => a.Id == previousSelection.Id);
         }
     }
 
@@ -302,9 +325,14 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         }
     }
 
-    private void ResetForm()
+    [RelayCommand]
+    public void ResetForm()
     {
         SelectedAccount = null;
+        if (Source?.Selection is ITreeDataGridRowSelectionModel<AccountItemViewModel> selection)
+        {
+            selection.Clear();
+        }
         AccountCode = string.Empty;
         AccountName = string.Empty;
         SelectedAccountType = null;

@@ -5,10 +5,18 @@
     x:Class="Jamaa.Desktop.Accounting.ChartOfAccountsPage"
     x:DataType="vm:ChartOfAccountsViewModel"
     xmlns="https://github.com/avaloniaui"
+    xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:Jamaa.Desktop.Accounting"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <converters:BoolToObjectConverter
+            FalseValue="Transparent"
+            TrueValue="{StaticResource SystemAccentColorLight3}"
+            x:Key="EditModeBackgroundConverter" />
+    </UserControl.Resources>
 
     <StackPanel Margin="20" Spacing="20">
         <TextBlock Classes="h1" Text="{Binding PageTitle}" />
@@ -20,7 +28,7 @@
                 Spacing="10">
                 <TextBlock Classes="h2" Text="Accounts" />
                 <Border
-                    BorderBrush="{DynamicResource SemiGrey1}"
+                    BorderBrush="{DynamicResource AppBorderColor}"
                     BorderThickness="1"
                     CornerRadius="4">
                     <TreeDataGrid Height="400" Source="{Binding Source}" />
@@ -28,12 +36,24 @@
             </StackPanel>
 
             <StackPanel Grid.Column="1" Spacing="20">
-                <Border Classes="Card" Padding="15">
+                <Border
+                    Background="{Binding IsEditMode, Converter={StaticResource EditModeBackgroundConverter}}"
+                    Classes="Card"
+                    Padding="15">
                     <StackPanel Spacing="15">
-                        <TextBlock Classes="h2" Text="Quick Add" />
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBlock Classes="h2" Text="{Binding FormTitle}" />
+                            <Button
+                                Classes="Ghost"
+                                Command="{Binding ResetFormCommand}"
+                                Content="New Account"
+                                Grid.Column="1"
+                                IsVisible="{Binding IsEditMode}"
+                                Theme="{StaticResource BorderlessButton}" />
+                        </Grid>
 
                         <StackPanel Spacing="5">
-                            <TextBlock Classes="form-label" Text="Account Type" />
+                            <TextBlock Classes="form label" Text="Account Type" />
                             <ComboBox
                                 HorizontalAlignment="Stretch"
                                 ItemsSource="{Binding AccountTypes}"
@@ -41,7 +61,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="5">
-                            <TextBlock Classes="form-label" Text="Parent Account" />
+                            <TextBlock Classes="form label" Text="Parent Account" />
                             <ComboBox
                                 HorizontalAlignment="Stretch"
                                 ItemsSource="{Binding FilteredParentAccounts}"
@@ -55,12 +75,12 @@
                         </StackPanel>
 
                         <StackPanel Spacing="5">
-                            <TextBlock Classes="form-label" Text="Account Code" />
+                            <TextBlock Classes="form label" Text="Account Code" />
                             <TextBox Text="{Binding AccountCode}" Watermark="Enter code..." />
                         </StackPanel>
 
                         <StackPanel Spacing="5">
-                            <TextBlock Classes="form-label" Text="Account Name" />
+                            <TextBlock Classes="form label" Text="Account Name" />
                             <TextBox Text="{Binding AccountName}" Watermark="Enter name..." />
                         </StackPanel>
 
