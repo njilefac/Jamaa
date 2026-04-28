@@ -43,7 +43,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
-    <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
     <PackageReference Include="Akka.Persistence.Hosting" Version="1.5.65" />
     <PackageReference Include="Akka.Persistence.Sql.Hosting" Version="1.5.62" />
     <PackageReference Include="Akka.Persistence.Sqlite" Version="1.5.39" />
@@ -105,6 +104,7 @@
     <PackageReference Include="System.Reactive" Version="6.1.0" />
     <PackageReference Remove="Microsoft.Maui.Controls" />
     <PackageReference Remove="Microsoft.Maui.Controls.Compatibility" />
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
     <PackageReference Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5" />
     <PackageReference Include="Xaml.Behaviors.Interactions.DragAndDrop.DataGrid" Version="11.3.9.5" />
   </ItemGroup>
