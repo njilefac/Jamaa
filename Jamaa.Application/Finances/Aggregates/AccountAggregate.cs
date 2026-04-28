@@ -1,5 +1,7 @@
+using System;
 using Akka.Actor;
 using Akka.Persistence;
+using Domain.Finances.Values;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Commands;
 using Jamaa.Application.Finances.Events;
@@ -30,6 +32,21 @@ public class AccountAggregate : ReceivePersistentActor
 
     private void Handle(CreateAccount command)
     {
+        AccountType type;
+        try
+        {
+            type = (AccountType)Enum.Parse(typeof(AccountType), command.Type.ToString(), true);
+        }
+        catch
+        {
+            return;
+        }
+
+        if (!AccountTypeExtensions.IsInRange(type, command.Code, command.Name))
+        {
+            return;
+        }
+
         var @event = new AccountCreated(
             command.OrganisationId,
             command.AccountId,
@@ -43,6 +60,21 @@ public class AccountAggregate : ReceivePersistentActor
 
     private void Handle(UpdateAccount command)
     {
+        AccountType type;
+        try
+        {
+            type = (AccountType)Enum.Parse(typeof(AccountType), command.Type.ToString(), true);
+        }
+        catch
+        {
+            return;
+        }
+
+        if (!AccountTypeExtensions.IsInRange(type, command.Code, command.Name))
+        {
+            return;
+        }
+
         var @event = new AccountUpdated(
             command.OrganisationId,
             command.AccountId,

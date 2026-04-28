@@ -10,6 +10,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.ComponentModel.DataAnnotations;
 using Domain.Finances.Values;
 using Jamaa.Application.Finances;
 using Jamaa.Application.Shared;
@@ -49,9 +50,16 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     public ObservableCollection<AccountItemViewModel> FilteredParentAccounts { get; } = [];
 
     [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required(ErrorMessage = "Account code is required")]
+    [RegularExpression(@"^\d+$", ErrorMessage = "Code must be numeric")]
+    [CustomValidation(typeof(ChartOfAccountsViewModel), nameof(ValidateAccountCode))]
     private string _accountCode = string.Empty;
 
     [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required(ErrorMessage = "Account name is required")]
+    [NotifyPropertyChangedFor(nameof(AccountCode))]
     private string _accountName = string.Empty;
 
     [ObservableProperty]
@@ -202,7 +210,61 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         OnPropertyChanged(nameof(IsEditMode));
     }
 
-    partial void OnSelectedAccountTypeChanged(AccountType? value) => RefreshFilteredParentAccounts();
+    public static ValidationResult? ValidateAccountCode(string code, ValidationContext context)
+    {
+        var vm = (ChartOfAccountsViewModel)context.ObjectInstance;
+        if (vm.SelectedAccountType == null)
+            return ValidationResult.Success;
+
+        if (!vm.SelectedAccountType.Value.IsInRange(code, vm.AccountName))
+        {
+            var (min, max) = vm.SelectedAccountType.Value.GetCodeRange(vm.AccountName);
+            return new ValidationResult($"Code for {vm.SelectedAccountType} must be between {min} and {max}");
+        }
+
+        return ValidationResult.Success;
+    }
+
+    partial void OnSelectedAccountTypeChanged(AccountType? value)
+    {
+        RefreshFilteredParentAccounts();
+        SuggestAccountCode();
+        ValidateProperty(AccountCode, nameof(AccountCode));
+    }
+
+    private void SuggestAccountCode()
+    {
+        if (IsEditMode || SelectedAccountType == null) return;
+
+        var (min, max) = SelectedAccountType.Value.GetCodeRange(AccountName);
+        
+        var existingCodes = _allAccountData
+            .Where(a => int.TryParse(a.Code, out var c) && c >= min && c <= max)
+            .Select(a => int.Parse(a.Code))
+            .ToList();
+
+        if (existingCodes.Count == 0)
+        {
+            AccountCode = min.ToString();
+        }
+        else
+        {
+            var nextCode = existingCodes.Max() + 1;
+            if (nextCode <= max)
+            {
+                AccountCode = nextCode.ToString();
+            }
+        }
+    }
+
+    partial void OnAccountNameChanged(string value)
+    {
+        if (SelectedAccountType == AccountType.Expense)
+        {
+            SuggestAccountCode();
+            ValidateProperty(AccountCode, nameof(AccountCode));
+        }
+    }
 
     private void RefreshFilteredParentAccounts()
     {

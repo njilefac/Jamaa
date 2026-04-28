@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -106,9 +107,9 @@ public class ChartOfAccountsViewModelTests
     {
         var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
         
+        viewModel.SelectedAccountType = AccountType.Asset;
         viewModel.AccountCode = "1100";
         viewModel.AccountName = "Bank";
-        viewModel.SelectedAccountType = AccountType.Asset;
 
         _financeFacade.CreateAccount(
             "org-1", 
@@ -294,5 +295,62 @@ public class ChartOfAccountsViewModelTests
         viewModel.SelectedParentAccount.Id.ShouldBe("parent-1");
         viewModel.SelectedParentAccount.ShouldBeSameAs(parentAccountInTree);
         viewModel.SelectedParentAccount.ShouldNotBeSameAs(parentAccountFromSelected);
+    }
+    [Fact]
+    public void SelectedAccountType_Change_ShouldSuggestCode()
+    {
+        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        
+        viewModel.SelectedAccountType = AccountType.Asset;
+        viewModel.AccountCode.ShouldBe("1000");
+
+        viewModel.SelectedAccountType = AccountType.Liability;
+        viewModel.AccountCode.ShouldBe("2000");
+
+        viewModel.SelectedAccountType = AccountType.Equity;
+        viewModel.AccountCode.ShouldBe("3000");
+
+        viewModel.SelectedAccountType = AccountType.Revenue;
+        viewModel.AccountCode.ShouldBe("4000");
+
+        viewModel.SelectedAccountType = AccountType.Expense;
+        viewModel.AccountCode.ShouldBe("5000");
+
+        viewModel.AccountName = "Admin Fees";
+        viewModel.AccountCode.ShouldBe("6000");
+    }
+
+    [Fact]
+    public void InvalidAccountCode_ShouldHaveValidationError()
+    {
+        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        
+        viewModel.SelectedAccountType = AccountType.Asset;
+        viewModel.AccountCode = "2000"; // Invalid for Asset
+
+        viewModel.HasErrors.ShouldBeTrue();
+        var errors = viewModel.GetErrors(nameof(viewModel.AccountCode)).Cast<ValidationResult>().ToList();
+        errors.ShouldNotBeEmpty();
+        errors[0].ErrorMessage.ShouldContain("Code for Asset must be between 1000 and 1999");
+    }
+
+    [Fact]
+    public void SuggestAccountCode_ShouldUseNextAvailableCode()
+    {
+        var accounts = new List<AccountData>
+        {
+            new AccountData { Id = "1", Code = "1000", Type = AccountType.Asset, OrganisationId = "org-1", Name = "A" },
+            new AccountData { Id = "2", Code = "1005", Type = AccountType.Asset, OrganisationId = "org-1", Name = "B" }
+        };
+        _financeFacade.GetAccounts(Arg.Any<string>()).Returns(Task.FromResult<IList<AccountData>>(accounts));
+        
+        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        // Force load
+        var loadMethod = typeof(ChartOfAccountsViewModel).GetMethod("LoadAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        loadMethod.Invoke(viewModel, null);
+
+        viewModel.SelectedAccountType = AccountType.Asset;
+        
+        viewModel.AccountCode.ShouldBe("1006");
     }
 }
