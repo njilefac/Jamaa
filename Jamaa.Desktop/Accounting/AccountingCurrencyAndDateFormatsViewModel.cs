@@ -31,7 +31,6 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     private int _persistedDecimalPrecision = 2;
     private IReadOnlyList<string> _persistedAvailableCurrencySnapshotKeys = ["EUR|EUR", "KES|KSh", "USD|$"];
     private bool _hasPersistedSnapshot;
-    private TaskCompletionSource? _pendingSaveConfirmation;
     private bool _isSynchronizingBaseCurrencySelection;
     private string _lastKnownValidBaseCurrency = "USD";
 
@@ -56,12 +55,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
             financeManagementFacade.AccountingSettingsUpdated
                 .Where(settings => settings.OrganisationId == _organisationId)
                 .ObserveOn(syncContext)
-                .Subscribe(updated =>
-                {
-                    ApplySettings(updated);
-                    _pendingSaveConfirmation?.TrySetResult();
-                    IsAwaitingPersistenceConfirmation = false;
-                }, HandleStreamError));
+                .Subscribe(ApplySettings, HandleStreamError));
     }
 
     public Guid Id => Guid.Parse("d3a693eb-5b4c-44ee-ae45-cf32b5ec4fe9");
@@ -93,14 +87,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     [NotifyCanExecuteChangedFor(nameof(SaveAvailableCurrenciesCommand))]
     [NotifyCanExecuteChangedFor(nameof(RemoveSelectedCurrencyCommand))]
     [NotifyCanExecuteChangedFor(nameof(AddCurrencyCommand))]
-    private bool _isSaving;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveBaseSettingsCommand))]
-    [NotifyCanExecuteChangedFor(nameof(SaveAvailableCurrenciesCommand))]
-    [NotifyCanExecuteChangedFor(nameof(RemoveSelectedCurrencyCommand))]
-    [NotifyCanExecuteChangedFor(nameof(AddCurrencyCommand))]
-    private bool _isAwaitingPersistenceConfirmation;
+    private bool _isOperationInFlight;
 
     [ObservableProperty]
     private bool _hasErrorStatus;
@@ -177,8 +164,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
             setError: err => HasErrorStatus = err);
 
     private bool CanSaveBaseSettings() =>
-        !IsSaving
-        && !IsAwaitingPersistenceConfirmation
+        !IsOperationInFlight
         && IsSelectionValid
         && HasUnsavedBaseSettingsChanges;
 
@@ -189,48 +175,47 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
             setError: err => HasCurrencyErrorStatus = err);
 
     private bool CanSaveAvailableCurrencies() =>
-        !IsSaving
-        && !IsAwaitingPersistenceConfirmation
+        !IsOperationInFlight
         && IsSelectionValid
         && HasUnsavedCurrencyChanges;
 
     // Integration: dispatches accounting settings update and waits for persistence confirmation.
     private async Task DispatchSettingsSaveAsync(Action<string> setStatus, Action<bool> setError)
     {
-        IsSaving = true;
-        IsAwaitingPersistenceConfirmation = true;
         setError(false);
-        setStatus("Saving...");
+        setStatus(string.Empty);
 
-        _pendingSaveConfirmation = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        try
-        {
-            var availableCurrencies = AvailableCurrencies
-                .Select(currency => new Currency(currency.CurrencyCode, currency.CurrencySymbol))
-                .ToList();
+        var expectedBaseCurrency = NormalizeCurrencyCode(SelectedBaseCurrency);
+        var expectedDateFormat = SelectedDateFormat;
+        var expectedDecimalPrecision = SelectedDecimalPrecision;
+        var expectedAvailableCurrencySnapshot = BuildAvailableCurrencySnapshotKeys(AvailableCurrencies);
+        var availableCurrencies = AvailableCurrencies
+            .Select(currency => new Currency(currency.CurrencyCode, currency.CurrencySymbol))
+            .ToList();
 
-            await _financeManagementFacade.UpdateAccountingSettings(
+        var isConfirmed = await _notificationService.TrackOperationAsync(
+            sendCommand: () => _financeManagementFacade.UpdateAccountingSettings(
                 _organisationId,
-                SelectedBaseCurrency,
-                SelectedDateFormat,
-                SelectedDecimalPrecision,
-                availableCurrencies);
+                expectedBaseCurrency,
+                expectedDateFormat,
+                expectedDecimalPrecision,
+                availableCurrencies),
+            confirmationObservable: _financeManagementFacade.AccountingSettingsUpdated,
+            matcherPredicate: settings =>
+                settings.OrganisationId == _organisationId &&
+                NormalizeCurrencyCode(settings.BaseCurrency) == expectedBaseCurrency &&
+                settings.DateFormat == expectedDateFormat &&
+                settings.DecimalPrecision == expectedDecimalPrecision &&
+                BuildAvailableCurrencySnapshotKeys(BuildPersistedCurrencies(settings, _organisationId))
+                    .SequenceEqual(expectedAvailableCurrencySnapshot),
+            timeout: TimeSpan.FromSeconds(10),
+            operationName: "Accounting settings",
+            successAction: "Saved",
+            inFlightChanged: SetOperationInFlight);
 
-            await WaitForSaveConfirmation(_pendingSaveConfirmation);
-
-            setError(false);
-            setStatus("Saved successfully.");
-        }
-        catch (Exception ex)
+        if (!isConfirmed)
         {
-            IsAwaitingPersistenceConfirmation = false;
             setError(true);
-            setStatus($"Failed to save: {ex.Message}");
-        }
-        finally
-        {
-            _pendingSaveConfirmation = null;
-            IsSaving = false;
         }
     }
 
@@ -286,8 +271,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
 
     private bool CanAddCurrency()
     {
-        return !IsSaving
-               && !IsAwaitingPersistenceConfirmation
+        return !IsOperationInFlight
                && !string.IsNullOrWhiteSpace(NewCurrencyCode)
                && !string.IsNullOrWhiteSpace(NewCurrencySymbol);
     }
@@ -336,10 +320,14 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
 
     private bool CanRemoveSelectedCurrency()
     {
-        return !IsSaving
-               && !IsAwaitingPersistenceConfirmation
+        return !IsOperationInFlight
                && !string.IsNullOrWhiteSpace(SelectedAvailableCurrencyCode)
                && AvailableCurrencies.Any(currency => currency.CurrencyCode == SelectedAvailableCurrencyCode);
+    }
+
+    private void SetOperationInFlight(bool isInFlight)
+    {
+        IsOperationInFlight = isInFlight;
     }
 
     // Operation: determines whether the selected remove target is currently configured as base currency.
@@ -410,8 +398,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     // Operation: surfaces stream failures in both status banners.
     private void HandleStreamError(Exception ex)
     {
-        _pendingSaveConfirmation?.TrySetException(ex);
-        IsAwaitingPersistenceConfirmation = false;
+        IsOperationInFlight = false;
         HasErrorStatus = true;
         HasCurrencyErrorStatus = true;
         StatusMessage = $"Error loading settings: {ex.Message}";
@@ -430,14 +417,6 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         };
     }
 
-    private static async Task WaitForSaveConfirmation(TaskCompletionSource pendingSaveConfirmation)
-    {
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
-        using var timeoutRegistration = timeout.Token.Register(
-            () => pendingSaveConfirmation.TrySetException(new TimeoutException("Timed out while waiting for settings to be persisted.")));
-
-        await pendingSaveConfirmation.Task;
-    }
 
     // Operation: extracts, normalizes, and defaults persisted currencies with symbols.
     private static List<AccountingAvailableCurrencyData> BuildPersistedCurrencies(AccountingSettingsData settings, string organisationId)

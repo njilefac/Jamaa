@@ -1,7 +1,6 @@
 using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Jamaa.Desktop.Services.Notifications;
 
 namespace Jamaa.Desktop.Services.Notifications;
 
@@ -27,7 +26,6 @@ public static class CommandOperationExtensions
         Action<bool>? inFlightChanged = null)
     {
         // INTEGRATION: Orchestrates command sending, in-flight state and user feedback
-        ShowRequestedMessage(notificationService, operationName, subject);
         inFlightChanged?.Invoke(true);
 
         try
@@ -73,7 +71,6 @@ public static class CommandOperationExtensions
         Action<bool>? inFlightChanged = null)
     {
         // INTEGRATION: Orchestrates command sending, matched confirmation and UI lifecycle state
-        ShowRequestedMessage(notificationService, operationName, subject);
         inFlightChanged?.Invoke(true);
 
         try
@@ -109,17 +106,6 @@ public static class CommandOperationExtensions
         }
     }
 
-    // OPERATION: Displays "Requested ..." message
-    private static void ShowRequestedMessage(
-        INotificationService notificationService,
-        string operationName,
-        string? subject)
-    {
-        var message = subject != null
-            ? $"Requested {subject}..."
-            : $"Requested {operationName}...";
-        notificationService.Show(operationName, message, NotificationType.Information);
-    }
 
     // OPERATION: Displays "Created/Saved/Deleted ..." message
     private static void ShowSuccessMessage(

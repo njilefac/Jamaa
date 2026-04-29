@@ -14,6 +14,7 @@ using Jamaa.Application.Finances;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
+using Jamaa.Desktop.Services.Notifications;
 using Jamaa.Desktop.Shared;
 
 namespace Jamaa.Desktop.Accounting;
@@ -29,15 +30,18 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
     private readonly CompositeDisposable _fiscalYearSubscriptions = [];
     private FiscalYearDraftSnapshot? _selectedFiscalYearSnapshot;
     private readonly IFinanceManagementFacade _financeManagementFacade;
+    private readonly INotificationService _notificationService;
     private readonly string _organisationId;
 
     public FiscalCalendarAndPeriodsViewModel(
         IFinanceManagementFacade financeManagementFacade,
-        IUserSessionService userSessionService)
+        IUserSessionService userSessionService,
+        INotificationService notificationService)
     {
         var syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
 
         _financeManagementFacade = financeManagementFacade;
+        _notificationService = notificationService;
         _organisationId = ResolveOrganisationId(userSessionService);
 
         _fiscalYearsSubscription = _fiscalYearsSource.Connect()
@@ -120,9 +124,9 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
 
     public string SelectedPeriodStatusDisplay => SelectedPeriod?.StatusLabel ?? "—";
 
-    public bool CanToggleFiscalYearLock => SelectedFiscalYear is { IsLocked: false };
+    public bool CanToggleFiscalYearLock => !IsOperationInFlight && SelectedFiscalYear is { IsLocked: false };
 
-    public bool CanToggleSelectedPeriodLock => SelectedPeriod is { IsLocked: false };
+    public bool CanToggleSelectedPeriodLock => !IsOperationInFlight && SelectedPeriod is { IsLocked: false };
 
     public bool SelectedPeriodIsLocked
     {
@@ -189,6 +193,16 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
     private bool _draftIsLocked;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddFiscalYearCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveFiscalYearCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteFiscalYearCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RevertFiscalYearCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RegeneratePeriodsCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CloseSelectedPeriodCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ReopenSelectedPeriodCommand))]
+    private bool _isOperationInFlight;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
     private string _statusMessage = string.Empty;
 
@@ -208,12 +222,24 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         RefreshPeriodCommandState();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanAddFiscalYear))]
     private async Task AddFiscalYear()
     {
         var (startDate, endDate) = GetNextAvailableFiscalYearRange();
-        StatusMessage = $"Creating fiscal year {startDate:yyyy}-{endDate:yy}...";
-        await _financeManagementFacade.CreateFiscalYear(_organisationId, startDate, endDate, false);
+        var subject = $"{startDate:yyyy}-{endDate:yy}";
+
+        await _notificationService.TrackOperationAsync(
+            sendCommand: () => _financeManagementFacade.CreateFiscalYear(_organisationId, startDate, endDate, false),
+            confirmationObservable: _financeManagementFacade.CurrentFiscalYears,
+            matcherPredicate: fiscalYear =>
+                fiscalYear.OrganisationId == _organisationId &&
+                fiscalYear.StartDate.Date == startDate.Date &&
+                fiscalYear.EndDate.Date == endDate.Date,
+            timeout: TimeSpan.FromSeconds(10),
+            operationName: "Fiscal year",
+            successAction: "Created",
+            subject: subject,
+            inFlightChanged: SetOperationInFlight);
     }
 
     [RelayCommand(CanExecute = nameof(CanSaveFiscalYear))]
@@ -237,8 +263,22 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         var draftEnd = DraftEndDate;
         var draftLocked = DraftIsLocked;
 
-        StatusMessage = $"Saving {fiscalYear.Name}...";
-        await _financeManagementFacade.UpdateFiscalYear(_organisationId, fiscalYear.Id.ToString(), draftStart, draftEnd, draftLocked);
+        var fiscalYearId = fiscalYear.Id.ToString();
+
+        await _notificationService.TrackOperationAsync(
+            sendCommand: () => _financeManagementFacade.UpdateFiscalYear(_organisationId, fiscalYearId, draftStart, draftEnd, draftLocked),
+            confirmationObservable: _financeManagementFacade.FiscalYearUpdated,
+            matcherPredicate: updated =>
+                updated.OrganisationId == _organisationId &&
+                updated.Id == fiscalYearId &&
+                updated.StartDate.Date == draftStart.Date &&
+                updated.EndDate.Date == draftEnd.Date &&
+                updated.IsLocked == draftLocked,
+            timeout: TimeSpan.FromSeconds(10),
+            operationName: "Fiscal year",
+            successAction: "Saved",
+            subject: fiscalYear.Name,
+            inFlightChanged: SetOperationInFlight);
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteFiscalYear))]
@@ -256,8 +296,19 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
         }
 
         var deletedFiscalYear = SelectedFiscalYear;
-        StatusMessage = $"Deleting {deletedFiscalYear.Name}...";
-        await _financeManagementFacade.DeleteFiscalYear(_organisationId, deletedFiscalYear.Id.ToString());
+        var deletedFiscalYearId = deletedFiscalYear.Id.ToString();
+
+        await _notificationService.TrackOperationAsync(
+            sendCommand: () => _financeManagementFacade.DeleteFiscalYear(_organisationId, deletedFiscalYearId),
+            confirmationObservable: _financeManagementFacade.FiscalYearDeleted,
+            matcherPredicate: deleted =>
+                deleted.OrganisationId == _organisationId &&
+                deleted.Id == deletedFiscalYearId,
+            timeout: TimeSpan.FromSeconds(10),
+            operationName: "Fiscal year",
+            successAction: "Deleted",
+            subject: deletedFiscalYear.Name,
+            inFlightChanged: SetOperationInFlight);
     }
 
     [RelayCommand(CanExecute = nameof(CanRevertFiscalYear))]
@@ -298,22 +349,32 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
             return;
         }
 
-        await _financeManagementFacade.UpdateAccountingPeriod(
-            _organisationId,
-            SelectedFiscalYear.Id.ToString(),
-            SelectedPeriod.Id,
-            SelectedPeriod.SequenceNumber,
-            SelectedPeriod.StartDate,
-            SelectedPeriod.EndDate,
-            true);
+        var fiscalYearId = SelectedFiscalYear.Id.ToString();
+        var periodId = SelectedPeriod.Id;
+        var periodName = SelectedPeriod.Name;
+        var sequenceNumber = SelectedPeriod.SequenceNumber;
+        var startDate = SelectedPeriod.StartDate;
+        var endDate = SelectedPeriod.EndDate;
 
-        SelectedPeriod.IsLocked = true;
-        SynchronizeFiscalYearAndPeriodLockState(SelectedFiscalYear);
-        DraftIsLocked = SelectedFiscalYear.IsLocked;
-        StatusMessage = $"Closed {SelectedPeriod.Name}. The fiscal year closes automatically once all periods are closed.";
-        RaiseSelectionStateChanged();
-        RefreshPeriodCommandState();
-        // UI will update automatically via the reactive stream subscription
+        await _notificationService.TrackOperationAsync(
+            sendCommand: () => _financeManagementFacade.UpdateAccountingPeriod(
+                _organisationId,
+                fiscalYearId,
+                periodId,
+                sequenceNumber,
+                startDate,
+                endDate,
+                true),
+            confirmationObservable: _financeManagementFacade.FiscalYearUpdated,
+            matcherPredicate: updated =>
+                updated.OrganisationId == _organisationId &&
+                updated.Id == fiscalYearId &&
+                updated.Periods.Any(period => period.Id == periodId && period.IsLocked),
+            timeout: TimeSpan.FromSeconds(10),
+            operationName: "Accounting period",
+            successAction: "Closed",
+            subject: periodName,
+            inFlightChanged: SetOperationInFlight);
     }
 
     [RelayCommand(CanExecute = nameof(CanReopenSelectedPeriod))]
@@ -324,54 +385,82 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
             return;
         }
 
-        await _financeManagementFacade.UpdateAccountingPeriod(
-            _organisationId,
-            SelectedFiscalYear.Id.ToString(),
-            SelectedPeriod.Id,
-            SelectedPeriod.SequenceNumber,
-            SelectedPeriod.StartDate,
-            SelectedPeriod.EndDate,
-            false);
+        var fiscalYearId = SelectedFiscalYear.Id.ToString();
+        var periodId = SelectedPeriod.Id;
+        var periodName = SelectedPeriod.Name;
+        var sequenceNumber = SelectedPeriod.SequenceNumber;
+        var startDate = SelectedPeriod.StartDate;
+        var endDate = SelectedPeriod.EndDate;
 
-        SelectedPeriod.IsLocked = false;
-        SynchronizeFiscalYearAndPeriodLockState(SelectedFiscalYear);
-        DraftIsLocked = SelectedFiscalYear.IsLocked;
-        StatusMessage = $"Reopened {SelectedPeriod.Name}. A fiscal year cannot remain locked while one of its periods is open.";
-        RaiseSelectionStateChanged();
-        RefreshPeriodCommandState();
-        // UI will update automatically via the reactive stream subscription
+        await _notificationService.TrackOperationAsync(
+            sendCommand: () => _financeManagementFacade.UpdateAccountingPeriod(
+                _organisationId,
+                fiscalYearId,
+                periodId,
+                sequenceNumber,
+                startDate,
+                endDate,
+                false),
+            confirmationObservable: _financeManagementFacade.FiscalYearUpdated,
+            matcherPredicate: updated =>
+                updated.OrganisationId == _organisationId &&
+                updated.Id == fiscalYearId &&
+                updated.Periods.Any(period => period.Id == periodId && !period.IsLocked),
+            timeout: TimeSpan.FromSeconds(10),
+            operationName: "Accounting period",
+            successAction: "Reopened",
+            subject: periodName,
+            inFlightChanged: SetOperationInFlight);
+    }
+
+    private bool CanAddFiscalYear()
+    {
+        return !IsOperationInFlight;
     }
 
     private bool CanSaveFiscalYear()
     {
-        return SelectedFiscalYear is not null && DraftEndDate.Date >= DraftStartDate.Date;
+        return !IsOperationInFlight &&
+               SelectedFiscalYear is not null &&
+               DraftEndDate.Date >= DraftStartDate.Date;
     }
 
     private bool CanDeleteFiscalYear()
     {
-        return SelectedFiscalYear is not null &&
+        return !IsOperationInFlight &&
+               SelectedFiscalYear is not null &&
                FiscalYears.Count > 1 &&
                FiscalYears.Any(fiscalYear => fiscalYear.Id == SelectedFiscalYear.Id);
     }
 
     private bool CanRevertFiscalYear()
     {
-        return SelectedFiscalYear is not null && _selectedFiscalYearSnapshot is not null;
+        return !IsOperationInFlight &&
+               SelectedFiscalYear is not null &&
+               _selectedFiscalYearSnapshot is not null;
     }
 
     private bool CanRegeneratePeriods()
     {
-        return SelectedFiscalYear is not null;
+        return !IsOperationInFlight && SelectedFiscalYear is not null;
     }
 
     private bool CanCloseSelectedPeriod()
     {
-        return SelectedPeriod is { IsLocked: false };
+        return !IsOperationInFlight && SelectedPeriod is { IsLocked: false };
     }
 
     private bool CanReopenSelectedPeriod()
     {
-        return SelectedPeriod is { IsLocked: true };
+        return !IsOperationInFlight && SelectedPeriod is { IsLocked: true };
+    }
+
+    private void SetOperationInFlight(bool isInFlight)
+    {
+        IsOperationInFlight = isInFlight;
+        OnPropertyChanged(nameof(CanToggleFiscalYearLock));
+        OnPropertyChanged(nameof(CanToggleSelectedPeriodLock));
+        OnPropertyChanged(nameof(SelectedPeriodIsLocked));
     }
 
     // Integration: applies one current fiscal year from the facade current-state stream.
@@ -430,7 +519,6 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
                 : existingFiscalYear.Value.Periods.FirstOrDefault(period => period.Id == selectedPeriodId) ?? existingFiscalYear.Value.Periods.FirstOrDefault();
 
             LoadDraftFromSelection(existingFiscalYear.Value);
-            StatusMessage = $"Saved {existingFiscalYear.Value.Name}.";
         }
 
         RaiseSelectionStateChanged();
@@ -463,7 +551,6 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
             SelectedFiscalYear = replacementSelection;
         }
 
-        StatusMessage = $"Deleted {deletedFiscalYear.Value.Name}.";
         RaiseSelectionStateChanged();
         RaiseCollectionSummaryChanged();
     }
