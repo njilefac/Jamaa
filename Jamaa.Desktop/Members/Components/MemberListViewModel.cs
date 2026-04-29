@@ -103,12 +103,26 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     [RelayCommand]
     private async Task RegisterMember()
     {
+        // INTEGRATION: Registers a member and waits for event confirmation
+        if (IsOperationInFlight)
+        {
+            return;
+        }
+
         MemberRegistrationViewModel.Reset();
         var request = await AddMemberRegistration.Handle(MemberRegistrationViewModel);
         if (request.Confirmed)
         {
-            await _organisationManagementFacade.RegisterMember(request.Result);
-            _notificationService.Show("Success", $"Member {request.Result.FirstName} {request.Result.LastName} registered successfully.", NotificationType.Success);
+            var subject = $"{request.Result.FirstName} {request.Result.LastName}";
+            await _notificationService.TrackOperationAsync(
+                sendCommand: () => _organisationManagementFacade.RegisterMember(request.Result),
+                confirmationObservable: _organisationManagementFacade.CurrentMembers,
+                matcherPredicate: m => m.FirstName == request.Result.FirstName && m.LastName == request.Result.LastName,
+                timeout: TimeSpan.FromSeconds(10),
+                operationName: "Member",
+                successAction: "Registered",
+                subject: subject,
+                inFlightChanged: SetOperationInFlight);
         }
     }
 
@@ -140,7 +154,8 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     [RelayCommand]
     private async Task EndRegistration(MemberViewModel member)
     {
-        if (member.Registration is { EndDate: not null })
+        // INTEGRATION: Ends member registration and waits for event confirmation
+        if (IsOperationInFlight || member.Registration is { EndDate: not null })
         {
             return;
         }
@@ -167,8 +182,16 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             Avatar = member.PictureData
         };
 
-        await _organisationManagementFacade.UpdateMember(request);
-        _notificationService.Show("Success", $"Registration for {member.FirstName} {member.LastName} has been ended.", NotificationType.Success);
+        var subject = $"{member.FirstName} {member.LastName}";
+        await _notificationService.TrackOperationAsync(
+            sendCommand: () => _organisationManagementFacade.UpdateMember(request),
+            confirmationObservable: _organisationManagementFacade.MemberUpdated,
+            matcherPredicate: m => m.Id == member.Id,
+            timeout: TimeSpan.FromSeconds(10),
+            operationName: "Member",
+            successAction: "Registration ended for",
+            subject: subject,
+            inFlightChanged: SetOperationInFlight);
     }
 
     [RelayCommand]
@@ -191,6 +214,11 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         }
     }
 
+    private void SetOperationInFlight(bool isInFlight)
+    {
+        IsOperationInFlight = isInFlight;
+    }
+
     public void Dispose()
     {
         GC.SuppressFinalize(this);
@@ -208,7 +236,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             Gender = member.Gender,
             OrganisationId = member.OrganisationId,
             PictureData = member.PictureData,
-            Registration = member.Registration == null ? null : new RegistrationViewModel
+            Registration = new RegistrationViewModel
             {
                 Id = member.Registration.Id,
                 StartDate = member.Registration.StartDate,
@@ -230,22 +258,34 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             Gender = member.Gender,
             OrganisationId = member.OrganisationId,
             PictureData = member.PictureData,
-            Registration = member.Registration == null ? null : new RegistrationData
-            {
-                Id = member.Registration.Id,
-                StartDate = member.Registration.StartDate,
-                EndDate = member.Registration.EndDate,
-                MembershipType = member.Registration.MembershipType,
-                Status = member.Registration.Status
-            }
-        }!;
+            Registration = member.Registration == null
+                ? new RegistrationData
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    MemberId = member.Id,
+                    StartDate = DateTime.Now,
+                    MembershipType = MembershipType.Regular,
+                    Status = RegistrationStatus.Probation
+                }
+                : new RegistrationData
+                {
+                    Id = member.Registration.Id,
+                    StartDate = member.Registration.StartDate,
+                    EndDate = member.Registration.EndDate,
+                    MembershipType = member.Registration.MembershipType,
+                    Status = member.Registration.Status,
+                    MemberId = member.Id
+                }
+        };
     }
     
     [ObservableProperty] private string? _searchTerm;
-    [ObservableProperty] private object _activeContent;
+    [ObservableProperty] private object? _activeContent;
     [ObservableProperty] private ObservableCollectionExtended<MemberViewModel> _members = [];
     [ObservableProperty]
     private MemberListDisplayMode _displayMode = MemberListDisplayMode.List;
+    [ObservableProperty]
+    private bool _isOperationInFlight;
 
     private MemberViewModel? _lastSelectedMember;
 

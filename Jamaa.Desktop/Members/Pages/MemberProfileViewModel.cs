@@ -89,6 +89,10 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private DateTime _birthDate;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private bool _isOperationInFlight;
+
     // Expose registration fields as top-level observable properties so Save CanExecute updates when they change
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
@@ -118,6 +122,7 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task Save()
     {
+        // INTEGRATION: Saves member and waits for event confirmation
         if (_originalMember == null || Registration == null) return;
 
         var request = new MemberUpdateRequest
@@ -134,25 +139,35 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
             Avatar = Picture
         };
 
-        await _organisationManagementFacade.UpdateMember(request);
-        
-        _notificationService.Show("Success", $"Member {request.FirstName} {request.LastName} updated successfully.", NotificationType.Success);
-        
-        // Update original to disable save button again
-        _originalMember.FirstName = FirstName;
-        _originalMember.MiddleName = MiddleName;
-        _originalMember.LastName = LastName;
-        _originalMember.Gender = Gender;
-        _originalMember.PictureData = Picture;
-        _originalMember.Registration.StartDate = RegistrationStartDate;
-        _originalMember.Registration.MembershipType = MembershipType;
-        _originalMember.Registration.Status = RegistrationStatus;
-        SaveCommand.NotifyCanExecuteChanged();
+        var subject = $"{request.FirstName} {request.LastName}";
+        var isConfirmed = await _notificationService.TrackOperationAsync(
+            sendCommand: () => _organisationManagementFacade.UpdateMember(request),
+            confirmationObservable: _organisationManagementFacade.MemberUpdated,
+            matcherPredicate: m => m.Id == _originalMember.Id,
+            timeout: TimeSpan.FromSeconds(10),
+            operationName: "Member",
+            successAction: "Saved",
+            subject: subject,
+            inFlightChanged: SetOperationInFlight);
+
+        if (isConfirmed)
+        {
+            // Update original to disable save button again (only after event confirmed)
+            _originalMember.FirstName = FirstName;
+            _originalMember.MiddleName = MiddleName;
+            _originalMember.LastName = LastName;
+            _originalMember.Gender = Gender;
+            _originalMember.PictureData = Picture;
+            _originalMember.Registration.StartDate = RegistrationStartDate;
+            _originalMember.Registration.MembershipType = MembershipType;
+            _originalMember.Registration.Status = RegistrationStatus;
+            SaveCommand.NotifyCanExecuteChanged();
+        }
     }
 
     private bool CanSave()
     {
-        if (_originalMember == null) return false;
+        if (_originalMember == null || IsOperationInFlight) return false;
 
         var changed = FirstName != _originalMember.FirstName ||
                       MiddleName != _originalMember.MiddleName ||
@@ -167,6 +182,12 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
         changed |= Picture != _originalMember.PictureData;
 
         return changed;
+    }
+
+    private void SetOperationInFlight(bool isInFlight)
+    {
+        IsOperationInFlight = isInFlight;
+        SaveCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]

@@ -20,10 +20,8 @@ public class FinanceManagementFacade : IFinanceManagementFacade
 {
     private readonly IActorRef _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
-    private readonly IUserSessionService _userSessionService;
     private readonly ReplaySubject<FiscalYearData> _currentFiscalYears;
     private readonly BehaviorSubject<AccountingSettingsData?> _currentAccountingSettings;
-    private readonly ReplaySubject<AccountData> _currentAccounts;
     private string? _lastSeededOrganisationId;
 
     public FinanceManagementFacade(
@@ -34,7 +32,6 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     {
         _commandProcessor = commandProcessorProvider.ActorRef;
         _queryProcessor = queryProcessor;
-        _userSessionService = userSessionService;
 
         _currentFiscalYears = new ReplaySubject<FiscalYearData>();
         CurrentFiscalYears = _currentFiscalYears;
@@ -42,6 +39,10 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         dataChangeNotifier.Insertions
             .OfType<FiscalYearData>()
             .Subscribe(_currentFiscalYears.OnNext);
+
+        AccountCreated = dataChangeNotifier.Insertions.OfType<AccountData>();
+        AccountUpdated = dataChangeNotifier.Updates.OfType<AccountData>();
+        AccountDeleted = dataChangeNotifier.Deletions.OfType<AccountData>();
 
         FiscalYearUpdated = BuildFiscalYearUpdates(dataChangeNotifier);
         FiscalYearDeleted = dataChangeNotifier.Deletions.OfType<FiscalYearData>();
@@ -52,18 +53,6 @@ public class FinanceManagementFacade : IFinanceManagementFacade
 
         AccountingSettingsUpdated
             .Subscribe(_currentAccountingSettings.OnNext);
-
-        _currentAccounts = new ReplaySubject<AccountData>();
-        CurrentAccounts = _currentAccounts;
-
-        dataChangeNotifier.Insertions
-            .OfType<AccountData>()
-            .Subscribe(_currentAccounts.OnNext);
-
-        AccountUpdated = dataChangeNotifier.Updates.OfType<AccountData>()
-            .Where(a => a.OrganisationId == userSessionService.CurrentUserSession?.Organisation?.Id);
-        AccountDeleted = dataChangeNotifier.Deletions.OfType<AccountData>()
-            .Where(a => a.OrganisationId == userSessionService.CurrentUserSession?.Organisation?.Id);
 
         // Subscribe after stream fields are initialized and seed from the already-authenticated session.
         userSessionService.UserSessions
@@ -77,22 +66,16 @@ public class FinanceManagementFacade : IFinanceManagementFacade
             .Select(SeedAccountingSettingsSafely)
             .Concat()
             .Subscribe(_ => { });
-
-        userSessionService.UserSessions
-            .StartWith(userSessionService.CurrentUserSession)
-            .Select(SeedAccountsSafely)
-            .Concat()
-            .Subscribe(_ => { });
     }
 
     public IObservable<FiscalYearData> CurrentFiscalYears { get; }
     public IObservable<FiscalYearData> FiscalYearUpdated { get; }
     public IObservable<FiscalYearData> FiscalYearDeleted { get; }
-    public IObservable<AccountingSettingsData?> CurrentAccountingSettings { get; }
-    public IObservable<AccountingSettingsData> AccountingSettingsUpdated { get; }
-    public IObservable<AccountData> CurrentAccounts { get; }
+    public IObservable<AccountData> AccountCreated { get; }
     public IObservable<AccountData> AccountUpdated { get; }
     public IObservable<AccountData> AccountDeleted { get; }
+    public IObservable<AccountingSettingsData?> CurrentAccountingSettings { get; }
+    public IObservable<AccountingSettingsData> AccountingSettingsUpdated { get; }
 
     // Integration: builds a safe async seeding step for one session emission.
     private static IObservable<Unit> SeedFiscalYearsSafely(UserSession? session, Func<UserSession?, Task> seedFiscalYears)
@@ -151,27 +134,6 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         _currentAccountingSettings.OnNext(existing);
     }
 
-    private IObservable<Unit> SeedAccountsSafely(UserSession? session)
-    {
-        return Observable.FromAsync(() => InitializeCurrentAccountsAsync(session))
-            .Catch<Unit, Exception>(_ => Observable.Empty<Unit>());
-    }
-
-    private async Task InitializeCurrentAccountsAsync(UserSession? session)
-    {
-        var organisationId = session?.Organisation?.Id;
-        if (string.IsNullOrWhiteSpace(organisationId))
-        {
-            return;
-        }
-
-        var existingAccounts = await GetAccounts(organisationId);
-        foreach (var account in existingAccounts)
-        {
-            _currentAccounts.OnNext(account);
-        }
-    }
-
     // Integration: dispatches intent to the finance aggregate stream.
     public Task CreateFiscalYear(string organisationId, DateTime startDate, DateTime endDate, bool isLocked)
     {
@@ -181,6 +143,47 @@ public class FinanceManagementFacade : IFinanceManagementFacade
             startDate,
             endDate,
             isLocked);
+
+        _commandProcessor.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    // Integration: dispatches account creation intent.
+    public Task CreateAccount(string organisationId, string code, string name, string description, AccountType type, string? parentAccountId)
+    {
+        var command = new CreateAccount(
+            OrganisationId.With(organisationId),
+            AccountId.With(Guid.NewGuid()),
+            code,
+            name,
+            type,
+            string.IsNullOrWhiteSpace(parentAccountId) ? null : AccountId.With(parentAccountId));
+
+        _commandProcessor.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    // Integration: dispatches account update intent.
+    public Task UpdateAccount(string organisationId, string accountId, string code, string name, string description, AccountType type, string? parentAccountId)
+    {
+        var command = new UpdateAccount(
+            OrganisationId.With(organisationId),
+            AccountId.With(accountId),
+            code,
+            name,
+            type,
+            string.IsNullOrWhiteSpace(parentAccountId) ? null : AccountId.With(parentAccountId));
+
+        _commandProcessor.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    // Integration: dispatches account deletion intent.
+    public Task DeleteAccount(string organisationId, string accountId)
+    {
+        var command = new DeleteAccount(
+            OrganisationId.With(organisationId),
+            AccountId.With(accountId));
 
         _commandProcessor.Tell(command);
         return Task.CompletedTask;
@@ -269,42 +272,10 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         return Task.CompletedTask;
     }
 
-    public Task CreateAccount(string organisationId, string code, string name, string type, string? parentId)
+    // Integration: reads the materialized fiscal-year view.
+    public Task<IList<AccountData>> GetAccounts(string organisationId)
     {
-        var command = new CreateAccount(
-            OrganisationId.With(organisationId),
-            AccountId.With(Guid.NewGuid()),
-            code,
-            name,
-            Enum.Parse<AccountType>(type),
-            parentId != null ? AccountId.With(parentId) : null);
-
-        _commandProcessor.Tell(command);
-        return Task.CompletedTask;
-    }
-
-    public Task UpdateAccount(string organisationId, string accountId, string code, string name, string type, string? parentId)
-    {
-        var command = new UpdateAccount(
-            OrganisationId.With(organisationId),
-            AccountId.With(accountId),
-            code,
-            name,
-            Enum.Parse<AccountType>(type),
-            parentId != null ? AccountId.With(parentId) : null);
-
-        _commandProcessor.Tell(command);
-        return Task.CompletedTask;
-    }
-
-    public Task DeleteAccount(string organisationId, string accountId)
-    {
-        var command = new DeleteAccount(
-            OrganisationId.With(organisationId),
-            AccountId.With(accountId));
-
-        _commandProcessor.Tell(command);
-        return Task.CompletedTask;
+        return _queryProcessor.Get(new GetAccountsByOrganisation(OrganisationId.With(organisationId)));
     }
 
     // Integration: reads the materialized fiscal-year view.
@@ -317,11 +288,6 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     public Task<AccountingSettingsData?> GetAccountingSettings(string organisationId)
     {
         return _queryProcessor.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
-    }
-
-    public Task<IList<AccountData>> GetAccounts(string organisationId)
-    {
-        return _queryProcessor.Get(new GetAccountsByOrganisation(OrganisationId.With(organisationId)));
     }
 
     // Operation: emits canonical accounting-settings snapshots by reloading the read model after settings/currency row changes.

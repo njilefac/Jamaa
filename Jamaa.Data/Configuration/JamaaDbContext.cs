@@ -14,11 +14,11 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
     private readonly DatabaseOptions _dbOptions = options.Value;
     public DbSet<UserData> Users { get; set; }
     public DbSet<OrganisationData> Organisations { get; set; }
+    public DbSet<AccountData> Accounts { get; set; }
     public DbSet<FiscalYearData> FiscalYears { get; set; }
     public DbSet<AccountingPeriodData> AccountingPeriods { get; set; }
     public DbSet<AccountingSettingsData> AccountingSettings { get; set; }
     public DbSet<AccountingAvailableCurrencyData> AccountingAvailableCurrencies { get; set; }
-    public DbSet<AccountData> Accounts { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -105,21 +105,21 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
 
         modelBuilder.Entity<AccountData>().ToTable("Accounts");
         modelBuilder.Entity<AccountData>()
-            .HasKey(a => a.Id);
+            .Property(account => account.Id).IsRequired();
         modelBuilder.Entity<AccountData>()
-            .Property(a => a.OrganisationId).IsRequired();
+            .Property(account => account.OrganisationId).IsRequired();
         modelBuilder.Entity<AccountData>()
-            .Property(a => a.Code).IsRequired();
+            .Property(account => account.Code).IsRequired();
         modelBuilder.Entity<AccountData>()
-            .Property(a => a.Name).IsRequired();
+            .Property(account => account.Name).IsRequired();
         modelBuilder.Entity<AccountData>()
-            .HasIndex(a => new { a.OrganisationId, a.Code })
-            .IsUnique();
-        modelBuilder.Entity<AccountData>()
-            .HasOne(a => a.Parent)
+            .HasOne(account => account.Parent)
             .WithMany()
-            .HasForeignKey(a => a.ParentId)
+            .HasForeignKey(account => account.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<AccountData>()
+            .HasIndex(account => new { account.OrganisationId, account.Code })
+            .IsUnique();
     }
 
     private static void ConfigureUserMapping(ModelBuilder modelBuilder)

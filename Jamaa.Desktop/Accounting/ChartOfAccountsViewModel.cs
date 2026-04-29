@@ -17,6 +17,7 @@ using Jamaa.Application.Shared;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
+using Jamaa.Desktop.Services.Notifications;
 using Jamaa.Desktop.Shared;
 
 namespace Jamaa.Desktop.Accounting;
@@ -26,6 +27,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     private readonly IFinanceManagementFacade _financeFacade;
     private readonly IUserSessionService _userSessionService;
     private readonly IQueryProcessor _queryProcessor;
+    private readonly INotificationService _notificationService;
     private readonly List<AccountData> _allAccountData = [];
 
     public Guid Id => Guid.Parse("e2d9f6b1-8e4a-4d9c-8f3b-2a3c4d5e6f7a");
@@ -39,9 +41,11 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     private ObservableCollection<AccountItemViewModel> _accounts = [];
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteAccountCommand))]
     private AccountItemViewModel? _selectedAccount;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
     private AccountType? _selectedAccountType;
 
     [ObservableProperty]
@@ -54,16 +58,20 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     [Required(ErrorMessage = "Account code is required")]
     [RegularExpression(@"^\d+$", ErrorMessage = "Code must be numeric")]
     [CustomValidation(typeof(ChartOfAccountsViewModel), nameof(ValidateAccountCode))]
+    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
     private string _accountCode = string.Empty;
 
     [ObservableProperty]
     [NotifyDataErrorInfo]
     [Required(ErrorMessage = "Account name is required")]
     [NotifyPropertyChangedFor(nameof(AccountCode))]
+    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
     private string _accountName = string.Empty;
 
     [ObservableProperty]
-    private string _statusMessage = string.Empty;
+    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteAccountCommand))]
+    private bool _isOperationInFlight;
 
     public string ActionButtonText => SelectedAccount == null ? "Add Account" : "Save Changes";
     public string FormTitle => SelectedAccount == null ? "Add New Account" : "Edit Account";
@@ -77,16 +85,21 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     public ChartOfAccountsViewModel(
         IFinanceManagementFacade financeFacade,
         IUserSessionService userSessionService,
-        IQueryProcessor queryProcessor)
+        IQueryProcessor queryProcessor,
+        INotificationService notificationService)
     {
         var syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
         _financeFacade = financeFacade;
         _userSessionService = userSessionService;
         _queryProcessor = queryProcessor;
+        _notificationService = notificationService;
 
         InitializeSource();
         LoadAccounts();
         SetupReactiveUpdates(syncContext);
+
+        // Re-evaluate AddAccountCommand whenever validation errors change
+        ErrorsChanged += (_, _) => AddAccountCommand.NotifyCanExecuteChanged();
     }
 
     private void InitializeSource()
@@ -99,7 +112,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                     new TextColumn<AccountItemViewModel, string>("Code", x => x.Code, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                     x => x.SubAccounts),
                 new TextColumn<AccountItemViewModel, string>("Name", x => x.Name, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
-                new TextColumn<AccountItemViewModel, string>("Type", x => x.TypeName, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                new TextColumn<AccountItemViewModel, string>("Type", x => x.TypeDisplay, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
             }
         };
 
@@ -118,7 +131,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
     private void SetupReactiveUpdates(SynchronizationContext syncContext)
     {
-        _financeFacade.CurrentAccounts
+        _financeFacade.AccountCreated
             .Merge(_financeFacade.AccountUpdated)
             .Merge(_financeFacade.AccountDeleted)
             .Throttle(TimeSpan.FromMilliseconds(100))
@@ -216,10 +229,10 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         if (vm.SelectedAccountType == null)
             return ValidationResult.Success;
 
-        if (!vm.SelectedAccountType.Value.IsInRange(code, vm.AccountName))
+        if (!vm.IsCodeInRange(vm.SelectedAccountType.Value, code, vm.AccountName))
         {
-            var (min, max) = vm.SelectedAccountType.Value.GetCodeRange(vm.AccountName);
-            return new ValidationResult($"Code for {vm.SelectedAccountType} must be between {min} and {max}");
+            var (min, max) = vm.GetCodeRange(vm.SelectedAccountType.Value, vm.AccountName);
+            return new ValidationResult($"Code for {vm.SelectedAccountType.Value} must be between {min} and {max}");
         }
 
         return ValidationResult.Success;
@@ -236,7 +249,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     {
         if (IsEditMode || SelectedAccountType == null) return;
 
-        var (min, max) = SelectedAccountType.Value.GetCodeRange(AccountName);
+        var (min, max) = GetCodeRange(SelectedAccountType.Value, AccountName);
         
         var existingCodes = _allAccountData
             .Where(a => int.TryParse(a.Code, out var c) && c >= min && c <= max)
@@ -264,6 +277,38 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             SuggestAccountCode();
             ValidateProperty(AccountCode, nameof(AccountCode));
         }
+    }
+
+    // OPERATION: returns a code range per account type and account naming policy.
+    private (int Min, int Max) GetCodeRange(AccountType type, string accountName)
+    {
+        // Expense fees are grouped in a separate 6000-range bucket.
+        if (type == AccountType.Expense && accountName.Contains("fee", StringComparison.OrdinalIgnoreCase))
+        {
+            return (6000, 6999);
+        }
+
+        return type switch
+        {
+            AccountType.Asset => (1000, 1999),
+            AccountType.Liability => (2000, 2999),
+            AccountType.Equity => (3000, 3999),
+            AccountType.Revenue => (4000, 4999),
+            AccountType.Expense => (5000, 5999),
+            _ => (1000, 9999)
+        };
+    }
+
+    // OPERATION: validates code parsing and range constraints.
+    private bool IsCodeInRange(AccountType type, string code, string accountName)
+    {
+        if (!int.TryParse(code, out var numericCode))
+        {
+            return false;
+        }
+
+        var (min, max) = GetCodeRange(type, accountName);
+        return numericCode >= min && numericCode <= max;
     }
 
     private void RefreshFilteredParentAccounts()
@@ -327,69 +372,107 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         return false;
     }
 
-    [RelayCommand]
+    private bool CanAddAccount() =>
+        !IsOperationInFlight &&
+        !string.IsNullOrWhiteSpace(AccountCode) &&
+        !string.IsNullOrWhiteSpace(AccountName) &&
+        SelectedAccountType.HasValue &&
+        !GetErrors(nameof(AccountCode)).Cast<object>().Any() &&
+        !GetErrors(nameof(AccountName)).Cast<object>().Any();
+
+    private bool CanDeleteAccount() =>
+        !IsOperationInFlight &&
+        SelectedAccount != null;
+
+    private void SetOperationInFlight(bool isInFlight)
+    {
+        IsOperationInFlight = isInFlight;
+        AddAccountCommand.NotifyCanExecuteChanged();
+        DeleteAccountCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAddAccount))]
     private async Task AddAccount()
     {
+        // INTEGRATION: Validates, sends command, waits for event confirmation
         if (!ValidateAndShow()) return;
 
         var session = _userSessionService.CurrentUserSession;
         if (session?.Organisation?.Id == null) return;
 
-        try
-        {
-            if (SelectedAccount != null)
-            {
-                await _financeFacade.UpdateAccount(
-                    session.Organisation.Id,
-                    SelectedAccount.Id,
-                    AccountCode,
-                    AccountName,
-                    SelectedAccountType?.ToString() ?? string.Empty,
-                    SelectedParentAccount?.Id);
-                StatusMessage = "Account updated successfully.";
-            }
-            else
-            {
-                await _financeFacade.CreateAccount(
-                    session.Organisation.Id,
-                    AccountCode,
-                    AccountName,
-                    SelectedAccountType?.ToString() ?? string.Empty,
-                    SelectedParentAccount?.Id);
-                StatusMessage = "Account created successfully.";
-            }
+        var orgId = session.Organisation.Id;
 
-            ResetForm();
-        }
-        catch (Exception ex)
+        if (SelectedAccount != null)
         {
-            StatusMessage = $"Error saving account: {ex.Message}";
+            var accountId = SelectedAccount.Id;
+            var subject = AccountName;
+            var isConfirmed = await _notificationService.TrackOperationAsync(
+                sendCommand: () => _financeFacade.UpdateAccount(orgId, accountId, AccountCode, AccountName, string.Empty, SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
+                confirmationObservable: _financeFacade.AccountUpdated,
+                matcherPredicate: a => a.Id == accountId,
+                timeout: TimeSpan.FromSeconds(10),
+                operationName: "Account",
+                successAction: "Saved",
+                subject: subject,
+                inFlightChanged: SetOperationInFlight);
+
+            if (isConfirmed)
+                ResetForm();
+        }
+        else
+        {
+            var code = AccountCode;
+            var subject = AccountName;
+            var isConfirmed = await _notificationService.TrackOperationAsync(
+                sendCommand: () => _financeFacade.CreateAccount(orgId, code, AccountName, string.Empty, SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
+                confirmationObservable: _financeFacade.AccountCreated,
+                matcherPredicate: a => a.Code == code && a.OrganisationId == orgId,
+                timeout: TimeSpan.FromSeconds(10),
+                operationName: "Account",
+                successAction: "Created",
+                subject: subject,
+                inFlightChanged: SetOperationInFlight);
+
+            if (isConfirmed)
+                ResetForm();
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanDeleteAccount))]
     private async Task DeleteAccount()
     {
+        // INTEGRATION: Sends delete command, waits for event confirmation
         if (SelectedAccount == null) return;
 
         var session = _userSessionService.CurrentUserSession;
         if (session?.Organisation?.Id == null) return;
 
-        try
-        {
-            await _financeFacade.DeleteAccount(session.Organisation.Id, SelectedAccount.Id);
-            StatusMessage = "Account deleted successfully.";
+        var orgId = session.Organisation.Id;
+        var accountId = SelectedAccount.Id;
+        var subject = SelectedAccount.Name;
+
+        var isConfirmed = await _notificationService.TrackOperationAsync(
+            sendCommand: () => _financeFacade.DeleteAccount(orgId, accountId),
+            confirmationObservable: _financeFacade.AccountDeleted,
+            matcherPredicate: a => a.Id == accountId,
+            timeout: TimeSpan.FromSeconds(10),
+            operationName: "Account",
+            successAction: "Deleted",
+            subject: subject,
+            inFlightChanged: SetOperationInFlight);
+
+        if (isConfirmed)
             ResetForm();
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Error deleting account: {ex.Message}";
-        }
     }
 
     [RelayCommand]
     public void ResetForm()
     {
+        if (IsOperationInFlight)
+        {
+            return;
+        }
+
         SelectedAccount = null;
         if (Source?.Selection is ITreeDataGridRowSelectionModel<AccountItemViewModel> selection)
         {

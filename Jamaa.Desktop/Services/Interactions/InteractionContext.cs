@@ -9,6 +9,6 @@ public record InteractionContext<TInput, TOutput>(TInput Input)
         IsHandled = true;
     }
 
-    public TOutput Output { get; private set; }
+    public TOutput Output { get; private set; } = default!;
     public bool IsHandled { get; private set; }
 }

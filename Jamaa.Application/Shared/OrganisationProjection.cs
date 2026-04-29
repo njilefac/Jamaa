@@ -3,7 +3,6 @@ using Akka.Persistence.Query;
 using Akka.Persistence.Sql.Query;
 using Akka.Streams;
 using Akka.Streams.Dsl;
-using System.Linq;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Events;
 using Jamaa.Application.Members.Events;
@@ -96,6 +95,9 @@ public class OrganisationProjection : ReceivePersistentActor
             MemberUpdated memberUpdated => Handle(memberUpdated, dbContext),
             MemberRegistrationUpdated registrationUpdated => Handle(registrationUpdated, dbContext),
             MemberRegistrationEnded registrationEnded => Handle(registrationEnded, dbContext),
+            AccountCreated accountCreated => Handle(accountCreated, dbContext),
+            AccountUpdated accountUpdated => Handle(accountUpdated, dbContext),
+            AccountDeleted accountDeleted => Handle(accountDeleted, dbContext),
             FiscalYearCreated fiscalYearCreated => Handle(fiscalYearCreated, dbContext),
             FiscalYearUpdated fiscalYearUpdated => Handle(fiscalYearUpdated, dbContext),
             FiscalYearDeleted fiscalYearDeleted => Handle(fiscalYearDeleted, dbContext),
@@ -104,11 +106,60 @@ public class OrganisationProjection : ReceivePersistentActor
             AccountingPeriodUpdated accountingPeriodUpdated => Handle(accountingPeriodUpdated, dbContext),
             AccountingPeriodDeleted accountingPeriodDeleted => Handle(accountingPeriodDeleted, dbContext),
             AccountingSettingsUpdated accountingSettingsUpdated => Handle(accountingSettingsUpdated, dbContext),
-            AccountCreated accountCreated => Handle(accountCreated, dbContext),
-            AccountUpdated accountUpdated => Handle(accountUpdated, dbContext),
-            AccountDeleted accountDeleted => Handle(accountDeleted, dbContext),
             _ => Task.CompletedTask
         };
+    }
+
+    // Operation: inserts a newly created chart-of-accounts row if it is not already projected.
+    private async Task Handle(AccountCreated @event, JamaaDbContext dbContext)
+    {
+        var exists = await dbContext.Accounts.AnyAsync(account => account.Id == @event.AccountId.Value);
+        if (exists)
+        {
+            return;
+        }
+
+        dbContext.Accounts.Add(new AccountData
+        {
+            Id = @event.AccountId.Value,
+            OrganisationId = @event.OrganisationId.Value,
+            Code = @event.Code,
+            Name = @event.Name,
+            Type = @event.Type,
+            ParentId = @event.ParentId?.Value
+        });
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    // Operation: updates one projected account row when account details change.
+    private async Task Handle(AccountUpdated @event, JamaaDbContext dbContext)
+    {
+        var account = await dbContext.Accounts.FirstOrDefaultAsync(current => current.Id == @event.AccountId.Value);
+        if (account is null)
+        {
+            return;
+        }
+
+        account.Code = @event.Code;
+        account.Name = @event.Name;
+        account.Type = @event.Type;
+        account.ParentId = @event.ParentId?.Value;
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    // Operation: removes one projected account row when the account is deleted.
+    private async Task Handle(AccountDeleted @event, JamaaDbContext dbContext)
+    {
+        var account = await dbContext.Accounts.FirstOrDefaultAsync(current => current.Id == @event.AccountId.Value);
+        if (account is null)
+        {
+            return;
+        }
+
+        dbContext.Accounts.Remove(account);
+        await dbContext.SaveChangesAsync();
     }
 
     private async Task Handle(FiscalYearCreated @event, JamaaDbContext dbContext)
@@ -440,45 +491,6 @@ public class OrganisationProjection : ReceivePersistentActor
             Description = @event.Description,
             Members = new List<MemberData>()
         });
-        await dbContext.SaveChangesAsync();
-    }
-
-    private async Task Handle(AccountCreated @event, JamaaDbContext dbContext)
-    {
-        var exists = await dbContext.Accounts.AnyAsync(a => a.Id == @event.AccountId.Value);
-        if (exists) return;
-
-        dbContext.Accounts.Add(new AccountData
-        {
-            Id = @event.AccountId.Value,
-            OrganisationId = @event.OrganisationId.Value,
-            Code = @event.Code,
-            Name = @event.Name,
-            Type = @event.Type,
-            ParentId = @event.ParentId?.Value
-        });
-        await dbContext.SaveChangesAsync();
-    }
-
-    private async Task Handle(AccountUpdated @event, JamaaDbContext dbContext)
-    {
-        var account = await dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == @event.AccountId.Value);
-        if (account == null) return;
-
-        account.Code = @event.Code;
-        account.Name = @event.Name;
-        account.Type = @event.Type;
-        account.ParentId = @event.ParentId?.Value;
-
-        await dbContext.SaveChangesAsync();
-    }
-
-    private async Task Handle(AccountDeleted @event, JamaaDbContext dbContext)
-    {
-        var account = await dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == @event.AccountId.Value);
-        if (account == null) return;
-
-        dbContext.Accounts.Remove(account);
         await dbContext.SaveChangesAsync();
     }
 

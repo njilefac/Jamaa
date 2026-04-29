@@ -19,11 +19,12 @@ public static class DataServiceCollectionExtensions
     {
         services.AddDbContext<JamaaDbContext>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganisationQueryHandler, OrganisationQueryHandler>();
         services.AddScoped<IMembersQueryHandler, MembersQueryHandler>();
+        services.AddScoped<IAccountQueryHandler, AccountQueryHandler>();
         services.AddScoped<IFiscalCalendarQueryHandler, FiscalCalendarQueryHandler>();
         services.AddScoped<IAccountingSettingsQueryHandler, AccountingSettingsQueryHandler>();
-        services.AddScoped<IAccountQueryHandler, AccountQueryHandler>();
         services.AddScoped<IFiscalYearRepository, FiscalYearRepository>();
         services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
         services.AddSingleton<IDataChangeNotifier, DataChangeNotifier>();

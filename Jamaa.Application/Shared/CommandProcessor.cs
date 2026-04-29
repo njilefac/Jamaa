@@ -4,6 +4,7 @@ using Jamaa.Application.Finances.Commands;
 using Domain.Organisation.Values;
 using Jamaa.Application.Organisation.Aggregates;
 using Jamaa.Application.Organisation.Commands;
+using System.Linq;
 
 namespace Jamaa.Application.Shared;
 
@@ -20,13 +21,13 @@ public class CommandProcessor : ReceiveActor
         ReceiveAsync<CreateFiscalYear>(OnCreateFiscalYear);
         ReceiveAsync<UpdateFiscalYear>(OnUpdateFiscalYear);
         ReceiveAsync<DeleteFiscalYear>(OnDeleteFiscalYear);
+        ReceiveAsync<CreateAccount>(OnCreateAccount);
+        ReceiveAsync<UpdateAccount>(OnUpdateAccount);
+        ReceiveAsync<DeleteAccount>(OnDeleteAccount);
         ReceiveAsync<CreateAccountingPeriod>(OnCreateAccountingPeriod);
         ReceiveAsync<UpdateAccountingPeriod>(OnUpdateAccountingPeriod);
         ReceiveAsync<DeleteAccountingPeriod>(OnDeleteAccountingPeriod);
         ReceiveAsync<UpdateAccountingSettings>(OnUpdateAccountingSettings);
-        ReceiveAsync<CreateAccount>(OnCreateAccount);
-        ReceiveAsync<UpdateAccount>(OnUpdateAccount);
-        ReceiveAsync<DeleteAccount>(OnDeleteAccount);
     }
 
     private Task OnCreateFiscalYear(CreateFiscalYear command)
@@ -48,6 +49,48 @@ public class CommandProcessor : ReceiveActor
         var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
         fiscalCalendar.Tell(command);
         return Task.CompletedTask;
+    }
+
+    private Task OnCreateAccount(CreateAccount command)
+    {
+        var accountAggregate = ResolveAccountAggregate(command.OrganisationId);
+        accountAggregate.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnUpdateAccount(UpdateAccount command)
+    {
+        var accountAggregate = ResolveAccountAggregate(command.OrganisationId);
+        accountAggregate.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnDeleteAccount(DeleteAccount command)
+    {
+        var accountAggregate = ResolveAccountAggregate(command.OrganisationId);
+        accountAggregate.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    // Integration: routes all account commands for one organisation through a single aggregate actor instance.
+    private IActorRef ResolveAccountAggregate(OrganisationId organisationId)
+    {
+        var actorName = BuildAccountActorName(organisationId);
+        var existing = Context.Child(actorName);
+        if (!Equals(existing, ActorRefs.Nobody))
+        {
+            return existing;
+        }
+
+        return Context.ActorOf(AccountAggregate.Props(organisationId), actorName);
+    }
+
+    // Operation: converts one organisation id into a valid deterministic Akka actor name.
+    private static string BuildAccountActorName(OrganisationId organisationId)
+    {
+        var raw = organisationId.Value;
+        var sanitized = new string(raw.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+        return string.IsNullOrWhiteSpace(sanitized) ? "accounts_default" : $"accounts_{sanitized}";
     }
 
     private Task OnCreateAccountingPeriod(CreateAccountingPeriod command)
@@ -82,27 +125,6 @@ public class CommandProcessor : ReceiveActor
     {
         var organisation = Context.ActorOf(OrganisationAggregate.Props(command.OrganisationId, _queryProcessor));
         organisation.Tell(command);
-        return Task.CompletedTask;
-    }
-
-    private Task OnCreateAccount(CreateAccount command)
-    {
-        var account = Context.ActorOf(AccountAggregate.Props(command.OrganisationId));
-        account.Tell(command);
-        return Task.CompletedTask;
-    }
-
-    private Task OnUpdateAccount(UpdateAccount command)
-    {
-        var account = Context.ActorOf(AccountAggregate.Props(command.OrganisationId));
-        account.Tell(command);
-        return Task.CompletedTask;
-    }
-
-    private Task OnDeleteAccount(DeleteAccount command)
-    {
-        var account = Context.ActorOf(AccountAggregate.Props(command.OrganisationId));
-        account.Tell(command);
         return Task.CompletedTask;
     }
 

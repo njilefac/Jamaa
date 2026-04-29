@@ -1,0 +1,27 @@
+<UserControl
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Shared.OperationStatusBanner"
+    x:Name="BannerRoot"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border
+        Background="{DynamicResource AppSurfaceColor}"
+        BorderBrush="{DynamicResource AppBorderColor}"
+        BorderThickness="1"
+        CornerRadius="6"
+        IsVisible="{Binding #BannerRoot.IsActive}"
+        Padding="12,10">
+        <StackPanel Spacing="6">
+            <TextBlock
+                FontSize="12"
+                Foreground="{DynamicResource AppTextSecondary}"
+                Text="{Binding #BannerRoot.Message}" />
+            <ProgressBar IsIndeterminate="True" />
+        </StackPanel>
+    </Border>
+</UserControl>
+
+

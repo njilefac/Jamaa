@@ -14,6 +14,7 @@ using Jamaa.Application.Users.Services;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Models.Organisation;
 using Jamaa.Desktop.Accounting;
+using Jamaa.Desktop.Services.Notifications;
 using NSubstitute;
 using Shouldly;
 using Xunit;
@@ -25,6 +26,7 @@ public class ChartOfAccountsViewModelTests
     private readonly IFinanceManagementFacade _financeFacade = Substitute.For<IFinanceManagementFacade>();
     private readonly IUserSessionService _userSessionService = Substitute.For<IUserSessionService>();
     private readonly IQueryProcessor _queryProcessor = Substitute.For<IQueryProcessor>();
+    private readonly INotificationService _notificationService = Substitute.For<INotificationService>();
 
     public ChartOfAccountsViewModelTests()
     {
@@ -34,15 +36,18 @@ public class ChartOfAccountsViewModelTests
         _userSessionService.CurrentUserSession.Returns(session);
         _financeFacade.GetAccounts(Arg.Any<string>()).Returns(Task.FromResult<IList<AccountData>>(new List<AccountData>()));
         
-        _financeFacade.CurrentAccounts.Returns(Observable.Empty<AccountData>());
+        _financeFacade.AccountCreated.Returns(Observable.Empty<AccountData>());
         _financeFacade.AccountUpdated.Returns(Observable.Empty<AccountData>());
         _financeFacade.AccountDeleted.Returns(Observable.Empty<AccountData>());
     }
 
+    private ChartOfAccountsViewModel CreateViewModel() =>
+        new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor, _notificationService);
+
     [Fact]
     public void SelectedAccount_ShouldPopulateFormFields()
     {
-        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        var viewModel = CreateViewModel();
         var account = new AccountItemViewModel
         {
             Id = "acc-1",
@@ -64,40 +69,37 @@ public class ChartOfAccountsViewModelTests
     [Fact]
     public async Task AddAccountCommand_ShouldCallUpdateAccount_WhenAccountIsSelected()
     {
-        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
-        var account = new AccountItemViewModel
-        {
-            Id = "acc-1",
-            Code = "1000",
-            Name = "Cash",
-            Type = AccountType.Asset
-        };
+        // Arrange – use a ReplaySubject so TrackOperationAsync receives the event
+        // even if it subscribes slightly after the emission
+        var updatedSubject = new ReplaySubject<AccountData>(1);
+        _financeFacade.AccountUpdated.Returns(updatedSubject);
+
+        _financeFacade.UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", string.Empty, AccountType.Asset, null)
+            .Returns(ci =>
+            {
+                updatedSubject.OnNext(new AccountData { Id = "acc-1", OrganisationId = "org-1", Code = "1000", Name = "Cash Updated", Type = AccountType.Asset });
+                return Task.CompletedTask;
+            });
+
+        var viewModel = CreateViewModel();
+        var account = new AccountItemViewModel { Id = "acc-1", Code = "1000", Name = "Cash", Type = AccountType.Asset };
 
         viewModel.SelectedAccount = account;
         viewModel.AccountCode = "1000";
         viewModel.AccountName = "Cash Updated";
         viewModel.SelectedAccountType = AccountType.Asset;
-        
-        _financeFacade.UpdateAccount(
-            "org-1", 
-            "acc-1", 
-            "1000", 
-            "Cash Updated", 
-            "Asset", 
-            null)
-            .Returns(Task.CompletedTask);
 
+        // Act
         await viewModel.AddAccountCommand.ExecuteAsync(null);
 
-        await _financeFacade.Received(1).UpdateAccount(
-            "org-1", 
-            "acc-1", 
-            "1000", 
-            "Cash Updated", 
-            "Asset", 
-            null);
-        
-        viewModel.StatusMessage.ShouldBe("Account updated successfully.");
+        // Assert – facade was called
+        await _financeFacade.Received(1).UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", string.Empty, AccountType.Asset, null);
+        // Assert – success notification was shown
+        _notificationService.Received(1).Show(
+            Arg.Any<string>(),
+            Arg.Is<string>(s => s.Contains("Saved") || s.Contains("Cash Updated")),
+            NotificationType.Success);
+        // Assert – form was reset after confirmation
         viewModel.SelectedAccount.ShouldBeNull();
         viewModel.AccountName.ShouldBe(string.Empty);
     }
@@ -105,36 +107,40 @@ public class ChartOfAccountsViewModelTests
     [Fact]
     public async Task AddAccountCommand_ShouldCallCreateAccount_WhenNoAccountIsSelected()
     {
-        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
-        
+        // Arrange – AccountCreated is the confirmation observable for create
+        var createdSubject = new ReplaySubject<AccountData>(1);
+        _financeFacade.AccountCreated.Returns(createdSubject);
+        _financeFacade.AccountUpdated.Returns(Observable.Empty<AccountData>());
+        _financeFacade.AccountDeleted.Returns(Observable.Empty<AccountData>());
+
+        _financeFacade.CreateAccount("org-1", "1100", "Bank", string.Empty, AccountType.Asset, null)
+            .Returns(ci =>
+            {
+                createdSubject.OnNext(new AccountData { Id = "new-1", OrganisationId = "org-1", Code = "1100", Name = "Bank", Type = AccountType.Asset });
+                return Task.CompletedTask;
+            });
+
+        var viewModel = CreateViewModel();
         viewModel.SelectedAccountType = AccountType.Asset;
         viewModel.AccountCode = "1100";
         viewModel.AccountName = "Bank";
 
-        _financeFacade.CreateAccount(
-            "org-1", 
-            "1100", 
-            "Bank", 
-            "Asset", 
-            null)
-            .Returns(Task.CompletedTask);
-
+        // Act
         await viewModel.AddAccountCommand.ExecuteAsync(null);
 
-        await _financeFacade.Received(1).CreateAccount(
-            "org-1", 
-            "1100", 
-            "Bank", 
-            "Asset", 
-            null);
-            
-        viewModel.StatusMessage.ShouldBe("Account created successfully.");
+        // Assert – facade was called
+        await _financeFacade.Received(1).CreateAccount("org-1", "1100", "Bank", string.Empty, AccountType.Asset, null);
+        // Assert – success notification was shown
+        _notificationService.Received(1).Show(
+            Arg.Any<string>(),
+            Arg.Is<string>(s => s.Contains("Created") || s.Contains("Bank")),
+            NotificationType.Success);
     }
 
     [Fact]
     public void ResetFormCommand_ShouldClearSelectionAndFields()
     {
-        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        var viewModel = CreateViewModel();
         viewModel.SelectedAccount = new AccountItemViewModel { Id = "acc-1", Code = "1000", Name = "Cash", Type = AccountType.Asset };
         viewModel.AccountCode = "1000";
         viewModel.AccountName = "Cash";
@@ -147,107 +153,77 @@ public class ChartOfAccountsViewModelTests
         viewModel.FormTitle.ShouldBe("Add New Account");
         viewModel.IsEditMode.ShouldBeFalse();
     }
+
     [Fact]
     public async Task DeleteAccountCommand_ShouldCallDeleteAccount_AndReloadAccounts()
     {
         // Arrange
-        var deletedSubject = new Subject<AccountData>();
+        var deletedSubject = new ReplaySubject<AccountData>(1);
         _financeFacade.AccountDeleted.Returns(deletedSubject);
         
         var initialAccount = new AccountData { Id = "acc-1", Code = "1000", Name = "Cash", OrganisationId = "org-1", Type = AccountType.Asset };
         _financeFacade.GetAccounts("org-1").Returns(Task.FromResult<IList<AccountData>>(new List<AccountData> { initialAccount }));
 
-        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        _financeFacade.DeleteAccount("org-1", "acc-1")
+            .Returns(ci =>
+            {
+                deletedSubject.OnNext(initialAccount);
+                return Task.CompletedTask;
+            });
+
+        var viewModel = CreateViewModel();
         
-        // Initial load
-        await Task.Delay(10); // Give some time for subscription to trigger if it was started in constructor
-        // Wait, LoadAccounts is async void and called in constructor (indirectly maybe? No, let's check)
-        
-        // Act: Initial load usually happens on initialization or when first subscriber comes. 
-        // In this VM it's called in constructor via LoadAccounts().
-        
-        // Let's force a LoadAccounts to be sure
+        // Force initial load
         var loadMethod = typeof(ChartOfAccountsViewModel).GetMethod("LoadAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        loadMethod.Invoke(viewModel, null);
-        await Task.Delay(100); // Wait for async void LoadAccounts
+        loadMethod!.Invoke(viewModel, null);
+        await Task.Delay(100);
 
         viewModel.Accounts.Count.ShouldBe(1);
-        viewModel.Accounts[0].Id.ShouldBe("acc-1");
+        viewModel.SelectedAccount = viewModel.Accounts[0];
 
-        // Prepare for deletion
-        var accountItem = viewModel.Accounts[0];
-        viewModel.SelectedAccount = accountItem;
-
-        _financeFacade.DeleteAccount("org-1", "acc-1").Returns(Task.CompletedTask);
-        // After deletion, GetAccounts will return empty
+        // After deletion GetAccounts returns empty
         _financeFacade.GetAccounts("org-1").Returns(Task.FromResult<IList<AccountData>>(new List<AccountData>()));
 
-        // Act: Delete
+        // Act
         await viewModel.DeleteAccountCommand.ExecuteAsync(null);
-
-        // Simulate the reactive update from facade
-        deletedSubject.OnNext(initialAccount);
-        await Task.Delay(200); // Wait for Throttle and async void LoadAccounts
+        await Task.Delay(200); // Wait for Throttle + async void LoadAccounts
 
         // Assert
         await _financeFacade.Received(1).DeleteAccount("org-1", "acc-1");
+        _notificationService.Received(1).Show(
+            Arg.Any<string>(),
+            Arg.Is<string>(s => s.Contains("Deleted") || s.Contains("Cash")),
+            NotificationType.Success);
         viewModel.Accounts.ShouldBeEmpty();
-        viewModel.StatusMessage.ShouldBe("Account deleted successfully.");
         viewModel.SelectedAccount.ShouldBeNull();
     }
 
     [Fact]
     public void SelectedAccount_WithParent_ShouldPopulateParentAccount()
     {
-        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        var viewModel = CreateViewModel();
         
-        var parentAccount = new AccountItemViewModel
-        {
-            Id = "parent-1",
-            Code = "1000",
-            Name = "Assets",
-            Type = AccountType.Asset
-        };
-
-        var childAccount = new AccountItemViewModel
-        {
-            Id = "child-1",
-            Code = "1010",
-            Name = "Cash",
-            Type = AccountType.Asset,
-            Parent = parentAccount
-        };
-
-        // We need to simulate that parentAccount is in the list of available accounts
-        // so that it can be selected in the FilteredParentAccounts.
-        // But first, let's see if the property itself is set.
+        var parentAccount = new AccountItemViewModel { Id = "parent-1", Code = "1000", Name = "Assets", Type = AccountType.Asset };
+        var childAccount = new AccountItemViewModel { Id = "child-1", Code = "1010", Name = "Cash", Type = AccountType.Asset, Parent = parentAccount };
         
         viewModel.SelectedAccount = childAccount;
 
         viewModel.AccountCode.ShouldBe("1010");
         viewModel.AccountName.ShouldBe("Cash");
         viewModel.SelectedAccountType.ShouldBe(AccountType.Asset);
-        // It is null initially because parentAccount is not in the tree yet
-        viewModel.SelectedParentAccount.ShouldBeNull();
+        viewModel.SelectedParentAccount.ShouldBeNull(); // parent not in tree yet
         
-        // Check if FilteredParentAccounts contains the parent
-        // Actually we need to populate Accounts first for RefreshFilteredParentAccounts to find it
         var accountsField = typeof(ChartOfAccountsViewModel).GetField("_accounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var accountsList = new ObservableCollection<AccountItemViewModel> { parentAccount, childAccount };
-        accountsField.SetValue(viewModel, accountsList);
+        accountsField!.SetValue(viewModel, new ObservableCollection<AccountItemViewModel> { parentAccount, childAccount });
         
-        // Trigger refresh
         var refreshMethod = typeof(ChartOfAccountsViewModel).GetMethod("RefreshFilteredParentAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        refreshMethod.Invoke(viewModel, null);
+        refreshMethod!.Invoke(viewModel, null);
 
-        // Re-select to trigger mapping
         viewModel.SelectedAccount = null;
         viewModel.SelectedAccount = childAccount;
 
         viewModel.FilteredParentAccounts.ShouldContain(p => p.Id == "parent-1");
         
-        // Important: SelectedParentAccount MUST be the same reference as the one in FilteredParentAccounts
-        // for the Avalonia ComboBox to show it as selected.
         var parentInList = viewModel.FilteredParentAccounts.First(p => p.Id == "parent-1");
         viewModel.SelectedParentAccount.ShouldBeSameAs(parentInList);
     }
@@ -255,51 +231,27 @@ public class ChartOfAccountsViewModelTests
     [Fact]
     public void SelectedAccount_WithParent_ShouldPopulateParentAccount_EvenIfReferenceIsDifferent()
     {
-        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        var viewModel = CreateViewModel();
         
-        var parentAccountInTree = new AccountItemViewModel
-        {
-            Id = "parent-1",
-            Code = "1000",
-            Name = "Assets",
-            Type = AccountType.Asset
-        };
+        var parentAccountInTree = new AccountItemViewModel { Id = "parent-1", Code = "1000", Name = "Assets", Type = AccountType.Asset };
+        var parentAccountFromSelected = new AccountItemViewModel { Id = "parent-1", Code = "1000", Name = "Assets", Type = AccountType.Asset };
+        var childAccount = new AccountItemViewModel { Id = "child-1", Code = "1010", Name = "Cash", Type = AccountType.Asset, Parent = parentAccountFromSelected };
 
-        var parentAccountFromSelected = new AccountItemViewModel
-        {
-            Id = "parent-1",
-            Code = "1000",
-            Name = "Assets",
-            Type = AccountType.Asset
-        };
-
-        var childAccount = new AccountItemViewModel
-        {
-            Id = "child-1",
-            Code = "1010",
-            Name = "Cash",
-            Type = AccountType.Asset,
-            Parent = parentAccountFromSelected
-        };
-
-        // Populate the tree with parentAccountInTree
         var accountsField = typeof(ChartOfAccountsViewModel).GetField("_accounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var accountsList = new ObservableCollection<AccountItemViewModel> { parentAccountInTree };
-        accountsField.SetValue(viewModel, accountsList);
+        accountsField!.SetValue(viewModel, new ObservableCollection<AccountItemViewModel> { parentAccountInTree });
         
-        // Select the child account
         viewModel.SelectedAccount = childAccount;
 
-        // Verify that SelectedParentAccount was mapped to the reference in the list
         viewModel.SelectedParentAccount.ShouldNotBeNull();
-        viewModel.SelectedParentAccount.Id.ShouldBe("parent-1");
+        viewModel.SelectedParentAccount!.Id.ShouldBe("parent-1");
         viewModel.SelectedParentAccount.ShouldBeSameAs(parentAccountInTree);
         viewModel.SelectedParentAccount.ShouldNotBeSameAs(parentAccountFromSelected);
     }
+
     [Fact]
     public void SelectedAccountType_Change_ShouldSuggestCode()
     {
-        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        var viewModel = CreateViewModel();
         
         viewModel.SelectedAccountType = AccountType.Asset;
         viewModel.AccountCode.ShouldBe("1000");
@@ -323,7 +275,7 @@ public class ChartOfAccountsViewModelTests
     [Fact]
     public void InvalidAccountCode_ShouldHaveValidationError()
     {
-        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
+        var viewModel = CreateViewModel();
         
         viewModel.SelectedAccountType = AccountType.Asset;
         viewModel.AccountCode = "2000"; // Invalid for Asset
@@ -344,10 +296,9 @@ public class ChartOfAccountsViewModelTests
         };
         _financeFacade.GetAccounts(Arg.Any<string>()).Returns(Task.FromResult<IList<AccountData>>(accounts));
         
-        var viewModel = new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _queryProcessor);
-        // Force load
+        var viewModel = CreateViewModel();
         var loadMethod = typeof(ChartOfAccountsViewModel).GetMethod("LoadAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        loadMethod.Invoke(viewModel, null);
+        loadMethod!.Invoke(viewModel, null);
 
         viewModel.SelectedAccountType = AccountType.Asset;
         
