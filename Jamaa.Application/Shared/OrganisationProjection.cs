@@ -11,6 +11,7 @@ using Jamaa.Data.Configuration;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Models.Members;
 using Jamaa.Data.Models.Organisation;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -129,7 +130,7 @@ public class OrganisationProjection : ReceivePersistentActor
             ParentId = @event.ParentId?.Value
         });
 
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     // Operation: updates one projected account row when account details change.
@@ -146,7 +147,7 @@ public class OrganisationProjection : ReceivePersistentActor
         account.Type = @event.Type;
         account.ParentId = @event.ParentId?.Value;
 
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     // Operation: removes one projected account row when the account is deleted.
@@ -159,7 +160,7 @@ public class OrganisationProjection : ReceivePersistentActor
         }
 
         dbContext.Accounts.Remove(account);
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     private async Task Handle(FiscalYearCreated @event, JamaaDbContext dbContext)
@@ -179,7 +180,7 @@ public class OrganisationProjection : ReceivePersistentActor
             IsLocked = @event.IsLocked
         });
 
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     private async Task Handle(FiscalYearUpdated @event, JamaaDbContext dbContext)
@@ -204,7 +205,7 @@ public class OrganisationProjection : ReceivePersistentActor
             }
         }
 
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     private async Task Handle(FiscalYearDeleted @event, JamaaDbContext dbContext)
@@ -220,7 +221,7 @@ public class OrganisationProjection : ReceivePersistentActor
 
         dbContext.AccountingPeriods.RemoveRange(fiscalYear.Periods);
         dbContext.FiscalYears.Remove(fiscalYear);
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     // Operation: atomically replaces all periods for a fiscal year during regeneration.
@@ -237,7 +238,7 @@ public class OrganisationProjection : ReceivePersistentActor
 
         // Replace all periods for the fiscal year so no stale rows remain in the read model.
         dbContext.AccountingPeriods.RemoveRange(fiscalYear.Periods);
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
 
         var uniquePeriods = BuildUniqueAccountingPeriods(@event.CreatedPeriods);
 
@@ -266,7 +267,7 @@ public class OrganisationProjection : ReceivePersistentActor
         }
 
         // Save all changes atomically
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     // Operation: deduplicates periods by date-range key and keeps deterministic sequence ordering.
@@ -313,7 +314,7 @@ public class OrganisationProjection : ReceivePersistentActor
             IsLocked = @event.IsLocked
         });
 
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     private async Task Handle(AccountingPeriodUpdated @event, JamaaDbContext dbContext)
@@ -339,7 +340,7 @@ public class OrganisationProjection : ReceivePersistentActor
         period.EndDate = @event.EndDate;
         period.IsLocked = @event.IsLocked;
 
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     private async Task Handle(AccountingPeriodDeleted @event, JamaaDbContext dbContext)
@@ -351,7 +352,7 @@ public class OrganisationProjection : ReceivePersistentActor
         }
 
         dbContext.AccountingPeriods.Remove(period);
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     // Operation: upserts the accounting settings read model row for one organisation.
@@ -396,7 +397,7 @@ public class OrganisationProjection : ReceivePersistentActor
                 .ToList();
         }
 
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     private async Task Handle(MemberRegistrationEnded @event, JamaaDbContext dbContext)
@@ -450,7 +451,7 @@ public class OrganisationProjection : ReceivePersistentActor
             member.Registration.Status = @event.Status;
         }
 
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     private async Task Handle(MemberRegistered @event, JamaaDbContext dbContext)
@@ -478,7 +479,7 @@ public class OrganisationProjection : ReceivePersistentActor
 
             matchingOrganisation.Members.Add(memberData);
 
-            await dbContext.SaveChangesAsync();
+            await SaveChangesWithSqliteRetryAsync(dbContext);
         }
     }
 
@@ -491,7 +492,7 @@ public class OrganisationProjection : ReceivePersistentActor
             Description = @event.Description,
             Members = new List<MemberData>()
         });
-        await dbContext.SaveChangesAsync();
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     private void RegisterEventHandlers()
@@ -542,4 +543,45 @@ public class OrganisationProjection : ReceivePersistentActor
     }
 
     public record MaterializedViewState(Offset LastOffset);
+
+    // Operation: persists projection writes with transient SQLite lock retries.
+    private async Task SaveChangesWithSqliteRetryAsync(JamaaDbContext dbContext)
+    {
+        const int maxAttempts = 4;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                await dbContext.SaveChangesAsync();
+                return;
+            }
+            catch (Exception exception) when (IsTransientSqliteLock(exception) && attempt < maxAttempts)
+            {
+                var delay = TimeSpan.FromMilliseconds(75 * attempt);
+                _logger.LogWarning(
+                    exception,
+                    "Transient SQLite lock while saving projection changes. Retrying in {DelayMs}ms (attempt {Attempt}/{MaxAttempts}).",
+                    delay.TotalMilliseconds,
+                    attempt,
+                    maxAttempts);
+
+                await Task.Delay(delay);
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    // Operation: identifies retry-safe SQLite lock/busy failures.
+    private static bool IsTransientSqliteLock(Exception exception)
+    {
+        return exception switch
+        {
+            SqliteException sqliteException => sqliteException.SqliteErrorCode is 5 or 6,
+            DbUpdateException dbUpdateException when dbUpdateException.InnerException is SqliteException sqliteException
+                => sqliteException.SqliteErrorCode is 5 or 6,
+            _ => false
+        };
+    }
 }

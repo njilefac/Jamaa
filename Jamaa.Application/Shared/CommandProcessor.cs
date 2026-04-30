@@ -32,21 +32,21 @@ public class CommandProcessor : ReceiveActor
 
     private Task OnCreateFiscalYear(CreateFiscalYear command)
     {
-        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        var fiscalCalendar = ResolveFiscalCalendarAggregate(command.OrganisationId);
         fiscalCalendar.Tell(command);
         return Task.CompletedTask;
     }
 
     private Task OnUpdateFiscalYear(UpdateFiscalYear command)
     {
-        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        var fiscalCalendar = ResolveFiscalCalendarAggregate(command.OrganisationId);
         fiscalCalendar.Tell(command);
         return Task.CompletedTask;
     }
 
     private Task OnDeleteFiscalYear(DeleteFiscalYear command)
     {
-        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        var fiscalCalendar = ResolveFiscalCalendarAggregate(command.OrganisationId);
         fiscalCalendar.Tell(command);
         return Task.CompletedTask;
     }
@@ -93,23 +93,44 @@ public class CommandProcessor : ReceiveActor
         return string.IsNullOrWhiteSpace(sanitized) ? "accounts_default" : $"accounts_{sanitized}";
     }
 
+    // Integration: routes all fiscal-calendar and period commands for one organisation through one aggregate instance.
+    private IActorRef ResolveFiscalCalendarAggregate(OrganisationId organisationId)
+    {
+        var actorName = BuildFiscalCalendarActorName(organisationId);
+        var existing = Context.Child(actorName);
+        if (!Equals(existing, ActorRefs.Nobody))
+        {
+            return existing;
+        }
+
+        return Context.ActorOf(FiscalCalendarAggregate.Props(organisationId), actorName);
+    }
+
+    // Operation: converts one organisation id into a valid deterministic Akka actor name for fiscal workflows.
+    private static string BuildFiscalCalendarActorName(OrganisationId organisationId)
+    {
+        var raw = organisationId.Value;
+        var sanitized = new string(raw.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+        return string.IsNullOrWhiteSpace(sanitized) ? "fiscal_default" : $"fiscal_{sanitized}";
+    }
+
     private Task OnCreateAccountingPeriod(CreateAccountingPeriod command)
     {
-        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        var fiscalCalendar = ResolveFiscalCalendarAggregate(command.OrganisationId);
         fiscalCalendar.Tell(command);
         return Task.CompletedTask;
     }
 
     private Task OnUpdateAccountingPeriod(UpdateAccountingPeriod command)
     {
-        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        var fiscalCalendar = ResolveFiscalCalendarAggregate(command.OrganisationId);
         fiscalCalendar.Tell(command);
         return Task.CompletedTask;
     }
 
     private Task OnDeleteAccountingPeriod(DeleteAccountingPeriod command)
     {
-        var fiscalCalendar = Context.ActorOf(FiscalCalendarAggregate.Props(command.OrganisationId));
+        var fiscalCalendar = ResolveFiscalCalendarAggregate(command.OrganisationId);
         fiscalCalendar.Tell(command);
         return Task.CompletedTask;
     }

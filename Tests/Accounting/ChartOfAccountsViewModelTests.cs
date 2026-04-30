@@ -138,6 +138,60 @@ public class ChartOfAccountsViewModelTests
     }
 
     [Fact]
+    public async Task AddAccountCommand_ShouldReloadTreeFromReadModel_WhenCreatedAccountIsChildOfExistingParent()
+    {
+        var createdSubject = new ReplaySubject<AccountData>(1);
+        _financeFacade.AccountCreated.Returns(createdSubject);
+
+        var parentAccount = new AccountData
+        {
+            Id = "parent-1",
+            OrganisationId = "org-1",
+            Code = "1000",
+            Name = "Assets",
+            Type = AccountType.Asset
+        };
+
+        var childAccount = new AccountData
+        {
+            Id = "child-1",
+            OrganisationId = "org-1",
+            Code = "1010",
+            Name = "Cash",
+            Type = AccountType.Asset,
+            ParentId = "parent-1"
+        };
+
+        _financeFacade.GetAccounts("org-1").Returns(
+            Task.FromResult<IList<AccountData>>(new List<AccountData> { parentAccount }),
+            Task.FromResult<IList<AccountData>>(new List<AccountData> { parentAccount, childAccount }));
+
+        _financeFacade.CreateAccount("org-1", "1010", "Cash", string.Empty, AccountType.Asset, "parent-1")
+            .Returns(_ =>
+            {
+                createdSubject.OnNext(childAccount);
+                return Task.CompletedTask;
+            });
+
+        var viewModel = CreateViewModel();
+        await Task.Delay(150);
+
+        viewModel.SelectedAccountType = AccountType.Asset;
+        viewModel.AccountCode = "1010";
+        viewModel.AccountName = "Cash";
+        viewModel.SelectedParentAccount = viewModel.FilteredParentAccounts.Single(account => account.Id == "parent-1");
+
+        await viewModel.AddAccountCommand.ExecuteAsync(null);
+        await Task.Delay(250);
+
+        viewModel.Accounts.Count.ShouldBe(1);
+        viewModel.Accounts[0].Id.ShouldBe("parent-1");
+        viewModel.Accounts[0].SubAccounts.Count.ShouldBe(1);
+        viewModel.Accounts[0].SubAccounts[0].Id.ShouldBe("child-1");
+        viewModel.Accounts[0].SubAccounts[0].Parent.ShouldBeSameAs(viewModel.Accounts[0]);
+    }
+
+    [Fact]
     public void ResetFormCommand_ShouldClearSelectionAndFields()
     {
         var viewModel = CreateViewModel();
