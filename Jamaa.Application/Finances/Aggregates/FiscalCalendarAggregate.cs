@@ -161,6 +161,8 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
     {
         if (!TryGetExistingFiscalYear(command.FiscalYearId.Value, out var fiscalYear))
         {
+            PersistDeletedFiscalYearWhenMissing(command);
+            DeferAsync(true, _ => TrySaveSnapshot());
             return;
         }
 
@@ -171,6 +173,12 @@ public class FiscalCalendarAggregate : ReceivePersistentActor
 
         PersistDeletedFiscalYear(command, fiscalYear);
         DeferAsync(true, _ => TrySaveSnapshot());
+    }
+
+    // Operation: emits an idempotent fiscal-year deletion event when aggregate state is missing the target id.
+    private void PersistDeletedFiscalYearWhenMissing(DeleteFiscalYear command)
+    {
+        Persist(new FiscalYearDeleted(command.OrganisationId, command.FiscalYearId), Apply);
     }
 
     // Operation: resolves one fiscal year from aggregate state.

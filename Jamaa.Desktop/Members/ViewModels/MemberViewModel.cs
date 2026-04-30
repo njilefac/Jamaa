@@ -6,18 +6,18 @@ namespace Jamaa.Desktop.Members.ViewModels;
 
 public partial class MemberViewModel : ObservableObject
 {
-    [ObservableProperty] private string _id;
+    [ObservableProperty] private string _id = string.Empty;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FullName))]
-    private string _lastName;
+    private string _lastName = string.Empty;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FullName))]
     private string? _middleName;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FullName))]
-    private string _firstName;
+    private string _firstName = string.Empty;
     [ObservableProperty] private Gender _gender;
-    [ObservableProperty] private string _organisationId;
+    [ObservableProperty] private string _organisationId = string.Empty;
     [ObservableProperty] private RegistrationViewModel? _registration;
     [ObservableProperty] private byte[]? _pictureData;
 
@@ -33,27 +33,21 @@ public partial class MemberViewModel : ObservableObject
         Gender = member.Gender;
         OrganisationId = member.OrganisationId;
         PictureData = member.PictureData;
-        if (member.Registration == null)
+        var registration = member.Registration;
+        if (Registration == null || Registration.Id != registration.Id)
         {
-            Registration = null;
+            Registration = new RegistrationViewModel
+            {
+                Id = registration.Id,
+                StartDate = registration.StartDate,
+                EndDate = registration.EndDate,
+                MembershipType = registration.MembershipType,
+                Status = registration.Status
+            };
         }
         else
         {
-            if (Registration == null || Registration.Id != member.Registration.Id)
-            {
-                Registration = new RegistrationViewModel
-                {
-                    Id = member.Registration.Id,
-                    StartDate = member.Registration.StartDate,
-                    EndDate = member.Registration.EndDate,
-                    MembershipType = member.Registration.MembershipType,
-                    Status = member.Registration.Status
-                };
-            }
-            else
-            {
-                Registration.UpdateFrom(member.Registration);
-            }
+            Registration.UpdateFrom(registration);
         }
     }
 }

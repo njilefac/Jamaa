@@ -13,6 +13,7 @@ namespace Jamaa.Application.Shared;
 public class QueryProcessor(
     IOrganisationQueryHandler organisationQueryHandler,
     IMembersQueryHandler membersQueryHandler,
+    IAccountQueryHandler accountQueryHandler,
     IFiscalCalendarQueryHandler fiscalCalendarQueryHandler,
     IAccountingSettingsQueryHandler accountingSettingsQueryHandler)
     : IQueryProcessor
@@ -25,6 +26,9 @@ public class QueryProcessor(
 
     public Task<IList<MemberData>> Get(GetMembersByOrganisation query) =>
         membersQueryHandler.Get(query);
+
+    public Task<IList<AccountData>> Get(GetAccountsByOrganisation query) =>
+        accountQueryHandler.Get(query);
 
     public Task<IList<FiscalYearData>> Get(GetFiscalYearsByOrganisation query) =>
         fiscalCalendarQueryHandler.Get(query);

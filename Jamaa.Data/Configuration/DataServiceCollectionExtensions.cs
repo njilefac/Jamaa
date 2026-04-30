@@ -22,6 +22,7 @@ public static class DataServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganisationQueryHandler, OrganisationQueryHandler>();
         services.AddScoped<IMembersQueryHandler, MembersQueryHandler>();
+        services.AddScoped<IAccountQueryHandler, AccountQueryHandler>();
         services.AddScoped<IFiscalCalendarQueryHandler, FiscalCalendarQueryHandler>();
         services.AddScoped<IAccountingSettingsQueryHandler, AccountingSettingsQueryHandler>();
         services.AddScoped<IFiscalYearRepository, FiscalYearRepository>();

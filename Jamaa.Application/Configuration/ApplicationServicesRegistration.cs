@@ -23,7 +23,7 @@ public static class ApplicationServicesRegistration
         services.AddProxiedSingleton<IOrganisationManagementFacade, OrganisationManagementFacade>();
         services.AddProxiedSingleton<IFinanceManagementFacade, FinanceManagementFacade>();
 
-        services.AddSingleton<IQueryProcessor, QueryProcessor>();
+        services.AddScoped<IQueryProcessor, QueryProcessor>();
 
         services.AddScoped<IInterceptor, AuthorizationCheckInterceptor>();
 

@@ -13,6 +13,7 @@ public interface IQueryProcessor
     Task<OrganisationData?> Get(GetOrganisationByName query);
 
     Task<IList<MemberData>> Get(GetMembersByOrganisation query);
+    Task<IList<AccountData>> Get(GetAccountsByOrganisation query);
     Task<IList<FiscalYearData>> Get(GetFiscalYearsByOrganisation query);
     Task<AccountingSettingsData?> Get(GetAccountingSettingsByOrganisation query);
 }

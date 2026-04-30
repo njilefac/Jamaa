@@ -4,5 +4,7 @@ public enum AccountType
 {
     Asset = 1,
     Liability = 2,
-    OwnersEquity = 3
+    Equity = 3,
+    Revenue = 4,
+    Expense = 5
 }

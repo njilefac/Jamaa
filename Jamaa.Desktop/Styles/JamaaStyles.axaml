@@ -35,10 +35,21 @@
     <Style Selector="Grid.page.form">
         <Setter Property="RowSpacing" Value="12" />
     </Style>
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+    </Style>
+    <Style Selector="TextBlock.h2">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+    </Style>
     <Style Selector="TextBlock.form.label">
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Margin" Value="0,0,10,0" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
     </Style>
     <Style Selector=":is(TemplatedControl).form.field">
         <Setter Property="Width" Value="300" />

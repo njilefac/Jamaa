@@ -9,6 +9,8 @@ using Jamaa.Application.Users;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Notifiers;
+using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -19,19 +21,19 @@ namespace Jamaa.Application.Finances;
 public class FinanceManagementFacade : IFinanceManagementFacade
 {
     private readonly IActorRef _commandProcessor;
-    private readonly IQueryProcessor _queryProcessor;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ReplaySubject<FiscalYearData> _currentFiscalYears;
     private readonly BehaviorSubject<AccountingSettingsData?> _currentAccountingSettings;
     private string? _lastSeededOrganisationId;
 
     public FinanceManagementFacade(
         IRequiredActor<CommandProcessor> commandProcessorProvider,
-        IQueryProcessor queryProcessor,
+        IServiceScopeFactory scopeFactory,
         IDataChangeNotifier dataChangeNotifier,
         IUserSessionService userSessionService)
     {
         _commandProcessor = commandProcessorProvider.ActorRef;
-        _queryProcessor = queryProcessor;
+        _scopeFactory = scopeFactory;
 
         _currentFiscalYears = new ReplaySubject<FiscalYearData>();
         CurrentFiscalYears = _currentFiscalYears;
@@ -39,6 +41,10 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         dataChangeNotifier.Insertions
             .OfType<FiscalYearData>()
             .Subscribe(_currentFiscalYears.OnNext);
+
+        AccountCreated = dataChangeNotifier.Insertions.OfType<AccountData>();
+        AccountUpdated = dataChangeNotifier.Updates.OfType<AccountData>();
+        AccountDeleted = dataChangeNotifier.Deletions.OfType<AccountData>();
 
         FiscalYearUpdated = BuildFiscalYearUpdates(dataChangeNotifier);
         FiscalYearDeleted = dataChangeNotifier.Deletions.OfType<FiscalYearData>();
@@ -67,6 +73,9 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     public IObservable<FiscalYearData> CurrentFiscalYears { get; }
     public IObservable<FiscalYearData> FiscalYearUpdated { get; }
     public IObservable<FiscalYearData> FiscalYearDeleted { get; }
+    public IObservable<AccountData> AccountCreated { get; }
+    public IObservable<AccountData> AccountUpdated { get; }
+    public IObservable<AccountData> AccountDeleted { get; }
     public IObservable<AccountingSettingsData?> CurrentAccountingSettings { get; }
     public IObservable<AccountingSettingsData> AccountingSettingsUpdated { get; }
 
@@ -136,6 +145,47 @@ public class FinanceManagementFacade : IFinanceManagementFacade
             startDate,
             endDate,
             isLocked);
+
+        _commandProcessor.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    // Integration: dispatches account creation intent.
+    public Task CreateAccount(string organisationId, string code, string name, string description, AccountType type, string? parentAccountId)
+    {
+        var command = new CreateAccount(
+            OrganisationId.With(organisationId),
+            AccountId.With(Guid.NewGuid()),
+            code,
+            name,
+            type,
+            string.IsNullOrWhiteSpace(parentAccountId) ? null : AccountId.With(parentAccountId));
+
+        _commandProcessor.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    // Integration: dispatches account update intent.
+    public Task UpdateAccount(string organisationId, string accountId, string code, string name, string description, AccountType type, string? parentAccountId)
+    {
+        var command = new UpdateAccount(
+            OrganisationId.With(organisationId),
+            AccountId.With(accountId),
+            code,
+            name,
+            type,
+            string.IsNullOrWhiteSpace(parentAccountId) ? null : AccountId.With(parentAccountId));
+
+        _commandProcessor.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    // Integration: dispatches account deletion intent.
+    public Task DeleteAccount(string organisationId, string accountId)
+    {
+        var command = new DeleteAccount(
+            OrganisationId.With(organisationId),
+            AccountId.With(accountId));
 
         _commandProcessor.Tell(command);
         return Task.CompletedTask;
@@ -225,15 +275,54 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     }
 
     // Integration: reads the materialized fiscal-year view.
+    public Task<IList<AccountData>> GetAccounts(string organisationId)
+    {
+        return QueryAsync(queryProcessor => queryProcessor.Get(new GetAccountsByOrganisation(OrganisationId.With(organisationId))));
+    }
+
+    // Integration: reads the materialized fiscal-year view.
     public Task<IList<FiscalYearData>> GetFiscalYears(string organisationId)
     {
-        return _queryProcessor.Get(new GetFiscalYearsByOrganisation(OrganisationId.With(organisationId)));
+        return QueryAsync(queryProcessor => queryProcessor.Get(new GetFiscalYearsByOrganisation(OrganisationId.With(organisationId))));
     }
 
     // Integration: reads the materialized accounting settings view.
     public Task<AccountingSettingsData?> GetAccountingSettings(string organisationId)
     {
-        return _queryProcessor.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
+        return QueryAsync(queryProcessor => queryProcessor.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId))));
+    }
+
+    // Operation: executes one read-model query in an isolated DI scope to avoid sharing DbContext across concurrent calls.
+    private async Task<T> QueryAsync<T>(Func<IQueryProcessor, Task<T>> query)
+    {
+        const int maxAttempts = 4;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
+                return await query(queryProcessor);
+            }
+            catch (SqliteException ex) when (IsTransientSqliteLock(ex) && attempt < maxAttempts)
+            {
+                // SQLite can briefly lock during projection writes; retry with a short backoff.
+                await Task.Delay(TimeSpan.FromMilliseconds(75 * attempt));
+            }
+        }
+
+        // Final attempt - let any exception bubble with full context.
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
+            return await query(queryProcessor);
+        }
+    }
+
+    private static bool IsTransientSqliteLock(SqliteException ex)
+    {
+        return ex.SqliteErrorCode is 5 or 6;
     }
 
     // Operation: emits canonical accounting-settings snapshots by reloading the read model after settings/currency row changes.

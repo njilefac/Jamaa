@@ -122,12 +122,12 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
             BaseCurrency = currency,
             DateFormat = dateFormat,
             DecimalPrecision = precision,
-            AvailableCurrencies = new[] { "USD", "KES", "EUR", "GBP", "ZAR", "NGN" }
-                .Select(code => new AccountingAvailableCurrencyData
+            AvailableCurrencies = _vm.AvailableCurrencies
+                .Select(currencyData => new AccountingAvailableCurrencyData
                 {
                     OrganisationId = OrgId,
-                    CurrencyCode = code,
-                    CurrencySymbol = code
+                    CurrencyCode = currencyData.CurrencyCode,
+                    CurrencySymbol = currencyData.CurrencySymbol
                 })
                 .ToList()
         });
@@ -329,13 +329,12 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         await saveTask;
 
         _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeFalse();
-        _vm.IsSaving.ShouldBeFalse();
-        _vm.IsAwaitingPersistenceConfirmation.ShouldBeFalse();
+        _vm.IsOperationInFlight.ShouldBeFalse();
         _vm.HasErrorStatus.ShouldBeFalse();
     }
 
     [Fact]
-    public async Task StatusMessage_IsSuccess_AfterPersistenceConfirmed()
+    public async Task SuccessNotification_IsShown_AfterPersistenceConfirmed()
     {
         await PushPersistedSettings("USD", "DD/MM/YYYY", 2);
         _vm.SelectedDateFormat = "YYYY-MM-DD";
@@ -344,8 +343,13 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         await ConfirmPersistenceFromStream("USD", "YYYY-MM-DD", 2);
         await saveTask;
 
-        _vm.StatusMessage.ShouldBe("Saved successfully.");
-        _vm.HasStatusMessage.ShouldBeTrue();
+        _notificationService.Received(1).Show(
+            "Accounting settings",
+            "Saved successfully.",
+            NotificationType.Success,
+            null,
+            null,
+            null);
     }
 
     [Fact]
@@ -372,9 +376,9 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
 
         // Start the save but don't confirm persistence yet
         var saveTask = _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
-        await Task.Delay(50); // give SaveBaseSettings time to set IsSaving = true
+        await Task.Delay(50); // give SaveBaseSettings time to set IsOperationInFlight = true
 
-        _vm.IsSaving.ShouldBeTrue();
+        _vm.IsOperationInFlight.ShouldBeTrue();
         _vm.SaveBaseSettingsCommand.CanExecute(null).ShouldBeFalse();
 
         // Unblock the task
@@ -398,8 +402,15 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         await _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
 
         _vm.HasErrorStatus.ShouldBeTrue();
-        _vm.StatusMessage.ShouldContain("Simulated dispatch failure");
-        _vm.IsSaving.ShouldBeFalse();
+        _vm.IsOperationInFlight.ShouldBeFalse();
+
+        _notificationService.Received(1).Show(
+            "Error",
+            Arg.Is<string>(message => message.Contains("Failed to saved", StringComparison.OrdinalIgnoreCase)),
+            NotificationType.Error,
+            null,
+            null,
+            null);
     }
 
     [Fact]
@@ -438,7 +449,14 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         await saveTask;
 
         _vm.HasErrorStatus.ShouldBeFalse();
-        _vm.StatusMessage.ShouldBe("Saved successfully.");
+
+        _notificationService.Received().Show(
+            "Accounting settings",
+            "Saved successfully.",
+            NotificationType.Success,
+            null,
+            null,
+            null);
     }
 }
 
