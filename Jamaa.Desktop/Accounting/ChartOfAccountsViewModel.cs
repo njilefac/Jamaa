@@ -69,6 +69,12 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     private string _accountName = string.Empty;
 
     [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [MaxLength(500, ErrorMessage = "Description must be 500 characters or fewer")]
+    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
+    private string _accountDescription = string.Empty;
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteAccountCommand))]
     private bool _isOperationInFlight;
@@ -112,6 +118,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                     new TextColumn<AccountItemViewModel, string>("Code", x => x.Code, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                     x => x.SubAccounts),
                 new TextColumn<AccountItemViewModel, string>("Name", x => x.Name, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                new TextColumn<AccountItemViewModel, string>("Description", x => x.Description, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                 new TextColumn<AccountItemViewModel, string>("Type", x => x.TypeDisplay, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
             }
         };
@@ -165,6 +172,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             Id = a.Id,
             Code = a.Code,
             Name = a.Name,
+            Description = a.Description,
             Type = a.Type
         }).ToList();
 
@@ -194,6 +202,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         {
             AccountCode = value.Code;
             AccountName = value.Name;
+            AccountDescription = value.Description;
             SelectedAccountType = value.Type;
             
             RefreshFilteredParentAccounts();
@@ -213,6 +222,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         {
             AccountCode = string.Empty;
             AccountName = string.Empty;
+            AccountDescription = string.Empty;
             SelectedAccountType = null;
             RefreshFilteredParentAccounts();
             SelectedParentAccount = null;
@@ -378,7 +388,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         !string.IsNullOrWhiteSpace(AccountName) &&
         SelectedAccountType.HasValue &&
         !GetErrors(nameof(AccountCode)).Cast<object>().Any() &&
-        !GetErrors(nameof(AccountName)).Cast<object>().Any();
+        !GetErrors(nameof(AccountName)).Cast<object>().Any() &&
+        !GetErrors(nameof(AccountDescription)).Cast<object>().Any();
 
     private bool CanDeleteAccount() =>
         !IsOperationInFlight &&
@@ -407,7 +418,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             var accountId = SelectedAccount.Id;
             var subject = AccountName;
             var isConfirmed = await _notificationService.TrackOperationAsync(
-                sendCommand: () => _financeFacade.UpdateAccount(orgId, accountId, AccountCode, AccountName, string.Empty, SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
+                sendCommand: () => _financeFacade.UpdateAccount(orgId, accountId, AccountCode, AccountName, AccountDescription, SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
                 confirmationObservable: _financeFacade.AccountUpdated,
                 matcherPredicate: a => a.Id == accountId,
                 timeout: TimeSpan.FromSeconds(10),
@@ -424,7 +435,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             var code = AccountCode;
             var subject = AccountName;
             var isConfirmed = await _notificationService.TrackOperationAsync(
-                sendCommand: () => _financeFacade.CreateAccount(orgId, code, AccountName, string.Empty, SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
+                sendCommand: () => _financeFacade.CreateAccount(orgId, code, AccountName, AccountDescription, SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
                 confirmationObservable: _financeFacade.AccountCreated,
                 matcherPredicate: a => a.Code == code && a.OrganisationId == orgId,
                 timeout: TimeSpan.FromSeconds(10),
@@ -480,6 +491,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         }
         AccountCode = string.Empty;
         AccountName = string.Empty;
+        AccountDescription = string.Empty;
         SelectedAccountType = null;
         SelectedParentAccount = null;
         ResetValidationState();

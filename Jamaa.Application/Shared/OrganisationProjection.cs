@@ -126,6 +126,7 @@ public class OrganisationProjection : ReceivePersistentActor
             OrganisationId = @event.OrganisationId.Value,
             Code = @event.Code,
             Name = @event.Name,
+            Description = @event.Description,
             Type = @event.Type,
             ParentId = @event.ParentId?.Value
         });
@@ -144,6 +145,7 @@ public class OrganisationProjection : ReceivePersistentActor
 
         account.Code = @event.Code;
         account.Name = @event.Name;
+        account.Description = @event.Description;
         account.Type = @event.Type;
         account.ParentId = @event.ParentId?.Value;
 

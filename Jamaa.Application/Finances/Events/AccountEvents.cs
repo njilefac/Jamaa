@@ -10,7 +10,8 @@ public record AccountCreated(
     string Code,
     string Name,
     AccountType Type,
-    AccountId? ParentId) : ILibotaEvent
+    AccountId? ParentId,
+    string Description = "") : ILibotaEvent
 {
     public string EntityId => AccountId.Value;
 }
@@ -21,7 +22,8 @@ public record AccountUpdated(
     string Code,
     string Name,
     AccountType Type,
-    AccountId? ParentId) : ILibotaEvent
+    AccountId? ParentId,
+    string Description = "") : ILibotaEvent
 {
     public string EntityId => AccountId.Value;
 }

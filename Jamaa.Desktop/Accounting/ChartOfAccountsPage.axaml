@@ -120,6 +120,16 @@
                             </StackPanel>
 
                             <StackPanel Spacing="4">
+                                <TextBlock Classes="form label" Text="Description" />
+                                <TextBox
+                                    AcceptsReturn="True"
+                                    MinHeight="64"
+                                    Text="{Binding AccountDescription}"
+                                    TextWrapping="Wrap"
+                                    Watermark="Optional account description" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
                                 <TextBlock Classes="form label" Text="Parent Account" />
                                 <TextBlock
                                     FontSize="11"

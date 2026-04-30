@@ -113,6 +113,9 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
         modelBuilder.Entity<AccountData>()
             .Property(account => account.Name).IsRequired();
         modelBuilder.Entity<AccountData>()
+            .Property(account => account.Description)
+            .HasMaxLength(500);
+        modelBuilder.Entity<AccountData>()
             .HasOne(account => account.Parent)
             .WithMany()
             .HasForeignKey(account => account.ParentId)

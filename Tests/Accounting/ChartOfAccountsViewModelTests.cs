@@ -53,6 +53,7 @@ public class ChartOfAccountsViewModelTests
             Id = "acc-1",
             Code = "1000",
             Name = "Cash",
+            Description = "Main cash account",
             Type = AccountType.Asset
         };
 
@@ -60,6 +61,7 @@ public class ChartOfAccountsViewModelTests
 
         viewModel.AccountCode.ShouldBe("1000");
         viewModel.AccountName.ShouldBe("Cash");
+        viewModel.AccountDescription.ShouldBe("Main cash account");
         viewModel.SelectedAccountType.ShouldBe(AccountType.Asset);
         viewModel.ActionButtonText.ShouldBe("Save Changes");
         viewModel.FormTitle.ShouldBe("Edit Account");
@@ -74,10 +76,10 @@ public class ChartOfAccountsViewModelTests
         var updatedSubject = new ReplaySubject<AccountData>(1);
         _financeFacade.AccountUpdated.Returns(updatedSubject);
 
-        _financeFacade.UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", string.Empty, AccountType.Asset, null)
+        _financeFacade.UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", "Updated description", AccountType.Asset, null)
             .Returns(ci =>
             {
-                updatedSubject.OnNext(new AccountData { Id = "acc-1", OrganisationId = "org-1", Code = "1000", Name = "Cash Updated", Type = AccountType.Asset });
+                updatedSubject.OnNext(new AccountData { Id = "acc-1", OrganisationId = "org-1", Code = "1000", Name = "Cash Updated", Description = "Updated description", Type = AccountType.Asset });
                 return Task.CompletedTask;
             });
 
@@ -87,13 +89,14 @@ public class ChartOfAccountsViewModelTests
         viewModel.SelectedAccount = account;
         viewModel.AccountCode = "1000";
         viewModel.AccountName = "Cash Updated";
+        viewModel.AccountDescription = "Updated description";
         viewModel.SelectedAccountType = AccountType.Asset;
 
         // Act
         await viewModel.AddAccountCommand.ExecuteAsync(null);
 
         // Assert – facade was called
-        await _financeFacade.Received(1).UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", string.Empty, AccountType.Asset, null);
+        await _financeFacade.Received(1).UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", "Updated description", AccountType.Asset, null);
         // Assert – success notification was shown
         _notificationService.Received(1).Show(
             Arg.Any<string>(),
@@ -113,10 +116,10 @@ public class ChartOfAccountsViewModelTests
         _financeFacade.AccountUpdated.Returns(Observable.Empty<AccountData>());
         _financeFacade.AccountDeleted.Returns(Observable.Empty<AccountData>());
 
-        _financeFacade.CreateAccount("org-1", "1100", "Bank", string.Empty, AccountType.Asset, null)
+        _financeFacade.CreateAccount("org-1", "1100", "Bank", "Primary bank account", AccountType.Asset, null)
             .Returns(ci =>
             {
-                createdSubject.OnNext(new AccountData { Id = "new-1", OrganisationId = "org-1", Code = "1100", Name = "Bank", Type = AccountType.Asset });
+                createdSubject.OnNext(new AccountData { Id = "new-1", OrganisationId = "org-1", Code = "1100", Name = "Bank", Description = "Primary bank account", Type = AccountType.Asset });
                 return Task.CompletedTask;
             });
 
@@ -124,12 +127,13 @@ public class ChartOfAccountsViewModelTests
         viewModel.SelectedAccountType = AccountType.Asset;
         viewModel.AccountCode = "1100";
         viewModel.AccountName = "Bank";
+        viewModel.AccountDescription = "Primary bank account";
 
         // Act
         await viewModel.AddAccountCommand.ExecuteAsync(null);
 
         // Assert – facade was called
-        await _financeFacade.Received(1).CreateAccount("org-1", "1100", "Bank", string.Empty, AccountType.Asset, null);
+        await _financeFacade.Received(1).CreateAccount("org-1", "1100", "Bank", "Primary bank account", AccountType.Asset, null);
         // Assert – success notification was shown
         _notificationService.Received(1).Show(
             Arg.Any<string>(),
@@ -166,7 +170,7 @@ public class ChartOfAccountsViewModelTests
             Task.FromResult<IList<AccountData>>(new List<AccountData> { parentAccount }),
             Task.FromResult<IList<AccountData>>(new List<AccountData> { parentAccount, childAccount }));
 
-        _financeFacade.CreateAccount("org-1", "1010", "Cash", string.Empty, AccountType.Asset, "parent-1")
+        _financeFacade.CreateAccount("org-1", "1010", "Cash", "Cash on hand", AccountType.Asset, "parent-1")
             .Returns(_ =>
             {
                 createdSubject.OnNext(childAccount);
@@ -179,6 +183,7 @@ public class ChartOfAccountsViewModelTests
         viewModel.SelectedAccountType = AccountType.Asset;
         viewModel.AccountCode = "1010";
         viewModel.AccountName = "Cash";
+        viewModel.AccountDescription = "Cash on hand";
         viewModel.SelectedParentAccount = viewModel.FilteredParentAccounts.Single(account => account.Id == "parent-1");
 
         await viewModel.AddAccountCommand.ExecuteAsync(null);
@@ -198,12 +203,14 @@ public class ChartOfAccountsViewModelTests
         viewModel.SelectedAccount = new AccountItemViewModel { Id = "acc-1", Code = "1000", Name = "Cash", Type = AccountType.Asset };
         viewModel.AccountCode = "1000";
         viewModel.AccountName = "Cash";
+        viewModel.AccountDescription = "Cash reserve";
 
         viewModel.ResetFormCommand.Execute(null);
 
         viewModel.SelectedAccount.ShouldBeNull();
         viewModel.AccountCode.ShouldBe(string.Empty);
         viewModel.AccountName.ShouldBe(string.Empty);
+        viewModel.AccountDescription.ShouldBe(string.Empty);
         viewModel.FormTitle.ShouldBe("Add New Account");
         viewModel.IsEditMode.ShouldBeFalse();
     }

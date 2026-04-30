@@ -159,7 +159,8 @@ public class FinanceManagementFacade : IFinanceManagementFacade
             code,
             name,
             type,
-            string.IsNullOrWhiteSpace(parentAccountId) ? null : AccountId.With(parentAccountId));
+            string.IsNullOrWhiteSpace(parentAccountId) ? null : AccountId.With(parentAccountId),
+            description);
 
         _commandProcessor.Tell(command);
         return Task.CompletedTask;
@@ -174,7 +175,8 @@ public class FinanceManagementFacade : IFinanceManagementFacade
             code,
             name,
             type,
-            string.IsNullOrWhiteSpace(parentAccountId) ? null : AccountId.With(parentAccountId));
+            string.IsNullOrWhiteSpace(parentAccountId) ? null : AccountId.With(parentAccountId),
+            description);
 
         _commandProcessor.Tell(command);
         return Task.CompletedTask;

@@ -9,7 +9,8 @@ public record CreateAccount(
     string Code,
     string Name,
     AccountType Type,
-    AccountId? ParentId);
+    AccountId? ParentId,
+    string Description = "");
 
 public record UpdateAccount(
     OrganisationId OrganisationId,
@@ -17,7 +18,8 @@ public record UpdateAccount(
     string Code,
     string Name,
     AccountType Type,
-    AccountId? ParentId);
+    AccountId? ParentId,
+    string Description = "");
 
 public record DeleteAccount(
     OrganisationId OrganisationId,

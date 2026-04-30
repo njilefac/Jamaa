@@ -51,7 +51,7 @@ public class AccountAggregate : ReceivePersistentActor
     // Integration: validates and persists one new account in the organisation chart.
     private void Handle(CreateAccount command)
     {
-        if (!TryNormalizeAccount(command.Code, command.Name, out var code, out var name))
+        if (!TryNormalizeAccount(command.Code, command.Name, command.Description, out var code, out var name, out var description))
         {
             return;
         }
@@ -79,7 +79,8 @@ public class AccountAggregate : ReceivePersistentActor
             code,
             name,
             command.Type,
-            command.ParentId), Apply);
+            command.ParentId,
+            description), Apply);
 
         DeferAsync(true, _ => TrySaveSnapshot());
     }
@@ -93,7 +94,7 @@ public class AccountAggregate : ReceivePersistentActor
             return;
         }
 
-        if (!TryNormalizeAccount(command.Code, command.Name, out var code, out var name))
+        if (!TryNormalizeAccount(command.Code, command.Name, command.Description, out var code, out var name, out var description))
         {
             return;
         }
@@ -115,7 +116,8 @@ public class AccountAggregate : ReceivePersistentActor
             code,
             name,
             command.Type,
-            command.ParentId), Apply);
+            command.ParentId,
+            description), Apply);
 
         DeferAsync(true, _ => TrySaveSnapshot());
     }
@@ -146,6 +148,7 @@ public class AccountAggregate : ReceivePersistentActor
             Id = @event.AccountId.Value,
             Code = @event.Code,
             Name = @event.Name,
+            Description = @event.Description,
             Type = @event.Type,
             ParentId = @event.ParentId?.Value
         };
@@ -160,6 +163,7 @@ public class AccountAggregate : ReceivePersistentActor
 
         account.Code = @event.Code;
         account.Name = @event.Name;
+        account.Description = @event.Description;
         account.Type = @event.Type;
         account.ParentId = @event.ParentId?.Value;
     }
@@ -170,10 +174,17 @@ public class AccountAggregate : ReceivePersistentActor
     }
 
     // Operation: validates and normalizes account fields.
-    private bool TryNormalizeAccount(string requestedCode, string requestedName, out string code, out string name)
+    private bool TryNormalizeAccount(
+        string requestedCode,
+        string requestedName,
+        string? requestedDescription,
+        out string code,
+        out string name,
+        out string description)
     {
         code = requestedCode.Trim();
         name = requestedName.Trim();
+        description = (requestedDescription ?? string.Empty).Trim();
 
         if (string.IsNullOrWhiteSpace(code))
         {
@@ -190,6 +201,12 @@ public class AccountAggregate : ReceivePersistentActor
         if (name.Length > 100)
         {
             Sender.Tell("Account name must be 100 characters or fewer.", Self);
+            return false;
+        }
+
+        if (description.Length > 500)
+        {
+            Sender.Tell("Account description must be 500 characters or fewer.", Self);
             return false;
         }
 
@@ -288,6 +305,7 @@ public class AccountAggregate : ReceivePersistentActor
         public string Id { get; init; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public AccountType Type { get; set; }
         public string? ParentId { get; set; }
 
@@ -298,6 +316,7 @@ public class AccountAggregate : ReceivePersistentActor
                 Id = Id,
                 Code = Code,
                 Name = Name,
+                Description = Description,
                 Type = Type,
                 ParentId = ParentId
             };

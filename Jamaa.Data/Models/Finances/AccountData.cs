@@ -9,6 +9,7 @@ public class AccountData
     public required string OrganisationId { get; set; }
     public required string Code { get; set; }
     public required string Name { get; set; }
+    public string Description { get; set; } = string.Empty;
     public AccountType Type { get; set; }
     public string? ParentId { get; set; }
     
