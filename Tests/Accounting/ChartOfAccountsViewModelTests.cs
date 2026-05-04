@@ -320,6 +320,61 @@ public class ChartOfAccountsViewModelTests
     }
 
     [Fact]
+    public async Task ToggleActive_ShouldConfirmFromReadModel_WhenDeactivateEventIsMissing()
+    {
+        _financeFacade.AccountDeactivated.Returns(Observable.Empty<AccountData>());
+
+        var readModelAccounts = new List<AccountData>
+        {
+            new()
+            {
+                Id = "acc-1",
+                Code = "1000",
+                Name = "Cash",
+                OrganisationId = "org-1",
+                Type = AccountType.Asset,
+                IsActive = true
+            }
+        };
+
+        _financeFacade.GetAccounts("org-1")
+            .Returns(_ => Task.FromResult<IList<AccountData>>(readModelAccounts.ToList()));
+
+        _financeFacade.DeactivateAccount("org-1", "acc-1")
+            .Returns(_ =>
+            {
+                readModelAccounts[0] = new AccountData
+                {
+                    Id = "acc-1",
+                    Code = "1000",
+                    Name = "Cash",
+                    OrganisationId = "org-1",
+                    Type = AccountType.Asset,
+                    IsActive = false
+                };
+
+                return Task.CompletedTask;
+            });
+
+        var viewModel = CreateViewModel();
+        await InvokePrivateLoadAccountsAsync(viewModel);
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 1, "the account to load before deactivation");
+
+        var item = viewModel.Accounts.Single(account => account.Id == "acc-1");
+        await InvokePrivateToggleAccountActiveAsync(viewModel, item);
+
+        await _financeFacade.Received(1).DeactivateAccount("org-1", "acc-1");
+        _notificationService.Received().Show(
+            "Account",
+            Arg.Is<string>(message => message.Contains("Deactivated", StringComparison.OrdinalIgnoreCase)),
+            NotificationType.Success);
+        _notificationService.DidNotReceive().Show(
+            "Timeout",
+            Arg.Any<string>(),
+            NotificationType.Warning);
+    }
+
+    [Fact]
     public async Task AddAccountCommand_ShouldSucceed_WhenCreateEventIsMissing_ButReadModelShowsAccount()
     {
         var deletedSubject = new ReplaySubject<AccountData>(1);
@@ -551,6 +606,23 @@ public class ChartOfAccountsViewModelTests
         loadMethod.ShouldNotBeNull();
         loadMethod.Invoke(viewModel, null);
         await Task.Yield();
+    }
+
+    private static async Task InvokePrivateToggleAccountActiveAsync(ChartOfAccountsViewModel viewModel, AccountItemViewModel item)
+    {
+        var toggleMethod = typeof(ChartOfAccountsViewModel).GetMethod(
+            "ToggleAccountActiveAsync",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        toggleMethod.ShouldNotBeNull();
+
+        var result = toggleMethod.Invoke(viewModel, [item]);
+        if (result is not Task toggleTask)
+        {
+            throw new InvalidOperationException("ToggleAccountActiveAsync did not return a Task.");
+        }
+
+        await toggleTask;
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition, string expectation, int timeoutMilliseconds = 1500)

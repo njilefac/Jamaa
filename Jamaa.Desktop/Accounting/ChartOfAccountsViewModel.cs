@@ -10,7 +10,6 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Layout;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -325,8 +324,9 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         return ValidationResult.Success;
     }
 
-    partial void OnSelectedAccountTypeChanged(AccountType? _)
+    partial void OnSelectedAccountTypeChanged(AccountType? value)
     {
+        _ = value;
         RefreshFilteredParentAccounts();
         SuggestAccountCode();
         ValidateProperty(AccountCode, nameof(AccountCode));
@@ -357,8 +357,9 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         }
     }
 
-    partial void OnAccountNameChanged(string _)
+    partial void OnAccountNameChanged(string value)
     {
+        _ = value;
         if (SelectedAccountType == AccountType.Expense)
         {
             SuggestAccountCode();
@@ -487,8 +488,11 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         {
             await _notificationService.TrackOperationAsync(
                 sendCommand: () => _financeFacade.DeactivateAccount(orgId, accountId),
-                confirmationObservable: _financeFacade.AccountDeactivated,
-                matcherPredicate: a => a.Id == accountId,
+                confirmationObservable: BuildAccountStateChangeConfirmationObservable(
+                    orgId,
+                    accountId,
+                    isActiveTarget: false,
+                    eventStream: _financeFacade.AccountDeactivated),
                 timeout: TimeSpan.FromSeconds(10),
                 operationName: "Account",
                 successAction: "Deactivated",
@@ -499,13 +503,56 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         {
             await _notificationService.TrackOperationAsync(
                 sendCommand: () => _financeFacade.ReactivateAccount(orgId, accountId),
-                confirmationObservable: _financeFacade.AccountReactivated,
-                matcherPredicate: a => a.Id == accountId,
+                confirmationObservable: BuildAccountStateChangeConfirmationObservable(
+                    orgId,
+                    accountId,
+                    isActiveTarget: true,
+                    eventStream: _financeFacade.AccountReactivated),
                 timeout: TimeSpan.FromSeconds(10),
                 operationName: "Account",
                 successAction: "Reactivated",
                 subject: subject,
                 inFlightChanged: SetOperationInFlight);
+        }
+    }
+
+    // Operation: confirms account state changes from either event notifications or eventual read-model state.
+    private IObservable<bool> BuildAccountStateChangeConfirmationObservable(
+        string organisationId,
+        string accountId,
+        bool isActiveTarget,
+        IObservable<AccountData> eventStream)
+    {
+        var matchingEvents = eventStream
+            .Where(account =>
+                account.OrganisationId == organisationId &&
+                account.Id == accountId &&
+                account.IsActive == isActiveTarget)
+            .Select(_ => true);
+
+        var readModelStateChecks = Observable.Interval(TimeSpan.FromMilliseconds(250))
+            .StartWith(0L)
+            .SelectMany(_ => Observable.FromAsync(() => HasAccountReachedStateAsync(organisationId, accountId, isActiveTarget)))
+            .Where(hasReachedTargetState => hasReachedTargetState)
+            .Select(_ => true);
+
+        return matchingEvents
+            .Merge(readModelStateChecks)
+            .Take(1);
+    }
+
+    // Operation: checks whether one account currently matches the requested active state in the read model.
+    private async Task<bool> HasAccountReachedStateAsync(string organisationId, string accountId, bool isActiveTarget)
+    {
+        try
+        {
+            var accounts = await _financeFacade.GetAccounts(organisationId);
+            var account = accounts.FirstOrDefault(current => current.Id == accountId);
+            return account is not null && account.IsActive == isActiveTarget;
+        }
+        catch
+        {
+            return false;
         }
     }
 

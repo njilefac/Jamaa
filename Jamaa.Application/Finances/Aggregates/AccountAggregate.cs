@@ -370,12 +370,6 @@ public class AccountAggregate : ReceivePersistentActor
             return;
         }
 
-        if (_state.Accounts.Count > 0)
-        {
-            _hasHydratedFromPersistence = true;
-            return;
-        }
-
         var persistedAccounts = _queryProcessor
             .Get(new GetAccountsByOrganisation(_organisationId))
             .GetAwaiter()
