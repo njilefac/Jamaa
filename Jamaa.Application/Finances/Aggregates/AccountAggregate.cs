@@ -175,7 +175,13 @@ public class AccountAggregate : ReceivePersistentActor
             return;
         }
 
-        Persist(new AccountDeactivated(command.OrganisationId, command.AccountId), Apply);
+        var cascadeAccountIds = GetAccountAndDescendantIds(command.AccountId.Value);
+        var deactivationEvents = cascadeAccountIds
+            .Where(accountId => _state.Accounts.TryGetValue(accountId, out var target) && target.IsActive)
+            .Select(accountId => new AccountDeactivated(command.OrganisationId, AccountId.With(accountId)))
+            .ToList();
+
+        PersistAll(deactivationEvents, Apply);
         DeferAsync(true, _ => TrySaveSnapshot());
     }
 
@@ -196,8 +202,47 @@ public class AccountAggregate : ReceivePersistentActor
             return;
         }
 
-        Persist(new AccountReactivated(command.OrganisationId, command.AccountId), Apply);
+        var cascadeAccountIds = GetAccountAndDescendantIds(command.AccountId.Value);
+        var reactivationEvents = cascadeAccountIds
+            .Where(accountId => _state.Accounts.TryGetValue(accountId, out var target) && !target.IsActive)
+            .Select(accountId => new AccountReactivated(command.OrganisationId, AccountId.With(accountId)))
+            .ToList();
+
+        PersistAll(reactivationEvents, Apply);
         DeferAsync(true, _ => TrySaveSnapshot());
+    }
+
+    // Operation: returns one account id plus all descendant ids using deterministic breadth-first traversal.
+    private IReadOnlyList<string> GetAccountAndDescendantIds(string rootAccountId)
+    {
+        var orderedIds = new List<string>();
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        var queue = new Queue<string>();
+
+        queue.Enqueue(rootAccountId);
+        visited.Add(rootAccountId);
+
+        while (queue.Count > 0)
+        {
+            var currentId = queue.Dequeue();
+            orderedIds.Add(currentId);
+
+            var childIds = _state.Accounts.Values
+                .Where(account => account.ParentId == currentId)
+                .OrderBy(account => account.Code, StringComparer.Ordinal)
+                .ThenBy(account => account.Id, StringComparer.Ordinal)
+                .Select(account => account.Id);
+
+            foreach (var childId in childIds)
+            {
+                if (visited.Add(childId))
+                {
+                    queue.Enqueue(childId);
+                }
+            }
+        }
+
+        return orderedIds;
     }
 
     private void Apply(AccountCreated @event)
