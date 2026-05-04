@@ -10,7 +10,7 @@ public record AccountingSettingsUpdated(
     string BaseCurrency,
     string DateFormat,
     int DecimalPrecision,
-    List<Currency> AvailableCurrencies) : ILibotaEvent
+    List<Currency> AvailableCurrencies) : IJamaaEvent
 {
     public string EntityId => OrganisationId.Value;
 }

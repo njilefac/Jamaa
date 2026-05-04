@@ -8,7 +8,7 @@ public record FiscalYearPeriodsRegenerated(
     OrganisationId OrganisationId,
     FiscalYearId FiscalYearId,
     IReadOnlyList<string> DeletedPeriodIds,
-    IReadOnlyList<AccountingPeriodInfo> CreatedPeriods) : ILibotaEvent
+    IReadOnlyList<AccountingPeriodInfo> CreatedPeriods) : IJamaaEvent
 {
     public string EntityId => OrganisationId.Value;
 }

@@ -72,7 +72,7 @@ public static class ServiceCollectionExtensions
                     ProviderName.SQLiteMS,
                     journalBuilder: b =>
                     {
-                        b.AddWriteEventAdapter<LibotaEventTagger>("organisation-event-tagger", [typeof(ILibotaEvent)]);
+                        b.AddWriteEventAdapter<JamaaEventTagger>("organisation-event-tagger", [typeof(IJamaaEvent)]);
                     },
                     autoInitialize: true,
                     useWriterUuidColumn: true);

@@ -41,7 +41,7 @@ public class OrganisationProjection : ReceivePersistentActor
         var sink = Sink.ActorRefWithAck<EventEnvelope>(self, ProjectionStarting.Instance, ProjectionAck.Instance,
             ProjectionCompleted.Instance, ex => new ProjectionFailed(ex));
 
-        readJournal.EventsByTag(LibotaEventTagger.OrganisationEvent, _state.LastOffset)
+        readJournal.EventsByTag(JamaaEventTagger.OrganisationEvent, _state.LastOffset)
             .RunWith(sink, Context.Materializer());
     }
 
@@ -52,7 +52,7 @@ public class OrganisationProjection : ReceivePersistentActor
             _logger.LogInformation("Received envelope with offset [{Offset}]", e.Offset);
             var currentOffset = e.Offset;
 
-            if (e.Event is ILibotaEvent evt)
+            if (e.Event is IJamaaEvent evt)
             {
                 await TryProcess(evt);
                 PersistAndAck(currentOffset, evt);
@@ -71,7 +71,7 @@ public class OrganisationProjection : ReceivePersistentActor
             if (_state.LastOffset is Sequence seq)
                 val = seq.Value;
             _logger.LogError(failed.Cause, "Projection FAILED for Tag [{Tag}] at Offset [{Offset}]",
-                LibotaEventTagger.OrganisationEvent, val);
+                JamaaEventTagger.OrganisationEvent, val);
             throw new ApplicationException("Projection failed due to error. See InnerException for details.",
                 failed.Cause);
         });
@@ -84,7 +84,7 @@ public class OrganisationProjection : ReceivePersistentActor
         });
     }
 
-    private async Task TryProcess(ILibotaEvent evt)
+    private async Task TryProcess(IJamaaEvent evt)
     {
         using var scope = _serviceProvider.CreateScope();
         using var dbContext = scope.ServiceProvider.GetRequiredService<JamaaDbContext>();
@@ -536,7 +536,7 @@ public class OrganisationProjection : ReceivePersistentActor
         });
     }
 
-    private void PersistAndAck(Offset currentOffset, ILibotaEvent evt)
+    private void PersistAndAck(Offset currentOffset, IJamaaEvent evt)
     {
         var nextState = new MaterializedViewState(LastOffset: currentOffset);
         Persist(nextState, state =>

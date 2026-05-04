@@ -11,7 +11,7 @@ public record AccountCreated(
     string Name,
     AccountType Type,
     AccountId? ParentId,
-    string Description = "") : ILibotaEvent
+    string Description = "") : IJamaaEvent
 {
     public string EntityId => AccountId.Value;
 }
@@ -23,7 +23,7 @@ public record AccountUpdated(
     string Name,
     AccountType Type,
     AccountId? ParentId,
-    string Description = "") : ILibotaEvent
+    string Description = "") : IJamaaEvent
 {
     public string EntityId => AccountId.Value;
 }
@@ -31,21 +31,21 @@ public record AccountUpdated(
 
 public record AccountDeleted(
     OrganisationId OrganisationId,
-    AccountId AccountId) : ILibotaEvent
+    AccountId AccountId) : IJamaaEvent
 {
     public string EntityId => AccountId.Value;
 }
 
 public record AccountDeactivated(
     OrganisationId OrganisationId,
-    AccountId AccountId) : ILibotaEvent
+    AccountId AccountId) : IJamaaEvent
 {
     public string EntityId => AccountId.Value;
 }
 
 public record AccountReactivated(
     OrganisationId OrganisationId,
-    AccountId AccountId) : ILibotaEvent
+    AccountId AccountId) : IJamaaEvent
 {
     public string EntityId => AccountId.Value;
 }

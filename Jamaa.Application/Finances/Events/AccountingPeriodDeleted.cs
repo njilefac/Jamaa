@@ -7,7 +7,7 @@ namespace Jamaa.Application.Finances.Events;
 public record AccountingPeriodDeleted(
     OrganisationId OrganisationId,
     FiscalYearId FiscalYearId,
-    AccountingPeriodId AccountingPeriodId) : ILibotaEvent
+    AccountingPeriodId AccountingPeriodId) : IJamaaEvent
 {
     public string EntityId => OrganisationId.Value;
 }

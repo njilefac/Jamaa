@@ -11,7 +11,7 @@ public record AccountingPeriodUpdated(
     int SequenceNumber,
     DateTime StartDate,
     DateTime EndDate,
-    bool IsLocked) : ILibotaEvent
+    bool IsLocked) : IJamaaEvent
 {
     public string EntityId => OrganisationId.Value;
 }

@@ -134,7 +134,7 @@ public class OrganisationProjectionTests
         }
     }
 
-    private sealed record ProcessEvent(ILibotaEvent Event);
+    private sealed record ProcessEvent(IJamaaEvent Event);
 
     private sealed record ProcessCompleted
     {

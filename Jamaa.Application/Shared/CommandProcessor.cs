@@ -23,6 +23,8 @@ public class CommandProcessor : ReceiveActor
         ReceiveAsync<CreateAccount>(OnCreateAccount);
         ReceiveAsync<UpdateAccount>(OnUpdateAccount);
         ReceiveAsync<DeleteAccount>(OnDeleteAccount);
+        ReceiveAsync<DeactivateAccount>(OnDeactivateAccount);
+        ReceiveAsync<ReactivateAccount>(OnReactivateAccount);
         ReceiveAsync<CreateAccountingPeriod>(OnCreateAccountingPeriod);
         ReceiveAsync<UpdateAccountingPeriod>(OnUpdateAccountingPeriod);
         ReceiveAsync<DeleteAccountingPeriod>(OnDeleteAccountingPeriod);
@@ -65,6 +67,20 @@ public class CommandProcessor : ReceiveActor
     }
 
     private Task OnDeleteAccount(DeleteAccount command)
+    {
+        var accountAggregate = ResolveAccountAggregate(command.OrganisationId);
+        accountAggregate.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnDeactivateAccount(DeactivateAccount command)
+    {
+        var accountAggregate = ResolveAccountAggregate(command.OrganisationId);
+        accountAggregate.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    private Task OnReactivateAccount(ReactivateAccount command)
     {
         var accountAggregate = ResolveAccountAggregate(command.OrganisationId);
         accountAggregate.Tell(command);
@@ -136,29 +152,68 @@ public class CommandProcessor : ReceiveActor
 
     private Task OnUpdateAccountingSettings(UpdateAccountingSettings command)
     {
-        var settingsAggregate = Context.ActorOf(AccountingSettingsAggregate.Props(command.OrganisationId));
+        var settingsAggregate = ResolveAccountingSettingsAggregate(command.OrganisationId);
         settingsAggregate.Tell(command);
         return Task.CompletedTask;
     }
 
     private Task OnUpdateMember(UpdateMember command)
     {
-        var organisation = Context.ActorOf(OrganisationAggregate.Props(command.OrganisationId, _queryProcessor));
+        var organisation = ResolveOrganisationAggregate(command.OrganisationId);
         organisation.Tell(command);
         return Task.CompletedTask;
     }
 
     private Task OnRegisterMember(RegisterMember command)
     {
-        var organisation = Context.ActorOf(OrganisationAggregate.Props(command.OrganisationId, _queryProcessor));
+        var organisation = ResolveOrganisationAggregate(command.OrganisationId);
         organisation.Tell(command);
         return Task.CompletedTask;
     }
 
     private Task OnCreateOrganisation(CreateOrganisation createCommand)
     {
-        var organisation = Context.ActorOf(OrganisationAggregate.Props(OrganisationId.With(Guid.NewGuid()), _queryProcessor));
+        var newId = OrganisationId.With(Guid.NewGuid());
+        var organisation = Context.ActorOf(OrganisationAggregate.Props(newId, _queryProcessor), BuildOrganisationActorName(newId));
         organisation.Tell(createCommand);
         return Task.CompletedTask;
+    }
+
+    // Integration: routes all organisation commands for one organisation through a single aggregate actor instance.
+    private IActorRef ResolveOrganisationAggregate(OrganisationId organisationId)
+    {
+        var actorName = BuildOrganisationActorName(organisationId);
+        var existing = Context.Child(actorName);
+        if (!Equals(existing, ActorRefs.Nobody))
+            return existing;
+
+        return Context.ActorOf(OrganisationAggregate.Props(organisationId, _queryProcessor), actorName);
+    }
+
+    // Operation: converts one organisation id into a valid deterministic Akka actor name for organisation aggregates.
+    private static string BuildOrganisationActorName(OrganisationId organisationId)
+    {
+        var raw = organisationId.Value;
+        var sanitized = new string(raw.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+        return string.IsNullOrWhiteSpace(sanitized) ? "organisation_default" : $"organisation_{sanitized}";
+    }
+
+    // Integration: routes all accounting-settings commands for one organisation through a single aggregate actor instance.
+    private IActorRef ResolveAccountingSettingsAggregate(OrganisationId organisationId)
+    {
+        var actorName = BuildAccountingSettingsActorName(organisationId);
+        var existing = Context.Child(actorName);
+        if (!Equals(existing, ActorRefs.Nobody))
+            return existing;
+
+        return Context.ActorOf(AccountingSettingsAggregate.Props(organisationId), actorName);
+    }
+
+    // Operation: converts one organisation id into a valid deterministic Akka actor name for accounting-settings aggregates.
+    private static string BuildAccountingSettingsActorName(OrganisationId organisationId)
+    {
+        var raw = organisationId.Value;
+        var sanitized = new string(raw.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+        return string.IsNullOrWhiteSpace(sanitized) ? "accounting_settings_default" : $"accounting_settings_{sanitized}";
     }
 }

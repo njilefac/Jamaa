@@ -5,7 +5,7 @@ using Jamaa.Application.Organisation.Events;
 
 namespace Jamaa.Application.Shared;
 
-public sealed class LibotaEventTagger : IWriteEventAdapter
+public sealed class JamaaEventTagger : IWriteEventAdapter
 {
     public const string OrganisationEvent = "OrganisationEvent";
     public const string OrganisationCreated = "OrganisationCreated";
@@ -39,6 +39,8 @@ public sealed class LibotaEventTagger : IWriteEventAdapter
             AccountCreated accountCreated => new Tagged(accountCreated, new[] { OrganisationEvent, FinanceChanged }),
             AccountUpdated accountUpdated => new Tagged(accountUpdated, new[] { OrganisationEvent, FinanceChanged }),
             AccountDeleted accountDeleted => new Tagged(accountDeleted, new[] { OrganisationEvent, FinanceChanged }),
+            AccountDeactivated accountDeactivated => new Tagged(accountDeactivated, new[] { OrganisationEvent, FinanceChanged }),
+            AccountReactivated accountReactivated => new Tagged(accountReactivated, new[] { OrganisationEvent, FinanceChanged }),
             _ => evt
         };
     }
