@@ -175,9 +175,7 @@ public class AccountAggregate : ReceivePersistentActor
             return;
         }
 
-        var cascadeAccountIds = GetAccountAndDescendantIds(command.AccountId.Value);
-        var deactivationEvents = cascadeAccountIds
-            .Where(accountId => _state.Accounts.TryGetValue(accountId, out var target) && target.IsActive)
+        var deactivationEvents = BuildCascadeAccountIds(command.AccountId.Value, isActiveTarget: false)
             .Select(accountId => new AccountDeactivated(command.OrganisationId, AccountId.With(accountId)))
             .ToList();
 
@@ -202,9 +200,7 @@ public class AccountAggregate : ReceivePersistentActor
             return;
         }
 
-        var cascadeAccountIds = GetAccountAndDescendantIds(command.AccountId.Value);
-        var reactivationEvents = cascadeAccountIds
-            .Where(accountId => _state.Accounts.TryGetValue(accountId, out var target) && !target.IsActive)
+        var reactivationEvents = BuildCascadeAccountIds(command.AccountId.Value, isActiveTarget: true)
             .Select(accountId => new AccountReactivated(command.OrganisationId, AccountId.With(accountId)))
             .ToList();
 
@@ -212,37 +208,18 @@ public class AccountAggregate : ReceivePersistentActor
         DeferAsync(true, _ => TrySaveSnapshot());
     }
 
-    // Operation: returns one account id plus all descendant ids using deterministic breadth-first traversal.
-    private IReadOnlyList<string> GetAccountAndDescendantIds(string rootAccountId)
+    // Operation: returns descendant account ids whose current active state differs from the requested target state.
+    private IReadOnlyList<string> BuildCascadeAccountIds(string rootAccountId, bool isActiveTarget)
     {
-        var orderedIds = new List<string>();
-        var visited = new HashSet<string>(StringComparer.Ordinal);
-        var queue = new Queue<string>();
+        return AccountStateCascadePlanner.BuildCascadeAccountIds(GetAccountSnapshots(), rootAccountId, isActiveTarget);
+    }
 
-        queue.Enqueue(rootAccountId);
-        visited.Add(rootAccountId);
-
-        while (queue.Count > 0)
-        {
-            var currentId = queue.Dequeue();
-            orderedIds.Add(currentId);
-
-            var childIds = _state.Accounts.Values
-                .Where(account => account.ParentId == currentId)
-                .OrderBy(account => account.Code, StringComparer.Ordinal)
-                .ThenBy(account => account.Id, StringComparer.Ordinal)
-                .Select(account => account.Id);
-
-            foreach (var childId in childIds)
-            {
-                if (visited.Add(childId))
-                {
-                    queue.Enqueue(childId);
-                }
-            }
-        }
-
-        return orderedIds;
+    // Operation: projects in-memory actor state into immutable snapshots for cascade planning.
+    private IReadOnlyList<AccountStateSnapshot> GetAccountSnapshots()
+    {
+        return _state.Accounts.Values
+            .Select(account => new AccountStateSnapshot(account.Id, account.Code, account.ParentId, account.IsActive))
+            .ToList();
     }
 
     private void Apply(AccountCreated @event)

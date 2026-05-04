@@ -31,7 +31,6 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 {
     private readonly IFinanceManagementFacade _financeFacade;
     private readonly IUserSessionService _userSessionService;
-    private readonly IQueryProcessor _queryProcessor;
     private readonly INotificationService _notificationService;
     private readonly List<AccountData> _allAccountData = [];
 
@@ -108,18 +107,30 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         IQueryProcessor queryProcessor,
         INotificationService notificationService)
     {
-        var syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
         _financeFacade = financeFacade;
         _userSessionService = userSessionService;
-        _queryProcessor = queryProcessor;
+        _ = queryProcessor;
         _notificationService = notificationService;
 
         InitializeSource();
         LoadAccounts();
-        SetupReactiveUpdates(syncContext);
+        if (SynchronizationContext.Current is { } syncContext)
+        {
+            SetupReactiveUpdates(syncContext);
+        }
+        else
+        {
+            SetupReactiveUpdates(null);
+        }
 
         // Re-evaluate AddAccountCommand whenever validation errors change
         ErrorsChanged += (_, _) => AddAccountCommand.NotifyCanExecuteChanged();
+    }
+
+    // Operation: marshals observable notifications onto the UI synchronization context only when one exists.
+    private static IObservable<T> ObserveOnIfAvailable<T>(IObservable<T> source, SynchronizationContext? syncContext)
+    {
+        return syncContext is null ? source : source.ObserveOn(syncContext);
     }
 
     private void InitializeSource()
@@ -147,7 +158,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
         Source.Selection = selection;
 
-        selection.SelectionChanged += (s, e) =>
+        selection.SelectionChanged += (_, _) =>
         {
             SelectedAccount = selection.SelectedItem;
         };
@@ -191,15 +202,16 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         }, supportsRecycling: false);
     }
 
-    private void SetupReactiveUpdates(SynchronizationContext syncContext)
+    private void SetupReactiveUpdates(SynchronizationContext? syncContext)
     {
-        _financeFacade.AccountCreated
-            .Merge(_financeFacade.AccountUpdated)
-            .Merge(_financeFacade.AccountDeleted)
-            .Merge(_financeFacade.AccountDeactivated)
-            .Merge(_financeFacade.AccountReactivated)
-            .Throttle(TimeSpan.FromMilliseconds(100))
-            .ObserveOn(syncContext)
+        ObserveOnIfAvailable(
+                _financeFacade.AccountCreated
+                    .Merge(_financeFacade.AccountUpdated)
+                    .Merge(_financeFacade.AccountDeleted)
+                    .Merge(_financeFacade.AccountDeactivated)
+                    .Merge(_financeFacade.AccountReactivated)
+                    .Throttle(TimeSpan.FromMilliseconds(100)),
+                syncContext)
             .Subscribe(_ => LoadAccounts());
     }
 
@@ -224,7 +236,9 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
     private List<AccountItemViewModel> BuildAccountTree(IEnumerable<AccountData> accounts)
     {
-        var viewModels = accounts.Select(a =>
+        var accountList = accounts.ToList();
+
+        var viewModels = accountList.Select(a =>
         {
             var vm = new AccountItemViewModel
             {
@@ -242,7 +256,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         var lookup = viewModels.ToDictionary(a => a.Id);
         var roots = new List<AccountItemViewModel>();
 
-        foreach (var accountData in accounts)
+        foreach (var accountData in accountList)
         {
             var vm = lookup[accountData.Id];
             if (accountData.ParentId != null && lookup.TryGetValue(accountData.ParentId, out var parentVm))
@@ -311,7 +325,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         return ValidationResult.Success;
     }
 
-    partial void OnSelectedAccountTypeChanged(AccountType? value)
+    partial void OnSelectedAccountTypeChanged(AccountType? _)
     {
         RefreshFilteredParentAccounts();
         SuggestAccountCode();
@@ -343,7 +357,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         }
     }
 
-    partial void OnAccountNameChanged(string value)
+    partial void OnAccountNameChanged(string _)
     {
         if (SelectedAccountType == AccountType.Expense)
         {
@@ -456,14 +470,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     // Operation: selects the given account for editing in the side form.
     private void SelectAccountForEdit(AccountItemViewModel item)
     {
-        if (Source?.Selection is ITreeDataGridRowSelectionModel<AccountItemViewModel> selection)
-        {
-            SelectedAccount = item;
-        }
-        else
-        {
-            SelectedAccount = item;
-        }
+        SelectedAccount = item;
     }
 
     // Integration: toggles one account between active and inactive states.

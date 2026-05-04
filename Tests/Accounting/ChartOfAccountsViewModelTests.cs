@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.ComponentModel.DataAnnotations;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -77,7 +76,7 @@ public class ChartOfAccountsViewModelTests
         _financeFacade.AccountUpdated.Returns(updatedSubject);
 
         _financeFacade.UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", "Updated description", AccountType.Asset, null)
-            .Returns(ci =>
+            .Returns(_ =>
             {
                 updatedSubject.OnNext(new AccountData { Id = "acc-1", OrganisationId = "org-1", Code = "1000", Name = "Cash Updated", Description = "Updated description", Type = AccountType.Asset });
                 return Task.CompletedTask;
@@ -117,7 +116,7 @@ public class ChartOfAccountsViewModelTests
         _financeFacade.AccountDeleted.Returns(Observable.Empty<AccountData>());
 
         _financeFacade.CreateAccount("org-1", "1100", "Bank", "Primary bank account", AccountType.Asset, null)
-            .Returns(ci =>
+            .Returns(_ =>
             {
                 createdSubject.OnNext(new AccountData { Id = "new-1", OrganisationId = "org-1", Code = "1100", Name = "Bank", Description = "Primary bank account", Type = AccountType.Asset });
                 return Task.CompletedTask;
@@ -139,7 +138,7 @@ public class ChartOfAccountsViewModelTests
             Arg.Any<string>(),
             Arg.Is<string>(s => s.Contains("Created") || s.Contains("Bank")),
             NotificationType.Success);
-        viewModel.StatusMessage.ShouldContain("confirmed from event stream", Case.Insensitive);
+        viewModel.StatusMessage.ShouldContain("confirmed from event stream");
     }
 
     [Fact]
@@ -179,7 +178,7 @@ public class ChartOfAccountsViewModelTests
             });
 
         var viewModel = CreateViewModel();
-        await Task.Delay(150);
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 1, "the parent account to load");
 
         viewModel.SelectedAccountType = AccountType.Asset;
         viewModel.AccountCode = "1010";
@@ -188,7 +187,10 @@ public class ChartOfAccountsViewModelTests
         viewModel.SelectedParentAccount = viewModel.FilteredParentAccounts.Single(account => account.Id == "parent-1");
 
         await viewModel.AddAccountCommand.ExecuteAsync(null);
-        await Task.Delay(250);
+        await WaitUntilAsync(() =>
+            viewModel.Accounts.Count == 1 &&
+            viewModel.Accounts[0].SubAccounts.Count == 1,
+            "the created child account to appear under the parent");
 
         viewModel.Accounts.Count.ShouldBe(1);
         viewModel.Accounts[0].Id.ShouldBe("parent-1");
@@ -227,18 +229,15 @@ public class ChartOfAccountsViewModelTests
         _financeFacade.GetAccounts("org-1").Returns(Task.FromResult<IList<AccountData>>(new List<AccountData> { initialAccount }));
 
         _financeFacade.DeleteAccount("org-1", "acc-1")
-            .Returns(ci =>
+            .Returns(_ =>
             {
                 deletedSubject.OnNext(initialAccount);
                 return Task.CompletedTask;
             });
 
         var viewModel = CreateViewModel();
-        
-        // Force initial load
-        var loadMethod = typeof(ChartOfAccountsViewModel).GetMethod("LoadAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        loadMethod!.Invoke(viewModel, null);
-        await Task.Delay(100);
+        await InvokePrivateLoadAccountsAsync(viewModel);
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 1, "the initial account to load");
 
         viewModel.Accounts.Count.ShouldBe(1);
         viewModel.SelectedAccount = viewModel.Accounts[0];
@@ -248,7 +247,7 @@ public class ChartOfAccountsViewModelTests
 
         // Act
         await viewModel.DeleteAccountCommand.ExecuteAsync(null);
-        await Task.Delay(200); // Wait for Throttle + async void LoadAccounts
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 0, "the deleted account to be removed from the tree");
 
         // Assert
         await _financeFacade.Received(1).DeleteAccount("org-1", "acc-1");
@@ -290,7 +289,7 @@ public class ChartOfAccountsViewModelTests
             .Returns(_ => Task.FromResult<IList<AccountData>>(readModelAccounts.ToList()));
 
         _financeFacade.DeleteAccount("org-1", "child-1")
-            .Returns(ci =>
+            .Returns(_ =>
             {
                 readModelAccounts.RemoveAll(account => account.Id == child.Id);
                 deletedSubject.OnNext(child);
@@ -298,16 +297,21 @@ public class ChartOfAccountsViewModelTests
             });
 
         var viewModel = CreateViewModel();
-        var loadMethod = typeof(ChartOfAccountsViewModel).GetMethod("LoadAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        loadMethod!.Invoke(viewModel, null);
-        await Task.Delay(120);
+        await InvokePrivateLoadAccountsAsync(viewModel);
+        await WaitUntilAsync(() =>
+            viewModel.Accounts.Count == 1 &&
+            viewModel.Accounts[0].SubAccounts.Count == 1,
+            "the parent and child accounts to load");
 
         var selectedParent = viewModel.Accounts.Single(account => account.Id == "parent-1");
         var selectedChild = selectedParent.SubAccounts.Single(account => account.Id == "child-1");
         viewModel.SelectedAccount = selectedChild;
 
         await viewModel.DeleteAccountCommand.ExecuteAsync(null);
-        await Task.Delay(250);
+        await WaitUntilAsync(() =>
+            viewModel.Accounts.Count == 1 &&
+            viewModel.Accounts[0].SubAccounts.Count == 0,
+            "the deleted child account to disappear from the parent");
 
         await _financeFacade.Received(1).DeleteAccount("org-1", "child-1");
         viewModel.Accounts.Count.ShouldBe(1);
@@ -361,13 +365,12 @@ public class ChartOfAccountsViewModelTests
             });
 
         var viewModel = CreateViewModel();
-        var loadMethod = typeof(ChartOfAccountsViewModel).GetMethod("LoadAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        loadMethod!.Invoke(viewModel, null);
-        await Task.Delay(120);
+        await InvokePrivateLoadAccountsAsync(viewModel);
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 1, "the initial account to load before deletion");
 
         viewModel.SelectedAccount = viewModel.Accounts.Single(account => account.Id == "acc-1");
         await viewModel.DeleteAccountCommand.ExecuteAsync(null);
-        await Task.Delay(180);
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 0, "the deleted account to disappear before recreating");
 
         viewModel.SelectedAccountType = AccountType.Asset;
         viewModel.AccountCode = "1001";
@@ -381,7 +384,7 @@ public class ChartOfAccountsViewModelTests
             Arg.Any<string>(),
             Arg.Is<string>(message => message.Contains("Created", StringComparison.OrdinalIgnoreCase) && message.Contains("Bank", StringComparison.OrdinalIgnoreCase)),
             NotificationType.Success);
-        viewModel.StatusMessage.ShouldContain("confirmed from read model", Case.Insensitive);
+        viewModel.StatusMessage.ShouldContain("confirmed from read model");
     }
 
     [Fact]
@@ -511,13 +514,17 @@ public class ChartOfAccountsViewModelTests
         viewModel.AccountCode = "2000"; // Invalid for Asset
 
         viewModel.HasErrors.ShouldBeTrue();
-        var errors = viewModel.GetErrors(nameof(viewModel.AccountCode)).Cast<ValidationResult>().ToList();
-        errors.ShouldNotBeEmpty();
-        errors[0].ErrorMessage.ShouldContain("Code for Asset must be between 1000 and 1999");
+        var errorMessages = viewModel.GetErrors(nameof(viewModel.AccountCode))
+            .Select(error => error.ToString())
+            .Where(message => !string.IsNullOrWhiteSpace(message))
+            .ToList();
+
+        errorMessages.ShouldNotBeEmpty();
+        errorMessages[0].ShouldContain("Code for Asset must be between 1000 and 1999");
     }
 
     [Fact]
-    public void SuggestAccountCode_ShouldUseNextAvailableCode()
+    public async Task SuggestAccountCode_ShouldUseNextAvailableCode()
     {
         var accounts = new List<AccountData>
         {
@@ -527,11 +534,38 @@ public class ChartOfAccountsViewModelTests
         _financeFacade.GetAccounts(Arg.Any<string>()).Returns(Task.FromResult<IList<AccountData>>(accounts));
         
         var viewModel = CreateViewModel();
-        var loadMethod = typeof(ChartOfAccountsViewModel).GetMethod("LoadAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        loadMethod!.Invoke(viewModel, null);
+        await InvokePrivateLoadAccountsAsync(viewModel);
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 2, "existing accounts to load before suggesting a code");
 
         viewModel.SelectedAccountType = AccountType.Asset;
         
         viewModel.AccountCode.ShouldBe("1006");
+    }
+
+    private static async Task InvokePrivateLoadAccountsAsync(ChartOfAccountsViewModel viewModel)
+    {
+        var loadMethod = typeof(ChartOfAccountsViewModel).GetMethod(
+            "LoadAccounts",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        loadMethod.ShouldNotBeNull();
+        loadMethod.Invoke(viewModel, null);
+        await Task.Yield();
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition, string expectation, int timeoutMilliseconds = 1500)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMilliseconds);
+        while (DateTime.UtcNow < deadline)
+        {
+            if (condition())
+            {
+                return;
+            }
+
+            await Task.Delay(25);
+        }
+
+        condition().ShouldBeTrue($"Timed out waiting for {expectation}.");
     }
 }
