@@ -160,7 +160,13 @@
                                     Foreground="{DynamicResource ValidationErrorBrush}"
                                     HorizontalAlignment="Stretch"
                                     IsVisible="{Binding SelectedAccount, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                    ToolTip.Tip="Permanently delete this account" />
+                                    ToolTip.Tip="{Binding DeleteAccountTooltip}" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource AppTextSecondary}"
+                                    IsVisible="{Binding HasStatusMessage}"
+                                    Text="{Binding StatusMessage}"
+                                    TextWrapping="Wrap" />
                             </StackPanel>
 
                         </StackPanel>

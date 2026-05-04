@@ -1,18 +1,25 @@
 using Akka.Actor;
 using Akka.Persistence;
+using Domain.Finances.Queries;
 using Domain.Finances.Values;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Commands;
 using Jamaa.Application.Finances.Events;
+using Jamaa.Application.Shared;
 
 namespace Jamaa.Application.Finances.Aggregates;
 
 public class AccountAggregate : ReceivePersistentActor
 {
     private readonly AccountStateStore _state = new();
+    private readonly OrganisationId _organisationId;
+    private readonly IQueryProcessor _queryProcessor;
+    private bool _hasHydratedFromPersistence;
 
-    public AccountAggregate(OrganisationId organisationId)
+    public AccountAggregate(OrganisationId organisationId, IQueryProcessor queryProcessor)
     {
+        _organisationId = organisationId;
+        _queryProcessor = queryProcessor;
         PersistenceId = $"chart-of-accounts-{organisationId.Value}";
 
         RegisterCommandHandlers();
@@ -21,9 +28,9 @@ public class AccountAggregate : ReceivePersistentActor
 
     public override string PersistenceId { get; }
 
-    public static Props Props(OrganisationId organisationId)
+    public static Props Props(OrganisationId organisationId, IQueryProcessor queryProcessor)
     {
-        return new Props(typeof(AccountAggregate), [organisationId]);
+        return new Props(typeof(AccountAggregate), [organisationId, queryProcessor]);
     }
 
     private void RegisterCommandHandlers()
@@ -51,6 +58,8 @@ public class AccountAggregate : ReceivePersistentActor
     // Integration: validates and persists one new account in the organisation chart.
     private void Handle(CreateAccount command)
     {
+        EnsureHydratedFromPersistence();
+
         if (!TryNormalizeAccount(command.Code, command.Name, command.Description, out var code, out var name, out var description))
         {
             return;
@@ -88,6 +97,8 @@ public class AccountAggregate : ReceivePersistentActor
     // Integration: validates and persists updates to one existing account.
     private void Handle(UpdateAccount command)
     {
+        EnsureHydratedFromPersistence();
+
         if (!_state.Accounts.ContainsKey(command.AccountId.Value))
         {
             Sender.Tell("Account not found.", Self);
@@ -125,6 +136,8 @@ public class AccountAggregate : ReceivePersistentActor
     // Integration: deletes one account after confirming no child accounts depend on it.
     private void Handle(DeleteAccount command)
     {
+        EnsureHydratedFromPersistence();
+
         if (!_state.Accounts.ContainsKey(command.AccountId.Value))
         {
             Sender.Tell("Account not found.", Self);
@@ -263,6 +276,46 @@ public class AccountAggregate : ReceivePersistentActor
         }
 
         return true;
+    }
+
+    // Operation: bootstraps in-memory state from persisted read-model rows when event-sourced recovery produced no accounts.
+    private void EnsureHydratedFromPersistence()
+    {
+        if (_hasHydratedFromPersistence)
+        {
+            return;
+        }
+
+        if (_state.Accounts.Count > 0)
+        {
+            _hasHydratedFromPersistence = true;
+            return;
+        }
+
+        var persistedAccounts = _queryProcessor
+            .Get(new GetAccountsByOrganisation(_organisationId))
+            .GetAwaiter()
+            .GetResult();
+
+        foreach (var persistedAccount in persistedAccounts)
+        {
+            if (_state.Accounts.ContainsKey(persistedAccount.Id))
+            {
+                continue;
+            }
+
+            _state.Accounts[persistedAccount.Id] = new AccountState
+            {
+                Id = persistedAccount.Id,
+                Code = persistedAccount.Code,
+                Name = persistedAccount.Name,
+                Description = persistedAccount.Description,
+                Type = persistedAccount.Type,
+                ParentId = persistedAccount.ParentId
+            };
+        }
+
+        _hasHydratedFromPersistence = true;
     }
 
     private void TrySaveSnapshot()

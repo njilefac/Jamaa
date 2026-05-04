@@ -4,7 +4,6 @@ using Jamaa.Application.Finances.Commands;
 using Domain.Organisation.Values;
 using Jamaa.Application.Organisation.Aggregates;
 using Jamaa.Application.Organisation.Commands;
-using System.Linq;
 
 namespace Jamaa.Application.Shared;
 
@@ -82,7 +81,7 @@ public class CommandProcessor : ReceiveActor
             return existing;
         }
 
-        return Context.ActorOf(AccountAggregate.Props(organisationId), actorName);
+        return Context.ActorOf(AccountAggregate.Props(organisationId, _queryProcessor), actorName);
     }
 
     // Operation: converts one organisation id into a valid deterministic Akka actor name.

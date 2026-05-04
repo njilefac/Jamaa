@@ -1,17 +1,25 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reactive.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Domain.Shared.Values;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Models.Members;
 using Jamaa.Data.Models.Organisation;
 using Jamaa.Data.Models.Users;
+using Jamaa.Data.Notifiers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Jamaa.Data.Configuration;
 
-public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
+public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifier? dataChangeNotifier = null) : DbContext
 {
     private readonly DatabaseOptions _dbOptions = options.Value;
+    private readonly IDataChangeNotifier _dataChangeNotifier = dataChangeNotifier ?? NoOpDataChangeNotifier.Instance;
     public DbSet<UserData> Users { get; set; }
     public DbSet<OrganisationData> Organisations { get; set; }
     public DbSet<AccountData> Accounts { get; set; }
@@ -147,5 +155,74 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options) : DbContext
             .Property(e => e.IsSuperUser).IsRequired();
         modelBuilder.Entity<UserData>()
             .Property(e => e.DashboardLayout).IsRequired(false);
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        var committedChanges = CaptureTrackedChanges();
+        var result = base.SaveChanges(acceptAllChangesOnSuccess);
+        if (result > 0)
+        {
+            PublishCommittedChanges(committedChanges);
+        }
+
+        return result;
+    }
+
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        var committedChanges = CaptureTrackedChanges();
+        var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        if (result > 0)
+        {
+            PublishCommittedChanges(committedChanges);
+        }
+
+        return result;
+    }
+
+    // Operation: snapshots tracked entity transitions that should become change notifications after commit.
+    private List<(EntityState State, object Entity)> CaptureTrackedChanges()
+    {
+        return ChangeTracker.Entries()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .Select(entry => (entry.State, entry.Entity))
+            .ToList();
+    }
+
+    // Operation: pushes post-commit changes to reactive notifier streams.
+    private void PublishCommittedChanges(List<(EntityState State, object Entity)> committedChanges)
+    {
+        if (committedChanges.Count == 0)
+        {
+            return;
+        }
+
+        _dataChangeNotifier.NotifyCommittedChanges(committedChanges);
+    }
+
+    private sealed class NoOpDataChangeNotifier : IDataChangeNotifier
+    {
+        public static NoOpDataChangeNotifier Instance { get; } = new();
+
+        public IObservable<object> Insertions => Observable.Empty<object>();
+        public IObservable<object> Updates => Observable.Empty<object>();
+        public IObservable<object> Deletions => Observable.Empty<object>();
+
+        public void NotifyCommittedChanges(IEnumerable<(EntityState State, object Entity)> changes)
+        {
+        }
+
+        public void OnCompleted()
+        {
+        }
+
+        public void OnError(Exception error)
+        {
+        }
+
+        public void OnNext(KeyValuePair<string, object?> value)
+        {
+        }
     }
 }

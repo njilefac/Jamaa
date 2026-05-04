@@ -139,6 +139,7 @@ public class ChartOfAccountsViewModelTests
             Arg.Any<string>(),
             Arg.Is<string>(s => s.Contains("Created") || s.Contains("Bank")),
             NotificationType.Success);
+        viewModel.StatusMessage.ShouldContain("confirmed from event stream", Case.Insensitive);
     }
 
     [Fact]
@@ -257,6 +258,174 @@ public class ChartOfAccountsViewModelTests
             NotificationType.Success);
         viewModel.Accounts.ShouldBeEmpty();
         viewModel.SelectedAccount.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task DeleteAccountCommand_ShouldRemoveChildFromUi_WhenDeleteEventArrivesAfterProjectionCatchUp()
+    {
+        var deletedSubject = new ReplaySubject<AccountData>(1);
+        _financeFacade.AccountDeleted.Returns(deletedSubject);
+
+        var parent = new AccountData
+        {
+            Id = "parent-1",
+            Code = "1000",
+            Name = "Assets",
+            OrganisationId = "org-1",
+            Type = AccountType.Asset
+        };
+
+        var child = new AccountData
+        {
+            Id = "child-1",
+            Code = "1010",
+            Name = "Cash",
+            OrganisationId = "org-1",
+            Type = AccountType.Asset,
+            ParentId = "parent-1"
+        };
+
+        var readModelAccounts = new List<AccountData> { parent, child };
+        _financeFacade.GetAccounts("org-1")
+            .Returns(_ => Task.FromResult<IList<AccountData>>(readModelAccounts.ToList()));
+
+        _financeFacade.DeleteAccount("org-1", "child-1")
+            .Returns(ci =>
+            {
+                readModelAccounts.RemoveAll(account => account.Id == child.Id);
+                deletedSubject.OnNext(child);
+                return Task.CompletedTask;
+            });
+
+        var viewModel = CreateViewModel();
+        var loadMethod = typeof(ChartOfAccountsViewModel).GetMethod("LoadAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        loadMethod!.Invoke(viewModel, null);
+        await Task.Delay(120);
+
+        var selectedParent = viewModel.Accounts.Single(account => account.Id == "parent-1");
+        var selectedChild = selectedParent.SubAccounts.Single(account => account.Id == "child-1");
+        viewModel.SelectedAccount = selectedChild;
+
+        await viewModel.DeleteAccountCommand.ExecuteAsync(null);
+        await Task.Delay(250);
+
+        await _financeFacade.Received(1).DeleteAccount("org-1", "child-1");
+        viewModel.Accounts.Count.ShouldBe(1);
+        viewModel.Accounts[0].Id.ShouldBe("parent-1");
+        viewModel.Accounts[0].SubAccounts.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AddAccountCommand_ShouldSucceed_WhenCreateEventIsMissing_ButReadModelShowsAccount()
+    {
+        var deletedSubject = new ReplaySubject<AccountData>(1);
+        _financeFacade.AccountDeleted.Returns(deletedSubject);
+        _financeFacade.AccountCreated.Returns(Observable.Empty<AccountData>());
+
+        var initialAccount = new AccountData
+        {
+            Id = "acc-1",
+            Code = "1000",
+            Name = "Cash",
+            OrganisationId = "org-1",
+            Type = AccountType.Asset
+        };
+
+        var createdAccount = new AccountData
+        {
+            Id = "acc-2",
+            Code = "1001",
+            Name = "Bank",
+            Description = "Primary bank account",
+            OrganisationId = "org-1",
+            Type = AccountType.Asset
+        };
+
+        var readModelAccounts = new List<AccountData> { initialAccount };
+        _financeFacade.GetAccounts("org-1")
+            .Returns(_ => Task.FromResult<IList<AccountData>>(readModelAccounts.ToList()));
+
+        _financeFacade.DeleteAccount("org-1", "acc-1")
+            .Returns(_ =>
+            {
+                readModelAccounts.RemoveAll(account => account.Id == "acc-1");
+                deletedSubject.OnNext(initialAccount);
+                return Task.CompletedTask;
+            });
+
+        _financeFacade.CreateAccount("org-1", "1001", "Bank", "Primary bank account", AccountType.Asset, null)
+            .Returns(_ =>
+            {
+                readModelAccounts.Add(createdAccount);
+                return Task.CompletedTask;
+            });
+
+        var viewModel = CreateViewModel();
+        var loadMethod = typeof(ChartOfAccountsViewModel).GetMethod("LoadAccounts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        loadMethod!.Invoke(viewModel, null);
+        await Task.Delay(120);
+
+        viewModel.SelectedAccount = viewModel.Accounts.Single(account => account.Id == "acc-1");
+        await viewModel.DeleteAccountCommand.ExecuteAsync(null);
+        await Task.Delay(180);
+
+        viewModel.SelectedAccountType = AccountType.Asset;
+        viewModel.AccountCode = "1001";
+        viewModel.AccountName = "Bank";
+        viewModel.AccountDescription = "Primary bank account";
+
+        await viewModel.AddAccountCommand.ExecuteAsync(null);
+
+        await _financeFacade.Received(1).CreateAccount("org-1", "1001", "Bank", "Primary bank account", AccountType.Asset, null);
+        _notificationService.Received().Show(
+            Arg.Any<string>(),
+            Arg.Is<string>(message => message.Contains("Created", StringComparison.OrdinalIgnoreCase) && message.Contains("Bank", StringComparison.OrdinalIgnoreCase)),
+            NotificationType.Success);
+        viewModel.StatusMessage.ShouldContain("confirmed from read model", Case.Insensitive);
+    }
+
+    [Fact]
+    public void DeleteAccountCommand_ShouldBeDisabled_WhenSelectedAccountHasChildren()
+    {
+        var viewModel = CreateViewModel();
+        var parent = new AccountItemViewModel
+        {
+            Id = "parent-1",
+            Code = "1000",
+            Name = "Assets",
+            Type = AccountType.Asset
+        };
+        parent.SubAccounts.Add(new AccountItemViewModel
+        {
+            Id = "child-1",
+            Code = "1010",
+            Name = "Cash",
+            Type = AccountType.Asset,
+            Parent = parent
+        });
+
+        viewModel.SelectedAccount = parent;
+
+        viewModel.DeleteAccountCommand.CanExecute(null).ShouldBeFalse();
+        viewModel.DeleteAccountTooltip.ShouldBe("This account cannot be deleted because it has child accounts.");
+    }
+
+    [Fact]
+    public void DeleteAccountCommand_ShouldBeEnabled_ForLeafAccount()
+    {
+        var viewModel = CreateViewModel();
+        var leaf = new AccountItemViewModel
+        {
+            Id = "leaf-1",
+            Code = "1001",
+            Name = "Petty Cash",
+            Type = AccountType.Asset
+        };
+
+        viewModel.SelectedAccount = leaf;
+
+        viewModel.DeleteAccountCommand.CanExecute(null).ShouldBeTrue();
+        viewModel.DeleteAccountTooltip.ShouldBe("Permanently delete this account");
     }
 
     [Fact]

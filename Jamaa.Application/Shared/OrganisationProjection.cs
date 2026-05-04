@@ -84,12 +84,12 @@ public class OrganisationProjection : ReceivePersistentActor
         });
     }
 
-    private Task TryProcess(ILibotaEvent evt)
+    private async Task TryProcess(ILibotaEvent evt)
     {
         using var scope = _serviceProvider.CreateScope();
         using var dbContext = scope.ServiceProvider.GetRequiredService<JamaaDbContext>();
 
-        return evt switch
+        await (evt switch
         {
             OrganisationCreated organisationCreated => Handle(organisationCreated, dbContext),
             MemberRegistered memberRegistered => Handle(memberRegistered, dbContext),
@@ -108,7 +108,7 @@ public class OrganisationProjection : ReceivePersistentActor
             AccountingPeriodDeleted accountingPeriodDeleted => Handle(accountingPeriodDeleted, dbContext),
             AccountingSettingsUpdated accountingSettingsUpdated => Handle(accountingSettingsUpdated, dbContext),
             _ => Task.CompletedTask
-        };
+        });
     }
 
     // Operation: inserts a newly created chart-of-accounts row if it is not already projected.

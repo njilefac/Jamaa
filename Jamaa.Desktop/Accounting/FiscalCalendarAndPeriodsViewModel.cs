@@ -773,6 +773,12 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
             return;
         }
 
+        // Ignore late/stale updates that arrive after this fiscal year was confirmed deleted.
+        if (_deletedFiscalYearIds.Contains(fiscalYearId))
+        {
+            return;
+        }
+
         var existingFiscalYear = _fiscalYearsSource.Lookup(fiscalYearId);
         if (!existingFiscalYear.HasValue)
         {

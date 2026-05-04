@@ -42,6 +42,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DeleteAccountCommand))]
+    [NotifyPropertyChangedFor(nameof(DeleteAccountTooltip))]
     private AccountItemViewModel? _selectedAccount;
 
     [ObservableProperty]
@@ -79,9 +80,17 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     [NotifyCanExecuteChangedFor(nameof(DeleteAccountCommand))]
     private bool _isOperationInFlight;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
+    private string _statusMessage = string.Empty;
+
     public string ActionButtonText => SelectedAccount == null ? "Add Account" : "Save Changes";
     public string FormTitle => SelectedAccount == null ? "Add New Account" : "Edit Account";
     public bool IsEditMode => SelectedAccount != null;
+    public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
+    public string DeleteAccountTooltip => SelectedAccountHasChildren
+        ? "This account cannot be deleted because it has child accounts."
+        : "Permanently delete this account";
 
     public AccountType[] AccountTypes { get; } = Enum.GetValues<AccountType>();
 
@@ -393,7 +402,11 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
     private bool CanDeleteAccount() =>
         !IsOperationInFlight &&
-        SelectedAccount != null;
+        SelectedAccount != null &&
+        !SelectedAccountHasChildren;
+
+    // Operation: determines whether the selected account has child accounts and cannot be deleted.
+    private bool SelectedAccountHasChildren => SelectedAccount?.SubAccounts.Count > 0;
 
     private void SetOperationInFlight(bool isInFlight)
     {
@@ -432,20 +445,91 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         }
         else
         {
-            var code = AccountCode;
+            var code = AccountCode.Trim();
+            var name = AccountName.Trim();
             var subject = AccountName;
+            var parentAccountId = SelectedParentAccount?.Id;
+            var accountType = SelectedAccountType ?? AccountType.Asset;
+            var confirmationSource = AccountCreationConfirmationSource.None;
             var isConfirmed = await _notificationService.TrackOperationAsync(
-                sendCommand: () => _financeFacade.CreateAccount(orgId, code, AccountName, AccountDescription, SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
-                confirmationObservable: _financeFacade.AccountCreated,
-                matcherPredicate: a => a.Code == code && a.OrganisationId == orgId,
+                sendCommand: () => _financeFacade.CreateAccount(orgId, code, AccountName, AccountDescription, accountType, parentAccountId),
+                confirmationObservable: BuildAccountCreationConfirmationObservable(orgId, code, name, accountType, parentAccountId)
+                    .Do(source => confirmationSource = source)
+                    .Select(_ => true),
                 timeout: TimeSpan.FromSeconds(10),
                 operationName: "Account",
                 successAction: "Created",
                 subject: subject,
                 inFlightChanged: SetOperationInFlight);
 
+            UpdateCreateConfirmationStatus(confirmationSource, subject);
+
             if (isConfirmed)
                 ResetForm();
+        }
+    }
+
+    // Operation: confirms account creation from either change notifications or eventual read-model visibility.
+    private IObservable<AccountCreationConfirmationSource> BuildAccountCreationConfirmationObservable(
+        string organisationId,
+        string code,
+        string name,
+        AccountType type,
+        string? parentAccountId)
+    {
+        var createdEvents = _financeFacade.AccountCreated
+            .Where(account =>
+                account.OrganisationId == organisationId &&
+                string.Equals(account.Code, code, StringComparison.Ordinal) &&
+                string.Equals(account.Name, name, StringComparison.Ordinal) &&
+                account.Type == type &&
+                string.Equals(account.ParentId, parentAccountId, StringComparison.Ordinal))
+            .Select(_ => AccountCreationConfirmationSource.EventStream);
+
+        var readModelPresenceChecks = Observable.Interval(TimeSpan.FromMilliseconds(250))
+            .StartWith(0L)
+            .SelectMany(_ => Observable.FromAsync(() => HasCreatedAccountAppearedAsync(organisationId, code, name, type, parentAccountId)))
+            .Where(isPresent => isPresent)
+            .Select(_ => AccountCreationConfirmationSource.ReadModel);
+
+        return createdEvents
+            .Merge(readModelPresenceChecks)
+            .Take(1);
+    }
+
+    // Operation: publishes a small troubleshooting status message after account creation confirmation.
+    private void UpdateCreateConfirmationStatus(AccountCreationConfirmationSource source, string subject)
+    {
+        var accountLabel = string.IsNullOrWhiteSpace(subject) ? "account" : subject;
+        StatusMessage = source switch
+        {
+            AccountCreationConfirmationSource.EventStream => $"Created {accountLabel}: confirmed from event stream.",
+            AccountCreationConfirmationSource.ReadModel => $"Created {accountLabel}: confirmed from read model.",
+            _ => string.Empty
+        };
+    }
+
+    // Operation: checks if the new account is already queryable from the materialized read model.
+    private async Task<bool> HasCreatedAccountAppearedAsync(
+        string organisationId,
+        string code,
+        string name,
+        AccountType type,
+        string? parentAccountId)
+    {
+        try
+        {
+            var accounts = await _financeFacade.GetAccounts(organisationId);
+            return accounts.Any(account =>
+                account.OrganisationId == organisationId &&
+                string.Equals(account.Code, code, StringComparison.Ordinal) &&
+                string.Equals(account.Name, name, StringComparison.Ordinal) &&
+                account.Type == type &&
+                string.Equals(account.ParentId, parentAccountId, StringComparison.Ordinal));
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -453,7 +537,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     private async Task DeleteAccount()
     {
         // INTEGRATION: Sends delete command, waits for event confirmation
-        if (SelectedAccount == null) return;
+        if (SelectedAccount == null || SelectedAccountHasChildren) return;
 
         var session = _userSessionService.CurrentUserSession;
         if (session?.Organisation?.Id == null) return;
@@ -465,7 +549,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         var isConfirmed = await _notificationService.TrackOperationAsync(
             sendCommand: () => _financeFacade.DeleteAccount(orgId, accountId),
             confirmationObservable: _financeFacade.AccountDeleted,
-            matcherPredicate: a => a.Id == accountId,
+            matcherPredicate: account => account.Id == accountId,
             timeout: TimeSpan.FromSeconds(10),
             operationName: "Account",
             successAction: "Deleted",
@@ -473,7 +557,10 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             inFlightChanged: SetOperationInFlight);
 
         if (isConfirmed)
+        {
+            LoadAccounts();
             ResetForm();
+        }
     }
 
     [RelayCommand]
@@ -495,5 +582,12 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         SelectedAccountType = null;
         SelectedParentAccount = null;
         ResetValidationState();
+    }
+
+    private enum AccountCreationConfirmationSource
+    {
+        None,
+        EventStream,
+        ReadModel
     }
 }

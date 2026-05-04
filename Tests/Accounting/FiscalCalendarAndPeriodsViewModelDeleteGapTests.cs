@@ -185,6 +185,38 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
         _viewModel.FiscalYears.Single().StartDate.Year.ShouldBe(2026);
     }
 
+    [Fact]
+    public async Task DeleteFiscalYear_DoesNotReappear_WhenStaleFiscalYearUpdatedSnapshotArrives()
+    {
+        await SeedTwoFiscalYears();
+
+        _viewModel.SelectedFiscalYear = _viewModel.FiscalYears.First(fiscalYear => fiscalYear.StartDate.Year == 2027);
+        var deletedFiscalYearId = _viewModel.SelectedFiscalYear!.Id.ToString();
+
+        _financeFacade.DeleteFiscalYear(OrgId, deletedFiscalYearId).Returns(Task.CompletedTask);
+
+        var survivingFiscalYear = CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31));
+        _financeFacade.GetFiscalYears(OrgId).Returns(Task.FromResult<IList<FiscalYearData>>([survivingFiscalYear]));
+
+        await InvokePrivateDeleteFiscalYear();
+
+        var staleDeletedUpdate = new FiscalYearData
+        {
+            Id = deletedFiscalYearId,
+            OrganisationId = OrgId,
+            StartDate = new DateTime(2027, 1, 1),
+            EndDate = new DateTime(2027, 12, 31),
+            IsLocked = false,
+            Periods = []
+        };
+
+        _fiscalYearUpdated.OnNext(staleDeletedUpdate);
+        await Task.Delay(120);
+
+        _viewModel.FiscalYears.Count.ShouldBe(1);
+        _viewModel.FiscalYears.Single().StartDate.Year.ShouldBe(2026);
+    }
+
     private async Task SeedContiguousFiscalYears()
     {
         _currentFiscalYears.OnNext(CreateFiscalYearData("2022", new DateTime(2022, 1, 1), new DateTime(2022, 12, 31)));

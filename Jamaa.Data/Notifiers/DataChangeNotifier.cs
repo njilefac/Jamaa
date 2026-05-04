@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Jamaa.Data.Notifiers
 {
@@ -28,37 +27,25 @@ namespace Jamaa.Data.Notifiers
 
         public void OnNext(KeyValuePair<string, object?> value)
         {
-            if (value.Key != CoreEventId.StateChanged.Name) return;
-            try
+            // Notifications are published through NotifyCommittedChanges after successful SaveChanges.
+        }
+
+        public void NotifyCommittedChanges(IEnumerable<(EntityState State, object Entity)> changes)
+        {
+            foreach (var (state, entity) in changes)
             {
-                var eventData = value.Value as StateChangedEventData;
-                var changedEntity = eventData?.EntityEntry.Entity;
-                switch (eventData?.NewState)
+                switch (state)
                 {
-                    case EntityState.Unchanged:
-                    {
-                        if (eventData.OldState == EntityState.Added)
-                        {
-                            _insertions.OnNext(changedEntity ?? throw new InvalidOperationException());
-                        }
-                        else if (eventData.OldState == EntityState.Modified)
-                        {
-                            _updates.OnNext(changedEntity ?? throw new InvalidOperationException());
-                        }
+                    case EntityState.Added:
+                        _insertions.OnNext(entity);
                         break;
-                    }
+                    case EntityState.Modified:
+                        _updates.OnNext(entity);
+                        break;
                     case EntityState.Deleted:
-                    {
-                        _deletions.OnNext(changedEntity ?? throw new InvalidOperationException());
-                        break;
-                    }
-                    case EntityState.Detached:
+                        _deletions.OnNext(entity);
                         break;
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex);
             }
         }
 
