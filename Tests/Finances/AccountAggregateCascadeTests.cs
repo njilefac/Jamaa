@@ -27,6 +27,68 @@ public class AccountAggregateCascadeTests
         affectedIds.ShouldBe(["root", "child-a", "grandchild-a1"]);
     }
 
+    [Fact]
+    public void BuildCascadeAccountIds_ShouldDeactivateParent_WhenAllDirectChildrenBecomeInactive()
+    {
+        var accounts = new List<AccountStateSnapshot>
+        {
+            new("parent", "1000", null, true),
+            new("child-a", "1100", "parent", true),
+            new("child-b", "1200", "parent", false)
+        };
+
+        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", isActiveTarget: false);
+
+        affectedIds.ShouldBe(["child-a", "parent"]);
+    }
+
+    [Fact]
+    public void BuildCascadeAccountIds_ShouldReactivateParent_WhenAllDirectChildrenBecomeActive()
+    {
+        var accounts = new List<AccountStateSnapshot>
+        {
+            new("parent", "1000", null, false),
+            new("child-a", "1100", "parent", false),
+            new("child-b", "1200", "parent", true)
+        };
+
+        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", isActiveTarget: true);
+
+        affectedIds.ShouldBe(["child-a", "parent"]);
+    }
+
+    [Fact]
+    public void BuildCascadeAccountIds_ShouldNotChangeParent_WhenDirectChildrenRemainMixed()
+    {
+        var accounts = new List<AccountStateSnapshot>
+        {
+            new("parent", "1000", null, true),
+            new("child-a", "1100", "parent", true),
+            new("child-b", "1200", "parent", true)
+        };
+
+        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", isActiveTarget: false);
+
+        affectedIds.ShouldBe(["child-a"]);
+    }
+
+    [Fact]
+    public void BuildCascadeAccountIds_ShouldBubbleStateToAncestors_WhenEachLevelBecomesUniform()
+    {
+        var accounts = new List<AccountStateSnapshot>
+        {
+            new("grandparent", "0900", null, true),
+            new("parent", "1000", "grandparent", true),
+            new("uncle", "2000", "grandparent", false),
+            new("child-a", "1100", "parent", true),
+            new("child-b", "1200", "parent", false)
+        };
+
+        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", isActiveTarget: false);
+
+        affectedIds.ShouldBe(["child-a", "parent", "grandparent"]);
+    }
+
     private static IReadOnlyList<AccountStateSnapshot> CreateAccountsForDeactivation()
     {
         return
@@ -51,6 +113,7 @@ public class AccountAggregateCascadeTests
         ];
     }
 }
+
 
 
 
