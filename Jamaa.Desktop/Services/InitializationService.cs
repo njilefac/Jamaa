@@ -82,9 +82,9 @@ public static partial class InitializationService
         {
             UpdateDatabase(serviceProvider, logger);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            LogException(logger);
+            logger.LogError(ex, "An error occurred during database update.");
         }
     }
 
@@ -203,6 +203,7 @@ public static partial class InitializationService
                     new RouteMap(Path: Routes.TaxGroupsAndAuthorities, ViewModel: typeof(TaxGroupsAndAuthoritiesViewModel)),
                     new RouteMap(Path: Routes.AutomationRules, ViewModel: typeof(AutomationRulesViewModel)),
                     new RouteMap(Path: Routes.UserRolesAndApprovals, ViewModel: typeof(UserRolesAndApprovalsViewModel)),
+                    new RouteMap(Path: Routes.AccountLedger, ViewModel: typeof(AccountLedgerViewModel)),
                 ]),
             ]),
         ]));

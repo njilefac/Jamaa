@@ -38,6 +38,8 @@ public class AccountAggregate : ReceivePersistentActor
         Command<CreateAccount>(Handle);
         Command<UpdateAccount>(Handle);
         Command<DeleteAccount>(Handle);
+        Command<DeactivateAccount>(Handle);
+        Command<ReactivateAccount>(Handle);
     }
 
     private void RegisterEventHandlers()
@@ -53,6 +55,8 @@ public class AccountAggregate : ReceivePersistentActor
         Recover<AccountCreated>(Apply);
         Recover<AccountUpdated>(Apply);
         Recover<AccountDeleted>(Apply);
+        Recover<AccountDeactivated>(Apply);
+        Recover<AccountReactivated>(Apply);
     }
 
     // Integration: validates and persists one new account in the organisation chart.
@@ -154,6 +158,48 @@ public class AccountAggregate : ReceivePersistentActor
         DeferAsync(true, _ => TrySaveSnapshot());
     }
 
+    // Integration: marks one active account as inactive.
+    private void Handle(DeactivateAccount command)
+    {
+        EnsureHydratedFromPersistence();
+
+        if (!_state.Accounts.TryGetValue(command.AccountId.Value, out var account))
+        {
+            Sender.Tell("Account not found.", Self);
+            return;
+        }
+
+        if (!account.IsActive)
+        {
+            Sender.Tell("Account is already inactive.", Self);
+            return;
+        }
+
+        Persist(new AccountDeactivated(command.OrganisationId, command.AccountId), Apply);
+        DeferAsync(true, _ => TrySaveSnapshot());
+    }
+
+    // Integration: reactivates one inactive account.
+    private void Handle(ReactivateAccount command)
+    {
+        EnsureHydratedFromPersistence();
+
+        if (!_state.Accounts.TryGetValue(command.AccountId.Value, out var account))
+        {
+            Sender.Tell("Account not found.", Self);
+            return;
+        }
+
+        if (account.IsActive)
+        {
+            Sender.Tell("Account is already active.", Self);
+            return;
+        }
+
+        Persist(new AccountReactivated(command.OrganisationId, command.AccountId), Apply);
+        DeferAsync(true, _ => TrySaveSnapshot());
+    }
+
     private void Apply(AccountCreated @event)
     {
         _state.Accounts[@event.AccountId.Value] = new AccountState
@@ -184,6 +230,22 @@ public class AccountAggregate : ReceivePersistentActor
     private void Apply(AccountDeleted @event)
     {
         _state.Accounts.Remove(@event.AccountId.Value);
+    }
+
+    private void Apply(AccountDeactivated @event)
+    {
+        if (_state.Accounts.TryGetValue(@event.AccountId.Value, out var account))
+        {
+            account.IsActive = false;
+        }
+    }
+
+    private void Apply(AccountReactivated @event)
+    {
+        if (_state.Accounts.TryGetValue(@event.AccountId.Value, out var account))
+        {
+            account.IsActive = true;
+        }
     }
 
     // Operation: validates and normalizes account fields.
@@ -311,7 +373,8 @@ public class AccountAggregate : ReceivePersistentActor
                 Name = persistedAccount.Name,
                 Description = persistedAccount.Description,
                 Type = persistedAccount.Type,
-                ParentId = persistedAccount.ParentId
+                ParentId = persistedAccount.ParentId,
+                IsActive = persistedAccount.IsActive
             };
         }
 
@@ -361,6 +424,7 @@ public class AccountAggregate : ReceivePersistentActor
         public string Description { get; set; } = string.Empty;
         public AccountType Type { get; set; }
         public string? ParentId { get; set; }
+        public bool IsActive { get; set; } = true;
 
         public AccountState Clone()
         {
@@ -371,7 +435,8 @@ public class AccountAggregate : ReceivePersistentActor
                 Name = Name,
                 Description = Description,
                 Type = Type,
-                ParentId = ParentId
+                ParentId = ParentId,
+                IsActive = IsActive
             };
         }
     }

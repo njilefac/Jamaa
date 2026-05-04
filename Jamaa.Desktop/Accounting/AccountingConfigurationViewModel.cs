@@ -120,6 +120,7 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
             Routes.TaxGroupsAndAuthorities => "Tax Groups & Authorities",
             Routes.AutomationRules => "Automation Rules",
             Routes.UserRolesAndApprovals => "User Roles & Approvals",
+            Routes.AccountLedger => "Account Ledger",
             _ => ResolveFromViewModel(route)
         };
     }

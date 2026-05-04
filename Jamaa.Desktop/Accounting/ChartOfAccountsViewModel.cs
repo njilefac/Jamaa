@@ -8,8 +8,12 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
+using Avalonia.Layout;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using System.ComponentModel.DataAnnotations;
 using Domain.Finances.Values;
 using Jamaa.Application.Finances;
@@ -17,6 +21,7 @@ using Jamaa.Application.Shared;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
+using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Services.Notifications;
 using Jamaa.Desktop.Shared;
 
@@ -129,6 +134,9 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                 new TextColumn<AccountItemViewModel, string>("Name", x => x.Name, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                 new TextColumn<AccountItemViewModel, string>("Description", x => x.Description, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                 new TextColumn<AccountItemViewModel, string>("Type", x => x.TypeDisplay, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                new TemplateColumn<AccountItemViewModel>("", BuildEditCellTemplate()),
+                new TemplateColumn<AccountItemViewModel>("", BuildToggleActiveCellTemplate()),
+                new TemplateColumn<AccountItemViewModel>("", BuildLedgerCellTemplate()),
             }
         };
 
@@ -145,11 +153,51 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         };
     }
 
+    // Operation: builds the cell template for the inline Edit action button.
+    private static IDataTemplate BuildEditCellTemplate()
+    {
+        return new FuncDataTemplate<AccountItemViewModel>((_, _) =>
+        {
+            var button = new Button { Content = "✏ Edit" };
+            button[!Button.CommandProperty] = new Binding(nameof(AccountItemViewModel.EditCommand));
+            button.Classes.Add("Small");
+            return button;
+        }, supportsRecycling: false);
+    }
+
+    // Operation: builds the cell template for the inline Deactivate/Reactivate toggle button.
+    private static IDataTemplate BuildToggleActiveCellTemplate()
+    {
+        return new FuncDataTemplate<AccountItemViewModel>((_, _) =>
+        {
+            var button = new Button();
+            button[!Button.CommandProperty] = new Binding(nameof(AccountItemViewModel.ToggleActiveCommand));
+            button[!ContentControl.ContentProperty] = new Binding(nameof(AccountItemViewModel.ToggleActiveLabel));
+            button[!ToolTip.TipProperty] = new Binding(nameof(AccountItemViewModel.ToggleActiveToolTip));
+            button.Classes.Add("Small");
+            return button;
+        }, supportsRecycling: false);
+    }
+
+    // Operation: builds the cell template for the View Ledger navigation link.
+    private static IDataTemplate BuildLedgerCellTemplate()
+    {
+        return new FuncDataTemplate<AccountItemViewModel>((_, _) =>
+        {
+            var button = new Button { Content = "📒 Ledger" };
+            button[!Button.CommandProperty] = new Binding(nameof(AccountItemViewModel.ViewLedgerCommand));
+            button.Classes.Add("Small");
+            return button;
+        }, supportsRecycling: false);
+    }
+
     private void SetupReactiveUpdates(SynchronizationContext syncContext)
     {
         _financeFacade.AccountCreated
             .Merge(_financeFacade.AccountUpdated)
             .Merge(_financeFacade.AccountDeleted)
+            .Merge(_financeFacade.AccountDeactivated)
+            .Merge(_financeFacade.AccountReactivated)
             .Throttle(TimeSpan.FromMilliseconds(100))
             .ObserveOn(syncContext)
             .Subscribe(_ => LoadAccounts());
@@ -176,13 +224,19 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
     private List<AccountItemViewModel> BuildAccountTree(IEnumerable<AccountData> accounts)
     {
-        var viewModels = accounts.Select(a => new AccountItemViewModel
+        var viewModels = accounts.Select(a =>
         {
-            Id = a.Id,
-            Code = a.Code,
-            Name = a.Name,
-            Description = a.Description,
-            Type = a.Type
+            var vm = new AccountItemViewModel
+            {
+                Id = a.Id,
+                Code = a.Code,
+                Name = a.Name,
+                Description = a.Description,
+                Type = a.Type,
+                IsActive = a.IsActive
+            };
+            AssignItemCommands(vm);
+            return vm;
         }).ToList();
 
         var lookup = viewModels.ToDictionary(a => a.Id);
@@ -389,6 +443,70 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             current = current.Parent;
         }
         return false;
+    }
+
+    // Operation: wires the row-level action commands to the parent ViewModel operations for one item.
+    private void AssignItemCommands(AccountItemViewModel item)
+    {
+        item.EditCommand = new RelayCommand(() => SelectAccountForEdit(item));
+        item.ToggleActiveCommand = new AsyncRelayCommand(() => ToggleAccountActiveAsync(item));
+        item.ViewLedgerCommand = new RelayCommand(() => NavigateToAccountLedger(item));
+    }
+
+    // Operation: selects the given account for editing in the side form.
+    private void SelectAccountForEdit(AccountItemViewModel item)
+    {
+        if (Source?.Selection is ITreeDataGridRowSelectionModel<AccountItemViewModel> selection)
+        {
+            SelectedAccount = item;
+        }
+        else
+        {
+            SelectedAccount = item;
+        }
+    }
+
+    // Integration: toggles one account between active and inactive states.
+    private async Task ToggleAccountActiveAsync(AccountItemViewModel item)
+    {
+        var session = _userSessionService.CurrentUserSession;
+        if (session?.Organisation?.Id == null) return;
+
+        var orgId = session.Organisation.Id;
+        var accountId = item.Id;
+        var subject = item.Name;
+
+        if (item.IsActive)
+        {
+            await _notificationService.TrackOperationAsync(
+                sendCommand: () => _financeFacade.DeactivateAccount(orgId, accountId),
+                confirmationObservable: _financeFacade.AccountDeactivated,
+                matcherPredicate: a => a.Id == accountId,
+                timeout: TimeSpan.FromSeconds(10),
+                operationName: "Account",
+                successAction: "Deactivated",
+                subject: subject,
+                inFlightChanged: SetOperationInFlight);
+        }
+        else
+        {
+            await _notificationService.TrackOperationAsync(
+                sendCommand: () => _financeFacade.ReactivateAccount(orgId, accountId),
+                confirmationObservable: _financeFacade.AccountReactivated,
+                matcherPredicate: a => a.Id == accountId,
+                timeout: TimeSpan.FromSeconds(10),
+                operationName: "Account",
+                successAction: "Reactivated",
+                subject: subject,
+                inFlightChanged: SetOperationInFlight);
+        }
+    }
+
+    // Operation: navigates to the ledger page for the given account.
+    private void NavigateToAccountLedger(AccountItemViewModel item)
+    {
+        WeakReferenceMessenger.Default.Send(new AccountLedgerNavigationRequested(item.Id, item.Code, item.Name));
+        WeakReferenceMessenger.Default.Send(new ModuleSelected(Routes.AccountLedger));
     }
 
     private bool CanAddAccount() =>

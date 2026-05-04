@@ -1,0 +1,61 @@
+<UserControl
+    d:DesignHeight="600"
+    d:DesignWidth="900"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Accounting.AccountLedgerPage"
+    x:DataType="vm:AccountLedgerViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:Jamaa.Desktop.Accounting"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="20" RowDefinitions="Auto,Auto,*">
+
+        <StackPanel
+            Grid.Row="0"
+            Margin="0,0,0,4"
+            Spacing="2">
+            <TextBlock Classes="h1" Text="{Binding AccountCode, StringFormat='Account Ledger — {0}'}" />
+            <TextBlock
+                Classes="h2"
+                Foreground="{DynamicResource AppTextSecondary}"
+                Text="{Binding AccountName}" />
+        </StackPanel>
+
+        <Border
+            Background="{DynamicResource AppDividerColor}"
+            Grid.Row="1"
+            Height="1"
+            Margin="0,8,0,16" />
+
+        <Border
+            BorderBrush="{DynamicResource AppBorderColor}"
+            BorderThickness="1"
+            ClipToBounds="True"
+            CornerRadius="8"
+            Grid.Row="2">
+            <StackPanel
+                HorizontalAlignment="Center"
+                Margin="40"
+                Spacing="12"
+                VerticalAlignment="Center">
+                <TextBlock
+                    FontSize="36"
+                    HorizontalAlignment="Center"
+                    Text="📒" />
+                <TextBlock
+                    Classes="h2"
+                    HorizontalAlignment="Center"
+                    Text="Ledger coming soon" />
+                <TextBlock
+                    Foreground="{DynamicResource AppTextSecondary}"
+                    HorizontalAlignment="Center"
+                    Text="Journal entries for this account will be listed here."
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
+

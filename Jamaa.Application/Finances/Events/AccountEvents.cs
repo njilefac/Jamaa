@@ -28,9 +28,25 @@ public record AccountUpdated(
     public string EntityId => AccountId.Value;
 }
 
+
 public record AccountDeleted(
     OrganisationId OrganisationId,
     AccountId AccountId) : ILibotaEvent
 {
     public string EntityId => AccountId.Value;
 }
+
+public record AccountDeactivated(
+    OrganisationId OrganisationId,
+    AccountId AccountId) : ILibotaEvent
+{
+    public string EntityId => AccountId.Value;
+}
+
+public record AccountReactivated(
+    OrganisationId OrganisationId,
+    AccountId AccountId) : ILibotaEvent
+{
+    public string EntityId => AccountId.Value;
+}
+

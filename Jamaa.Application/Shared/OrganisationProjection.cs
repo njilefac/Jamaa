@@ -99,6 +99,8 @@ public class OrganisationProjection : ReceivePersistentActor
             AccountCreated accountCreated => Handle(accountCreated, dbContext),
             AccountUpdated accountUpdated => Handle(accountUpdated, dbContext),
             AccountDeleted accountDeleted => Handle(accountDeleted, dbContext),
+            AccountDeactivated accountDeactivated => Handle(accountDeactivated, dbContext),
+            AccountReactivated accountReactivated => Handle(accountReactivated, dbContext),
             FiscalYearCreated fiscalYearCreated => Handle(fiscalYearCreated, dbContext),
             FiscalYearUpdated fiscalYearUpdated => Handle(fiscalYearUpdated, dbContext),
             FiscalYearDeleted fiscalYearDeleted => Handle(fiscalYearDeleted, dbContext),
@@ -162,6 +164,32 @@ public class OrganisationProjection : ReceivePersistentActor
         }
 
         dbContext.Accounts.Remove(account);
+        await SaveChangesWithSqliteRetryAsync(dbContext);
+    }
+
+    // Operation: marks one projected account row as inactive.
+    private async Task Handle(AccountDeactivated @event, JamaaDbContext dbContext)
+    {
+        var account = await dbContext.Accounts.FirstOrDefaultAsync(current => current.Id == @event.AccountId.Value);
+        if (account is null)
+        {
+            return;
+        }
+
+        account.IsActive = false;
+        await SaveChangesWithSqliteRetryAsync(dbContext);
+    }
+
+    // Operation: marks one projected account row as active again.
+    private async Task Handle(AccountReactivated @event, JamaaDbContext dbContext)
+    {
+        var account = await dbContext.Accounts.FirstOrDefaultAsync(current => current.Id == @event.AccountId.Value);
+        if (account is null)
+        {
+            return;
+        }
+
+        account.IsActive = true;
         await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 

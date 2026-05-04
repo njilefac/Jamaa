@@ -24,6 +24,7 @@ public static class Routes
     public const string TaxGroupsAndAuthorities = "/accounting/configuration/tax-groups-authorities";
     public const string AutomationRules = "/accounting/configuration/automation-rules";
     public const string UserRolesAndApprovals = "/accounting/configuration/user-roles-approvals";
+    public const string AccountLedger = "/accounting/configuration/account-ledger";
     public const string Settings = "/settings";
     public const string OrganisationContactDetails = "/settings/organisation-contact-details";
 }

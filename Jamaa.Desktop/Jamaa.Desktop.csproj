@@ -314,6 +314,13 @@
     <Compile Update="Accounting\UserRolesAndApprovalsViewModel.cs">
       <DependentUpon>UserRolesAndApprovalsPage.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Accounting\AccountLedgerPage.axaml.cs">
+      <DependentUpon>AccountLedgerPage.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Accounting\AccountLedgerViewModel.cs">
+      <DependentUpon>AccountLedgerPage.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Accounting\AccountItemViewModel.cs">
       <DependentUpon>ChartOfAccountsPage.axaml</DependentUpon>
     </Compile>

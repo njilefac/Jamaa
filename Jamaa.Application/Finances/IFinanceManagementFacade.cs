@@ -16,6 +16,8 @@ public interface IFinanceManagementFacade
     Task CreateAccount(string organisationId, string code, string name, string description, AccountType type, string? parentAccountId);
     Task UpdateAccount(string organisationId, string accountId, string code, string name, string description, AccountType type, string? parentAccountId);
     Task DeleteAccount(string organisationId, string accountId);
+    Task DeactivateAccount(string organisationId, string accountId);
+    Task ReactivateAccount(string organisationId, string accountId);
 
     Task CreateAccountingPeriod(string organisationId, string fiscalYearId, int sequenceNumber, DateTime startDate, DateTime endDate, bool isLocked);
     Task UpdateAccountingPeriod(string organisationId, string fiscalYearId, string accountingPeriodId, int sequenceNumber, DateTime startDate, DateTime endDate, bool isLocked);
@@ -37,6 +39,8 @@ public interface IFinanceManagementFacade
     IObservable<AccountData> AccountCreated { get; }
     IObservable<AccountData> AccountUpdated { get; }
     IObservable<AccountData> AccountDeleted { get; }
+    IObservable<AccountData> AccountDeactivated { get; }
+    IObservable<AccountData> AccountReactivated { get; }
 
     // Reactive streams (push accounting settings changes)
     IObservable<AccountingSettingsData?> CurrentAccountingSettings { get; }

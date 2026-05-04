@@ -25,4 +25,11 @@ public record DeleteAccount(
     OrganisationId OrganisationId,
     AccountId AccountId);
 
+public record DeactivateAccount(
+    OrganisationId OrganisationId,
+    AccountId AccountId);
+
+public record ReactivateAccount(
+    OrganisationId OrganisationId,
+    AccountId AccountId);
 

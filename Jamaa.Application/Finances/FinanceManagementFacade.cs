@@ -45,6 +45,8 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         AccountCreated = dataChangeNotifier.Insertions.OfType<AccountData>();
         AccountUpdated = dataChangeNotifier.Updates.OfType<AccountData>();
         AccountDeleted = dataChangeNotifier.Deletions.OfType<AccountData>();
+        AccountDeactivated = dataChangeNotifier.Updates.OfType<AccountData>().Where(a => !a.IsActive);
+        AccountReactivated = dataChangeNotifier.Updates.OfType<AccountData>().Where(a => a.IsActive);
 
         FiscalYearUpdated = BuildFiscalYearUpdates(dataChangeNotifier);
         FiscalYearDeleted = dataChangeNotifier.Deletions.OfType<FiscalYearData>();
@@ -76,6 +78,8 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     public IObservable<AccountData> AccountCreated { get; }
     public IObservable<AccountData> AccountUpdated { get; }
     public IObservable<AccountData> AccountDeleted { get; }
+    public IObservable<AccountData> AccountDeactivated { get; }
+    public IObservable<AccountData> AccountReactivated { get; }
     public IObservable<AccountingSettingsData?> CurrentAccountingSettings { get; }
     public IObservable<AccountingSettingsData> AccountingSettingsUpdated { get; }
 
@@ -186,6 +190,28 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     public Task DeleteAccount(string organisationId, string accountId)
     {
         var command = new DeleteAccount(
+            OrganisationId.With(organisationId),
+            AccountId.With(accountId));
+
+        _commandProcessor.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    // Integration: dispatches account deactivation intent.
+    public Task DeactivateAccount(string organisationId, string accountId)
+    {
+        var command = new DeactivateAccount(
+            OrganisationId.With(organisationId),
+            AccountId.With(accountId));
+
+        _commandProcessor.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    // Integration: dispatches account reactivation intent.
+    public Task ReactivateAccount(string organisationId, string accountId)
+    {
+        var command = new ReactivateAccount(
             OrganisationId.With(organisationId),
             AccountId.With(accountId));
 

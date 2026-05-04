@@ -129,6 +129,9 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifi
             .HasForeignKey(account => account.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<AccountData>()
+            .Property(account => account.IsActive)
+            .HasDefaultValue(true);
+        modelBuilder.Entity<AccountData>()
             .HasIndex(account => new { account.OrganisationId, account.Code })
             .IsUnique();
     }

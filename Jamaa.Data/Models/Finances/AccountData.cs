@@ -12,6 +12,7 @@ public class AccountData
     public string Description { get; set; } = string.Empty;
     public AccountType Type { get; set; }
     public string? ParentId { get; set; }
-    
+    public bool IsActive { get; set; } = true;
+
     public AccountData? Parent { get; set; }
 }
