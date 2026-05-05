@@ -31,10 +31,33 @@ public partial class JournalEntriesViewModel : ObservableObject, IApplicationMod
     public void ApplyNavigationFilter(JournalEntriesNavigationRequest request)
     {
         ExpenseAccountsOnly = request.ExpenseAccountsOnly;
-        ActiveFilterLabel = request.ExpenseAccountsOnly ? "Expense Accounts" : "All Accounts";
-        VisibleEntries = request.ExpenseAccountsOnly
-            ? _allEntries.Where(entry => entry.IsExpenseAccount).ToList()
-            : _allEntries.ToList();
+
+        var filteredEntries = _allEntries.AsEnumerable();
+        if (request.ExpenseAccountsOnly)
+        {
+            filteredEntries = filteredEntries.Where(entry => entry.IsExpenseAccount);
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.AccountName))
+        {
+            filteredEntries = filteredEntries.Where(entry =>
+                string.Equals(entry.Account, request.AccountName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        VisibleEntries = filteredEntries.ToList();
+        ActiveFilterLabel = ResolveFilterLabel(request);
+    }
+
+    // Operation: builds the active-filter label shown in the header based on navigation context.
+    private static string ResolveFilterLabel(JournalEntriesNavigationRequest request)
+    {
+        if (!string.IsNullOrWhiteSpace(request.AccountName))
+        {
+            var prefix = request.ExpenseAccountsOnly ? "Expense - " : string.Empty;
+            return $"{prefix}{request.AccountName}";
+        }
+
+        return request.ExpenseAccountsOnly ? "Expense Accounts" : "All Accounts";
     }
 
     [RelayCommand]

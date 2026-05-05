@@ -556,11 +556,11 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         }
     }
 
-    // Operation: navigates to the ledger page for the given account.
+    // Operation: navigates to journal entries with account context for the given account.
     private void NavigateToAccountLedger(AccountItemViewModel item)
     {
-        WeakReferenceMessenger.Default.Send(new AccountLedgerNavigationRequested(item.Id, item.Code, item.Name));
-        WeakReferenceMessenger.Default.Send(new ModuleSelected(Routes.AccountLedger));
+        var navigationRequest = JournalEntriesNavigationRequest.ForAccount(item.Id, item.Code, item.Name);
+        WeakReferenceMessenger.Default.Send(new ModuleSelected(Routes.AccountingTransactions, navigationRequest));
     }
 
     private bool CanAddAccount() =>

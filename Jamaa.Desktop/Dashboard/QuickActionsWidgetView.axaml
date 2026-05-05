@@ -17,12 +17,15 @@
                 HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Path
+                        Classes="dashboard quick-action icon accent"
                         Data="M15,14C12.33,14 7,15.33 7,18V20H23V18C23,15.33 17.67,14 15,14M6,10V7H4V10H1V12H4V15H6V12H9V10M15,12A4,4 0 0,0 19,8A4,4 0 0,0 15,4A4,4 0 0,0 11,8A4,4 0 0,0 15,12Z"
-                        Fill="#3B82F6"
                         Height="16"
                         Stretch="Uniform"
                         Width="16" />
-                    <TextBlock Text="Register Member" VerticalAlignment="Center" />
+                    <TextBlock
+                        Classes="dashboard quick-action text"
+                        Text="Register Member"
+                        VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -32,12 +35,15 @@
                 HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Path
+                        Classes="dashboard quick-action icon success"
                         Data="M11,15H13V17H11V15M11,11H13V13H11V11M11,7H13V9H11V7M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20Z"
-                        Fill="#10B981"
                         Height="16"
                         Stretch="Uniform"
                         Width="16" />
-                    <TextBlock Text="Receive Money" VerticalAlignment="Center" />
+                    <TextBlock
+                        Classes="dashboard quick-action text"
+                        Text="Receive Money"
+                        VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
@@ -47,12 +53,15 @@
                 HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Path
+                        Classes="dashboard quick-action icon danger"
                         Data="M12.79,21L12.12,20.33C10.5,18.85 9.17,17.64 8.16,16.69C7.15,15.74 6.33,14.9 5.71,14.16C5.09,13.42 4.65,12.73 4.38,12.08C4.11,11.43 3.97,10.74 3.97,10C3.97,7.78 4.72,5.92 6.22,4.42C7.72,2.92 9.58,2.17 11.8,2.17C13.08,2.17 14.25,2.43 15.31,2.95C16.37,3.47 17.28,4.19 18.04,5.12L19,6.26L19.96,5.12C20.72,4.19 21.63,3.47 22.69,2.95C23.75,2.43 24.92,2.17 26.2,2.17C28.42,2.17 30.28,2.92 31.78,4.42C33.28,5.92 34.03,7.78 34.03,10C34.03,10.74 33.89,11.43 33.62,12.08C33.35,12.73 32.91,13.42 32.29,14.16C31.67,14.9 30.85,15.74 29.84,16.69C28.83,17.64 27.5,18.85 25.88,20.33L25.21,21H12.79Z"
-                        Fill="#EF4444"
                         Height="16"
                         Stretch="Uniform"
                         Width="16" />
-                    <TextBlock Text="Spend Money" VerticalAlignment="Center" />
+                    <TextBlock
+                        Classes="dashboard quick-action text"
+                        Text="Spend Money"
+                        VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
         </StackPanel>

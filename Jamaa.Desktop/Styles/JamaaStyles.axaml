@@ -219,23 +219,149 @@
     </Style>
 
     <!--  Dashboard Widget Styles  -->
+    <Style Selector="Grid.dashboard.page">
+        <Setter Property="Background" Value="{DynamicResource AppBackgroundColor}" />
+    </Style>
+
+    <Style Selector="Border.dashboard.page.header">
+        <Setter Property="Background" Value="{DynamicResource AppCardBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Margin" Value="16,16,16,8" />
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="BoxShadow" Value="0 8 24 0 #140F172A" />
+    </Style>
+
+    <Style Selector="TextBlock.dashboard.page.title">
+        <Setter Property="FontSize" Value="32" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+    </Style>
+
+    <Style Selector="TextBlock.dashboard.page.subtitle">
+        <Setter Property="Margin" Value="0,8,0,0" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}" />
+        <Setter Property="Opacity" Value="0.9" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style Selector="Button.dashboard.header.action">
+        <Setter Property="Background" Value="{DynamicResource DashboardHeaderActionBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Foreground" Value="{DynamicResource DashboardHeaderActionForegroundBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="14,10" />
+    </Style>
+    <Style Selector="Button.dashboard.header.action:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource DashboardHeaderActionHoverBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+    </Style>
+
     <Style Selector="ItemsControl.dashboard.grid">
         <Setter Property="Margin" Value="16" />
     </Style>
 
     <Style Selector="Border.dashboard.widget.container">
-        <Setter Property="Background" Value="White" />
-        <Setter Property="BorderBrush" Value="LightGray" />
+        <Setter Property="Background" Value="{DynamicResource AppCardBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="BoxShadow" Value="0 6 18 0 #120F172A" />
+    </Style>
+    <Style Selector="Border.dashboard.widget.container:pointerover">
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight1}" />
+        <Setter Property="BoxShadow" Value="0 10 28 0 #1A2563EB" />
     </Style>
 
     <Style Selector="TextBlock.dashboard.widget.title">
         <Setter Property="FontSize" Value="16" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{DynamicResource JamaaPrimaryBrush}" />
-        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.dashboard.widget.options">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="Button.dashboard.widget.options:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+    </Style>
+    <Style Selector="TextBlock.dashboard.widget.text.primary">
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+    </Style>
+    <Style Selector="TextBlock.dashboard.widget.text.secondary">
+        <Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}" />
+    </Style>
+    <Style Selector="TextBlock.dashboard.widget.metric.value">
+        <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+    </Style>
+    <Style Selector="TextBlock.dashboard.widget.metric.success">
+        <Setter Property="Foreground" Value="{DynamicResource DashboardSuccessForegroundBrush}" />
+    </Style>
+    <Style Selector="Border.dashboard.widget.panel">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="12" />
+    </Style>
+    <Style Selector="Border.dashboard.status.card">
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="10" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Border.dashboard.status.card.info">
+        <Setter Property="Background" Value="{DynamicResource DashboardInfoSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource DashboardInfoForegroundBrush}" />
+    </Style>
+    <Style Selector="Border.dashboard.status.card.warning">
+        <Setter Property="Background" Value="{DynamicResource DashboardWarningSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource DashboardWarningForegroundBrush}" />
+    </Style>
+    <Style Selector="Border.dashboard.status.card.danger">
+        <Setter Property="Background" Value="{DynamicResource DashboardDangerSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource DashboardDangerForegroundBrush}" />
+    </Style>
+    <Style Selector="Path.dashboard.status.icon.info">
+        <Setter Property="Fill" Value="{DynamicResource DashboardInfoForegroundBrush}" />
+    </Style>
+    <Style Selector="Path.dashboard.status.icon.warning">
+        <Setter Property="Fill" Value="{DynamicResource DashboardWarningForegroundBrush}" />
+    </Style>
+    <Style Selector="Path.dashboard.status.icon.danger">
+        <Setter Property="Fill" Value="{DynamicResource DashboardDangerForegroundBrush}" />
+    </Style>
+    <Style Selector="TextBlock.dashboard.status.text.info">
+        <Setter Property="Foreground" Value="{DynamicResource DashboardInfoForegroundBrush}" />
+    </Style>
+    <Style Selector="TextBlock.dashboard.status.text.warning">
+        <Setter Property="Foreground" Value="{DynamicResource DashboardWarningForegroundBrush}" />
+    </Style>
+    <Style Selector="TextBlock.dashboard.status.text.danger">
+        <Setter Property="Foreground" Value="{DynamicResource DashboardDangerForegroundBrush}" />
+    </Style>
+    <Style Selector="Ellipse.dashboard.activity.avatar.accent">
+        <Setter Property="Fill" Value="{DynamicResource DashboardAccentSurfaceBrush}" />
+    </Style>
+    <Style Selector="Ellipse.dashboard.activity.avatar.success">
+        <Setter Property="Fill" Value="{DynamicResource DashboardSuccessSurfaceBrush}" />
+    </Style>
+    <Style Selector="Ellipse.dashboard.activity.avatar.warning">
+        <Setter Property="Fill" Value="{DynamicResource DashboardWarningSurfaceBrush}" />
+    </Style>
+    <Style Selector="TextBlock.dashboard.activity.title">
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+    </Style>
+    <Style Selector="TextBlock.dashboard.activity.meta">
+        <Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}" />
     </Style>
     <Style Selector="ListBox.member-cards-list ListBoxItem">
         <Setter Property="Padding" Value="0" />
@@ -507,11 +633,25 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
         <Setter Property="Padding" Value="12,8" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
     <Style Selector="Button.dashboard.quick-action:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ControlStrongStrokeColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight1}" />
+    </Style>
+    <Style Selector="Path.dashboard.quick-action.icon.accent">
+        <Setter Property="Fill" Value="{DynamicResource SystemAccentColor}" />
+    </Style>
+    <Style Selector="Path.dashboard.quick-action.icon.success">
+        <Setter Property="Fill" Value="{DynamicResource DashboardSuccessForegroundBrush}" />
+    </Style>
+    <Style Selector="Path.dashboard.quick-action.icon.danger">
+        <Setter Property="Fill" Value="{DynamicResource DashboardDangerForegroundBrush}" />
+    </Style>
+    <Style Selector="TextBlock.dashboard.quick-action.text">
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+        <Setter Property="FontWeight" Value="Medium" />
     </Style>
 
     <Style Selector="WrapPanel.dashboard.shortcut.cards">
@@ -522,6 +662,10 @@
         <Setter Property="Height" Value="140" />
         <Setter Property="Padding" Value="2" />
         <Setter Property="Background" Value="{DynamicResource AppCardBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="BoxShadow" Value="0 8 24 0 #140F172A" />
     </Style>
     <Style Selector="Button.dashboard.shortcut.button">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -542,6 +686,10 @@
         <Setter Property="MinHeight" Value="180" />
         <Setter Property="Padding" Value="2" />
         <Setter Property="Background" Value="{DynamicResource AppCardBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="BoxShadow" Value="0 8 24 0 #140F172A" />
     </Style>
     <Style Selector="Button.dashboard.metric.card.button">
         <Setter Property="HorizontalAlignment" Value="Stretch" />

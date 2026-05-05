@@ -44,6 +44,19 @@ public class JournalEntriesViewModelTests
         viewModel.VisibleEntries.Any(entry => entry.IsExpenseAccount).ShouldBeTrue();
         viewModel.VisibleEntries.Any(entry => !entry.IsExpenseAccount).ShouldBeTrue();
     }
+
+    [Fact]
+    public void ApplyNavigationFilter_ShouldShowOnlySelectedAccountEntries_WhenAccountContextProvided()
+    {
+        var viewModel = new JournalEntriesViewModel();
+
+        viewModel.ApplyNavigationFilter(JournalEntriesNavigationRequest.ForAccount("acc-1", "1000", "Cash"));
+
+        viewModel.ExpenseAccountsOnly.ShouldBeFalse();
+        viewModel.ActiveFilterLabel.ShouldBe("Cash");
+        viewModel.VisibleEntries.ShouldNotBeEmpty();
+        viewModel.VisibleEntries.All(entry => entry.Account == "Cash").ShouldBeTrue();
+    }
 }
 
 

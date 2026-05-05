@@ -25,7 +25,7 @@
                     ColumnDefinitions="*,Auto"
                     Grid.Row="0"
                     IsVisible="{Binding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                    Margin="8">
+                    Margin="12,12,12,8">
                     <TextBlock Classes="dashboard widget title" Text="{Binding Title}" />
                     <Button
                         Classes="dashboard widget options"
@@ -50,7 +50,7 @@
                                         Margin="4"
                                         MaxHeight="300">
                                         <ListBox.ItemTemplate>
-                                            <DataTemplate>
+                                            <DataTemplate x:DataType="dashboard:WidgetViewModelBase">
                                                 <MenuItem Command="{Binding ParentViewModel.ReplaceWidgetCommand}" Header="{Binding Title}">
                                                     <MenuItem.CommandParameter>
                                                         <MultiBinding Converter="{StaticResource MultiValueConverter}">
@@ -79,14 +79,17 @@
                                 <Button.Flyout>
                                     <Flyout Placement="Bottom">
                                         <StackPanel Spacing="8" Width="200">
-                                            <TextBlock FontWeight="Bold" Text="{Binding FlyoutTitle}" />
+                                            <TextBlock
+                                                Classes="dashboard widget text primary"
+                                                FontWeight="Bold"
+                                                Text="{Binding FlyoutTitle}" />
                                             <ListBox
                                                 Background="Transparent"
                                                 BorderThickness="0"
                                                 IsVisible="{Binding HasCompatibleWidgets, FallbackValue=False}"
                                                 ItemsSource="{Binding CompatibleWidgets}">
                                                 <ListBox.ItemTemplate>
-                                                    <DataTemplate>
+                                                    <DataTemplate x:DataType="dashboard:WidgetViewModelBase">
                                                         <Button
                                                             Background="Transparent"
                                                             BorderThickness="0"
@@ -99,7 +102,7 @@
                                                                     <Binding />
                                                                 </MultiBinding>
                                                             </Button.CommandParameter>
-                                                            <TextBlock Text="{Binding Title}" />
+                                                            <TextBlock Classes="dashboard widget text primary" Text="{Binding Title}" />
                                                         </Button>
                                                     </DataTemplate>
                                                 </ListBox.ItemTemplate>
@@ -111,7 +114,7 @@
                                     <TextBlock
                                         FontSize="64"
                                         FontWeight="Heavy"
-                                        Foreground="Gray"
+                                        Foreground="{DynamicResource AppTextDisabled}"
                                         HorizontalAlignment="Center"
                                         Text="+"
                                         VerticalAlignment="Center" />
@@ -161,7 +164,7 @@
 
         <!--  Drop Feedback  -->
         <Border
-            BorderBrush="Green"
+            BorderBrush="{DynamicResource DashboardSuccessForegroundBrush}"
             BorderThickness="4"
             CornerRadius="8"
             IsHitTestVisible="False">
@@ -173,7 +176,7 @@
             </Border.IsVisible>
         </Border>
 
-        <Panel Background="#80D3D3D3" IsHitTestVisible="False">
+        <Panel Background="#80475569" IsHitTestVisible="False">
             <Panel.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
                     <Binding Path="IsDraggingOver" />
@@ -182,7 +185,7 @@
             </Panel.IsVisible>
             <PathIcon
                 Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12C20,13.76 19.42,15.38 18.46,16.69L7.31,5.54C8.62,4.58 10.24,4 12,4M4,12A8,8 0 0,1 12,4C13.76,4 15.38,4.58 16.69,5.54L5.54,16.69C4.58,15.38 4,13.76 4,12M12,20A8,8 0 0,1 4,12C4,10.24 4.58,8.62 5.54,7.31L16.69,18.46C15.38,19.42 13.76,20 12,20Z"
-                Foreground="Gray"
+                Foreground="{DynamicResource AppTextDisabled}"
                 Height="64"
                 Opacity="0.5"
                 Width="64" />

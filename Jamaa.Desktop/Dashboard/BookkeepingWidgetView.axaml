@@ -9,19 +9,59 @@
     xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+    <Grid
+        Margin="16"
+        RowDefinitions="Auto,*,Auto"
+        RowSpacing="12">
+        <StackPanel>
+            <TextBlock
+                Classes="dashboard widget text secondary"
+                FontSize="12"
+                Text="Financial Summary" />
+            <TextBlock
+                Classes="dashboard widget text primary dashboard widget metric value"
+                FontSize="32"
+                FontWeight="Bold"
+                Text="$0.00" />
+        </StackPanel>
+
+        <Grid
+            ColumnDefinitions="*,*"
+            ColumnSpacing="12"
+            Grid.Row="1">
+            <Border Classes="dashboard widget panel">
+                <StackPanel>
+                    <TextBlock
+                        Classes="dashboard widget text secondary"
+                        FontSize="12"
+                        Text="Revenue" />
+                    <TextBlock
+                        Classes="dashboard widget text primary dashboard widget metric success"
+                        FontSize="20"
+                        FontWeight="Bold"
+                        Text="$0.00" />
+                </StackPanel>
+            </Border>
+
+            <Border Classes="dashboard widget panel" Grid.Column="1">
+                <StackPanel>
+                    <TextBlock
+                        Classes="dashboard widget text secondary"
+                        FontSize="12"
+                        Text="Expenses" />
+                    <TextBlock
+                        Classes="dashboard widget text primary"
+                        FontSize="20"
+                        FontWeight="Bold"
+                        Text="$0.00" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
         <TextBlock
-            FontSize="24"
-            FontWeight="Bold"
-            HorizontalAlignment="Center"
-            Text="Financial Summary" />
-        <TextBlock
-            Foreground="Gray"
-            HorizontalAlignment="Center"
-            Text="Total Revenue: $0.00" />
-        <TextBlock
-            Foreground="Gray"
-            HorizontalAlignment="Center"
-            Text="Total Expenses: $0.00" />
-    </StackPanel>
+            Classes="dashboard widget text secondary"
+            Grid.Row="2"
+            Text="Use the accounting workspace to review journal entries, reports, and reconciliations."
+            TextWrapping="Wrap" />
+    </Grid>
 </UserControl>

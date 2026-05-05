@@ -13,49 +13,52 @@
         <StackPanel Spacing="12">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Ellipse
-                    Fill="LightBlue"
+                    Classes="dashboard activity avatar accent"
                     Height="32"
                     Width="32" />
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
+                        Classes="dashboard activity title"
                         FontSize="12"
                         FontWeight="SemiBold"
                         Text="John Doe" />
                     <TextBlock
+                        Classes="dashboard activity meta"
                         FontSize="10"
-                        Foreground="Gray"
                         Text="Added a new member · 2h ago" />
                 </StackPanel>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Ellipse
-                    Fill="LightGreen"
+                    Classes="dashboard activity avatar success"
                     Height="32"
                     Width="32" />
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
+                        Classes="dashboard activity title"
                         FontSize="12"
                         FontWeight="SemiBold"
                         Text="Jane Smith" />
                     <TextBlock
+                        Classes="dashboard activity meta"
                         FontSize="10"
-                        Foreground="Gray"
                         Text="Recorded a payment · 4h ago" />
                 </StackPanel>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Ellipse
-                    Fill="LightYellow"
+                    Classes="dashboard activity avatar warning"
                     Height="32"
                     Width="32" />
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
+                        Classes="dashboard activity title"
                         FontSize="12"
                         FontWeight="SemiBold"
                         Text="System" />
                     <TextBlock
+                        Classes="dashboard activity meta"
                         FontSize="10"
-                        Foreground="Gray"
                         Text="Backup completed · 1d ago" />
                 </StackPanel>
             </StackPanel>

@@ -88,6 +88,26 @@ public class MainWindowViewModelTests
         ((INavigationHost)membersHost).DidNotReceive().NavigateTo(Arg.Any<string>(), Arg.Any<object?>());
     }
 
+    [Fact]
+    public void Receive_ShouldForwardNavigationParameterToNavigationHost()
+    {
+        var routeResolver = Substitute.For<IRouteResolver>();
+        var accountingHost = Substitute.For<IApplicationModule, INavigationHost>();
+        routeResolver
+            .Resolve(Arg.Any<string>(), Arg.Any<object?>())
+            .Returns(call => new TestApplicationModule((string)call[0]));
+        routeResolver.Resolve(Routes.AccountingDashboard, Arg.Any<object?>()).Returns(accountingHost);
+
+        var navigationItemsProvider = new NavigationItemsProvider();
+        using var viewModel = new MainWindowViewModel(routeResolver, navigationItemsProvider);
+
+        var parameter = new object();
+
+        viewModel.Receive(new ModuleSelected(Routes.AccountingTransactions, parameter));
+
+        ((INavigationHost)accountingHost).Received(1).NavigateTo(Routes.AccountingTransactions, parameter);
+    }
+
     private static IRouteResolver CreateRouteResolver()
     {
         var routeResolver = Substitute.For<IRouteResolver>();

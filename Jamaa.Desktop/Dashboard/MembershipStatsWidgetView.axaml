@@ -9,40 +9,48 @@
     xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Margin="12" RowDefinitions="*,*,*">
-        <StackPanel Grid.Row="0">
-            <TextBlock
-                Classes="dashboard widget text secondary"
-                FontSize="12"
-                Text="Total Members" />
-            <TextBlock
-                Classes="dashboard widget text primary"
-                FontSize="18"
-                FontWeight="Bold"
-                Text="{Binding TotalMembers}" />
-        </StackPanel>
-        <StackPanel Grid.Row="1">
-            <TextBlock
-                Classes="dashboard widget text secondary"
-                FontSize="12"
-                Text="New (This Month)" />
-            <TextBlock
-                Classes="dashboard widget text primary"
-                FontSize="18"
-                FontWeight="Bold"
-                Foreground="Green"
-                Text="{Binding NewMembersThisMonth}" />
-        </StackPanel>
-        <StackPanel Grid.Row="2">
-            <TextBlock
-                Classes="dashboard widget text secondary"
-                FontSize="12"
-                Text="Active Members" />
-            <TextBlock
-                Classes="dashboard widget text primary"
-                FontSize="18"
-                FontWeight="Bold"
-                Text="{Binding ActiveMembers}" />
-        </StackPanel>
+    <Grid
+        Margin="12"
+        RowDefinitions="*,*,*"
+        RowSpacing="8">
+        <Border Classes="dashboard widget panel" Grid.Row="0">
+            <StackPanel>
+                <TextBlock
+                    Classes="dashboard widget text secondary"
+                    FontSize="12"
+                    Text="Total Members" />
+                <TextBlock
+                    Classes="dashboard widget text primary dashboard widget metric value"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    Text="{Binding TotalMembers}" />
+            </StackPanel>
+        </Border>
+        <Border Classes="dashboard widget panel" Grid.Row="1">
+            <StackPanel>
+                <TextBlock
+                    Classes="dashboard widget text secondary"
+                    FontSize="12"
+                    Text="New (This Month)" />
+                <TextBlock
+                    Classes="dashboard widget text primary dashboard widget metric success"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    Text="{Binding NewMembersThisMonth}" />
+            </StackPanel>
+        </Border>
+        <Border Classes="dashboard widget panel" Grid.Row="2">
+            <StackPanel>
+                <TextBlock
+                    Classes="dashboard widget text secondary"
+                    FontSize="12"
+                    Text="Active Members" />
+                <TextBlock
+                    Classes="dashboard widget text primary dashboard widget metric value"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    Text="{Binding ActiveMembers}" />
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

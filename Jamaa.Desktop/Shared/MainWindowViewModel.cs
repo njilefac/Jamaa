@@ -47,7 +47,7 @@ public partial class MainWindowViewModel : ObservableValidator,
         var shouldDelegateToHost = message.Route != moduleRoute;
         if (shouldDelegateToHost && module is INavigationHost navigationHost)
         {
-            navigationHost.NavigateTo(message.Route);
+            navigationHost.NavigateTo(message.Route, message.Parameter);
         }
 
         ActiveModule = module;
