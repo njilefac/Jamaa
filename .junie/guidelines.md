@@ -72,6 +72,13 @@ Avoid hybrid methods.
 - Nest the view models under the corresponding view.
 - Use the shared styles in `Jamaa.Desktop/Styles` and themes in `Jamaa.Desktop/Themes`.
 - Icons and resources should be placed in `Jamaa.Desktop/Assets`.
+- Strict MVVM enforcement:
+  - ViewModels must not instantiate UI controls or compose data templates.
+  - ViewModels must not expose template-wiring APIs (for example `Configure*Template*` methods).
+  - ViewModels must not assign style classes, visual resources, or layout properties.
+  - Keep control composition, classes, styles, visual states, and templates in `.axaml` and shared style/theme files.
+  - Prefer `DataTemplate`, template selector, behavior, or minimal view code-behind for UI template composition.
+  - If a framework limitation requires code-behind, keep it view-local and presentation-only.
 
 ## Testing
 - **Unit Tests**: Located in the `Tests` project, mirroring the project structure of the code under test.

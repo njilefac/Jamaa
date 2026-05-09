@@ -330,6 +330,12 @@
     <Compile Update="Accounting\FiscalYearEditorItemViewModel.cs">
       <DependentUpon>FiscalCalendarAndPeriodsPage.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Accounting\DashboardMetricCardViewModel.cs">
+      <DependentUpon>AccountingDashboard.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Accounting\DashboardShortcutViewModel.cs">
+      <DependentUpon>AccountingDashboard.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   
   <ItemGroup>

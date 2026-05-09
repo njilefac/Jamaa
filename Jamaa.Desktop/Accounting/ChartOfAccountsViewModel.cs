@@ -8,8 +8,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -144,9 +142,6 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                 new TextColumn<AccountItemViewModel, string>("Name", x => x.Name, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                 new TextColumn<AccountItemViewModel, string>("Description", x => x.Description, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                 new TextColumn<AccountItemViewModel, string>("Type", x => x.TypeDisplay, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
-                new TemplateColumn<AccountItemViewModel>("", BuildEditCellTemplate()),
-                new TemplateColumn<AccountItemViewModel>("", BuildToggleActiveCellTemplate()),
-                new TemplateColumn<AccountItemViewModel>("", BuildLedgerCellTemplate()),
             }
         };
 
@@ -163,43 +158,6 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         };
     }
 
-    // Operation: builds the cell template for the inline Edit action button.
-    private static IDataTemplate BuildEditCellTemplate()
-    {
-        return new FuncDataTemplate<AccountItemViewModel>((_, _) =>
-        {
-            var button = new Button { Content = "✏ Edit" };
-            button[!Button.CommandProperty] = new Binding(nameof(AccountItemViewModel.EditCommand));
-            button.Classes.Add("Small");
-            return button;
-        }, supportsRecycling: false);
-    }
-
-    // Operation: builds the cell template for the inline Deactivate/Reactivate toggle button.
-    private static IDataTemplate BuildToggleActiveCellTemplate()
-    {
-        return new FuncDataTemplate<AccountItemViewModel>((_, _) =>
-        {
-            var button = new Button();
-            button[!Button.CommandProperty] = new Binding(nameof(AccountItemViewModel.ToggleActiveCommand));
-            button[!ContentControl.ContentProperty] = new Binding(nameof(AccountItemViewModel.ToggleActiveLabel));
-            button[!ToolTip.TipProperty] = new Binding(nameof(AccountItemViewModel.ToggleActiveToolTip));
-            button.Classes.Add("Small");
-            return button;
-        }, supportsRecycling: false);
-    }
-
-    // Operation: builds the cell template for the View Ledger navigation link.
-    private static IDataTemplate BuildLedgerCellTemplate()
-    {
-        return new FuncDataTemplate<AccountItemViewModel>((_, _) =>
-        {
-            var button = new Button { Content = "📒 Ledger" };
-            button[!Button.CommandProperty] = new Binding(nameof(AccountItemViewModel.ViewLedgerCommand));
-            button.Classes.Add("Small");
-            return button;
-        }, supportsRecycling: false);
-    }
 
     private void SetupReactiveUpdates(SynchronizationContext? syncContext)
     {
@@ -763,3 +721,4 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         ReadModel
     }
 }
+

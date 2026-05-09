@@ -216,6 +216,13 @@ public partial class MembersViewModel : ObservableObject
 - Private field naming: `_fieldName`
 - UI dispatch: `Dispatcher.UIThread.InvokeAsync()` for off-thread updates
 - Commands sent to application layer; listen to events for updates
+- Enforce strict MVVM boundaries:
+  - ViewModels expose state, validation, and commands only
+  - Do not instantiate controls or compose templates in ViewModels
+  - Do not add ViewModel methods that configure/attach `IDataTemplate` columns (e.g., `ConfigureActionCellTemplates`)
+  - Do not assign style classes, brushes, or other visual resources in ViewModels
+  - Keep control templates/classes/visual states in `.axaml` shared styles/themes (or minimal view code-behind when required by framework limits)
+  - Prefer `DataTemplate`/selector/behavior (or view-local helper) for UI template composition
 
 ### Dependency Injection & Service Registration
 
@@ -313,6 +320,8 @@ Located in `Tests/` as `.feature` files:
 |---------|---------------|-----|
 | Method mixes orchestration + logic | Hard to test; violates SRP | Split: integration calls operation |
 | Direct DB access in ViewModel | Breaks MVVM; hard to test | Use command/query through app layer |
+| ViewModel creates/styles UI controls or templates | Breaks MVVM separation; mixes presentation with behavior | Move control/template/class/resource definitions to view markup/shared styles |
+| ViewModel exposes `Configure*Template*` methods for UI composition | Leaks presentation composition into VM API | Move template selection/composition to `.axaml`, selector/behavior, or view code-behind |
 | Synchronous I/O (`.Result`, `.Wait()`) | Deadlocks; UI freeze | Always `await` |
 | Shared mutable state across actors | Race conditions | Actors own state; pass data by value |
 | Actor processing multiple message types without order guarantee | Event order matters | Use single queue per aggregate; batch if needed |
@@ -346,6 +355,7 @@ When assigned a task:
 - [ ] Identify which layer(s) the work touches (Domain? Application? Desktop?)
 - [ ] If adding application logic: **Create operations first, then integration**
 - [ ] If adding UI: Create view + viewmodel pair; use existing styles
+- [ ] Enforce strict MVVM: no control/template/style composition in ViewModels
 - [ ] If modifying commands: Update aggregate handlers + tests
 - [ ] If adding a domain event: Add handler in aggregate `Apply()` method
 - [ ] Register new services in `ApplicationServicesRegistration`

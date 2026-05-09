@@ -21,6 +21,32 @@
             FalseValue="True"
             TrueValue="False"
             x:Key="InvertBoolToEnabledConverter" />
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountEditCellTemplate">
+            <Button
+                Classes="Small"
+                Command="{Binding EditCommand}"
+                Content="✏ Edit" />
+        </DataTemplate>
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountActiveStateCellTemplate">
+            <Border Classes="coa-account-state-cell">
+                <ToggleSwitch
+                    Classes="coa-account-state-toggle"
+                    Command="{Binding ToggleActiveCommand}"
+                    IsChecked="{Binding IsActive, Mode=OneWay}"
+                    OffContent="{Binding ToggleStateLabel}"
+                    OnContent="{Binding ToggleStateLabel}"
+                    ToolTip.Tip="{Binding ToggleActiveToolTip}" />
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountLedgerCellTemplate">
+            <Button
+                Classes="Small"
+                Command="{Binding ViewLedgerCommand}"
+                Content="📒 View Ledger" />
+        </DataTemplate>
     </UserControl.Resources>
 
     <Grid Margin="20" RowDefinitions="Auto,*">
@@ -140,7 +166,7 @@
                                     ItemsSource="{Binding FilteredParentAccounts}"
                                     SelectedItem="{Binding SelectedParentAccount}">
                                     <ComboBox.ItemTemplate>
-                                        <DataTemplate>
+                                        <DataTemplate x:DataType="vm:AccountItemViewModel">
                                             <TextBlock Text="{Binding Name}" />
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>

@@ -701,4 +701,27 @@
     <Style Selector="Button.dashboard.metric.card.button:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
     </Style>
+
+    <Style Selector="Border.coa-account-state-cell">
+        <Setter Property="Width" Value="160" />
+        <Setter Property="MinWidth" Value="160" />
+        <Setter Property="MaxWidth" Value="160" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="ToggleSwitch.coa-account-state-toggle">
+        <Setter Property="MinWidth" Value="110" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="ToggleSwitch.coa-account-state-toggle:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+    </Style>
+
+    <Style Selector="ToggleSwitch.coa-account-state-toggle:checked">
+        <Setter Property="Foreground" Value="White" />
+    </Style>
 </Styles>

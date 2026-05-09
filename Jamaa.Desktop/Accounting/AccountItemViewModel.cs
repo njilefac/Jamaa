@@ -36,7 +36,7 @@ public partial class AccountItemViewModel : ObservableObject
     private int _depth;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ToggleActiveLabel))]
+    [NotifyPropertyChangedFor(nameof(ToggleStateLabel))]
     [NotifyPropertyChangedFor(nameof(ToggleActiveToolTip))]
     private bool _isActive = true;
 
@@ -45,7 +45,7 @@ public partial class AccountItemViewModel : ObservableObject
 
     public string TreeName => new string(' ', Depth * 2) + Name;
 
-    public string ToggleActiveLabel => IsActive ? "Deactivate" : "Reactivate";
+    public string ToggleStateLabel => IsActive ? "Active" : "Inactive";
     public string ToggleActiveToolTip => IsActive ? "Deactivate this account" : "Reactivate this account";
 
     // Commands assigned by the parent ViewModel when building the tree.
