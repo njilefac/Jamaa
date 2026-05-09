@@ -241,6 +241,7 @@ Uses Castle DynamicProxy to wrap interfaces with authorization checks.
 ## Naming & Coding Conventions
 
 - **C# 14 features**: Primary constructors, file-scoped namespaces, collection expressions are expected
+- **Prefer records for immutable data shapes**: Use `record`/`record struct` for value-like, immutable carriers (commands, events, DTOs, query results, passive domain state) when identity and mutation are not required. Use `class` when the type has lifecycle/identity semantics, encapsulated mutable state, framework proxy/materialization constraints, or behavior-heavy responsibilities.
 - **PascalCase**: Classes, methods, public properties
 - **camelCase with `_` prefix**: Private fields (`_member`, not `member`)
 - **`nameof` over strings**: Always `nameof(MyMethod)`, never `"MyMethod"`

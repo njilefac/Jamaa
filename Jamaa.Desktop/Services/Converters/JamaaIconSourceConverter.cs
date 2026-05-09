@@ -12,9 +12,7 @@ public class JamaaIconSourceConverter : IValueConverter
     {
         if (value is string iconKey && !string.IsNullOrWhiteSpace(iconKey) &&
             targetType.IsAssignableTo(typeof(IconSource)))
-        {
             return Get<IconSource>(iconKey);
-        }
 
         return new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
     }
@@ -31,10 +29,7 @@ public class JamaaIconSourceConverter : IValueConverter
             var success = Avalonia.Application.Current!.TryGetResource(resourceName,
                 Avalonia.Application.Current.ActualThemeVariant, out var outValue);
 
-            if (success && outValue is T value)
-            {
-                return value;
-            }
+            if (success && outValue is T value) return value;
 
             return default;
         }

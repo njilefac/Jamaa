@@ -4,11 +4,12 @@ using CommunityToolkit.Mvvm.Input;
 namespace Jamaa.Desktop.Accounting;
 
 /// <summary>
-/// Operation: Represents a clickable metric card on the GL Dashboard that navigates to a sub-module.
+///     Operation: Represents a clickable metric card on the GL Dashboard that navigates to a sub-module.
 /// </summary>
 public sealed class DashboardMetricCardViewModel : ObservableObject
 {
-    public DashboardMetricCardViewModel(string metricValue, string metricLabel, string description, IRelayCommand? navigateCommand = null)
+    public DashboardMetricCardViewModel(string metricValue, string metricLabel, string description,
+        IRelayCommand? navigateCommand = null)
     {
         MetricValue = metricValue;
         MetricLabel = metricLabel;

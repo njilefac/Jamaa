@@ -17,5 +17,3 @@ public class MemberListViewModelTitleTests
         viewModel.Title.ShouldBe("Members");
     }
 }
-
-

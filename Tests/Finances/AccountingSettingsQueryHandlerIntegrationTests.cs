@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Domain.Finances.Queries;
+using Domain.Accounting.Queries;
 using Domain.Organisation.Values;
 using Domain.Shared.Values;
 using Jamaa.Data.Configuration;
@@ -59,8 +59,10 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                     DecimalPrecision = 2,
                     AvailableCurrencies =
                     [
-                        new AccountingAvailableCurrencyData { OrganisationId = organisationId, CurrencyCode = "KES", CurrencySymbol = "KSh" },
-                        new AccountingAvailableCurrencyData { OrganisationId = organisationId, CurrencyCode = "USD", CurrencySymbol = "$" }
+                        new AccountingAvailableCurrencyData
+                            { OrganisationId = organisationId, CurrencyCode = "KES", CurrencySymbol = "KSh" },
+                        new AccountingAvailableCurrencyData
+                            { OrganisationId = organisationId, CurrencyCode = "USD", CurrencySymbol = "$" }
                     ]
                 });
                 await setupCtx.SaveChangesAsync();
@@ -69,7 +71,8 @@ public class AccountingSettingsQueryHandlerIntegrationTests
             await using var readerCtx = new JamaaDbContext(options);
             var handler = new AccountingSettingsQueryHandler(readerCtx);
 
-            var result = await handler.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
+            var result =
+                await handler.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
 
             result.ShouldNotBeNull();
             result.OrganisationId.ShouldBe(organisationId);
@@ -78,7 +81,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
             result.DecimalPrecision.ShouldBe(2);
             result.AvailableCurrencies.First(currency => currency.CurrencyCode == "KES").CurrencySymbol.ShouldBe("KSh");
             result.AvailableCurrencies.First(currency => currency.CurrencyCode == "USD").CurrencySymbol.ShouldBe("$");
-            result.AvailableCurrencies.Select(currency => currency.CurrencyCode).ShouldBe(["KES", "USD"], ignoreOrder: true);
+            result.AvailableCurrencies.Select(currency => currency.CurrencyCode).ShouldBe(["KES", "USD"], true);
         }
         finally
         {
@@ -107,7 +110,8 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                     DecimalPrecision = 0,
                     AvailableCurrencies =
                     [
-                        new AccountingAvailableCurrencyData { OrganisationId = organisationId, CurrencyCode = "USD", CurrencySymbol = "$" }
+                        new AccountingAvailableCurrencyData
+                            { OrganisationId = organisationId, CurrencyCode = "USD", CurrencySymbol = "$" }
                     ]
                 });
                 await setupCtx.SaveChangesAsync();
@@ -123,8 +127,10 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                 existing.DateFormat = "YYYY-MM-DD";
                 existing.DecimalPrecision = 4;
                 existing.AvailableCurrencies.Clear();
-                existing.AvailableCurrencies.Add(new AccountingAvailableCurrencyData { OrganisationId = organisationId, CurrencyCode = "EUR", CurrencySymbol = "EUR" });
-                existing.AvailableCurrencies.Add(new AccountingAvailableCurrencyData { OrganisationId = organisationId, CurrencyCode = "GBP", CurrencySymbol = "GBP" });
+                existing.AvailableCurrencies.Add(new AccountingAvailableCurrencyData
+                    { OrganisationId = organisationId, CurrencyCode = "EUR", CurrencySymbol = "EUR" });
+                existing.AvailableCurrencies.Add(new AccountingAvailableCurrencyData
+                    { OrganisationId = organisationId, CurrencyCode = "GBP", CurrencySymbol = "GBP" });
                 await writerCtx.SaveChangesAsync();
             }
 
@@ -132,14 +138,15 @@ public class AccountingSettingsQueryHandlerIntegrationTests
             await using var readerCtx = new JamaaDbContext(options);
             var handler = new AccountingSettingsQueryHandler(readerCtx);
 
-            var result = await handler.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
+            var result =
+                await handler.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
 
             result.ShouldNotBeNull();
             result.BaseCurrency.ShouldBe("EUR");
             result.DateFormat.ShouldBe("YYYY-MM-DD");
             result.DecimalPrecision.ShouldBe(4);
             result.AvailableCurrencies.First(currency => currency.CurrencyCode == "EUR").CurrencySymbol.ShouldBe("EUR");
-            result.AvailableCurrencies.Select(currency => currency.CurrencyCode).ShouldBe(["EUR", "GBP"], ignoreOrder: true);
+            result.AvailableCurrencies.Select(currency => currency.CurrencyCode).ShouldBe(["EUR", "GBP"], true);
         }
         finally
         {
@@ -165,7 +172,11 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                         BaseCurrency = "USD",
                         DateFormat = "DD/MM/YYYY",
                         DecimalPrecision = 2,
-                        AvailableCurrencies = [new AccountingAvailableCurrencyData { OrganisationId = "org-a", CurrencyCode = "USD", CurrencySymbol = "$" }]
+                        AvailableCurrencies =
+                        [
+                            new AccountingAvailableCurrencyData
+                                { OrganisationId = "org-a", CurrencyCode = "USD", CurrencySymbol = "$" }
+                        ]
                     },
                     new AccountingSettingsData
                     {
@@ -173,7 +184,11 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                         BaseCurrency = "GBP",
                         DateFormat = "MM/DD/YYYY",
                         DecimalPrecision = 3,
-                        AvailableCurrencies = [new AccountingAvailableCurrencyData { OrganisationId = "org-b", CurrencyCode = "GBP", CurrencySymbol = "GBP" }]
+                        AvailableCurrencies =
+                        [
+                            new AccountingAvailableCurrencyData
+                                { OrganisationId = "org-b", CurrencyCode = "GBP", CurrencySymbol = "GBP" }
+                        ]
                     }
                 );
                 await setupCtx.SaveChangesAsync();
@@ -194,5 +209,3 @@ public class AccountingSettingsQueryHandlerIntegrationTests
         }
     }
 }
-
-

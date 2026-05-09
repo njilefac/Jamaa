@@ -15,24 +15,7 @@ public class NavigationItemsProvider : INavigationItemsProvider
             new NavigationItemModel(Routes.Dashboard, "Home", "Icons.Home"),
             new NavigationItemModel(Routes.MembersOverview, "Members", "Icons.Members"),
             new NavigationItemModel(Routes.EventsOverview, "Events", "Icons.Calendar"),
-            new NavigationItemModel(Routes.AccountingDashboard, "Accounting", "Icons.Accounting"),
+            new NavigationItemModel(Routes.AccountingDashboard, "Accounting", "Icons.Accounting")
         ];
     }
 }
-
-
-
-
-
-
-
-
-
-
-       
-        
-         
-          
-          
-          
-          

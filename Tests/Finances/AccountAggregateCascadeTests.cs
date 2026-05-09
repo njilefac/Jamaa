@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Jamaa.Application.Finances.Aggregates;
+using Jamaa.Application.Accounting.Aggregates;
 using Shouldly;
 using Xunit;
 
@@ -12,7 +12,7 @@ public class AccountAggregateCascadeTests
     {
         var accounts = CreateAccountsForDeactivation();
 
-        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "root", isActiveTarget: false);
+        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "root", false);
 
         affectedIds.ShouldBe(["root", "child-a", "grandchild-a1"]);
     }
@@ -22,7 +22,7 @@ public class AccountAggregateCascadeTests
     {
         var accounts = CreateAccountsForReactivation();
 
-        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "root", isActiveTarget: true);
+        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "root", true);
 
         affectedIds.ShouldBe(["root", "child-a", "grandchild-a1"]);
     }
@@ -37,7 +37,7 @@ public class AccountAggregateCascadeTests
             new("child-b", "1200", "parent", false)
         };
 
-        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", isActiveTarget: false);
+        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", false);
 
         affectedIds.ShouldBe(["child-a", "parent"]);
     }
@@ -52,7 +52,7 @@ public class AccountAggregateCascadeTests
             new("child-b", "1200", "parent", true)
         };
 
-        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", isActiveTarget: true);
+        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", true);
 
         affectedIds.ShouldBe(["child-a", "parent"]);
     }
@@ -67,7 +67,7 @@ public class AccountAggregateCascadeTests
             new("child-b", "1200", "parent", true)
         };
 
-        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", isActiveTarget: false);
+        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", false);
 
         affectedIds.ShouldBe(["child-a"]);
     }
@@ -84,7 +84,7 @@ public class AccountAggregateCascadeTests
             new("child-b", "1200", "parent", false)
         };
 
-        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", isActiveTarget: false);
+        var affectedIds = AccountStateCascadePlanner.BuildCascadeAccountIds(accounts, "child-a", false);
 
         affectedIds.ShouldBe(["child-a", "parent", "grandparent"]);
     }
@@ -113,7 +113,3 @@ public class AccountAggregateCascadeTests
         ];
     }
 }
-
-
-
-

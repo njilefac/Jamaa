@@ -12,35 +12,25 @@ namespace Jamaa.Desktop.Setup;
 public partial class CreateOrganisationViewModel(ISetupService setupService)
     : ObservableValidator
 {
+    [ObservableProperty] private string _city = string.Empty;
+
+    [ObservableProperty] private string _description = string.Empty;
+
+    [ObservableProperty] private string _houseNumber = string.Empty;
+
     [ObservableProperty]
     [Required(ErrorMessage = "the name is required.")]
     [MinLength(3, ErrorMessage = "the name must be at least 3 characters.")]
     [NotifyCanExecuteChangedFor(nameof(CreateOrganisationCommand))]
     private string _name = string.Empty;
 
-    [ObservableProperty] private string _description = string.Empty;
-
-    [ObservableProperty] private string _city = string.Empty;
-
-    [ObservableProperty] private string _street = string.Empty;
-
-    [ObservableProperty] private string _houseNumber = string.Empty;
+    [ObservableProperty] private string _phoneNumber = string.Empty;
 
     [ObservableProperty] private string _postalCode = string.Empty;
 
-    [ObservableProperty] private string _phoneNumber = string.Empty;
+    [ObservableProperty] private string _street = string.Empty;
 
     [ObservableProperty] private string _website = string.Empty;
-
-    [RelayCommand(CanExecute = nameof(IsValid))]
-    private async Task CreateOrganisation()
-    {
-        var organisationWasCreated = await setupService.CreateOrganisation(Name.Trim(), Description.Trim());
-        if (organisationWasCreated)
-        {
-            WeakReferenceMessenger.Default.Send(new OrganisationCreated());
-        }
-    }
 
     public bool IsValid
     {
@@ -49,5 +39,12 @@ public partial class CreateOrganisationViewModel(ISetupService setupService)
             ValidateProperty(Name, nameof(Name));
             return !HasErrors;
         }
+    }
+
+    [RelayCommand(CanExecute = nameof(IsValid))]
+    private async Task CreateOrganisation()
+    {
+        var organisationWasCreated = await setupService.CreateOrganisation(Name.Trim(), Description.Trim());
+        if (organisationWasCreated) WeakReferenceMessenger.Default.Send(new OrganisationCreated());
     }
 }

@@ -12,14 +12,18 @@ using Jamaa.Application.Users.Services;
 using Jamaa.Data.Configuration;
 using Jamaa.Desktop.Accounting;
 using Jamaa.Desktop.Assets.Resources;
+using Jamaa.Desktop.Configuration.Extensions;
+using Jamaa.Desktop.Dashboard;
 using Jamaa.Desktop.Events;
+using Jamaa.Desktop.Members.Components;
+using Jamaa.Desktop.Members.Pages;
+using Jamaa.Desktop.Security;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Models;
 using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Settings;
+using Jamaa.Desktop.Setup;
 using Jamaa.Desktop.Shared;
-using Jamaa.Desktop.Configuration.Extensions;
-using Jamaa.Desktop.Dashboard;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -89,7 +93,10 @@ public static partial class InitializationService
         }
     }
 
-    private static void SetApplicationCulture() => Messages.Culture = CultureInfo.CurrentUICulture;
+    private static void SetApplicationCulture()
+    {
+        Messages.Culture = CultureInfo.CurrentUICulture;
+    }
 
     private static async Task SaveDashboardLayoutAsync(IServiceProvider serviceProvider)
     {
@@ -97,28 +104,20 @@ public static partial class InitializationService
         if (userSessionService?.CurrentUserSession?.IsAuthenticated != true) return;
 
         var dashboard = serviceProvider.GetService<DashboardViewModel>();
-        if (dashboard != null)
-        {
-            await dashboard.SaveLayout();
-        }
+        if (dashboard != null) await dashboard.SaveLayout();
     }
 
     private static async Task StopBackgroundServicesAsync(IServiceProvider serviceProvider)
     {
         var akkaService = serviceProvider.GetService<IHostedService>();
         if (akkaService != null)
-        {
             // Stop background services but avoid UI thread dependencies during disposal if not on UI thread
             await akkaService.StopAsync(CancellationToken.None).ConfigureAwait(false);
-        }
     }
 
     private static void DisposeServiceProvider(IServiceProvider? serviceProvider)
     {
-        if (serviceProvider is IDisposable disposable)
-        {
-            disposable.Dispose();
-        }
+        if (serviceProvider is IDisposable disposable) disposable.Dispose();
     }
 
     private static async Task UpdateStatus(string status, double progress)
@@ -140,14 +139,14 @@ public static partial class InitializationService
     private static IConfigurationRoot BuildConfiguration()
     {
         var baseDir = AppContext.BaseDirectory;
-        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") 
-            ?? Environment.GetEnvironmentVariable("Environment") 
-            ?? "Production";
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+                          ?? Environment.GetEnvironmentVariable("Environment")
+                          ?? "Production";
 
         return new ConfigurationBuilder()
             .SetBasePath(baseDir)
-            .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
-            .AddJsonFile($"appSettings.{environment}.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("appSettings.json", true, true)
+            .AddJsonFile($"appSettings.{environment}.json", true, true)
             .AddEnvironmentVariables()
             .Build();
     }
@@ -176,42 +175,43 @@ public static partial class InitializationService
 
     private static void RegisterRoutes(IRouteRegistry routes)
     {
-        routes.Register(new RouteMap(Path: Routes.Shell, ViewModel: typeof(ShellViewModel), Nested:
+        routes.Register(new RouteMap(Routes.Shell, typeof(ShellViewModel), Nested:
         [
-            new RouteMap(Path: Routes.CreateOrganisation, ViewModel: typeof(Setup.CreateOrganisationViewModel)),
-            new RouteMap(Path: Routes.CreateSuperUser, ViewModel: typeof(Setup.CreateSuperUserViewModel)),
-            new RouteMap(Path: Routes.Login, ViewModel: typeof(Security.LoginScreenViewModel)),
-            new RouteMap(Path: Routes.Home, ViewModel: typeof(MainWindowViewModel), Nested:
+            new RouteMap(Routes.CreateOrganisation, typeof(CreateOrganisationViewModel)),
+            new RouteMap(Routes.CreateSuperUser, typeof(CreateSuperUserViewModel)),
+            new RouteMap(Routes.Login, typeof(LoginScreenViewModel)),
+            new RouteMap(Routes.Home, typeof(MainWindowViewModel), Nested:
             [
-                new RouteMap(Path: Routes.Dashboard, ViewModel: typeof(DashboardViewModel), IsDefault: true),
-                new RouteMap(Path: Routes.MembersOverview, ViewModel: typeof(Members.Pages.MembersOverviewViewModel), Nested:
+                new RouteMap(Routes.Dashboard, typeof(DashboardViewModel), true),
+                new RouteMap(Routes.MembersOverview, typeof(MembersOverviewViewModel), Nested:
                     [
-                        new RouteMap(Path: Routes.MembersList, ViewModel: typeof(Members.Components.MemberListViewModel)),
-                        new RouteMap(Path: Routes.MemberProfile, ViewModel: typeof(Members.Pages.MemberProfileViewModel)),
+                        new RouteMap(Routes.MembersList, typeof(MemberListViewModel)),
+                        new RouteMap(Routes.MemberProfile, typeof(MemberProfileViewModel))
                     ]
                 ),
-                new RouteMap(Path: Routes.EventsOverview, ViewModel: typeof(EventsOverviewPageViewModel)),
-                new RouteMap(Path: Routes.AccountingOverview, ViewModel: typeof(AccountingDashboardViewModel)),
-                new RouteMap(Path: Routes.AccountingDashboard, ViewModel: typeof(AccountingDashboardViewModel)),
-                new RouteMap(Path: Routes.AccountingTransactions, ViewModel: typeof(JournalEntriesViewModel)),
-                new RouteMap(Path: Routes.BankReconciliation, ViewModel: typeof(BankReconciliationViewModel)),
-                new RouteMap(Path: Routes.AccountingReports, ViewModel: typeof(AccountingReportsViewModel)),
-                new RouteMap(Path: Routes.Settings, ViewModel: typeof(SettingsViewModel), Nested:
+                new RouteMap(Routes.EventsOverview, typeof(EventsOverviewPageViewModel)),
+                new RouteMap(Routes.AccountingOverview, typeof(AccountingDashboardViewModel)),
+                new RouteMap(Routes.AccountingDashboard, typeof(AccountingDashboardViewModel)),
+                new RouteMap(Routes.AccountingTransactions, typeof(JournalEntriesViewModel)),
+                new RouteMap(Routes.BankReconciliation, typeof(BankReconciliationViewModel)),
+                new RouteMap(Routes.AccountingReports, typeof(AccountingReportsViewModel)),
+                new RouteMap(Routes.Settings, typeof(SettingsViewModel), Nested:
                 [
-                    new RouteMap(Path: Routes.AccountingConfiguration, ViewModel: typeof(AccountingConfigurationViewModel), Nested:
+                    new RouteMap(Routes.AccountingConfiguration, typeof(AccountingConfigurationViewModel), Nested:
                     [
-                        new RouteMap(Path: Routes.AccountingCurrencyAndDateFormats, ViewModel: typeof(AccountingCurrencyAndDateFormatsViewModel)),
-                        new RouteMap(Path: Routes.FiscalCalendarAndPeriods, ViewModel: typeof(FiscalCalendarAndPeriodsViewModel)),
-                        new RouteMap(Path: Routes.ChartOfAccounts, ViewModel: typeof(ChartOfAccountsViewModel)),
-                        new RouteMap(Path: Routes.TaxGroupsAndAuthorities, ViewModel: typeof(TaxGroupsAndAuthoritiesViewModel)),
-                        new RouteMap(Path: Routes.AutomationRules, ViewModel: typeof(AutomationRulesViewModel)),
-                        new RouteMap(Path: Routes.UserRolesAndApprovals, ViewModel: typeof(UserRolesAndApprovalsViewModel)),
-                        new RouteMap(Path: Routes.OpeningBalancesAndMigration, ViewModel: typeof(OpeningBalancesAndMigrationViewModel)),
-                        new RouteMap(Path: Routes.AccountLedger, ViewModel: typeof(AccountLedgerViewModel)),
+                        new RouteMap(Routes.AccountingCurrencyAndDateFormats,
+                            typeof(AccountingCurrencyAndDateFormatsViewModel)),
+                        new RouteMap(Routes.FiscalCalendarAndPeriods, typeof(FiscalCalendarAndPeriodsViewModel)),
+                        new RouteMap(Routes.ChartOfAccounts, typeof(ChartOfAccountsViewModel)),
+                        new RouteMap(Routes.TaxGroupsAndAuthorities, typeof(TaxGroupsAndAuthoritiesViewModel)),
+                        new RouteMap(Routes.AutomationRules, typeof(AutomationRulesViewModel)),
+                        new RouteMap(Routes.UserRolesAndApprovals, typeof(UserRolesAndApprovalsViewModel)),
+                        new RouteMap(Routes.OpeningBalancesAndMigration, typeof(OpeningBalancesAndMigrationViewModel)),
+                        new RouteMap(Routes.AccountLedger, typeof(AccountLedgerViewModel))
                     ]),
-                    new RouteMap(Path: Routes.EventsConfiguration, ViewModel: typeof(EventsConfigurationViewModel)),
-                ]),
-            ]),
+                    new RouteMap(Routes.EventsConfiguration, typeof(EventsConfigurationViewModel))
+                ])
+            ])
         ]));
     }
 
@@ -231,17 +231,15 @@ public static partial class InitializationService
 
         var pendingMigrations = GetPendingMigrations(dataContext);
         if (pendingMigrations.Length != 0)
-        {
             ApplyMigrations(dataContext, logger, pendingMigrations);
-        }
         else
-        {
             LogDatabaseIsUpToDate(logger);
-        }
     }
 
-    private static string[] GetPendingMigrations(JamaaDbContext dataContext) => 
-        dataContext.Database.GetPendingMigrations().ToArray();
+    private static string[] GetPendingMigrations(JamaaDbContext dataContext)
+    {
+        return dataContext.Database.GetPendingMigrations().ToArray();
+    }
 
     private static void ApplyMigrations(JamaaDbContext dataContext, ILogger<Program> logger, string[] pendingMigrations)
     {
@@ -253,10 +251,26 @@ public static partial class InitializationService
     // Since LoggerMessage is partial, we'd need to put this in a partial class 
     // or just use logger.LogError directly for simplicity if it's not a performance-critical path.
     // However, I will keep it simple for now or use the logger directly.
-    private static void LogException(ILogger logger) => logger.LogError("An error occurred during database update.");
-    private static void LogApplyingPendingMigrations(ILogger logger, string migrations) => logger.LogApplyingPendingMigrationsMigrations(migrations);
-    private static void LogTheDatabaseWasUpgraded(ILogger logger) => logger.LogDebug("The database was upgraded");
-    private static void LogDatabaseIsUpToDate(ILogger logger) => logger.LogDebug("Database is up-to-date!");
+    private static void LogException(ILogger logger)
+    {
+        logger.LogError("An error occurred during database update.");
+    }
+
+    private static void LogApplyingPendingMigrations(ILogger logger, string migrations)
+    {
+        logger.LogApplyingPendingMigrationsMigrations(migrations);
+    }
+
+    private static void LogTheDatabaseWasUpgraded(ILogger logger)
+    {
+        logger.LogDebug("The database was upgraded");
+    }
+
+    private static void LogDatabaseIsUpToDate(ILogger logger)
+    {
+        logger.LogDebug("Database is up-to-date!");
+    }
+
     [LoggerMessage(LogLevel.Debug, "Applying pending migrations: [{migrations}]")]
     static partial void LogApplyingPendingMigrationsMigrations(this ILogger logger, string migrations);
 }

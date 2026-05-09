@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Jamaa.Application.Finances.Aggregates;
+using Jamaa.Application.Accounting.Aggregates;
 using Shouldly;
 using Xunit;
 
@@ -159,10 +159,12 @@ public class FiscalYearUpdatePlannerTests
     {
         return
         [
-            new("fy-1", new DateTime(2024, 1, 1), new DateTime(2024, 12, 31), false),
-            new("fy-2", new DateTime(2025, 1, 1), new DateTime(2025, 12, 31), false),
-            new("fy-3", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31), false)
+            new FiscalYearUpdatePlanner.FiscalYearWindow("fy-1", new DateTime(2024, 1, 1), new DateTime(2024, 12, 31),
+                false),
+            new FiscalYearUpdatePlanner.FiscalYearWindow("fy-2", new DateTime(2025, 1, 1), new DateTime(2025, 12, 31),
+                false),
+            new FiscalYearUpdatePlanner.FiscalYearWindow("fy-3", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31),
+                false)
         ];
     }
 }
-

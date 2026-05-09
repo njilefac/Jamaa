@@ -6,23 +6,24 @@ namespace Jamaa.Desktop.Members.ViewModels;
 
 public partial class MemberViewModel : ObservableObject
 {
-    [ObservableProperty] private string _id = string.Empty;
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FullName))]
-    private string _lastName = string.Empty;
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FullName))]
-    private string? _middleName;
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FullName))]
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FullName))]
     private string _firstName = string.Empty;
-    [ObservableProperty] private Gender _gender;
-    [ObservableProperty] private string _organisationId = string.Empty;
-    [ObservableProperty] private RegistrationViewModel? _registration;
-    [ObservableProperty] private byte[]? _pictureData;
 
-    public string FullName => string.IsNullOrWhiteSpace(MiddleName) 
-        ? $"{FirstName} {LastName}" 
+    [ObservableProperty] private Gender _gender;
+    [ObservableProperty] private string _id = string.Empty;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FullName))]
+    private string _lastName = string.Empty;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FullName))]
+    private string? _middleName;
+
+    [ObservableProperty] private string _organisationId = string.Empty;
+    [ObservableProperty] private byte[]? _pictureData;
+    [ObservableProperty] private RegistrationViewModel? _registration;
+
+    public string FullName => string.IsNullOrWhiteSpace(MiddleName)
+        ? $"{FirstName} {LastName}"
         : $"{FirstName} {MiddleName} {LastName}";
 
     public void UpdateFrom(MemberData member)
@@ -35,7 +36,6 @@ public partial class MemberViewModel : ObservableObject
         PictureData = member.PictureData;
         var registration = member.Registration;
         if (Registration == null || Registration.Id != registration.Id)
-        {
             Registration = new RegistrationViewModel
             {
                 Id = registration.Id,
@@ -44,10 +44,7 @@ public partial class MemberViewModel : ObservableObject
                 MembershipType = registration.MembershipType,
                 Status = registration.Status
             };
-        }
         else
-        {
             Registration.UpdateFrom(registration);
-        }
     }
 }

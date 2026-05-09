@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Jamaa.Application.Finances.Events;
+using Jamaa.Application.Accounting.Events;
 using Jamaa.Application.Shared;
 using Shouldly;
 using Xunit;
@@ -15,14 +15,14 @@ public class AccountingPeriodRegenerationTests
     {
         // Arrange: existing 6-month periods plus regenerated full-year periods.
         var oldHalfYearPeriods = BuildMonthlyPeriods(
-            prefix: "old",
+            "old",
             new DateTime(2027, 1, 1),
-            monthCount: 6);
+            6);
 
         var regeneratedFullYearPeriods = BuildMonthlyPeriods(
-            prefix: "new",
+            "new",
             new DateTime(2027, 1, 1),
-            monthCount: 12);
+            12);
 
         var mixedPeriods = oldHalfYearPeriods
             .Concat(regeneratedFullYearPeriods)
@@ -43,13 +43,12 @@ public class AccountingPeriodRegenerationTests
         uniquePeriods.Last().EndDate.Date.ShouldBe(new DateTime(2027, 12, 31));
 
         for (var index = 1; index < uniquePeriods.Count; index++)
-        {
             uniquePeriods[index].StartDate.Date.ShouldBe(uniquePeriods[index - 1].EndDate.Date.AddDays(1));
-        }
     }
 
     // Operation: builds contiguous monthly periods from a start date.
-    private static IReadOnlyList<AccountingPeriodInfo> BuildMonthlyPeriods(string prefix, DateTime startDate, int monthCount)
+    private static IReadOnlyList<AccountingPeriodInfo> BuildMonthlyPeriods(string prefix, DateTime startDate,
+        int monthCount)
     {
         var periods = new List<AccountingPeriodInfo>();
         var periodStart = startDate.Date;
@@ -70,5 +69,3 @@ public class AccountingPeriodRegenerationTests
         return periods;
     }
 }
-
-

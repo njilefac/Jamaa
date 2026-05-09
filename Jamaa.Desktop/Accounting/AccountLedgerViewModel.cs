@@ -12,6 +12,12 @@ public partial class AccountLedgerViewModel : ObservableObject,
     IRecipient<AccountLedgerNavigationRequested>,
     IDisposable
 {
+    [ObservableProperty] private string _accountCode = string.Empty;
+
+    [ObservableProperty] private string _accountId = string.Empty;
+
+    [ObservableProperty] private string _accountName = string.Empty;
+
     public AccountLedgerViewModel()
     {
         WeakReferenceMessenger.Default.RegisterAll(this);
@@ -21,21 +27,10 @@ public partial class AccountLedgerViewModel : ObservableObject,
     public string Title => "Account Ledger";
     public object? HeaderContent => null;
 
-    [ObservableProperty]
-    private string _accountId = string.Empty;
-
-    [ObservableProperty]
-    private string _accountName = string.Empty;
-
-    [ObservableProperty]
-    private string _accountCode = string.Empty;
-
-    // Operation: initialises the ledger view for the given account.
-    public void LoadAccount(string accountId, string accountCode, string accountName)
+    public void Dispose()
     {
-        AccountId = accountId;
-        AccountCode = accountCode;
-        AccountName = accountName;
+        GC.SuppressFinalize(this);
+        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
     // Operation: receives the navigation message and updates account context before the page renders.
@@ -44,9 +39,11 @@ public partial class AccountLedgerViewModel : ObservableObject,
         LoadAccount(message.AccountId, message.AccountCode, message.AccountName);
     }
 
-    public void Dispose()
+    // Operation: initialises the ledger view for the given account.
+    public void LoadAccount(string accountId, string accountCode, string accountName)
     {
-        GC.SuppressFinalize(this);
-        WeakReferenceMessenger.Default.UnregisterAll(this);
+        AccountId = accountId;
+        AccountCode = accountCode;
+        AccountName = accountName;
     }
 }

@@ -1,44 +1,36 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Domain.Finances.Values;
+using Domain.Accounting.Values;
 
 namespace Jamaa.Desktop.Accounting;
 
 public partial class AccountItemViewModel : ObservableObject
 {
-    [ObservableProperty]
-    private string _id = string.Empty;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(DisplayLabel))]
-    private string _name = string.Empty;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(DisplayLabel))]
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(DisplayLabel))]
     private string _code = string.Empty;
 
-    [ObservableProperty]
-    private string _description = string.Empty;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(TypeDisplay))]
-    private AccountType _type;
-
-    [ObservableProperty]
-    private string? _parentAccountId;
-
-    [ObservableProperty]
-    private AccountItemViewModel? _parent;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(TreeName))]
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(TreeName))]
     private int _depth;
+
+    [ObservableProperty] private string _description = string.Empty;
+
+    [ObservableProperty] private string _id = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ToggleStateLabel))]
     [NotifyPropertyChangedFor(nameof(ToggleActiveToolTip))]
     private bool _isActive = true;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(DisplayLabel))]
+    private string _name = string.Empty;
+
+    [ObservableProperty] private AccountItemViewModel? _parent;
+
+    [ObservableProperty] private string? _parentAccountId;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(TypeDisplay))]
+    private AccountType _type;
 
     public string DisplayLabel => $"{Code} - {Name}";
     public string TypeDisplay => Type.ToString();

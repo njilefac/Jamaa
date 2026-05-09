@@ -8,19 +8,34 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Domain.Users;
+using Jamaa.Application.Users;
 using Jamaa.Application.Users.Services;
 using Jamaa.Desktop.Security.Events;
 using Jamaa.Desktop.Shared;
 
 namespace Jamaa.Desktop.Dashboard;
 
-public partial class DashboardViewModel : ObservableObject, 
+public partial class DashboardViewModel : ObservableObject,
     IApplicationModule,
     IRecipient<UserLoggedOut>,
     IRecipient<UserAuthenticated>
 {
-    private readonly IUserSessionService _userSessionService;
     private readonly IUserRepository _userRepository;
+    private readonly IUserSessionService _userSessionService;
+
+    public DashboardViewModel(IUserSessionService userSessionService, IUserRepository userRepository)
+    {
+        _userSessionService = userSessionService;
+        _userRepository = userRepository;
+
+        // Register first so we can receive messages
+        WeakReferenceMessenger.Default.RegisterAll(this);
+
+        if (_userSessionService.CurrentUserSession is { IsAuthenticated: true })
+            _ = LoadLayout(_userSessionService.CurrentUserSession);
+        else
+            ApplyDefaultGrid();
+    }
 
     private static int MaxColumns => 3;
     private static int MaxRows => 2;
@@ -28,22 +43,13 @@ public partial class DashboardViewModel : ObservableObject,
     public ObservableCollection<WidgetViewModelBase> ActiveWidgets { get; set; } = [];
     public ObservableCollection<WidgetViewModelBase> AvailableWidgets { get; set; } = [];
 
-    public DashboardViewModel(IUserSessionService userSessionService, IUserRepository userRepository)
-    {
-        _userSessionService = userSessionService;
-        _userRepository = userRepository;
-        
-        // Register first so we can receive messages
-        WeakReferenceMessenger.Default.RegisterAll(this);
+    public Guid Id => Guid.Parse("30081491-B585-464D-AED1-BA3782D0E939");
+    public string Title => "Dashboard";
+    public object? HeaderContent => null;
 
-        if (_userSessionService.CurrentUserSession is { IsAuthenticated: true })
-        {
-            _ = LoadLayout(_userSessionService.CurrentUserSession);
-        }
-        else
-        {
-            ApplyDefaultGrid();
-        }
+    public void Receive(UserAuthenticated message)
+    {
+        _ = LoadLayout(message.Session);
     }
 
     public void Receive(UserLoggedOut message)
@@ -51,17 +57,10 @@ public partial class DashboardViewModel : ObservableObject,
         _ = SaveLayout();
     }
 
-    public void Receive(UserAuthenticated message)
-    {
-        _ = LoadLayout(message.Session);
-    }
-
     private bool CanAddWidget(object? parameter)
     {
         if (parameter is object[] values && values.Length == 2 && values[0] is EmptyCellViewModel cell)
-        {
             return cell.HasCompatibleWidgets;
-        }
         return AvailableWidgets.Any();
     }
 
@@ -69,7 +68,7 @@ public partial class DashboardViewModel : ObservableObject,
     {
         var activeTypes = GetActiveWidgetTypes();
         var allPossibleWidgets = CreateAllPossibleWidgets();
-        
+
         AvailableWidgets.Clear();
         PopulateAvailableWidgets(allPossibleWidgets, activeTypes);
 
@@ -77,41 +76,42 @@ public partial class DashboardViewModel : ObservableObject,
         NotifyCommandsCanExecuteChanged();
     }
 
-    private HashSet<Type> GetActiveWidgetTypes() =>
-        ActiveWidgets
+    private HashSet<Type> GetActiveWidgetTypes()
+    {
+        return ActiveWidgets
             .Where(w => w is not EmptyCellViewModel)
             .Select(w => w.GetType())
             .ToHashSet();
+    }
 
-    private static List<WidgetViewModelBase> CreateAllPossibleWidgets() =>
-    [
-        new ReportingAndAnalyticsWidgetViewModel(),
-        new BookkeepingWidgetViewModel(),
-        new RecentActivityFeedWidgetViewModel(),
-        new CalendarScheduleWidgetViewModel(),
-        new AlertsAndNotificationsWidgetViewModel(),
-        new QuickActionsWidgetViewModel(),
-        new MembershipStatsWidgetViewModel()
-    ];
+    private static List<WidgetViewModelBase> CreateAllPossibleWidgets()
+    {
+        return
+        [
+            new ReportingAndAnalyticsWidgetViewModel(),
+            new BookkeepingWidgetViewModel(),
+            new RecentActivityFeedWidgetViewModel(),
+            new CalendarScheduleWidgetViewModel(),
+            new AlertsAndNotificationsWidgetViewModel(),
+            new QuickActionsWidgetViewModel(),
+            new MembershipStatsWidgetViewModel()
+        ];
+    }
 
-    private void PopulateAvailableWidgets(IEnumerable<WidgetViewModelBase> allPossibleWidgets, HashSet<Type> activeTypes)
+    private void PopulateAvailableWidgets(IEnumerable<WidgetViewModelBase> allPossibleWidgets,
+        HashSet<Type> activeTypes)
     {
         foreach (var widget in allPossibleWidgets)
-        {
             if (!activeTypes.Contains(widget.GetType()))
             {
                 widget.ParentViewModel = this;
                 AvailableWidgets.Add(widget);
             }
-        }
     }
 
     private void NotifyAllWidgetsOfCompatibility()
     {
-        foreach (var widget in ActiveWidgets)
-        {
-            widget.NotifyCompatibilityChanged();
-        }
+        foreach (var widget in ActiveWidgets) widget.NotifyCompatibilityChanged();
     }
 
     private void NotifyCommandsCanExecuteChanged()
@@ -135,7 +135,7 @@ public partial class DashboardViewModel : ObservableObject,
         UpdateWidgetPosition(widgetToAdd, cell.Row, cell.Column);
         ActiveWidgets.Remove(cell);
         ActiveWidgets.Add(widgetToAdd);
-        
+
         FinalizeLayoutChange();
     }
 
@@ -148,18 +148,18 @@ public partial class DashboardViewModel : ObservableObject,
         UpdateWidgetPosition(newWidget, oldWidget.Row, oldWidget.Column);
         ActiveWidgets.Remove(oldWidget);
         ActiveWidgets.Add(newWidget);
-        
+
         FinalizeLayoutChange();
     }
 
     private void RemoveWidget(WidgetViewModelBase? widget)
     {
         if (widget is not { IsRemovable: true }) return;
-        
+
         var emptyCell = CreateEmptyCell(widget.Row, widget.Column);
         ActiveWidgets.Remove(widget);
         ActiveWidgets.Add(emptyCell);
-        
+
         FinalizeLayoutChange();
     }
 
@@ -173,7 +173,7 @@ public partial class DashboardViewModel : ObservableObject,
 
     private EmptyCellViewModel CreateEmptyCell(int row, int column)
     {
-        var boxSize = (column == 1) ? BoxSize.Wide : BoxSize.Small;
+        var boxSize = column == 1 ? BoxSize.Wide : BoxSize.Small;
         return new EmptyCellViewModel(row, column, boxSize)
         {
             ParentViewModel = this
@@ -214,20 +214,15 @@ public partial class DashboardViewModel : ObservableObject,
 
     private static bool CanReplaceWidget(object? parameter)
     {
-        if (parameter is WidgetViewModelBase widget)
-        {
-            return widget.HasCompatibleWidgets;
-        }
+        if (parameter is WidgetViewModelBase widget) return widget.HasCompatibleWidgets;
 
         if (parameter is object[] { Length: 2 } values && values[0] is WidgetViewModelBase oldWidget)
-        {
             return oldWidget.HasCompatibleWidgets;
-        }
 
         return false;
     }
 
-    private async Task LoadLayout(Jamaa.Application.Users.UserSession? session = null)
+    private async Task LoadLayout(UserSession? session = null)
     {
         session ??= _userSessionService.CurrentUserSession;
         if (!IsAuthenticated(session))
@@ -240,13 +235,9 @@ public partial class DashboardViewModel : ObservableObject,
         {
             var jsonString = await FetchUserDashboardLayout(session!.UserId!.Value);
             if (jsonString == null)
-            {
                 ApplyDefaultGrid();
-            }
             else
-            {
                 ApplyLoadedLayout(jsonString);
-            }
         }
         catch
         {
@@ -254,16 +245,15 @@ public partial class DashboardViewModel : ObservableObject,
         }
     }
 
-    private static bool IsAuthenticated(Jamaa.Application.Users.UserSession? session) =>
-        session is { IsAuthenticated: true, UserId: not null };
+    private static bool IsAuthenticated(UserSession? session)
+    {
+        return session is { IsAuthenticated: true, UserId: not null };
+    }
 
     private async Task<string?> FetchUserDashboardLayout(Guid userId)
     {
         var user = await _userRepository.GetById(userId);
-        if (user == null)
-        {
-            return null;
-        }
+        if (user == null) return null;
         return string.IsNullOrWhiteSpace(user.DashboardLayout) ? null : user.DashboardLayout;
     }
 
@@ -277,10 +267,7 @@ public partial class DashboardViewModel : ObservableObject,
         }
 
         LoadDefaultGrid();
-        foreach (var widget in loadedWidgets)
-        {
-            ReconcileWidgetPosition(widget);
-        }
+        foreach (var widget in loadedWidgets) ReconcileWidgetPosition(widget);
         UpdateAvailableWidgets();
     }
 
@@ -301,25 +288,19 @@ public partial class DashboardViewModel : ObservableObject,
         UpdateWidgetPosition(widget, widget.Row, widget.Column);
 
         // Find the corresponding widget to replace
-        var existingWidgetAtPosition = ActiveWidgets.FirstOrDefault(w => 
-            w.Row == widget.Row && 
+        var existingWidgetAtPosition = ActiveWidgets.FirstOrDefault(w =>
+            w.Row == widget.Row &&
             w.Column == widget.Column);
 
         // Find if this widget type already exists in another position from the default grid
-        var existingSameTypeWidget = ActiveWidgets.FirstOrDefault(w => 
-            w.GetType() == widget.GetType() && 
+        var existingSameTypeWidget = ActiveWidgets.FirstOrDefault(w =>
+            w.GetType() == widget.GetType() &&
             (w.Row != widget.Row || w.Column != widget.Column));
 
-        if (existingSameTypeWidget != null)
-        {
-            ReplaceWithEmptyCell(existingSameTypeWidget);
-        }
+        if (existingSameTypeWidget != null) ReplaceWithEmptyCell(existingSameTypeWidget);
 
-        if (existingWidgetAtPosition != null)
-        {
-            ActiveWidgets.Remove(existingWidgetAtPosition);
-        }
-        
+        if (existingWidgetAtPosition != null) ActiveWidgets.Remove(existingWidgetAtPosition);
+
         ActiveWidgets.Add(widget);
     }
 
@@ -340,29 +321,25 @@ public partial class DashboardViewModel : ObservableObject,
     {
         ActiveWidgets.Clear();
         var defaultWidgets = CreateDefaultWidgets();
-        foreach (var widget in defaultWidgets)
-        {
-            ActiveWidgets.Add(widget);
-        }
+        foreach (var widget in defaultWidgets) ActiveWidgets.Add(widget);
     }
 
     private List<WidgetViewModelBase> CreateDefaultWidgets()
     {
         var widgets = new List<WidgetViewModelBase>();
         for (var r = 0; r < MaxRows; r++)
+        for (var c = 0; c < MaxColumns; c++)
         {
-            for (var c = 0; c < MaxColumns; c++)
-            {
-                var widget = CreateDefaultWidgetAt(r, c);
-                widgets.Add(widget);
-            }
+            var widget = CreateDefaultWidgetAt(r, c);
+            widgets.Add(widget);
         }
+
         return widgets;
     }
 
     private WidgetViewModelBase CreateDefaultWidgetAt(int r, int c)
     {
-        var boxSize = (c == 1) ? BoxSize.Wide : BoxSize.Small;
+        var boxSize = c == 1 ? BoxSize.Wide : BoxSize.Small;
         WidgetViewModelBase widget = (r, c) switch
         {
             (0, 0) => new MembershipStatsWidgetViewModel(),
@@ -375,10 +352,7 @@ public partial class DashboardViewModel : ObservableObject,
         };
 
         UpdateWidgetPosition(widget, r, c);
-        if (widget is EmptyCellViewModel)
-        {
-            widget.RemoveCommand = null;
-        }
+        if (widget is EmptyCellViewModel) widget.RemoveCommand = null;
         return widget;
     }
 
@@ -388,8 +362,4 @@ public partial class DashboardViewModel : ObservableObject,
         ApplyDefaultGrid();
         await SaveLayout();
     }
-
-    public Guid Id => Guid.Parse("30081491-B585-464D-AED1-BA3782D0E939");
-    public string Title => "Dashboard";
-    public object? HeaderContent => null;
 }

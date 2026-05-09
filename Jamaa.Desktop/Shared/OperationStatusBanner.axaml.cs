@@ -34,4 +34,3 @@ public partial class OperationStatusBanner : UserControl
         AvaloniaXamlLoader.Load(this);
     }
 }
-

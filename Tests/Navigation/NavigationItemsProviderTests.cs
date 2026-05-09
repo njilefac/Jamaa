@@ -48,5 +48,3 @@ public class NavigationItemsProviderTests
         items.Any(x => x.TargetRoute == Routes.Settings).ShouldBeFalse();
     }
 }
-
-

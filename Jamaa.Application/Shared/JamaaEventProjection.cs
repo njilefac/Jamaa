@@ -4,7 +4,7 @@ using Akka.Persistence.Sql.Query;
 using Akka.Streams;
 using Akka.Streams.Dsl;
 using Domain.Organisation.Values;
-using Jamaa.Application.Finances.Events;
+using Jamaa.Application.Accounting.Events;
 using Jamaa.Application.Members.Events;
 using Jamaa.Application.Organisation.Events;
 using Jamaa.Data.Configuration;
@@ -20,8 +20,8 @@ namespace Jamaa.Application.Shared;
 
 public class OrganisationProjection : ReceivePersistentActor
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<OrganisationProjection> _logger;
+    private readonly IServiceProvider _serviceProvider;
     private MaterializedViewState _state = new(Offset.NoOffset());
 
     public OrganisationProjection(IServiceProvider serviceProvider, ILogger<OrganisationProjection> logger)
@@ -34,9 +34,12 @@ public class OrganisationProjection : ReceivePersistentActor
         RegisterCommandHandlers();
     }
 
+    public override string PersistenceId { get; }
+
     protected override void OnReplaySuccess()
     {
-        var readJournal = PersistenceQuery.Get(Context.System).ReadJournalFor<SqlReadJournal>("akka.persistence.query.journal.sql");
+        var readJournal = PersistenceQuery.Get(Context.System)
+            .ReadJournalFor<SqlReadJournal>("akka.persistence.query.journal.sql");
         var self = Self;
         var sink = Sink.ActorRefWithAck<EventEnvelope>(self, ProjectionStarting.Instance, ProjectionAck.Instance,
             ProjectionCompleted.Instance, ex => new ProjectionFailed(ex));
@@ -59,7 +62,9 @@ public class OrganisationProjection : ReceivePersistentActor
                 return;
             }
 
-            _logger.LogWarning("Unsupported event [{EventType}] at offset [{Offset}] found by projector. Maybe this was tagged incorrectly?", e.Event, e.Offset);
+            _logger.LogWarning(
+                "Unsupported event [{EventType}] at offset [{Offset}] found by projector. Maybe this was tagged incorrectly?",
+                e.Event, e.Offset);
             Sender.Tell(ProjectionAck.Instance, Self);
         });
 
@@ -104,7 +109,8 @@ public class OrganisationProjection : ReceivePersistentActor
             FiscalYearCreated fiscalYearCreated => Handle(fiscalYearCreated, dbContext),
             FiscalYearUpdated fiscalYearUpdated => Handle(fiscalYearUpdated, dbContext),
             FiscalYearDeleted fiscalYearDeleted => Handle(fiscalYearDeleted, dbContext),
-            FiscalYearPeriodsRegenerated fiscalYearPeriodsRegenerated => Handle(fiscalYearPeriodsRegenerated, dbContext),
+            FiscalYearPeriodsRegenerated fiscalYearPeriodsRegenerated =>
+                Handle(fiscalYearPeriodsRegenerated, dbContext),
             AccountingPeriodCreated accountingPeriodCreated => Handle(accountingPeriodCreated, dbContext),
             AccountingPeriodUpdated accountingPeriodUpdated => Handle(accountingPeriodUpdated, dbContext),
             AccountingPeriodDeleted accountingPeriodDeleted => Handle(accountingPeriodDeleted, dbContext),
@@ -117,10 +123,7 @@ public class OrganisationProjection : ReceivePersistentActor
     private async Task Handle(AccountCreated @event, JamaaDbContext dbContext)
     {
         var exists = await dbContext.Accounts.AnyAsync(account => account.Id == @event.AccountId.Value);
-        if (exists)
-        {
-            return;
-        }
+        if (exists) return;
 
         dbContext.Accounts.Add(new AccountData
         {
@@ -140,10 +143,7 @@ public class OrganisationProjection : ReceivePersistentActor
     private async Task Handle(AccountUpdated @event, JamaaDbContext dbContext)
     {
         var account = await dbContext.Accounts.FirstOrDefaultAsync(current => current.Id == @event.AccountId.Value);
-        if (account is null)
-        {
-            return;
-        }
+        if (account is null) return;
 
         account.Code = @event.Code;
         account.Name = @event.Name;
@@ -158,10 +158,7 @@ public class OrganisationProjection : ReceivePersistentActor
     private async Task Handle(AccountDeleted @event, JamaaDbContext dbContext)
     {
         var account = await dbContext.Accounts.FirstOrDefaultAsync(current => current.Id == @event.AccountId.Value);
-        if (account is null)
-        {
-            return;
-        }
+        if (account is null) return;
 
         dbContext.Accounts.Remove(account);
         await SaveChangesWithSqliteRetryAsync(dbContext);
@@ -171,10 +168,7 @@ public class OrganisationProjection : ReceivePersistentActor
     private async Task Handle(AccountDeactivated @event, JamaaDbContext dbContext)
     {
         var account = await dbContext.Accounts.FirstOrDefaultAsync(current => current.Id == @event.AccountId.Value);
-        if (account is null)
-        {
-            return;
-        }
+        if (account is null) return;
 
         account.IsActive = false;
         await SaveChangesWithSqliteRetryAsync(dbContext);
@@ -184,10 +178,7 @@ public class OrganisationProjection : ReceivePersistentActor
     private async Task Handle(AccountReactivated @event, JamaaDbContext dbContext)
     {
         var account = await dbContext.Accounts.FirstOrDefaultAsync(current => current.Id == @event.AccountId.Value);
-        if (account is null)
-        {
-            return;
-        }
+        if (account is null) return;
 
         account.IsActive = true;
         await SaveChangesWithSqliteRetryAsync(dbContext);
@@ -196,10 +187,7 @@ public class OrganisationProjection : ReceivePersistentActor
     private async Task Handle(FiscalYearCreated @event, JamaaDbContext dbContext)
     {
         var exists = await dbContext.FiscalYears.AnyAsync(fiscalYear => fiscalYear.Id == @event.FiscalYearId.Value);
-        if (exists)
-        {
-            return;
-        }
+        if (exists) return;
 
         dbContext.FiscalYears.Add(new FiscalYearData
         {
@@ -218,22 +206,15 @@ public class OrganisationProjection : ReceivePersistentActor
         var fiscalYear = await dbContext.FiscalYears
             .Include(current => current.Periods)
             .FirstOrDefaultAsync(current => current.Id == @event.FiscalYearId.Value);
-        if (fiscalYear is null)
-        {
-            return;
-        }
+        if (fiscalYear is null) return;
 
         fiscalYear.StartDate = @event.StartDate;
         fiscalYear.EndDate = @event.EndDate;
         fiscalYear.IsLocked = @event.IsLocked;
 
         if (fiscalYear.IsLocked)
-        {
             foreach (var period in fiscalYear.Periods)
-            {
                 period.IsLocked = true;
-            }
-        }
 
         await SaveChangesWithSqliteRetryAsync(dbContext);
     }
@@ -244,10 +225,7 @@ public class OrganisationProjection : ReceivePersistentActor
             .Include(current => current.Periods)
             .FirstOrDefaultAsync(current => current.Id == @event.FiscalYearId.Value);
 
-        if (fiscalYear is null)
-        {
-            return;
-        }
+        if (fiscalYear is null) return;
 
         dbContext.AccountingPeriods.RemoveRange(fiscalYear.Periods);
         dbContext.FiscalYears.Remove(fiscalYear);
@@ -261,10 +239,7 @@ public class OrganisationProjection : ReceivePersistentActor
             .Include(current => current.Periods)
             .FirstOrDefaultAsync(current => current.Id == @event.FiscalYearId.Value);
 
-        if (fiscalYear is null)
-        {
-            return;
-        }
+        if (fiscalYear is null) return;
 
         // Replace all periods for the fiscal year so no stale rows remain in the read model.
         dbContext.AccountingPeriods.RemoveRange(fiscalYear.Periods);
@@ -279,10 +254,7 @@ public class OrganisationProjection : ReceivePersistentActor
                 period.OrganisationId == @event.OrganisationId.Value &&
                 period.StartDate == periodData.StartDate &&
                 period.EndDate == periodData.EndDate);
-            if (existsByNaturalKey)
-            {
-                continue;
-            }
+            if (existsByNaturalKey) continue;
 
             dbContext.AccountingPeriods.Add(new AccountingPeriodData
             {
@@ -301,7 +273,8 @@ public class OrganisationProjection : ReceivePersistentActor
     }
 
     // Operation: deduplicates periods by date-range key and keeps deterministic sequence ordering.
-    public static IReadOnlyList<AccountingPeriodInfo> BuildUniqueAccountingPeriods(IReadOnlyList<AccountingPeriodInfo> periods)
+    public static IReadOnlyList<AccountingPeriodInfo> BuildUniqueAccountingPeriods(
+        IReadOnlyList<AccountingPeriodInfo> periods)
     {
         return periods
             .GroupBy(period => new { StartDate = period.StartDate.Date, EndDate = period.EndDate.Date })
@@ -312,26 +285,18 @@ public class OrganisationProjection : ReceivePersistentActor
 
     private async Task Handle(AccountingPeriodCreated @event, JamaaDbContext dbContext)
     {
-        var fiscalYear = await dbContext.FiscalYears.FirstOrDefaultAsync(current => current.Id == @event.FiscalYearId.Value);
-        if (fiscalYear is null)
-        {
-            return;
-        }
+        var fiscalYear =
+            await dbContext.FiscalYears.FirstOrDefaultAsync(current => current.Id == @event.FiscalYearId.Value);
+        if (fiscalYear is null) return;
 
         var exists = await dbContext.AccountingPeriods.AnyAsync(period => period.Id == @event.AccountingPeriodId.Value);
-        if (exists)
-        {
-            return;
-        }
+        if (exists) return;
 
         var duplicateNaturalKeyExists = await dbContext.AccountingPeriods.AnyAsync(period =>
             period.OrganisationId == @event.OrganisationId.Value &&
             period.StartDate == @event.StartDate &&
             period.EndDate == @event.EndDate);
-        if (duplicateNaturalKeyExists)
-        {
-            return;
-        }
+        if (duplicateNaturalKeyExists) return;
 
         dbContext.AccountingPeriods.Add(new AccountingPeriodData
         {
@@ -349,21 +314,17 @@ public class OrganisationProjection : ReceivePersistentActor
 
     private async Task Handle(AccountingPeriodUpdated @event, JamaaDbContext dbContext)
     {
-        var period = await dbContext.AccountingPeriods.FirstOrDefaultAsync(current => current.Id == @event.AccountingPeriodId.Value);
-        if (period is null)
-        {
-            return;
-        }
+        var period =
+            await dbContext.AccountingPeriods.FirstOrDefaultAsync(current =>
+                current.Id == @event.AccountingPeriodId.Value);
+        if (period is null) return;
 
         var duplicateNaturalKeyExists = await dbContext.AccountingPeriods.AnyAsync(current =>
             current.Id != @event.AccountingPeriodId.Value &&
             current.OrganisationId == @event.OrganisationId.Value &&
             current.StartDate == @event.StartDate &&
             current.EndDate == @event.EndDate);
-        if (duplicateNaturalKeyExists)
-        {
-            return;
-        }
+        if (duplicateNaturalKeyExists) return;
 
         period.SequenceNumber = @event.SequenceNumber;
         period.StartDate = @event.StartDate;
@@ -375,11 +336,10 @@ public class OrganisationProjection : ReceivePersistentActor
 
     private async Task Handle(AccountingPeriodDeleted @event, JamaaDbContext dbContext)
     {
-        var period = await dbContext.AccountingPeriods.FirstOrDefaultAsync(current => current.Id == @event.AccountingPeriodId.Value);
-        if (period is null)
-        {
-            return;
-        }
+        var period =
+            await dbContext.AccountingPeriods.FirstOrDefaultAsync(current =>
+                current.Id == @event.AccountingPeriodId.Value);
+        if (period is null) return;
 
         dbContext.AccountingPeriods.Remove(period);
         await SaveChangesWithSqliteRetryAsync(dbContext);
@@ -394,7 +354,7 @@ public class OrganisationProjection : ReceivePersistentActor
 
         if (existing is null)
         {
-            dbContext.AccountingSettings.Add(new Data.Models.Finances.AccountingSettingsData
+            dbContext.AccountingSettings.Add(new AccountingSettingsData
             {
                 OrganisationId = @event.OrganisationId.Value,
                 BaseCurrency = @event.BaseCurrency,
@@ -453,19 +413,15 @@ public class OrganisationProjection : ReceivePersistentActor
             .FirstOrDefaultAsync(m => m.Id == @event.Id.Value);
 
         if (member == null)
-        {
             member = await dbContext.Set<MemberData>()
                 .Include(m => m.Registration)
                 .FirstOrDefaultAsync(m => m.OrganisationId == @event.OrganisationId.Value
-                                           && m.FirstName == @event.FirstName
-                                           && m.LastName == @event.LastName);
-        }
+                                          && m.FirstName == @event.FirstName
+                                          && m.LastName == @event.LastName);
 
         if (member == null)
-        {
             // Nothing to update in read model
             return;
-        }
 
         member.FirstName = @event.FirstName;
         member.MiddleName = @event.MiddleName;
@@ -538,22 +494,57 @@ public class OrganisationProjection : ReceivePersistentActor
 
     private void PersistAndAck(Offset currentOffset, IJamaaEvent evt)
     {
-        var nextState = new MaterializedViewState(LastOffset: currentOffset);
+        var nextState = new MaterializedViewState(currentOffset);
         Persist(nextState, state =>
         {
             _state = state;
-            _logger.LogInformation("Successfully processed event [{Event}] - projection state updated to [{Offset}]", evt,
+            _logger.LogInformation("Successfully processed event [{Event}] - projection state updated to [{Offset}]",
+                evt,
                 currentOffset);
             Sender.Tell(ProjectionAck.Instance, Self);
 
-            if (LastSequenceNr % 10 == 0)
-            {
-                SaveSnapshot(_state);
-            }
+            if (LastSequenceNr % 10 == 0) SaveSnapshot(_state);
         });
     }
 
-    public override string PersistenceId { get; }
+    // Operation: persists projection writes with transient SQLite lock retries.
+    private async Task SaveChangesWithSqliteRetryAsync(JamaaDbContext dbContext)
+    {
+        const int maxAttempts = 4;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+            try
+            {
+                await dbContext.SaveChangesAsync();
+                return;
+            }
+            catch (Exception exception) when (IsTransientSqliteLock(exception) && attempt < maxAttempts)
+            {
+                var delay = TimeSpan.FromMilliseconds(75 * attempt);
+                _logger.LogWarning(
+                    exception,
+                    "Transient SQLite lock while saving projection changes. Retrying in {DelayMs}ms (attempt {Attempt}/{MaxAttempts}).",
+                    delay.TotalMilliseconds,
+                    attempt,
+                    maxAttempts);
+
+                await Task.Delay(delay);
+            }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    // Operation: identifies retry-safe SQLite lock/busy failures.
+    private static bool IsTransientSqliteLock(Exception exception)
+    {
+        return exception switch
+        {
+            SqliteException sqliteException => sqliteException.SqliteErrorCode is 5 or 6,
+            DbUpdateException dbUpdateException when dbUpdateException.InnerException is SqliteException sqliteException
+                => sqliteException.SqliteErrorCode is 5 or 6,
+            _ => false
+        };
+    }
 
     public sealed record ProjectionFailed(Exception Cause);
 
@@ -573,45 +564,4 @@ public class OrganisationProjection : ReceivePersistentActor
     }
 
     public record MaterializedViewState(Offset LastOffset);
-
-    // Operation: persists projection writes with transient SQLite lock retries.
-    private async Task SaveChangesWithSqliteRetryAsync(JamaaDbContext dbContext)
-    {
-        const int maxAttempts = 4;
-
-        for (var attempt = 1; attempt <= maxAttempts; attempt++)
-        {
-            try
-            {
-                await dbContext.SaveChangesAsync();
-                return;
-            }
-            catch (Exception exception) when (IsTransientSqliteLock(exception) && attempt < maxAttempts)
-            {
-                var delay = TimeSpan.FromMilliseconds(75 * attempt);
-                _logger.LogWarning(
-                    exception,
-                    "Transient SQLite lock while saving projection changes. Retrying in {DelayMs}ms (attempt {Attempt}/{MaxAttempts}).",
-                    delay.TotalMilliseconds,
-                    attempt,
-                    maxAttempts);
-
-                await Task.Delay(delay);
-            }
-        }
-
-        await dbContext.SaveChangesAsync();
-    }
-
-    // Operation: identifies retry-safe SQLite lock/busy failures.
-    private static bool IsTransientSqliteLock(Exception exception)
-    {
-        return exception switch
-        {
-            SqliteException sqliteException => sqliteException.SqliteErrorCode is 5 or 6,
-            DbUpdateException dbUpdateException when dbUpdateException.InnerException is SqliteException sqliteException
-                => sqliteException.SqliteErrorCode is 5 or 6,
-            _ => false
-        };
-    }
 }

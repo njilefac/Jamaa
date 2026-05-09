@@ -1,24 +1,23 @@
-    <UserControl
-    x:Class="Jamaa.Desktop.Members.Components.MemberCard"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:vm="clr-namespace:Jamaa.Desktop.Members.ViewModels"
-    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
-    xmlns:u="https://irihi.tech/ursa"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    x:DataType="vm:MemberViewModel"
+<UserControl
     Focusable="True"
     IsTabStop="True"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
     mc:Ignorable="d"
-    >
+    x:Class="Jamaa.Desktop.Members.Components.MemberCard"
+    x:DataType="vm:MemberViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
+    xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:vm="clr-namespace:Jamaa.Desktop.Members.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Transitions>
         <Transitions>
-            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+            <TransformOperationsTransition Duration="0:0:0.1" Property="RenderTransform" />
         </Transitions>
     </UserControl.Transitions>
     <Interaction.Behaviors>
@@ -76,61 +75,52 @@
                     CommandParameter="{Binding}"
                     Header="End Registration"
                     IsEnabled="{Binding Registration.EndDate, Converter={x:Static ObjectConverters.IsNull}}"
-                    IsVisible="{Binding Registration.EndDate, Converter={x:Static ObjectConverters.IsNull}}"
-                    />
+                    IsVisible="{Binding Registration.EndDate, Converter={x:Static ObjectConverters.IsNull}}" />
             </ContextMenu>
         </husk:Card.ContextMenu>
         <Grid
             ColumnDefinitions="Auto,*,Auto"
             RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
-            RowSpacing="10"
-            >
+            RowSpacing="10">
             <u:Avatar
+                Grid.Column="0"
                 Grid.Row="1"
                 Grid.RowSpan="3"
-                Grid.Column="0"
-                Width="48"
                 Height="48"
                 Margin="0,0,10,0"
                 Source="{Binding PictureData, Converter={StaticResource ByteArrayToBitmapConverter}}"
-                />
+                Width="48" />
             <Label
-                Grid.Row="0"
+                Classes="member-card title"
+                Content="{Binding FullName}"
+                FontWeight="Bold"
                 Grid.Column="0"
                 Grid.ColumnSpan="3"
-                Classes="member-card title"
-                FontWeight="Bold"
-                Content="{Binding FullName}"
-                />
+                Grid.Row="0" />
             <husk:Divider
-                Grid.Row="1"
                 Grid.Column="1"
                 Grid.ColumnSpan="2"
-                />
+                Grid.Row="1" />
             <StackPanel
+                Grid.Column="1"
                 Grid.Row="2"
                 Grid.RowSpan="3"
-                Grid.Column="1"
-                Spacing="5"
-                >
+                Spacing="5">
                 <Label Content="{Binding Registration.MembershipType, StringFormat='Membership: {0}'}" />
                 <Label
                     Content="{Binding Registration.StartDate, StringFormat='Joined: {0:MMM/yyyy}'}"
                     FontSize="12"
-                    Opacity="0.7"
-                    />
+                    Opacity="0.7" />
                 <Label
                     Content="{Binding Registration.EndDate, StringFormat='Left: {0:MMM/yyyy}', TargetNullValue={x:Null}}"
                     FontSize="12"
                     IsVisible="{Binding Registration.EndDate, Converter={x:Static ObjectConverters.IsNotNull}}"
-                    Opacity="0.7"
-                    />
+                    Opacity="0.7" />
             </StackPanel>
             <Label
-                Grid.Row="5"
-                Grid.Column="1"
                 Content="{Binding Registration.Status, StringFormat='Status: {0}'}"
-                />
+                Grid.Column="1"
+                Grid.Row="5" />
         </Grid>
     </husk:Card>
 </UserControl>

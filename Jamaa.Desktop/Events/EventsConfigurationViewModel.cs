@@ -6,10 +6,10 @@ using Jamaa.Desktop.Shared;
 namespace Jamaa.Desktop.Events;
 
 /// <summary>
-/// Operation: Provides UI configuration and state management for events settings.
-/// Currently serves as a placeholder for future events configuration options.
+///     Operation: Provides UI configuration and state management for events settings.
+///     Currently serves as a placeholder for future events configuration options.
 /// </summary>
-public partial class EventsConfigurationViewModel : ObservableObject, IApplicationModule, INavigationHost
+public class EventsConfigurationViewModel : ObservableObject, IApplicationModule, INavigationHost
 {
     public Guid Id => Guid.Parse("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d");
     public string Title => "Events Configuration";
@@ -23,17 +23,21 @@ public partial class EventsConfigurationViewModel : ObservableObject, IApplicati
     {
     }
 
-    public bool CanGoBack() => false;
+    public bool CanGoBack()
+    {
+        return false;
+    }
 
     public void GoBack()
     {
     }
 
-    public bool CanGoForward() => false;
+    public bool CanGoForward()
+    {
+        return false;
+    }
 
     public void GoForward()
     {
     }
 }
-
-

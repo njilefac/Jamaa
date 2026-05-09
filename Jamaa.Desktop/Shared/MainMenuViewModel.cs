@@ -14,6 +14,8 @@ namespace Jamaa.Desktop.Shared;
 public partial class MainMenuViewModel(IUserSessionService userSessionService)
     : ObservableObject
 {
+    public bool IsLoggedIn => userSessionService.CurrentUserSession?.IsAuthenticated ?? false;
+
     [RelayCommand(CanExecute = nameof(IsLoggedIn))]
     private Task Logout()
     {
@@ -29,6 +31,4 @@ public partial class MainMenuViewModel(IUserSessionService userSessionService)
             desktop.Shutdown();
         return CompletedTask;
     }
-
-    public bool IsLoggedIn => userSessionService.CurrentUserSession?.IsAuthenticated ?? false;
 }

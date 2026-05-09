@@ -28,10 +28,7 @@ public class UserRepository(JamaaDbContext dbContext) : IUserRepository
     public async Task<User> Update(User user)
     {
         var existingUserData = await dbContext.Users.FindAsync(user.Account.Id);
-        if (existingUserData == null)
-        {
-            throw new KeyNotFoundException($"User with ID {user.Account.Id} not found.");
-        }
+        if (existingUserData == null) throw new KeyNotFoundException($"User with ID {user.Account.Id} not found.");
 
         // Update properties of the tracked entity
         existingUserData.DashboardLayout = user.DashboardLayout;
@@ -62,7 +59,7 @@ public class UserRepository(JamaaDbContext dbContext) : IUserRepository
     public async Task<User?> SingleOrDefault(Predicate<User> matchesCondition)
     {
         var responseList = await dbContext.Users.ToListAsync();
-        var allUsers =  responseList.Select(UserData.Map).ToList();
+        var allUsers = responseList.Select(UserData.Map).ToList();
         return allUsers.SingleOrDefault(x => matchesCondition(x));
     }
 }

@@ -302,6 +302,56 @@
                                                 TextWrapping="Wrap" />
                                         </StackPanel>
 
+                                        <WrapPanel ItemSpacing="10">
+                                            <Button Command="{Binding BeginAddPeriodCommand}" Content="Add period" />
+                                            <Button Command="{Binding DeleteSelectedPeriodCommand}" Content="Delete selected period" />
+                                        </WrapPanel>
+
+                                        <Border
+                                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                            CornerRadius="10"
+                                            IsVisible="{Binding IsAddingPeriod}"
+                                            Padding="12">
+                                            <StackPanel Spacing="10">
+                                                <TextBlock Classes="page.box.header" Text="New accounting period" />
+                                                <TextBlock
+                                                    FontSize="12"
+                                                    Opacity="0.7"
+                                                    Text="The new period must fill an uncovered gap in the fiscal year. Start and end dates must not overlap existing periods."
+                                                    TextWrapping="Wrap" />
+                                                <Grid
+                                                    Classes="page form"
+                                                    ColumnDefinitions="Auto,*"
+                                                    RowDefinitions="Auto,Auto">
+                                                    <TextBlock
+                                                        Classes="form label"
+                                                        Grid.Column="0"
+                                                        Grid.Row="0"
+                                                        Text="Start date" />
+                                                    <CalendarDatePicker
+                                                        Classes="form field"
+                                                        Grid.Column="1"
+                                                        Grid.Row="0"
+                                                        SelectedDate="{Binding DraftNewPeriodStartDate, Mode=TwoWay}" />
+
+                                                    <TextBlock
+                                                        Classes="form label"
+                                                        Grid.Column="0"
+                                                        Grid.Row="1"
+                                                        Text="End date" />
+                                                    <CalendarDatePicker
+                                                        Classes="form field"
+                                                        Grid.Column="1"
+                                                        Grid.Row="1"
+                                                        SelectedDate="{Binding DraftNewPeriodEndDate, Mode=TwoWay}" />
+                                                </Grid>
+                                                <WrapPanel ItemSpacing="8">
+                                                    <Button Command="{Binding ConfirmAddPeriodCommand}" Content="Add period" />
+                                                    <Button Command="{Binding CancelAddPeriodCommand}" Content="Cancel" />
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Border>
+
                                         <ListBox
                                             Classes="periods-list"
                                             ItemsSource="{Binding VisiblePeriods}"

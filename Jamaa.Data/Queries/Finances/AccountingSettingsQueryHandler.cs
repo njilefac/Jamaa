@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Domain.Finances.Queries;
+using Domain.Accounting.Queries;
 using Jamaa.Data.Configuration;
 using Jamaa.Data.Models.Finances;
 using Microsoft.EntityFrameworkCore;
@@ -17,4 +17,3 @@ public class AccountingSettingsQueryHandler(JamaaDbContext dbContext) : IAccount
             .FirstOrDefaultAsync(settings => settings.OrganisationId == query.OrganisationId.Value);
     }
 }
-

@@ -18,14 +18,8 @@ public partial class MainWindow : UserControl
 
     private void OnNavigationSelectionChanged(object? sender, NavigationViewSelectionChangedEventArgs args)
     {
-        if (!args.IsSettingsSelected)
-        {
-            return;
-        }
+        if (!args.IsSettingsSelected) return;
 
-        if (DataContext is MainWindowViewModel viewModel)
-        {
-            viewModel.NavigateToSettings();
-        }
+        if (DataContext is MainWindowViewModel viewModel) viewModel.NavigateToSettings();
     }
 }

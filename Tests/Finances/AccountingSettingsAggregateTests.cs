@@ -1,6 +1,6 @@
-using Jamaa.Application.Finances.Aggregates;
-using Jamaa.Application.Finances.Values;
 using System.Linq;
+using Jamaa.Application.Accounting.Aggregates;
+using Jamaa.Application.Accounting.Values;
 using Shouldly;
 using Xunit;
 
@@ -209,4 +209,3 @@ public class AccountingSettingsAggregateTests
         normalized.First(currency => currency.Code == "USD").Symbol.ShouldBe("$");
     }
 }
-

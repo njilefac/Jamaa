@@ -74,10 +74,7 @@ public class OrganisationProjectionTests
         {
             await actorSystem.Terminate();
 
-            if (File.Exists(databasePath))
-            {
-                File.Delete(databasePath);
-            }
+            if (File.Exists(databasePath)) File.Delete(databasePath);
         }
     }
 
@@ -141,7 +138,3 @@ public class OrganisationProjectionTests
         public static ProcessCompleted Instance { get; } = new();
     }
 }
-
-
-
-

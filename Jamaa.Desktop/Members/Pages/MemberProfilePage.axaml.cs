@@ -18,7 +18,6 @@ public partial class MemberProfilePage : UserControl
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
         if (DataContext is MemberProfileViewModel vm)
-        {
             vm.AvatarPicker = async () =>
             {
                 var topLevel = TopLevel.GetTopLevel(this);
@@ -41,7 +40,6 @@ public partial class MemberProfilePage : UserControl
 
                 return null;
             };
-        }
     }
 
     private void InitializeComponent()

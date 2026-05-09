@@ -5,6 +5,7 @@ using Domain.Users;
 using Jamaa.Application.Users;
 using Jamaa.Application.Users.Services;
 using Jamaa.Desktop.Dashboard;
+using Jamaa.Desktop.Security.Events;
 using NSubstitute;
 using Xunit;
 
@@ -31,7 +32,7 @@ public class DashboardViewModelTests
 
         // Act
         var viewModel = new DashboardViewModel(userSessionService, userRepository);
-        await Task.Delay(100); 
+        await Task.Delay(100);
 
         // Assert
         var nonEmptyWidgets = viewModel.ActiveWidgets.Where(w => w is not EmptyCellViewModel).ToList();
@@ -70,8 +71,8 @@ public class DashboardViewModelTests
         var viewModel = new DashboardViewModel(userSessionService, userRepository);
 
         // Act
-        viewModel.Receive(new Jamaa.Desktop.Security.Events.UserAuthenticated(userSession));
-        await Task.Delay(100); 
+        viewModel.Receive(new UserAuthenticated(userSession));
+        await Task.Delay(100);
 
         // Assert
         var nonEmptyWidgets = viewModel.ActiveWidgets.Where(w => w is not EmptyCellViewModel).ToList();

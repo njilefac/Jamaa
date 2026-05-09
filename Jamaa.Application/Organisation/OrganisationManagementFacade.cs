@@ -21,8 +21,8 @@ namespace Jamaa.Application.Organisation;
 public class OrganisationManagementFacade : IOrganisationManagementFacade
 {
     private readonly IActorRef _commandProcessor;
-    private readonly IQueryProcessor _queryProcessor;
     private readonly ReplaySubject<MemberData> _currentMembers;
+    private readonly IQueryProcessor _queryProcessor;
 
     public OrganisationManagementFacade(IRequiredActor<CommandProcessor> commandProcessorProvider,
         IQueryProcessor queryProcessor,
@@ -35,24 +35,16 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
 
         _currentMembers = new ReplaySubject<MemberData>();
         CurrentMembers = _currentMembers;
-        
+
         MemberAdded = dataChangeNotifier.Insertions.OfType<MemberData>();
         MemberAdded.Subscribe(x => _currentMembers.OnNext(x));
-        
+
         MemberUpdated = dataChangeNotifier.Updates.OfType<MemberData>()
-            .Merge(dataChangeNotifier.Updates.OfType<RegistrationData>().Select(r => r.Member))
-            .Where(m => m != null);
+            .Merge(dataChangeNotifier.Updates.OfType<RegistrationData>().Select(r => r.Member));
         MemberDeleted = dataChangeNotifier.Deletions.OfType<MemberData>();
     }
 
-    private async void InitializeCurrentMembers(UserSession? s)
-    {
-        var existingMembers =  (await ListCurrentMembers(s) ?? throw new InvalidOperationException()).ToObservable();
-        foreach (var member in existingMembers)
-        {
-            _currentMembers.OnNext(member);
-        }
-    }
+    private IObservable<MemberData> MemberAdded { get; }
 
     public IObservable<MemberData> CurrentMembers { get; set; }
 
@@ -101,20 +93,26 @@ public class OrganisationManagementFacade : IOrganisationManagementFacade
 
     public async Task<IEnumerable<OrganisationData>> ListOrganisations()
     {
-        return await _queryProcessor.Get(new GetAllOrganisations());
+        var organisations = await _queryProcessor.Get(new GetAllOrganisations());
+        return organisations.Select(organisation => organisation.ToDataModel()).ToList();
     }
-    
+
     public IObservable<MemberData> MemberUpdated { get; }
 
     public IObservable<MemberData> MemberDeleted { get; }
 
+    private async void InitializeCurrentMembers(UserSession? s)
+    {
+        var existingMembers = (await ListCurrentMembers(s) ?? throw new InvalidOperationException()).ToObservable();
+        foreach (var member in existingMembers) _currentMembers.OnNext(member);
+    }
+
     private async Task<IList<MemberData>?> ListCurrentMembers(UserSession? userSession)
     {
         var currentOrganisationId = userSession?.Organisation?.Id;
-        var query = new GetMembersByOrganisation(OrganisationId.With(currentOrganisationId ?? Guid.NewGuid().ToString()));
+        var query = new GetMembersByOrganisation(
+            OrganisationId.With(currentOrganisationId ?? Guid.NewGuid().ToString()));
         var existingMembers = await _queryProcessor.Get(query);
-        return existingMembers;
+        return existingMembers.Select(member => member.ToDataModel()).ToList();
     }
-
-    private IObservable<MemberData> MemberAdded { get; }
 }

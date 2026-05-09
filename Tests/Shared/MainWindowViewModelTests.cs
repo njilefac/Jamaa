@@ -91,8 +91,8 @@ public class MainWindowViewModelTests
 
         // Assert
         viewModel.ActiveModule.ShouldBe(settingsHost);
-        ((INavigationHost)settingsHost).Received(1).NavigateTo(Routes.ChartOfAccounts, null);
-        routeResolver.Received(1).Resolve(Routes.Settings, null);
+        ((INavigationHost)settingsHost).Received(1).NavigateTo(Routes.ChartOfAccounts);
+        routeResolver.Received(1).Resolve(Routes.Settings);
     }
 
     [Fact]
@@ -154,4 +154,3 @@ public class MainWindowViewModelTests
         public object? HeaderContent => null;
     }
 }
-

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.Shared.Values;
@@ -16,10 +16,11 @@ using Microsoft.Extensions.Options;
 
 namespace Jamaa.Data.Configuration;
 
-public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifier? dataChangeNotifier = null) : DbContext
+public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifier? dataChangeNotifier = null)
+    : DbContext
 {
-    private readonly DatabaseOptions _dbOptions = options.Value;
     private readonly IDataChangeNotifier _dataChangeNotifier = dataChangeNotifier ?? NoOpDataChangeNotifier.Instance;
+    private readonly DatabaseOptions _dbOptions = options.Value;
     public DbSet<UserData> Users { get; set; }
     public DbSet<OrganisationData> Organisations { get; set; }
     public DbSet<AccountData> Accounts { get; set; }
@@ -51,7 +52,7 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifi
 
         modelBuilder.Entity<OrganisationData>()
             .Property(e => e.Name).IsRequired();
-        
+
         modelBuilder.Entity<OrganisationData>()
             .Property(e => e.Description);
 
@@ -164,22 +165,17 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifi
     {
         var committedChanges = CaptureTrackedChanges();
         var result = base.SaveChanges(acceptAllChangesOnSuccess);
-        if (result > 0)
-        {
-            PublishCommittedChanges(committedChanges);
-        }
+        if (result > 0) PublishCommittedChanges(committedChanges);
 
         return result;
     }
 
-    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
     {
         var committedChanges = CaptureTrackedChanges();
         var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        if (result > 0)
-        {
-            PublishCommittedChanges(committedChanges);
-        }
+        if (result > 0) PublishCommittedChanges(committedChanges);
 
         return result;
     }
@@ -196,10 +192,7 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifi
     // Operation: pushes post-commit changes to reactive notifier streams.
     private void PublishCommittedChanges(List<(EntityState State, object Entity)> committedChanges)
     {
-        if (committedChanges.Count == 0)
-        {
-            return;
-        }
+        if (committedChanges.Count == 0) return;
 
         _dataChangeNotifier.NotifyCommittedChanges(committedChanges);
     }

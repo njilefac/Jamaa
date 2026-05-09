@@ -1,6 +1,6 @@
 namespace Jamaa.Desktop.Dashboard;
 
-public partial class RecentActivityFeedWidgetViewModel : WidgetViewModelBase
+public class RecentActivityFeedWidgetViewModel : WidgetViewModelBase
 {
     public RecentActivityFeedWidgetViewModel()
     {

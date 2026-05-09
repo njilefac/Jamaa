@@ -1,4 +1,3 @@
-namespace Jamaa.Application.Members.Aggregates
-{
-    public record MemberId(string Value);
-}
+namespace Jamaa.Application.Members.Aggregates;
+
+public record MemberId(string Value);

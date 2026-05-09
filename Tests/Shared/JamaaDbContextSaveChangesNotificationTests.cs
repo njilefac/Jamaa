@@ -34,10 +34,7 @@ public class JamaaDbContextSaveChangesNotificationTests
         }
         finally
         {
-            if (File.Exists(databasePath))
-            {
-                File.Delete(databasePath);
-            }
+            if (File.Exists(databasePath)) File.Delete(databasePath);
         }
     }
 
@@ -60,10 +57,7 @@ public class JamaaDbContextSaveChangesNotificationTests
         }
         finally
         {
-            if (File.Exists(databasePath))
-            {
-                File.Delete(databasePath);
-            }
+            if (File.Exists(databasePath)) File.Delete(databasePath);
         }
     }
 
@@ -78,4 +72,3 @@ public class JamaaDbContextSaveChangesNotificationTests
         return new JamaaDbContext(options, dataChangeNotifier);
     }
 }
-

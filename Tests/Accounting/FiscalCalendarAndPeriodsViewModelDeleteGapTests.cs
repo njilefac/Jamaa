@@ -1,19 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reflection;
 using System.Threading.Tasks;
-using Jamaa.Application.Finances;
+using Jamaa.Application.Accounting;
+using Jamaa.Application.Accounting.Models;
 using Jamaa.Application.Users;
 using Jamaa.Application.Users.Services;
-using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Models.Organisation;
 using Jamaa.Desktop.Accounting;
 using Jamaa.Desktop.Services.Notifications;
 using NSubstitute;
-using NSubstitute.Core;
 using Shouldly;
 using Xunit;
 
@@ -22,12 +21,12 @@ namespace UnitTests.Accounting;
 public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposable
 {
     private const string OrgId = "org-fiscal-delete-gap-tests";
+    private readonly Subject<FiscalYearData> _currentFiscalYears;
 
     private readonly IFinanceManagementFacade _financeFacade;
-    private readonly INotificationService _notificationService;
-    private readonly Subject<FiscalYearData> _currentFiscalYears;
-    private readonly Subject<FiscalYearData> _fiscalYearUpdated;
     private readonly Subject<FiscalYearData> _fiscalYearDeleted;
+    private readonly Subject<FiscalYearData> _fiscalYearUpdated;
+    private readonly INotificationService _notificationService;
     private readonly FiscalCalendarAndPeriodsViewModel _viewModel;
 
     public FiscalCalendarAndPeriodsViewModelDeleteGapTests()
@@ -82,10 +81,7 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
         _notificationService.Received(1).Show(
             "Cannot delete fiscal year",
             Arg.Is<string>(message => message.Contains("would create a gap", StringComparison.OrdinalIgnoreCase)),
-            NotificationType.Warning,
-            null,
-            null,
-            null);
+            NotificationType.Warning);
 
         _financeFacade.ReceivedCalls()
             .Any(call => call.GetMethodInfo().Name == nameof(IFinanceManagementFacade.DeleteFiscalYear))
@@ -120,11 +116,9 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
 
         _notificationService.Received(1).Show(
             "Fiscal year",
-            Arg.Is<string>(message => message.Contains("Deleted FY 2027 successfully.", StringComparison.OrdinalIgnoreCase)),
-            NotificationType.Success,
-            null,
-            null,
-            null);
+            Arg.Is<string>(message =>
+                message.Contains("Deleted FY 2027 successfully.", StringComparison.OrdinalIgnoreCase)),
+            NotificationType.Success);
 
         _viewModel.FiscalYears.Count.ShouldBe(1);
         _viewModel.SelectedFiscalYear?.StartDate.Year.ShouldBe(2026);
@@ -150,7 +144,8 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
 
         _viewModel.FiscalYears.Count.ShouldBe(1);
         _viewModel.FiscalYears.Single().StartDate.Year.ShouldBe(2026);
-        _viewModel.StatusMessage.ShouldContain("refresh is still catching up", Case.Insensitive);
+        _viewModel.StatusMessage.Contains("refresh is still catching up", StringComparison.OrdinalIgnoreCase)
+            .ShouldBeTrue();
     }
 
     [Fact]
@@ -272,11 +267,3 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
         await (Task)result;
     }
 }
-
-
-
-
-
-
-
-

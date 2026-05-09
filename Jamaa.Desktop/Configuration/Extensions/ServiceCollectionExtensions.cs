@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Akka.Event;
 using Akka.Hosting;
 using Akka.Logger.Serilog;
 using Akka.Persistence.Sql.Hosting;
@@ -21,6 +22,21 @@ namespace Jamaa.Desktop.Configuration.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    private static string ResolveDataPath(IConfigurationRoot configurationRoot)
+    {
+        var baseAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        var jamaaDataFolder = Path.Combine(baseAppData, "Jamaa");
+
+        if (!Directory.Exists(jamaaDataFolder)) Directory.CreateDirectory(jamaaDataFolder);
+
+        var dbFileName = configurationRoot.GetSection("Database:DataFile").Value
+                         ?? throw new InvalidOperationException("Database filename missing in config.");
+
+        var dbPath = Path.Combine(jamaaDataFolder, dbFileName);
+        return dbPath;
+    }
+
     extension(ServiceCollection services)
     {
         public ServiceCollection ConfigureAkka(IClassicDesktopStyleApplicationLifetime applicationLifetime,
@@ -60,12 +76,13 @@ public static class ServiceCollectionExtensions
 
                 builder.ConfigureLoggers(b =>
                 {
-                    b.LogLevel = Akka.Event.LogLevel.WarningLevel;
+                    b.LogLevel = LogLevel.WarningLevel;
                     b.ClearLoggers();
                     b.AddLogger<SerilogLogger>();
                 });
 
-                var connectionString = $"Data Source={ResolveDataPath(configuration) ?? throw new InvalidOperationException()};";
+                var connectionString =
+                    $"Data Source={ResolveDataPath(configuration) ?? throw new InvalidOperationException()};";
 
 
                 builder.WithSqlPersistence(connectionString,
@@ -105,23 +122,5 @@ public static class ServiceCollectionExtensions
 
             return services;
         }
-    }
-
-    private static string ResolveDataPath(IConfigurationRoot configurationRoot)
-    {
-        var baseAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-        var jamaaDataFolder = Path.Combine(baseAppData, "Jamaa");
-
-        if (!Directory.Exists(jamaaDataFolder))
-        {
-            Directory.CreateDirectory(jamaaDataFolder);
-        }
-
-        var dbFileName = configurationRoot.GetSection("Database:DataFile").Value
-                         ?? throw new InvalidOperationException("Database filename missing in config.");
-
-        var dbPath = Path.Combine(jamaaDataFolder, dbFileName);
-        return dbPath;
     }
 }

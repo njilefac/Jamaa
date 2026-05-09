@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Jamaa.Application.Finances;
+using Jamaa.Application.Accounting;
+using Jamaa.Application.Accounting.Models;
 using Jamaa.Application.Users;
 using Jamaa.Application.Users.Services;
-using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Models.Organisation;
 using Jamaa.Desktop.Accounting;
 using Jamaa.Desktop.Services.Notifications;
@@ -19,18 +19,16 @@ namespace UnitTests.Accounting;
 public sealed class FiscalCalendarAndPeriodsViewModelCreateFiscalYearTests : IDisposable
 {
     private const string OrgId = "org-fiscal-create-tests";
+    private readonly Subject<FiscalYearData> _currentFiscalYears;
 
     private readonly IFinanceManagementFacade _financeFacade;
-    private readonly INotificationService _notificationService;
-    private readonly Subject<FiscalYearData> _currentFiscalYears;
-    private readonly Subject<FiscalYearData> _fiscalYearUpdated;
     private readonly Subject<FiscalYearData> _fiscalYearDeleted;
+    private readonly Subject<FiscalYearData> _fiscalYearUpdated;
     private readonly FiscalCalendarAndPeriodsViewModel _viewModel;
 
     public FiscalCalendarAndPeriodsViewModelCreateFiscalYearTests()
     {
         _financeFacade = Substitute.For<IFinanceManagementFacade>();
-        _notificationService = Substitute.For<INotificationService>();
         _currentFiscalYears = new Subject<FiscalYearData>();
         _fiscalYearUpdated = new Subject<FiscalYearData>();
         _fiscalYearDeleted = new Subject<FiscalYearData>();
@@ -45,8 +43,9 @@ public sealed class FiscalCalendarAndPeriodsViewModelCreateFiscalYearTests : IDi
         var userSession = new UserSession(true, "admin", Guid.NewGuid(), organisation);
         var userSessionService = Substitute.For<IUserSessionService>();
         userSessionService.CurrentUserSession.Returns(userSession);
+        var notificationService = Substitute.For<INotificationService>();
 
-        _viewModel = new FiscalCalendarAndPeriodsViewModel(_financeFacade, userSessionService, _notificationService);
+        _viewModel = new FiscalCalendarAndPeriodsViewModel(_financeFacade, userSessionService, notificationService);
     }
 
     public void Dispose()
@@ -64,9 +63,8 @@ public sealed class FiscalCalendarAndPeriodsViewModelCreateFiscalYearTests : IDi
 
         _financeFacade.GetFiscalYears(OrgId).Returns(Task.FromResult<IList<FiscalYearData>>(new List<FiscalYearData>
         {
-            CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31), []),
+            CreateFiscalYearData(new DateTime(2026, 1, 1), new DateTime(2026, 12, 31), []),
             CreateFiscalYearData(
-                "2027",
                 new DateTime(2027, 1, 1),
                 new DateTime(2027, 12, 31),
                 [CreateAccountingPeriodData("2027", 1, new DateTime(2027, 1, 1), new DateTime(2027, 1, 31))])
@@ -75,7 +73,7 @@ public sealed class FiscalCalendarAndPeriodsViewModelCreateFiscalYearTests : IDi
         var addTask = _viewModel.AddFiscalYearCommand.ExecuteAsync(null);
         await Task.Delay(60);
 
-        _currentFiscalYears.OnNext(CreateFiscalYearData("2027", new DateTime(2027, 1, 1), new DateTime(2027, 12, 31), []));
+        _currentFiscalYears.OnNext(CreateFiscalYearData(new DateTime(2027, 1, 1), new DateTime(2027, 12, 31), []));
         await addTask;
 
         _viewModel.FiscalYears.Count.ShouldBe(2);
@@ -92,9 +90,8 @@ public sealed class FiscalCalendarAndPeriodsViewModelCreateFiscalYearTests : IDi
 
         _financeFacade.GetFiscalYears(OrgId).Returns(Task.FromResult<IList<FiscalYearData>>(new List<FiscalYearData>
         {
-            CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31), []),
+            CreateFiscalYearData(new DateTime(2026, 1, 1), new DateTime(2026, 12, 31), []),
             CreateFiscalYearData(
-                "2027",
                 new DateTime(2027, 1, 1),
                 new DateTime(2027, 12, 31),
                 [CreateAccountingPeriodData("2027", 1, new DateTime(2027, 1, 1), new DateTime(2027, 1, 31))])
@@ -103,14 +100,14 @@ public sealed class FiscalCalendarAndPeriodsViewModelCreateFiscalYearTests : IDi
         var addTask = _viewModel.AddFiscalYearCommand.ExecuteAsync(null);
         await Task.Delay(60);
 
-        _currentFiscalYears.OnNext(CreateFiscalYearData("2027", new DateTime(2027, 1, 1), new DateTime(2027, 12, 31), []));
+        _currentFiscalYears.OnNext(CreateFiscalYearData(new DateTime(2027, 1, 1), new DateTime(2027, 12, 31), []));
         await addTask;
 
         _viewModel.SelectedFiscalYear.ShouldNotBeNull();
         _viewModel.SelectedFiscalYear!.Periods.Count.ShouldBe(1);
 
         // Simulate a late stale current-state replay that still has no periods.
-        _currentFiscalYears.OnNext(CreateFiscalYearData("2027", new DateTime(2027, 1, 1), new DateTime(2027, 12, 31), []));
+        _currentFiscalYears.OnNext(CreateFiscalYearData(new DateTime(2027, 1, 1), new DateTime(2027, 12, 31), []));
         await Task.Delay(120);
 
         _viewModel.SelectedFiscalYear.ShouldNotBeNull();
@@ -121,11 +118,12 @@ public sealed class FiscalCalendarAndPeriodsViewModelCreateFiscalYearTests : IDi
 
     private async Task SeedExistingFiscalYear()
     {
-        _currentFiscalYears.OnNext(CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31), []));
+        _currentFiscalYears.OnNext(CreateFiscalYearData(new DateTime(2026, 1, 1), new DateTime(2026, 12, 31), []));
         await Task.Delay(120);
     }
 
-    private static FiscalYearData CreateFiscalYearData(string suffix, DateTime startDate, DateTime endDate, IList<AccountingPeriodData> periods)
+    private static FiscalYearData CreateFiscalYearData(DateTime startDate, DateTime endDate,
+        IList<AccountingPeriodData> periods)
     {
         return new FiscalYearData
         {
@@ -138,7 +136,8 @@ public sealed class FiscalCalendarAndPeriodsViewModelCreateFiscalYearTests : IDi
         };
     }
 
-    private static AccountingPeriodData CreateAccountingPeriodData(string suffix, int sequenceNumber, DateTime startDate, DateTime endDate)
+    private static AccountingPeriodData CreateAccountingPeriodData(string suffix, int sequenceNumber,
+        DateTime startDate, DateTime endDate)
     {
         return new AccountingPeriodData
         {
@@ -152,5 +151,3 @@ public sealed class FiscalCalendarAndPeriodsViewModelCreateFiscalYearTests : IDi
         };
     }
 }
-
-

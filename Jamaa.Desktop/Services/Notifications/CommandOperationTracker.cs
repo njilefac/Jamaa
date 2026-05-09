@@ -5,15 +5,15 @@ using System.Threading.Tasks;
 namespace Jamaa.Desktop.Services.Notifications;
 
 /// <summary>
-/// Extension methods for managing command operation lifecycle:
-/// 1. "Requested ..." shown immediately when command is sent
-/// 2. In-flight callback toggled while waiting for confirmation
-/// 3. "Created/Saved/Deleted ..." shown when event is confirmed via observable
+///     Extension methods for managing command operation lifecycle:
+///     1. "Requested ..." shown immediately when command is sent
+///     2. In-flight callback toggled while waiting for confirmation
+///     3. "Created/Saved/Deleted ..." shown when event is confirmed via observable
 /// </summary>
 public static class CommandOperationExtensions
 {
     /// <summary>
-    /// Tracks an operation by showing "Requested" immediately and waiting for event confirmation.
+    ///     Tracks an operation by showing "Requested" immediately and waiting for event confirmation.
     /// </summary>
     public static async Task<bool> TrackOperationAsync<TEvent>(
         this INotificationService notificationService,
@@ -33,10 +33,7 @@ public static class CommandOperationExtensions
             await sendCommand();
             var isConfirmed = await WaitForConfirmationAsync(confirmationObservable, timeout);
 
-            if (isConfirmed)
-            {
-                ShowSuccessMessage(notificationService, operationName, successAction, subject);
-            }
+            if (isConfirmed) ShowSuccessMessage(notificationService, operationName, successAction, subject);
 
             return isConfirmed;
         }
@@ -57,7 +54,7 @@ public static class CommandOperationExtensions
     }
 
     /// <summary>
-    /// Overload for operations where you can filter by a predicate (e.g., matching by ID).
+    ///     Overload for operations where you can filter by a predicate (e.g., matching by ID).
     /// </summary>
     public static async Task<bool> TrackOperationAsync<TEvent>(
         this INotificationService notificationService,
@@ -83,10 +80,7 @@ public static class CommandOperationExtensions
 
             var isConfirmed = await WaitForConfirmationAsync(observable, timeout);
 
-            if (isConfirmed)
-            {
-                ShowSuccessMessage(notificationService, operationName, successAction, subject);
-            }
+            if (isConfirmed) ShowSuccessMessage(notificationService, operationName, successAction, subject);
 
             return isConfirmed;
         }
@@ -156,4 +150,3 @@ public static class CommandOperationExtensions
             .FirstAsync();
     }
 }
-

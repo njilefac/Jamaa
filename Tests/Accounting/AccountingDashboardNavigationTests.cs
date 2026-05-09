@@ -101,8 +101,4 @@ public class AccountingDashboardNavigationTests
         journalEntriesViewModel.ExpenseAccountsOnly.ShouldBeTrue();
         journalEntriesViewModel.VisibleEntries.All(entry => entry.IsExpenseAccount).ShouldBeTrue();
     }
-
 }
-
-
-

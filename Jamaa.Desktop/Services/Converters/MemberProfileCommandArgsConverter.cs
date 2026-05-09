@@ -13,29 +13,17 @@ public class MemberProfileCommandArgsConverter : IMultiValueConverter
 {
     public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (values.Count < 1)
-        {
-            return null;
-        }
+        if (values.Count < 1) return null;
 
         MemberData? memberData = null;
 
         if (values[0] is MemberData data)
-        {
             memberData = data;
-        }
-        else if (values[0] is MemberViewModel vm)
-        {
-            memberData = MemberListViewModel.MapToData(vm);
-        }
+        else if (values[0] is MemberViewModel vm) memberData = MemberListViewModel.MapToData(vm);
 
-        if (memberData == null)
-        {
-            return null;
-        }
-        
+        if (memberData == null) return null;
+
         var tab = values.Count >= 2 ? values[1] as string : null;
         return new MemberProfileNavigationArgs(memberData, tab);
-
     }
 }

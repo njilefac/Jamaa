@@ -7,12 +7,8 @@ public class AvaloniaNotificationService : INotificationService
 {
     private INotificationManager? _notificationManager;
 
-    public void SetNotificationManager(INotificationManager notificationManager)
-    {
-        _notificationManager = notificationManager;
-    }
-
-    public void Show(string title, string message, NotificationType type = NotificationType.Information, TimeSpan? expiration = null, Action? onClick = null, Action? onClose = null)
+    public void Show(string title, string message, NotificationType type = NotificationType.Information,
+        TimeSpan? expiration = null, Action? onClick = null, Action? onClose = null)
     {
         if (_notificationManager == null)
             return;
@@ -27,5 +23,10 @@ public class AvaloniaNotificationService : INotificationService
         };
 
         _notificationManager.Show(new Notification(title, message, avaloniaType, expiration, onClick, onClose));
+    }
+
+    public void SetNotificationManager(INotificationManager notificationManager)
+    {
+        _notificationManager = notificationManager;
     }
 }

@@ -11,10 +11,7 @@ public class BoolToObjectConverter : IValueConverter
 
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is bool b)
-        {
-            return b ? TrueValue : FalseValue;
-        }
+        if (value is bool b) return b ? TrueValue : FalseValue;
 
         return FalseValue;
     }

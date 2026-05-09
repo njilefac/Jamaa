@@ -4,17 +4,17 @@ using Domain.Shared.Values;
 
 namespace Domain.Organisation.Requests;
 
-public class MemberUpdateRequest
+public sealed record MemberUpdateRequest
 {
-    public string MemberId { get; set; }
-    public string FirstName { get; set; }
-    public string? MiddleName { get; set; }
-    public string LastName { get; set; }
-    public Gender Gender { get; set; }
-    public DateTime RegistrationBegin { get; set; }
-    public DateTime? RegistrationEnd { get; set; }
-    public MembershipType MembershipType { get; set; }
-    public RegistrationStatus Status { get; set; }
-    public OrganisationId OrganisationId { get; set; }
-    public byte[]? Avatar { get; set; }
+    public required string MemberId { get; init; }
+    public required string FirstName { get; init; }
+    public string? MiddleName { get; init; }
+    public required string LastName { get; init; }
+    public Gender Gender { get; init; }
+    public DateTime RegistrationBegin { get; init; }
+    public DateTime? RegistrationEnd { get; init; }
+    public MembershipType MembershipType { get; init; }
+    public RegistrationStatus Status { get; init; }
+    public required OrganisationId OrganisationId { get; init; }
+    public byte[]? Avatar { get; init; }
 }

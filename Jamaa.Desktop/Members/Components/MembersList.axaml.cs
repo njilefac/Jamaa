@@ -1,10 +1,10 @@
 using System;
+using System.Reactive;
+using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
-using System.Reactive;
-using System.Reactive.Disposables;
 using Domain.Organisation.Requests;
 using Domain.Organisation.Values;
 using FluentAvalonia.UI.Controls;
@@ -21,6 +21,12 @@ public partial class MembersList : UserControl, IDisposable
         InitializeComponent();
     }
 
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _disposables.Dispose();
+    }
+
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
@@ -30,10 +36,7 @@ public partial class MembersList : UserControl, IDisposable
     {
         base.OnDataContextChanged(e);
 
-        if (DataContext is not MemberListViewModel vm)
-        {
-            return;
-        }
+        if (DataContext is not MemberListViewModel vm) return;
 
         _disposables.Clear();
         _disposables.Add(vm.AddMemberRegistration.RegisterHandler(async interaction =>
@@ -49,15 +52,15 @@ public partial class MembersList : UserControl, IDisposable
                 }
             };
 
-            var nullResponse = new DialogResponse<MemberRegistrationRequest>(Confirmed: false, Result: null!);
+            var nullResponse = new DialogResponse<MemberRegistrationRequest>(false, null!);
 
             var owner = this.FindAncestorOfType<Window>();
             var result = await dialog.ShowAsync(owner);
 
             var output = result == ContentDialogResult.Primary
                 ? new DialogResponse<MemberRegistrationRequest>(
-                    Confirmed: true,
-                    Result: interaction.Input.Result
+                    true,
+                    interaction.Input.Result
                 )
                 : nullResponse;
 
@@ -82,8 +85,8 @@ public partial class MembersList : UserControl, IDisposable
             var result = await dialog.ShowAsync(owner);
 
             var output = result == ContentDialogResult.Primary
-                ? new DialogResponse<RegistrationStatus>(Confirmed: true, Result: interaction.Input.Result)
-                : new DialogResponse<RegistrationStatus>(Confirmed: false, Result: default);
+                ? new DialogResponse<RegistrationStatus>(true, interaction.Input.Result)
+                : new DialogResponse<RegistrationStatus>(false, default);
 
             interaction.SetOutput(output);
         }));
@@ -94,11 +97,5 @@ public partial class MembersList : UserControl, IDisposable
             interaction.SetOutput(Unit.Default);
             return Task.CompletedTask;
         }));
-    }
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-        _disposables.Dispose();
     }
 }

@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Xaml.Interactions.DragAndDrop;
@@ -26,23 +27,17 @@ public class WidgetDropHandler : IDropHandler
         e.DragEffects = isValid ? DragDropEffects.Move : DragDropEffects.None;
         e.Handled = true;
 
-        if (targetContext is not WidgetViewModelBase target)
-        {
-            return;
-        }
+        if (targetContext is not WidgetViewModelBase target) return;
         target.IsDraggingOver = true;
         target.IsValidDrop = isValid;
     }
 
     public void Drop(object? sender, DragEventArgs e, object? sourceContext, object? targetContext)
     {
-        if (targetContext is WidgetViewModelBase target)
-        {
-            target.IsDraggingOver = false;
-        }
+        if (targetContext is WidgetViewModelBase target) target.IsDraggingOver = false;
 
-        if (ValidateDrop(sourceContext, targetContext) && 
-            sourceContext is WidgetViewModelBase dragged && 
+        if (ValidateDrop(sourceContext, targetContext) &&
+            sourceContext is WidgetViewModelBase dragged &&
             targetContext is WidgetViewModelBase targetWidget &&
             dragged.ParentViewModel is { } vm)
         {
@@ -57,15 +52,13 @@ public class WidgetDropHandler : IDropHandler
 
             _ = vm.SaveLayout();
         }
+
         e.Handled = true;
     }
 
     public void Leave(object? sender, RoutedEventArgs e)
     {
-        if (sender is Avalonia.Controls.Control { DataContext: WidgetViewModelBase target })
-        {
-            target.IsDraggingOver = false;
-        }
+        if (sender is Control { DataContext: WidgetViewModelBase target }) target.IsDraggingOver = false;
     }
 
     public bool Validate(object? sender, DragEventArgs e, object? sourceContext, object? targetContext, object? state)
@@ -75,8 +68,8 @@ public class WidgetDropHandler : IDropHandler
 
     public bool Execute(object? sender, DragEventArgs e, object? sourceContext, object? targetContext, object? state)
     {
-        if (ValidateDrop(sourceContext, targetContext) && 
-            sourceContext is WidgetViewModelBase dragged && 
+        if (ValidateDrop(sourceContext, targetContext) &&
+            sourceContext is WidgetViewModelBase dragged &&
             targetContext is WidgetViewModelBase target &&
             dragged.ParentViewModel is { } vm)
         {
@@ -92,26 +85,30 @@ public class WidgetDropHandler : IDropHandler
             _ = vm.SaveLayout();
             return true;
         }
+
         return false;
     }
 
-    public void Cancel(object? sender, RoutedEventArgs e) { }
+    public void Cancel(object? sender, RoutedEventArgs e)
+    {
+    }
 
     private bool ValidateDrop(object? sourceContext, object? targetContext)
     {
-        if (sourceContext is not WidgetViewModelBase dragged || targetContext is not WidgetViewModelBase target) return false;
+        if (sourceContext is not WidgetViewModelBase dragged ||
+            targetContext is not WidgetViewModelBase target) return false;
         if (dragged == target) return false;
         if (dragged.ParentViewModel is not { } vm) return false;
 
         // In Bento Box, widgets can only be dropped into slots that match their allowed size
         // AND the widget currently in that slot (target) must be able to move to the dragged widget's current slot.
-        
+
         // 1. Can dragged widget go to target's slot?
-        var targetBoxSize = (target.Column == 1) ? BoxSize.Wide : BoxSize.Small;
+        var targetBoxSize = target.Column == 1 ? BoxSize.Wide : BoxSize.Small;
         if (dragged.AllowedBoxSize != targetBoxSize) return false;
 
         // 2. Can target widget go to dragged widget's slot?
-        var draggedBoxSize = (dragged.Column == 1) ? BoxSize.Wide : BoxSize.Small;
+        var draggedBoxSize = dragged.Column == 1 ? BoxSize.Wide : BoxSize.Small;
         return target.AllowedBoxSize == draggedBoxSize;
     }
 }

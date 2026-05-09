@@ -68,7 +68,8 @@
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
                                                         <TextBlock>
-                                                            <Run Text="{Binding CurrencyCode}" /><Run Text=" (" /><Run Text="{Binding CurrencySymbol}" /><Run Text=")" />
+                                                            <Run Text="{Binding CurrencyCode}" /><Run Text=" (" />
+                                                            <Run Text="{Binding CurrencySymbol}" /><Run Text=")" />
                                                         </TextBlock>
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
@@ -202,7 +203,8 @@
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock>
-                                                        <Run Text="{Binding CurrencyCode}" /><Run Text=" (" /><Run Text="{Binding CurrencySymbol}" /><Run Text=")" />
+                                                        <Run Text="{Binding CurrencyCode}" /><Run Text=" (" />
+                                                        <Run Text="{Binding CurrencySymbol}" /><Run Text=")" />
                                                     </TextBlock>
                                                 </DataTemplate>
                                             </ListBox.ItemTemplate>
@@ -250,6 +252,3 @@
         </husk:Card>
     </Grid>
 </UserControl>
-
-
-

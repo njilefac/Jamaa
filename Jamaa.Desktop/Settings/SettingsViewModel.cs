@@ -9,11 +9,15 @@ using Jamaa.Desktop.Shared;
 namespace Jamaa.Desktop.Settings;
 
 /// <summary>
-/// Integration: Hosts application settings sections and delegates accounting settings navigation to the accounting configuration module.
+///     Integration: Hosts application settings sections and delegates accounting settings navigation to the accounting
+///     configuration module.
 /// </summary>
 public partial class SettingsViewModel : ObservableObject, IApplicationModule, INavigationHost
 {
     private readonly IRouteResolver _routeResolver;
+
+    [ObservableProperty] private AccountingConfigurationViewModel? _accountingSettingsContent;
+    [ObservableProperty] private EventsConfigurationViewModel? _eventsSettingsContent;
 
     public SettingsViewModel(IRouteResolver routeResolver)
     {
@@ -25,9 +29,6 @@ public partial class SettingsViewModel : ObservableObject, IApplicationModule, I
     public string Title => "Settings";
     public object? HeaderContent => null;
 
-    [ObservableProperty] private AccountingConfigurationViewModel? _accountingSettingsContent;
-    [ObservableProperty] private EventsConfigurationViewModel? _eventsSettingsContent;
-
     public void NavigateTo<TViewModel>(object? parameter = null)
     {
     }
@@ -37,13 +38,8 @@ public partial class SettingsViewModel : ObservableObject, IApplicationModule, I
     {
         var accountingRoute = ResolveAccountingSettingsRoute(route);
         if (IsAccountingRoute(route))
-        {
             EnsureAccountingSettingsContent().NavigateTo(accountingRoute, parameter);
-        }
-        else if (IsEventsRoute(route))
-        {
-            EnsureEventsSettingsContent().NavigateTo(route, parameter);
-        }
+        else if (IsEventsRoute(route)) EnsureEventsSettingsContent().NavigateTo(route, parameter);
     }
 
     public bool CanGoBack()
@@ -68,7 +64,8 @@ public partial class SettingsViewModel : ObservableObject, IApplicationModule, I
     // Operation: lazily resolves the accounting settings host view model once and reuses it.
     private AccountingConfigurationViewModel EnsureAccountingSettingsContent()
     {
-        AccountingSettingsContent ??= _routeResolver.Resolve(Routes.AccountingConfiguration) as AccountingConfigurationViewModel
+        AccountingSettingsContent ??=
+            _routeResolver.Resolve(Routes.AccountingConfiguration) as AccountingConfigurationViewModel
             ?? throw new InvalidOperationException("Could not resolve accounting settings content.");
 
         return AccountingSettingsContent;
@@ -78,7 +75,7 @@ public partial class SettingsViewModel : ObservableObject, IApplicationModule, I
     private EventsConfigurationViewModel EnsureEventsSettingsContent()
     {
         EventsSettingsContent ??= _routeResolver.Resolve(Routes.EventsConfiguration) as EventsConfigurationViewModel
-            ?? throw new InvalidOperationException("Could not resolve events settings content.");
+                                  ?? throw new InvalidOperationException("Could not resolve events settings content.");
 
         return EventsSettingsContent;
     }
@@ -87,9 +84,7 @@ public partial class SettingsViewModel : ObservableObject, IApplicationModule, I
     private static string ResolveAccountingSettingsRoute(string route)
     {
         if (route == Routes.Settings || route == Routes.OrganisationContactDetails)
-        {
             return Routes.AccountingConfiguration;
-        }
 
         return route;
     }
@@ -108,7 +103,3 @@ public partial class SettingsViewModel : ObservableObject, IApplicationModule, I
         return false;
     }
 }
-
-
-
-

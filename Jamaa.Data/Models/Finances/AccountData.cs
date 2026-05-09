@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Domain.Finances.Values;
+using Domain.Accounting.Values;
 
 namespace Jamaa.Data.Models.Finances;
 

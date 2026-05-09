@@ -1,15 +1,14 @@
 <UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Members.Components.MemberRegistrationView"
+    x:DataType="vm:MemberRegistrationViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:Jamaa.Desktop.Members.Components"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    x:DataType="vm:MemberRegistrationViewModel"
-    mc:Ignorable="d"
-    >
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <StackPanel>
         <ExperimentalAcrylicBorder IsHitTestVisible="False">
             <ExperimentalAcrylicBorder.Material>
@@ -17,65 +16,56 @@
                     BackgroundSource="Digger"
                     MaterialOpacity="0.65"
                     TintColor="Black"
-                    TintOpacity="0.6"
-                    />
+                    TintOpacity="0.6" />
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
-        <Border Padding="8" Classes="box">
+        <Border Classes="box" Padding="8">
             <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
                 <TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
                     Classes="form label"
-                    Text="First Name"
-                    />
-                <TextBox
-                    x:Name="FirstNameField"
+                    Grid.Column="0"
                     Grid.Row="0"
-                    Grid.Column="1"
+                    Text="First Name" />
+                <TextBox
                     Classes="form field"
+                    Grid.Column="1"
+                    Grid.Row="0"
                     Text="{Binding FirstName}"
-                    />
+                    x:Name="FirstNameField" />
 
                 <TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
                     Classes="form label"
-                    Text="Middle Name"
-                    />
-                <TextBox
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Classes="form field"
-                    Text="{Binding MiddleName}"
-                    />
-
-                <TextBlock
-                    Grid.Row="2"
                     Grid.Column="0"
-                    Classes="form label"
-                    Text="Last Name"
-                    />
+                    Grid.Row="1"
+                    Text="Middle Name" />
                 <TextBox
-                    Grid.Row="2"
-                    Grid.Column="1"
                     Classes="form field"
-                    Text="{Binding LastName}"
-                    />
+                    Grid.Column="1"
+                    Grid.Row="1"
+                    Text="{Binding MiddleName}" />
 
                 <TextBlock
+                    Classes="form label"
+                    Grid.Column="0"
+                    Grid.Row="2"
+                    Text="Last Name" />
+                <TextBox
+                    Classes="form field"
+                    Grid.Column="1"
+                    Grid.Row="2"
+                    Text="{Binding LastName}" />
+
+                <TextBlock
+                    Classes="form label"
+                    Grid.Column="0"
                     Grid.Row="3"
-                    Grid.Column="0"
-                    Classes="form label"
-                    Text="Gender"
-                    />
+                    Text="Gender" />
                 <ComboBox
-                    Grid.Row="3"
-                    Grid.Column="1"
                     Classes="form field"
+                    Grid.Column="1"
+                    Grid.Row="3"
                     ItemsSource="{Binding GenderOptions}"
-                    SelectedItem="{Binding Mode=TwoWay, Path=SelectedGender}"
-                    >
+                    SelectedItem="{Binding Mode=TwoWay, Path=SelectedGender}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding}" />
@@ -83,20 +73,18 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
                 <TextBlock
-                    Grid.Row="4"
-                    Grid.Column="0"
                     Classes="form label"
-                    Text="Member Since"
-                    />
-                <CalendarDatePicker
+                    Grid.Column="0"
                     Grid.Row="4"
-                    Grid.Column="1"
+                    Text="Member Since" />
+                <CalendarDatePicker
                     Classes="form field"
                     CustomDateFormatString="dd.MMM.yyyy"
                     DisplayDate="{Binding RegistrationBegin, Mode=TwoWay}"
+                    Grid.Column="1"
+                    Grid.Row="4"
                     SelectedDate="{Binding RegistrationBegin}"
-                    SelectedDateFormat="Custom"
-                    />
+                    SelectedDateFormat="Custom" />
             </Grid>
         </Border>
     </StackPanel>

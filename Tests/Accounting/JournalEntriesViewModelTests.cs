@@ -58,6 +58,3 @@ public class JournalEntriesViewModelTests
         viewModel.VisibleEntries.All(entry => entry.Account == "Cash").ShouldBeTrue();
     }
 }
-
-
-

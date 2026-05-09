@@ -1,7 +1,7 @@
 using Akka.Actor;
-using Jamaa.Application.Finances.Aggregates;
-using Jamaa.Application.Finances.Commands;
 using Domain.Organisation.Values;
+using Jamaa.Application.Accounting.Aggregates;
+using Jamaa.Application.Accounting.Commands;
 using Jamaa.Application.Organisation.Aggregates;
 using Jamaa.Application.Organisation.Commands;
 
@@ -92,10 +92,7 @@ public class CommandProcessor : ReceiveActor
     {
         var actorName = BuildAccountActorName(organisationId);
         var existing = Context.Child(actorName);
-        if (!Equals(existing, ActorRefs.Nobody))
-        {
-            return existing;
-        }
+        if (!Equals(existing, ActorRefs.Nobody)) return existing;
 
         return Context.ActorOf(AccountAggregate.Props(organisationId, _queryProcessor), actorName);
     }
@@ -113,10 +110,7 @@ public class CommandProcessor : ReceiveActor
     {
         var actorName = BuildFiscalCalendarActorName(organisationId);
         var existing = Context.Child(actorName);
-        if (!Equals(existing, ActorRefs.Nobody))
-        {
-            return existing;
-        }
+        if (!Equals(existing, ActorRefs.Nobody)) return existing;
 
         return Context.ActorOf(FiscalCalendarAggregate.Props(organisationId), actorName);
     }
@@ -174,7 +168,8 @@ public class CommandProcessor : ReceiveActor
     private Task OnCreateOrganisation(CreateOrganisation createCommand)
     {
         var newId = OrganisationId.With(Guid.NewGuid());
-        var organisation = Context.ActorOf(OrganisationAggregate.Props(newId, _queryProcessor), BuildOrganisationActorName(newId));
+        var organisation = Context.ActorOf(OrganisationAggregate.Props(newId, _queryProcessor),
+            BuildOrganisationActorName(newId));
         organisation.Tell(createCommand);
         return Task.CompletedTask;
     }
@@ -214,6 +209,8 @@ public class CommandProcessor : ReceiveActor
     {
         var raw = organisationId.Value;
         var sanitized = new string(raw.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
-        return string.IsNullOrWhiteSpace(sanitized) ? "accounting_settings_default" : $"accounting_settings_{sanitized}";
+        return string.IsNullOrWhiteSpace(sanitized)
+            ? "accounting_settings_default"
+            : $"accounting_settings_{sanitized}";
     }
 }

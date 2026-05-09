@@ -17,7 +17,7 @@ public class App : Avalonia.Application
     public override void OnFrameworkInitializationCompleted()
     {
         BindingPlugins.DataValidators.RemoveAt(0);
-        
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var splashViewModel = new SplashViewModel();

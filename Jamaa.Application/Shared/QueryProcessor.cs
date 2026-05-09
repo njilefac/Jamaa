@@ -1,9 +1,9 @@
+using Domain.Accounting.Entities;
+using Domain.Accounting.Queries;
+using Domain.Members;
 using Domain.Members.Queries;
-using Domain.Finances.Queries;
+using Domain.Organisation;
 using Domain.Organisation.Queries;
-using Jamaa.Data.Models.Finances;
-using Jamaa.Data.Models.Members;
-using Jamaa.Data.Models.Organisation;
 using Jamaa.Data.Queries.Finances;
 using Jamaa.Data.Queries.Members;
 using Jamaa.Data.Repositories.Organisations;
@@ -18,21 +18,45 @@ public class QueryProcessor(
     IAccountingSettingsQueryHandler accountingSettingsQueryHandler)
     : IQueryProcessor
 {
-    public Task<List<OrganisationData>> Get(GetAllOrganisations query) =>
-        organisationQueryHandler.HandleQuery(query);
+    // Integration: fetch and map organisation summaries from the data layer into domain query types.
+    public async Task<List<OrganisationSummary>> Get(GetAllOrganisations query)
+    {
+        var organisations = await organisationQueryHandler.HandleQuery(query);
+        return organisations.Select(organisation => organisation.ToDomainModel()).ToList();
+    }
 
-    public Task<OrganisationData?> Get(GetOrganisationByName query) =>
-        organisationQueryHandler.HandleQuery(query);
+    // Integration: fetch and map one organisation summary by name into a domain query type.
+    public async Task<OrganisationSummary?> Get(GetOrganisationByName query)
+    {
+        var organisation = await organisationQueryHandler.HandleQuery(query);
+        return organisation?.ToDomainModel();
+    }
 
-    public Task<IList<MemberData>> Get(GetMembersByOrganisation query) =>
-        membersQueryHandler.Get(query);
+    // Integration: fetch and map member profiles from the data layer into domain query types.
+    public async Task<IList<MemberProfile>> Get(GetMembersByOrganisation query)
+    {
+        var members = await membersQueryHandler.Get(query);
+        return members.Select(member => member.ToDomainModel()).ToList();
+    }
 
-    public Task<IList<AccountData>> Get(GetAccountsByOrganisation query) =>
-        accountQueryHandler.Get(query);
+    // Integration: fetch and map accounts from the data layer into domain entities.
+    public async Task<IList<Account>> Get(GetAccountsByOrganisation query)
+    {
+        var accounts = await accountQueryHandler.Get(query);
+        return accounts.Select(account => account.ToDomainModel()).ToList();
+    }
 
-    public Task<IList<FiscalYearData>> Get(GetFiscalYearsByOrganisation query) =>
-        fiscalCalendarQueryHandler.Get(query);
+    // Integration: fetch and map fiscal years from the data layer into domain entities.
+    public async Task<IList<FiscalYear>> Get(GetFiscalYearsByOrganisation query)
+    {
+        var fiscalYears = await fiscalCalendarQueryHandler.Get(query);
+        return fiscalYears.Select(fiscalYear => fiscalYear.ToDomainModel()).ToList();
+    }
 
-    public Task<AccountingSettingsData?> Get(GetAccountingSettingsByOrganisation query) =>
-        accountingSettingsQueryHandler.Get(query);
+    // Integration: fetch and map accounting settings from the data layer into a domain entity.
+    public async Task<AccountingSettings?> Get(GetAccountingSettingsByOrganisation query)
+    {
+        var settings = await accountingSettingsQueryHandler.Get(query);
+        return settings?.ToDomainModel();
+    }
 }

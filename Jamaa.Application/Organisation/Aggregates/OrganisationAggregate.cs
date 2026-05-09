@@ -9,127 +9,128 @@ using Jamaa.Application.Organisation.Commands;
 using Jamaa.Application.Organisation.Events;
 using Jamaa.Application.Shared;
 
-namespace Jamaa.Application.Organisation.Aggregates
+namespace Jamaa.Application.Organisation.Aggregates;
+
+public class OrganisationAggregate : ReceivePersistentActor
 {
-    public class OrganisationAggregate : ReceivePersistentActor
+    private readonly IQueryProcessor _queryProcessor;
+    private Domain.Organisation.Entities.Organisation? _state;
+
+    public OrganisationAggregate(OrganisationId id, IQueryProcessor queryProcessor)
     {
-        private Domain.Organisation.Entities.Organisation? _state;
-        private readonly IQueryProcessor _queryProcessor;
+        _queryProcessor = queryProcessor;
+        PersistenceId = id.Value;
 
-        public OrganisationAggregate(OrganisationId id, IQueryProcessor queryProcessor)
+        RegisterCommandsHandlers();
+        RegisterEventHandlers();
+    }
+
+    public override string PersistenceId { get; }
+
+    private void RegisterEventHandlers()
+    {
+        Recover<SnapshotOffer>(offer =>
         {
-            _queryProcessor = queryProcessor;
-            PersistenceId = id.Value;
+            if (offer.Snapshot is Domain.Organisation.Entities.Organisation state)
+                _state = state;
+        });
 
-            RegisterCommandsHandlers();
-            RegisterEventHandlers();
-        }
+        Recover<OrganisationCreated>(ApplyEvent);
+    }
 
-        private void RegisterEventHandlers()
+    private void RegisterCommandsHandlers()
+    {
+        Command<CreateOrganisation>(command =>
         {
-            Recover<SnapshotOffer>(offer =>
-            {
-                if (offer.Snapshot is Domain.Organisation.Entities.Organisation state)
-                    _state = state;
-            });
-            
-            Recover<OrganisationCreated>(ApplyEvent);
-        }
-
-        private void RegisterCommandsHandlers()
+            if (IsValid(command))
+                Persist(new OrganisationCreated(OrganisationId.With(PersistenceId), command.Name, command.Description),
+                    ApplyEvent);
+        });
+        Command<RegisterMember>(command =>
         {
-            Command<CreateOrganisation>(command =>
-            {
-                if (IsValid(command))
-                    Persist(new OrganisationCreated(OrganisationId.With(PersistenceId), command.Name, command.Description), ApplyEvent);
-            });
-            Command<RegisterMember>(command =>
-            {
-                if (!IsValid(command)) return;
+            if (!IsValid(command)) return;
 
-                var registeredEvent = new MemberRegistered
-                (
-                    new MemberId(Guid.NewGuid().ToString()),
-                    command.FirstName,
-                    command.MiddleName,
-                    command.LastName,
-                    command.Gender,
-                    BirthDate: null,
-                    command.RegistrationBegin,
-                    command.MembershipType,
-                    OrganisationId.With(PersistenceId)
-                );
-                Persist(registeredEvent, ApplyEvent);
-                if(LastSequenceNr % 5 == 0)
-                    SaveSnapshot(_state);
-            });
-            Command<UpdateMember>(command =>
-            {
-                var updatedEvent = new MemberUpdated(
-                    command.MemberId,
-                    command.FirstName,
-                    command.MiddleName,
-                    command.LastName,
-                    command.Gender,
-                    BirthDate: null,
-                    command.RegistrationBegin,
-                    command.RegistrationEnd,
-                    command.MembershipType,
-                    command.Status,
-                    OrganisationId.With(PersistenceId),
-                    command.Avatar
-                );
-                Persist(updatedEvent, ApplyEvent);
-                if(LastSequenceNr % 5 == 0)
-                    SaveSnapshot(_state);
-            });
-        }
-
-        private bool IsValid(RegisterMember command)
+            var registeredEvent = new MemberRegistered
+            (
+                new MemberId(Guid.NewGuid().ToString()),
+                command.FirstName,
+                command.MiddleName,
+                command.LastName,
+                command.Gender,
+                null,
+                command.RegistrationBegin,
+                command.MembershipType,
+                OrganisationId.With(PersistenceId)
+            );
+            Persist(registeredEvent, ApplyEvent);
+            if (LastSequenceNr % 5 == 0)
+                SaveSnapshot(_state);
+        });
+        Command<UpdateMember>(command =>
         {
-            return _state != null &&
-                   !_state.Members.Any(x => x.FirstName == command.FirstName &&
-                                            x.LastName == command.LastName);
-        }
+            var updatedEvent = new MemberUpdated(
+                command.MemberId,
+                command.FirstName,
+                command.MiddleName,
+                command.LastName,
+                command.Gender,
+                null,
+                command.RegistrationBegin,
+                command.RegistrationEnd,
+                command.MembershipType,
+                command.Status,
+                OrganisationId.With(PersistenceId),
+                command.Avatar
+            );
+            Persist(updatedEvent, ApplyEvent);
+            if (LastSequenceNr % 5 == 0)
+                SaveSnapshot(_state);
+        });
+    }
 
-        private bool IsValid(CreateOrganisation command)
+    private bool IsValid(RegisterMember command)
+    {
+        return _state != null &&
+               !_state.Members.Any(x => x.FirstName == command.FirstName &&
+                                        x.LastName == command.LastName);
+    }
+
+    private bool IsValid(CreateOrganisation command)
+    {
+        if (_state != null)
         {
-            if (_state != null)
-            {
-                Context.Sender.Tell("organisation already created", Self);
-                return false;
-            }
-
-            var conflictingOrganisation = _queryProcessor.Get(new GetOrganisationByName(command.Name)).Result;
-            if (conflictingOrganisation == null) return true;
-
-            Context.Sender.Tell($"an organisation with the name {command.Name} already exists", Self);
+            Context.Sender.Tell("organisation already created", Self);
             return false;
         }
 
-        private void ApplyEvent(MemberUpdated updated)
-        {
-            // The state doesn't currently seem to store member IDs or offer a way to update them by ID.
-            // In a real system, the Domain Entity should have an Update method.
-        }
+        var conflictingOrganisation = _queryProcessor.Get(new GetOrganisationByName(command.Name)).Result;
+        if (conflictingOrganisation == null) return true;
 
-        private void ApplyEvent(MemberRegistered registered)
-        {
-            var newMember = new Member(registered.FirstName, registered.MiddleName, registered.LastName, registered.Gender, DateTime.MinValue);
+        Context.Sender.Tell($"an organisation with the name {command.Name} already exists", Self);
+        return false;
+    }
 
-            _state?.Register(newMember, registered.MembershipType, registered.RegistrationBegin);
-        }
+    private void ApplyEvent(MemberUpdated updated)
+    {
+        // The state doesn't currently seem to store member IDs or offer a way to update them by ID.
+        // In a real system, the Domain Entity should have an Update method.
+    }
 
-        private void ApplyEvent(OrganisationCreated created)
-        {
-            _state = new Domain.Organisation.Entities.Organisation(created.Name, created.Description);
-        }
+    private void ApplyEvent(MemberRegistered registered)
+    {
+        var newMember = new Member(registered.FirstName, registered.MiddleName, registered.LastName, registered.Gender,
+            DateTime.MinValue);
 
-        public override string PersistenceId { get; }
+        _state?.Register(newMember, registered.MembershipType, registered.RegistrationBegin);
+    }
 
-        public static Props Props(OrganisationId id, IQueryProcessor queryProcessor)
-        {
-            return new Props(typeof(OrganisationAggregate), [id, queryProcessor]);
-        }
+    private void ApplyEvent(OrganisationCreated created)
+    {
+        _state = new Domain.Organisation.Entities.Organisation(created.Name, created.Description);
+    }
+
+    public static Props Props(OrganisationId id, IQueryProcessor queryProcessor)
+    {
+        return new Props(typeof(OrganisationAggregate), [id, queryProcessor]);
     }
 }

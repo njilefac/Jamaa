@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -11,12 +12,10 @@ using Avalonia.Controls.Selection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using System.ComponentModel.DataAnnotations;
-using Domain.Finances.Values;
-using Jamaa.Application.Finances;
-using Jamaa.Application.Shared;
+using Domain.Accounting.Values;
+using Jamaa.Application.Accounting;
+using Jamaa.Application.Accounting.Models;
 using Jamaa.Application.Users.Services;
-using Jamaa.Data.Models.Finances;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Services.Notifications;
@@ -26,34 +25,10 @@ namespace Jamaa.Desktop.Accounting;
 
 public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IApplicationModule, IRouteableViewModel
 {
-    private readonly IFinanceManagementFacade _financeFacade;
-    private readonly IUserSessionService _userSessionService;
-    private readonly INotificationService _notificationService;
     private readonly List<AccountData> _allAccountData = [];
-
-    public Guid Id => Guid.Parse("e2d9f6b1-8e4a-4d9c-8f3b-2a3c4d5e6f7a");
-    public string Title => "Chart of Accounts";
-    public object? HeaderContent => null;
-
-    [ObservableProperty]
-    private string _pageTitle = "Chart of Accounts";
-
-    [ObservableProperty]
-    private ObservableCollection<AccountItemViewModel> _accounts = [];
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(DeleteAccountCommand))]
-    [NotifyPropertyChangedFor(nameof(DeleteAccountTooltip))]
-    private AccountItemViewModel? _selectedAccount;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
-    private AccountType? _selectedAccountType;
-
-    [ObservableProperty]
-    private AccountItemViewModel? _selectedParentAccount;
-
-    public ObservableCollection<AccountItemViewModel> FilteredParentAccounts { get; } = [];
+    private readonly IFinanceManagementFacade _financeFacade;
+    private readonly INotificationService _notificationService;
+    private readonly IUserSessionService _userSessionService;
 
     [ObservableProperty]
     [NotifyDataErrorInfo]
@@ -65,64 +40,80 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
     [ObservableProperty]
     [NotifyDataErrorInfo]
+    [MaxLength(500, ErrorMessage = "Description must be 500 characters or fewer")]
+    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
+    private string _accountDescription = string.Empty;
+
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
     [Required(ErrorMessage = "Account name is required")]
     [NotifyPropertyChangedFor(nameof(AccountCode))]
     [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
     private string _accountName = string.Empty;
 
-    [ObservableProperty]
-    [NotifyDataErrorInfo]
-    [MaxLength(500, ErrorMessage = "Description must be 500 characters or fewer")]
-    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
-    private string _accountDescription = string.Empty;
+    [ObservableProperty] private ObservableCollection<AccountItemViewModel> _accounts = [];
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteAccountCommand))]
     private bool _isOperationInFlight;
 
+    [ObservableProperty] private string _pageTitle = "Chart of Accounts";
+
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteAccountCommand))]
+    [NotifyPropertyChangedFor(nameof(DeleteAccountTooltip))]
+    private AccountItemViewModel? _selectedAccount;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
+    private AccountType? _selectedAccountType;
+
+    [ObservableProperty] private AccountItemViewModel? _selectedParentAccount;
+
+    [ObservableProperty] private HierarchicalTreeDataGridSource<AccountItemViewModel>? _source;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
     private string _statusMessage = string.Empty;
+
+    public ChartOfAccountsViewModel(
+        IFinanceManagementFacade financeFacade,
+        IUserSessionService userSessionService,
+        INotificationService notificationService)
+    {
+        _financeFacade = financeFacade;
+        _userSessionService = userSessionService;
+        _notificationService = notificationService;
+
+        InitializeSource();
+        LoadAccounts();
+        if (SynchronizationContext.Current is { } syncContext)
+            SetupReactiveUpdates(syncContext);
+        else
+            SetupReactiveUpdates(null);
+
+        // Re-evaluate AddAccountCommand whenever validation errors change
+        ErrorsChanged += (_, _) => AddAccountCommand.NotifyCanExecuteChanged();
+    }
+
+    public ObservableCollection<AccountItemViewModel> FilteredParentAccounts { get; } = [];
 
     public string ActionButtonText => SelectedAccount == null ? "Add Account" : "Save Changes";
     public string FormTitle => SelectedAccount == null ? "Add New Account" : "Edit Account";
     public bool IsEditMode => SelectedAccount != null;
     public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
+
     public string DeleteAccountTooltip => SelectedAccountHasChildren
         ? "This account cannot be deleted because it has child accounts."
         : "Permanently delete this account";
 
     public AccountType[] AccountTypes { get; } = Enum.GetValues<AccountType>();
 
-    [ObservableProperty]
-    private HierarchicalTreeDataGridSource<AccountItemViewModel>? _source;
+    // Operation: determines whether the selected account has child accounts and cannot be deleted.
+    private bool SelectedAccountHasChildren => SelectedAccount?.SubAccounts.Count > 0;
 
-    public ChartOfAccountsViewModel(
-        IFinanceManagementFacade financeFacade,
-        IUserSessionService userSessionService,
-        IQueryProcessor queryProcessor,
-        INotificationService notificationService)
-    {
-        _financeFacade = financeFacade;
-        _userSessionService = userSessionService;
-        _ = queryProcessor;
-        _notificationService = notificationService;
-
-        InitializeSource();
-        LoadAccounts();
-        if (SynchronizationContext.Current is { } syncContext)
-        {
-            SetupReactiveUpdates(syncContext);
-        }
-        else
-        {
-            SetupReactiveUpdates(null);
-        }
-
-        // Re-evaluate AddAccountCommand whenever validation errors change
-        ErrorsChanged += (_, _) => AddAccountCommand.NotifyCanExecuteChanged();
-    }
+    public Guid Id => Guid.Parse("e2d9f6b1-8e4a-4d9c-8f3b-2a3c4d5e6f7a");
+    public string Title => "Chart of Accounts";
+    public object? HeaderContent => null;
 
     // Operation: marshals observable notifications onto the UI synchronization context only when one exists.
     private static IObservable<T> ObserveOnIfAvailable<T>(IObservable<T> source, SynchronizationContext? syncContext)
@@ -137,11 +128,15 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             Columns =
             {
                 new HierarchicalExpanderColumn<AccountItemViewModel>(
-                    new TextColumn<AccountItemViewModel, string>("Code", x => x.Code, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                    new TextColumn<AccountItemViewModel, string>("Code", x => x.Code,
+                        options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                     x => x.SubAccounts),
-                new TextColumn<AccountItemViewModel, string>("Name", x => x.Name, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
-                new TextColumn<AccountItemViewModel, string>("Description", x => x.Description, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
-                new TextColumn<AccountItemViewModel, string>("Type", x => x.TypeDisplay, options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                new TextColumn<AccountItemViewModel, string>("Name", x => x.Name,
+                    options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                new TextColumn<AccountItemViewModel, string>("Description", x => x.Description,
+                    options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                new TextColumn<AccountItemViewModel, string>("Type", x => x.TypeDisplay,
+                    options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true })
             }
         };
 
@@ -152,10 +147,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
         Source.Selection = selection;
 
-        selection.SelectionChanged += (_, _) =>
-        {
-            SelectedAccount = selection.SelectedItem;
-        };
+        selection.SelectionChanged += (_, _) => { SelectedAccount = selection.SelectedItem; };
     }
 
 
@@ -183,10 +175,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
         Accounts.Clear();
         var rootAccounts = BuildAccountTree(accounts);
-        foreach (var root in rootAccounts)
-        {
-            Accounts.Add(root);
-        }
+        foreach (var root in rootAccounts) Accounts.Add(root);
 
         RefreshFilteredParentAccounts();
     }
@@ -238,19 +227,15 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             AccountName = value.Name;
             AccountDescription = value.Description;
             SelectedAccountType = value.Type;
-            
+
             RefreshFilteredParentAccounts();
 
             // Map parent to the reference in our collection for Avalonia selection to work
             if (value.Parent != null)
-            {
                 SelectedParentAccount = FilteredParentAccounts
                     .FirstOrDefault(a => a.Id == value.Parent.Id);
-            }
             else
-            {
                 SelectedParentAccount = null;
-            }
         }
         else
         {
@@ -295,7 +280,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         if (IsEditMode || SelectedAccountType == null) return;
 
         var (min, max) = GetCodeRange(SelectedAccountType.Value, AccountName);
-        
+
         var existingCodes = _allAccountData
             .Where(a => int.TryParse(a.Code, out var c) && c >= min && c <= max)
             .Select(a => int.Parse(a.Code))
@@ -308,10 +293,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         else
         {
             var nextCode = existingCodes.Max() + 1;
-            if (nextCode <= max)
-            {
-                AccountCode = nextCode.ToString();
-            }
+            if (nextCode <= max) AccountCode = nextCode.ToString();
         }
     }
 
@@ -330,9 +312,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     {
         // Expense fees are grouped in a separate 6000-range bucket.
         if (type == AccountType.Expense && accountName.Contains("fee", StringComparison.OrdinalIgnoreCase))
-        {
             return (6000, 6999);
-        }
 
         return type switch
         {
@@ -348,10 +328,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     // OPERATION: validates code parsing and range constraints.
     private bool IsCodeInRange(AccountType type, string code, string accountName)
     {
-        if (!int.TryParse(code, out var numericCode))
-        {
-            return false;
-        }
+        if (!int.TryParse(code, out var numericCode)) return false;
 
         var (min, max) = GetCodeRange(type, accountName);
         return numericCode >= min && numericCode <= max;
@@ -363,18 +340,12 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         FilteredParentAccounts.Clear();
         var allAccounts = GetAllAccounts(Accounts);
         foreach (var account in allAccounts)
-        {
             if (CanBeParent(account))
-            {
                 FilteredParentAccounts.Add(account);
-            }
-        }
-        
+
         // Try to restore selection if it's still valid in the new filtered list
         if (previousSelection != null)
-        {
             SelectedParentAccount = FilteredParentAccounts.FirstOrDefault(a => a.Id == previousSelection.Id);
-        }
     }
 
     private IEnumerable<AccountItemViewModel> GetAllAccounts(IEnumerable<AccountItemViewModel> roots)
@@ -382,10 +353,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         foreach (var root in roots)
         {
             yield return root;
-            foreach (var child in GetAllAccounts(root.SubAccounts))
-            {
-                yield return child;
-            }
+            foreach (var child in GetAllAccounts(root.SubAccounts)) yield return child;
         }
     }
 
@@ -415,6 +383,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                 return true;
             current = current.Parent;
         }
+
         return false;
     }
 
@@ -443,35 +412,31 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         var subject = item.Name;
 
         if (item.IsActive)
-        {
             await _notificationService.TrackOperationAsync(
-                sendCommand: () => _financeFacade.DeactivateAccount(orgId, accountId),
-                confirmationObservable: BuildAccountStateChangeConfirmationObservable(
+                () => _financeFacade.DeactivateAccount(orgId, accountId),
+                BuildAccountStateChangeConfirmationObservable(
                     orgId,
                     accountId,
-                    isActiveTarget: false,
-                    eventStream: _financeFacade.AccountDeactivated),
-                timeout: TimeSpan.FromSeconds(10),
-                operationName: "Account",
-                successAction: "Deactivated",
-                subject: subject,
-                inFlightChanged: SetOperationInFlight);
-        }
+                    false,
+                    _financeFacade.AccountDeactivated),
+                TimeSpan.FromSeconds(10),
+                "Account",
+                "Deactivated",
+                subject,
+                SetOperationInFlight);
         else
-        {
             await _notificationService.TrackOperationAsync(
-                sendCommand: () => _financeFacade.ReactivateAccount(orgId, accountId),
-                confirmationObservable: BuildAccountStateChangeConfirmationObservable(
+                () => _financeFacade.ReactivateAccount(orgId, accountId),
+                BuildAccountStateChangeConfirmationObservable(
                     orgId,
                     accountId,
-                    isActiveTarget: true,
-                    eventStream: _financeFacade.AccountReactivated),
-                timeout: TimeSpan.FromSeconds(10),
-                operationName: "Account",
-                successAction: "Reactivated",
-                subject: subject,
-                inFlightChanged: SetOperationInFlight);
-        }
+                    true,
+                    _financeFacade.AccountReactivated),
+                TimeSpan.FromSeconds(10),
+                "Account",
+                "Reactivated",
+                subject,
+                SetOperationInFlight);
     }
 
     // Operation: confirms account state changes from either event notifications or eventual read-model state.
@@ -490,7 +455,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
         var readModelStateChecks = Observable.Interval(TimeSpan.FromMilliseconds(250))
             .StartWith(0L)
-            .SelectMany(_ => Observable.FromAsync(() => HasAccountReachedStateAsync(organisationId, accountId, isActiveTarget)))
+            .SelectMany(_ =>
+                Observable.FromAsync(() => HasAccountReachedStateAsync(organisationId, accountId, isActiveTarget)))
             .Where(hasReachedTargetState => hasReachedTargetState)
             .Select(_ => true);
 
@@ -521,22 +487,23 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         WeakReferenceMessenger.Default.Send(new ModuleSelected(Routes.AccountingTransactions, navigationRequest));
     }
 
-    private bool CanAddAccount() =>
-        !IsOperationInFlight &&
-        !string.IsNullOrWhiteSpace(AccountCode) &&
-        !string.IsNullOrWhiteSpace(AccountName) &&
-        SelectedAccountType.HasValue &&
-        !GetErrors(nameof(AccountCode)).Cast<object>().Any() &&
-        !GetErrors(nameof(AccountName)).Cast<object>().Any() &&
-        !GetErrors(nameof(AccountDescription)).Cast<object>().Any();
+    private bool CanAddAccount()
+    {
+        return !IsOperationInFlight &&
+               !string.IsNullOrWhiteSpace(AccountCode) &&
+               !string.IsNullOrWhiteSpace(AccountName) &&
+               SelectedAccountType.HasValue &&
+               !GetErrors(nameof(AccountCode)).Cast<object>().Any() &&
+               !GetErrors(nameof(AccountName)).Cast<object>().Any() &&
+               !GetErrors(nameof(AccountDescription)).Cast<object>().Any();
+    }
 
-    private bool CanDeleteAccount() =>
-        !IsOperationInFlight &&
-        SelectedAccount != null &&
-        !SelectedAccountHasChildren;
-
-    // Operation: determines whether the selected account has child accounts and cannot be deleted.
-    private bool SelectedAccountHasChildren => SelectedAccount?.SubAccounts.Count > 0;
+    private bool CanDeleteAccount()
+    {
+        return !IsOperationInFlight &&
+               SelectedAccount != null &&
+               !SelectedAccountHasChildren;
+    }
 
     private void SetOperationInFlight(bool isInFlight)
     {
@@ -561,14 +528,15 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             var accountId = SelectedAccount.Id;
             var subject = AccountName;
             var isConfirmed = await _notificationService.TrackOperationAsync(
-                sendCommand: () => _financeFacade.UpdateAccount(orgId, accountId, AccountCode, AccountName, AccountDescription, SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
-                confirmationObservable: _financeFacade.AccountUpdated,
-                matcherPredicate: a => a.Id == accountId,
-                timeout: TimeSpan.FromSeconds(10),
-                operationName: "Account",
-                successAction: "Saved",
-                subject: subject,
-                inFlightChanged: SetOperationInFlight);
+                () => _financeFacade.UpdateAccount(orgId, accountId, AccountCode, AccountName, AccountDescription,
+                    SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
+                _financeFacade.AccountUpdated,
+                a => a.Id == accountId,
+                TimeSpan.FromSeconds(10),
+                "Account",
+                "Saved",
+                subject,
+                SetOperationInFlight);
 
             if (isConfirmed)
                 ResetForm();
@@ -582,15 +550,16 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             var accountType = SelectedAccountType ?? AccountType.Asset;
             var confirmationSource = AccountCreationConfirmationSource.None;
             var isConfirmed = await _notificationService.TrackOperationAsync(
-                sendCommand: () => _financeFacade.CreateAccount(orgId, code, AccountName, AccountDescription, accountType, parentAccountId),
-                confirmationObservable: BuildAccountCreationConfirmationObservable(orgId, code, name, accountType, parentAccountId)
+                () => _financeFacade.CreateAccount(orgId, code, AccountName, AccountDescription, accountType,
+                    parentAccountId),
+                BuildAccountCreationConfirmationObservable(orgId, code, name, accountType, parentAccountId)
                     .Do(source => confirmationSource = source)
                     .Select(_ => true),
-                timeout: TimeSpan.FromSeconds(10),
-                operationName: "Account",
-                successAction: "Created",
-                subject: subject,
-                inFlightChanged: SetOperationInFlight);
+                TimeSpan.FromSeconds(10),
+                "Account",
+                "Created",
+                subject,
+                SetOperationInFlight);
 
             UpdateCreateConfirmationStatus(confirmationSource, subject);
 
@@ -618,7 +587,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
         var readModelPresenceChecks = Observable.Interval(TimeSpan.FromMilliseconds(250))
             .StartWith(0L)
-            .SelectMany(_ => Observable.FromAsync(() => HasCreatedAccountAppearedAsync(organisationId, code, name, type, parentAccountId)))
+            .SelectMany(_ => Observable.FromAsync(() =>
+                HasCreatedAccountAppearedAsync(organisationId, code, name, type, parentAccountId)))
             .Where(isPresent => isPresent)
             .Select(_ => AccountCreationConfirmationSource.ReadModel);
 
@@ -677,14 +647,14 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         var subject = SelectedAccount.Name;
 
         var isConfirmed = await _notificationService.TrackOperationAsync(
-            sendCommand: () => _financeFacade.DeleteAccount(orgId, accountId),
-            confirmationObservable: _financeFacade.AccountDeleted,
-            matcherPredicate: account => account.Id == accountId,
-            timeout: TimeSpan.FromSeconds(10),
-            operationName: "Account",
-            successAction: "Deleted",
-            subject: subject,
-            inFlightChanged: SetOperationInFlight);
+            () => _financeFacade.DeleteAccount(orgId, accountId),
+            _financeFacade.AccountDeleted,
+            account => account.Id == accountId,
+            TimeSpan.FromSeconds(10),
+            "Account",
+            "Deleted",
+            subject,
+            SetOperationInFlight);
 
         if (isConfirmed)
         {
@@ -696,16 +666,10 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     [RelayCommand]
     public void ResetForm()
     {
-        if (IsOperationInFlight)
-        {
-            return;
-        }
+        if (IsOperationInFlight) return;
 
         SelectedAccount = null;
-        if (Source?.Selection is ITreeDataGridRowSelectionModel<AccountItemViewModel> selection)
-        {
-            selection.Clear();
-        }
+        if (Source?.Selection is ITreeDataGridRowSelectionModel<AccountItemViewModel> selection) selection.Clear();
         AccountCode = string.Empty;
         AccountName = string.Empty;
         AccountDescription = string.Empty;
@@ -721,4 +685,3 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         ReadModel
     }
 }
-

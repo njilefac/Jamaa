@@ -34,7 +34,7 @@ public class WidgetSerializationTests
         json.ShouldNotContain("\"CompatibleWidgets\"");
         json.ShouldNotContain("\"HasCompatibleWidgets\"");
         json.ShouldNotContain("\"FlyoutTitle\"");
-        
+
         json.ShouldContain("\"Row\":1");
         json.ShouldContain("\"Column\":2");
     }

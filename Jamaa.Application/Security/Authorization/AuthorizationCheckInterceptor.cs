@@ -21,13 +21,12 @@ public class AuthorizationCheckInterceptor(
         {
             var currentUserName = userSessionService.CurrentUserSession?.UserName;
             if (currentUserName != "admin")
-            {
                 throw new SecurityException(
                     $"unauthorized operation [{currentUserName} => {invocation.TargetType}.{invocation.Method.Name}]");
-            }
 
             logger.LogInformation(
-                "checking authorization before calling {InvocationTargetType}.{MethodName}", invocation.TargetType, invocation.Method.Name);
+                "checking authorization before calling {InvocationTargetType}.{MethodName}", invocation.TargetType,
+                invocation.Method.Name);
             invocation.Proceed();
         }
     }

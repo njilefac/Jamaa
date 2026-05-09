@@ -1,8 +1,7 @@
+using System;
+using System.Reactive.Disposables;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Domain.Shared.Values;
-using System;
-
-using System.Reactive.Disposables;
 using Jamaa.Application.Organisation;
 using Jamaa.Application.Users.Services;
 
@@ -11,12 +10,12 @@ namespace Jamaa.Desktop.Members.Components;
 public partial class MembersSummary : ObservableObject, IDisposable
 {
     private readonly CompositeDisposable _disposables = new();
-    [ObservableProperty]
-    private uint _totalMembersCount;
-    [ObservableProperty]
-    private uint _maleMembersCount;
-    [ObservableProperty]
-    private uint _femaleMembersCount;
+
+    [ObservableProperty] private uint _femaleMembersCount;
+
+    [ObservableProperty] private uint _maleMembersCount;
+
+    [ObservableProperty] private uint _totalMembersCount;
 
     public MembersSummary(IOrganisationManagementFacade organisationManagementFacade,
         IUserSessionService userSessionService)
@@ -25,31 +24,23 @@ public partial class MembersSummary : ObservableObject, IDisposable
         {
             TotalMembersCount++;
             if (m.Gender == Gender.Male)
-            {
                 MaleMembersCount++;
-            }
             else
-            {
                 FemaleMembersCount++;
-            }
         }));
 
         _disposables.Add(organisationManagementFacade.MemberDeleted.Subscribe(m =>
         {
             TotalMembersCount--;
             if (m.Gender == Gender.Male)
-            {
                 MaleMembersCount--;
-            }
             else
-            {
                 FemaleMembersCount--;
-            }
         }));
 
-        _disposables.Add(userSessionService.UserSessions.Subscribe( userSession =>
+        _disposables.Add(userSessionService.UserSessions.Subscribe(userSession =>
         {
-            if ( userSession is null or { IsAuthenticated: false })
+            if (userSession is null or { IsAuthenticated: false })
             {
                 TotalMembersCount = 0;
                 MaleMembersCount = 0;

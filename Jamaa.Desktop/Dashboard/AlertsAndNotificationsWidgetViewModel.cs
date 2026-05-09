@@ -1,6 +1,6 @@
 namespace Jamaa.Desktop.Dashboard;
 
-public partial class AlertsAndNotificationsWidgetViewModel : WidgetViewModelBase
+public class AlertsAndNotificationsWidgetViewModel : WidgetViewModelBase
 {
     public AlertsAndNotificationsWidgetViewModel()
     {

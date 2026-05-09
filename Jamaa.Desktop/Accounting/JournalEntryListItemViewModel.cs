@@ -1,7 +1,7 @@
 namespace Jamaa.Desktop.Accounting;
 
 /// <summary>
-/// Operation: Represents a single journal-entry row for list rendering.
+///     Operation: Represents a single journal-entry row for list rendering.
 /// </summary>
 public sealed record JournalEntryListItemViewModel(
     string Date,
@@ -10,4 +10,3 @@ public sealed record JournalEntryListItemViewModel(
     string AccountCategory,
     decimal Amount,
     bool IsExpenseAccount);
-
