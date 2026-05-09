@@ -16,6 +16,7 @@ using Jamaa.Desktop.Events;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Models;
 using Jamaa.Desktop.Services.Navigation.Values;
+using Jamaa.Desktop.Settings;
 using Jamaa.Desktop.Shared;
 using Jamaa.Desktop.Configuration.Extensions;
 using Jamaa.Desktop.Dashboard;
@@ -195,16 +196,20 @@ public static partial class InitializationService
                 new RouteMap(Path: Routes.AccountingTransactions, ViewModel: typeof(JournalEntriesViewModel)),
                 new RouteMap(Path: Routes.BankReconciliation, ViewModel: typeof(BankReconciliationViewModel)),
                 new RouteMap(Path: Routes.AccountingReports, ViewModel: typeof(AccountingReportsViewModel)),
-                new RouteMap(Path: Routes.AccountingConfiguration, ViewModel: typeof(AccountingConfigurationViewModel), Nested:
+                new RouteMap(Path: Routes.Settings, ViewModel: typeof(SettingsViewModel), Nested:
                 [
-                    new RouteMap(Path: Routes.AccountingCurrencyAndDateFormats, ViewModel: typeof(AccountingCurrencyAndDateFormatsViewModel)),
-                    new RouteMap(Path: Routes.FiscalCalendarAndPeriods, ViewModel: typeof(FiscalCalendarAndPeriodsViewModel)),
-                    new RouteMap(Path: Routes.ChartOfAccounts, ViewModel: typeof(ChartOfAccountsViewModel)),
-                    new RouteMap(Path: Routes.TaxGroupsAndAuthorities, ViewModel: typeof(TaxGroupsAndAuthoritiesViewModel)),
-                    new RouteMap(Path: Routes.AutomationRules, ViewModel: typeof(AutomationRulesViewModel)),
-                    new RouteMap(Path: Routes.UserRolesAndApprovals, ViewModel: typeof(UserRolesAndApprovalsViewModel)),
-                    new RouteMap(Path: Routes.OpeningBalancesAndMigration, ViewModel: typeof(OpeningBalancesAndMigrationViewModel)),
-                    new RouteMap(Path: Routes.AccountLedger, ViewModel: typeof(AccountLedgerViewModel)),
+                    new RouteMap(Path: Routes.AccountingConfiguration, ViewModel: typeof(AccountingConfigurationViewModel), Nested:
+                    [
+                        new RouteMap(Path: Routes.AccountingCurrencyAndDateFormats, ViewModel: typeof(AccountingCurrencyAndDateFormatsViewModel)),
+                        new RouteMap(Path: Routes.FiscalCalendarAndPeriods, ViewModel: typeof(FiscalCalendarAndPeriodsViewModel)),
+                        new RouteMap(Path: Routes.ChartOfAccounts, ViewModel: typeof(ChartOfAccountsViewModel)),
+                        new RouteMap(Path: Routes.TaxGroupsAndAuthorities, ViewModel: typeof(TaxGroupsAndAuthoritiesViewModel)),
+                        new RouteMap(Path: Routes.AutomationRules, ViewModel: typeof(AutomationRulesViewModel)),
+                        new RouteMap(Path: Routes.UserRolesAndApprovals, ViewModel: typeof(UserRolesAndApprovalsViewModel)),
+                        new RouteMap(Path: Routes.OpeningBalancesAndMigration, ViewModel: typeof(OpeningBalancesAndMigrationViewModel)),
+                        new RouteMap(Path: Routes.AccountLedger, ViewModel: typeof(AccountLedgerViewModel)),
+                    ]),
+                    new RouteMap(Path: Routes.EventsConfiguration, ViewModel: typeof(EventsConfigurationViewModel)),
                 ]),
             ]),
         ]));

@@ -1,8 +1,5 @@
-using System.Collections.Generic;
 using Domain.Finances.Values;
-using Jamaa.Application.Finances.Values;
 using Jamaa.Data.Models.Finances;
-using AppCurrency = Jamaa.Application.Finances.Values.Currency;
 
 namespace Jamaa.Application.Finances;
 
@@ -23,7 +20,7 @@ public interface IFinanceManagementFacade
     Task UpdateAccountingPeriod(string organisationId, string fiscalYearId, string accountingPeriodId, int sequenceNumber, DateTime startDate, DateTime endDate, bool isLocked);
     Task DeleteAccountingPeriod(string organisationId, string fiscalYearId, string accountingPeriodId);
 
-    Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat, int decimalPrecision, IReadOnlyList<AppCurrency> availableCurrencies);
+    Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat, int decimalPrecision, IReadOnlyList<Currency> availableCurrencies);
 
     // Read operations (one-off query)
     Task<IList<AccountData>> GetAccounts(string organisationId);

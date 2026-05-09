@@ -26,9 +26,9 @@ public class Organisation
     public ISet<Member> Members { get; }
 
     /// <summary>
-    ///  the set of fees that are applicable for the organization.
+    ///  the set of dues that are applicable for the organization.
     /// </summary>
-    public ISet<IFee> Fees { get; }
+    public ISet<IDue> Dues { get; }
 
     /// <summary>
     /// Creates a new Organization or Association.
@@ -40,7 +40,7 @@ public class Organisation
         Name = name;
         Description = description;
         Members = new HashSet<Member>();
-        Fees = new HashSet<IFee>();
+        Dues = new HashSet<IDue>();
     }
 
     public Registration Register(Member member, MembershipType membershipType, DateTime registrationDate)
@@ -51,11 +51,11 @@ public class Organisation
     }
 
     /// <summary>
-    /// Adds a new <see cref="IFee"/> to the organization 
+    /// Adds a new <see cref="IDue"/> to the organization 
     /// </summary>
-    /// <param name="fee">the new fee to be introduced</param>
-    /// <returns>a reference to the new <see cref="IFee"/> that was added</returns>
-    public IFee IntroduceFee(IFee fee)
+    /// <param name="due">the new due to be introduced</param>
+    /// <returns>a reference to the new <see cref="IDue"/> that was added</returns>
+    public IDue AddDue(IDue due)
     {
         throw new NotImplementedException();
     }

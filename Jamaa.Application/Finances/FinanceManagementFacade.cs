@@ -14,7 +14,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using AppCurrency = Jamaa.Application.Finances.Values.Currency;
 
 namespace Jamaa.Application.Finances;
 
@@ -289,14 +288,20 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     }
 
     // Integration: dispatches accounting settings update intent.
-    public Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat, int decimalPrecision, IReadOnlyList<AppCurrency> availableCurrencies)
+    public Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat, int decimalPrecision, IReadOnlyList<Currency> availableCurrencies)
     {
+        // Map domain Currency → application-layer Currency so the persisted event type name
+        // stays as "Jamaa.Application.Finances.Values.Currency" for journal backward-compatibility.
+        var appCurrencies = availableCurrencies
+            ?.Select(c => new Jamaa.Application.Finances.Values.Currency(c.Code, c.Symbol))
+            .ToList() ?? [];
+
         var command = new UpdateAccountingSettings(
             OrganisationId.With(organisationId),
             baseCurrency,
             dateFormat,
             decimalPrecision,
-            availableCurrencies?.ToList() ?? []);
+            appCurrencies);
 
         _commandProcessor.Tell(command);
         return Task.CompletedTask;

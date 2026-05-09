@@ -1,12 +1,53 @@
 <UserControl
+    d:DesignHeight="700"
+    d:DesignWidth="1200"
+    mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Settings.SettingsPage"
+    x:DataType="settings:SettingsViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    mc:Ignorable="d"
-    >
-    Settings Page
+    xmlns:settings="clr-namespace:Jamaa.Desktop.Settings"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="16">
+            <TextBlock
+                FontSize="28"
+                FontWeight="Bold"
+                Text="Settings" />
+
+            <TabControl>
+                <TabItem Header="Accounting">
+                    <ScrollViewer>
+                        <StackPanel Margin="16" Spacing="16">
+                            <TextBlock
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Text="Accounting Configuration" />
+                            <TextBlock
+                                Opacity="0.7"
+                                Text="Manage chart of accounts, fiscal calendar, periods, automation rules, and related accounting configuration."
+                                TextWrapping="Wrap" />
+                            <ContentControl Content="{Binding AccountingSettingsContent}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="Events">
+                    <ScrollViewer>
+                        <StackPanel Margin="16" Spacing="16">
+                            <TextBlock
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Text="Events Configuration" />
+                            <TextBlock
+                                Opacity="0.7"
+                                Text="Configure event management settings and preferences."
+                                TextWrapping="Wrap" />
+                            <ContentControl Content="{Binding EventsSettingsContent}" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

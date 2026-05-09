@@ -40,6 +40,11 @@ public partial class MainWindowViewModel : ObservableValidator,
         WeakReferenceMessenger.Default.Send(new ModuleSelected(value.TargetRoute));
     }
 
+    public void NavigateToSettings()
+    {
+        WeakReferenceMessenger.Default.Send(new ModuleSelected(Routes.Settings));
+    }
+
     public void Receive(ModuleSelected message)
     {
         var moduleRoute = ResolveModuleRoute(message.Route);
@@ -74,8 +79,33 @@ public partial class MainWindowViewModel : ObservableValidator,
 
     private void SynchronizeSelectedItem(string route)
     {
+        if (IsSettingsRoute(route))
+        {
+            if (SelectedItem == null)
+            {
+                return;
+            }
+
+            _isSynchronizingSelection = true;
+            try
+            {
+                SelectedItem = null;
+            }
+            finally
+            {
+                _isSynchronizingSelection = false;
+            }
+
+            return;
+        }
+
         var navigationItem = FindBestNavigationItem(route);
-        if (navigationItem == null || ReferenceEquals(SelectedItem, navigationItem))
+        if (navigationItem == null)
+        {
+            return;
+        }
+
+        if (ReferenceEquals(SelectedItem, navigationItem))
         {
             return;
         }
@@ -132,9 +162,9 @@ public partial class MainWindowViewModel : ObservableValidator,
 
     private static string ResolveModuleRoute(string route)
     {
-        if (route.StartsWith(Routes.AccountingConfiguration + "/", StringComparison.Ordinal))
+        if (IsAccountingConfigurationRoute(route))
         {
-            return Routes.AccountingDashboard;
+            return Routes.Settings;
         }
 
         return route switch
@@ -144,10 +174,22 @@ public partial class MainWindowViewModel : ObservableValidator,
             Routes.AccountingTransactions => Routes.AccountingDashboard,
             Routes.BankReconciliation => Routes.AccountingDashboard,
             Routes.AccountingReports => Routes.AccountingDashboard,
-            Routes.ChartOfAccounts => Routes.AccountingDashboard,
-            Routes.AccountingConfiguration => Routes.AccountingDashboard,
+            Routes.Settings => Routes.Settings,
             _ => route
         };
+    }
+
+    private static bool IsAccountingConfigurationRoute(string route)
+    {
+        return route == Routes.AccountingConfiguration
+               || route.StartsWith(Routes.AccountingConfiguration + "/", StringComparison.Ordinal);
+    }
+
+    private static bool IsSettingsRoute(string route)
+    {
+        return route == Routes.Settings
+               || route.StartsWith(Routes.Settings + "/", StringComparison.Ordinal)
+               || IsAccountingConfigurationRoute(route);
     }
     
     private readonly Dictionary<string, IApplicationModule?> _moduleCache = new();

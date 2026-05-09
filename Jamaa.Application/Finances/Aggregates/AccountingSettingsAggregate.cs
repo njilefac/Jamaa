@@ -1,7 +1,5 @@
 using Akka.Actor;
 using Akka.Persistence;
-using System.Collections.Generic;
-using System.Linq;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Commands;
 using Jamaa.Application.Finances.Events;

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Domain.Organisation.Values;
 using Jamaa.Application.Finances.Values;
 using Jamaa.Application.Shared;

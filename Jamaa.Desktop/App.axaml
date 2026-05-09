@@ -12,6 +12,7 @@
     xmlns:pages="clr-namespace:Jamaa.Desktop.Members.Pages"
     xmlns:security="clr-namespace:Jamaa.Desktop.Security"
     xmlns:semi="clr-namespace:Semi.Avalonia;assembly=Semi.Avalonia"
+    xmlns:settings="clr-namespace:Jamaa.Desktop.Settings"
     xmlns:setup="clr-namespace:Jamaa.Desktop.Setup"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     xmlns:sty="using:FluentAvalonia.Styling"
@@ -115,6 +116,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type events-View-Models:EventsOverviewPageViewModel}">
             <events-View-Models:EventOverviewPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type settings:SettingsViewModel}">
+            <settings:SettingsPage />
         </DataTemplate>
     </Application.DataTemplates>
 </Application>

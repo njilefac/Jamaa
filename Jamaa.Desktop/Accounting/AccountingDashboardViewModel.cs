@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Models;
 using Jamaa.Desktop.Services.Navigation.Values;
@@ -17,14 +18,12 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
 {
     private readonly IRouteResolver _routeResolver;
     private readonly IRelayCommand _goToDashboardCommand;
-    private readonly IRelayCommand _goToConfigurationCommand;
     private bool _isSynchronizingTabSelection;
 
     public AccountingDashboardViewModel(IRouteResolver routeResolver)
     {
         _routeResolver = routeResolver;
         _goToDashboardCommand = new RelayCommand(GoToDashboardFromBreadcrumb);
-        _goToConfigurationCommand = new RelayCommand(GoToConfigurationFromBreadcrumb);
         ActionShortcuts = CreateActionShortcuts();
         MetricCards = CreateMetricCards();
         NavigateTo(Routes.AccountingDashboard);
@@ -42,15 +41,13 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
     [ObservableProperty] private object? _journalEntriesContent;
     [ObservableProperty] private object? _bankReconciliationContent;
     [ObservableProperty] private object? _reportsContent;
-    [ObservableProperty] private AccountingConfigurationViewModel? _configurationContent;
 
     private IReadOnlyList<DashboardShortcutViewModel> CreateActionShortcuts() =>
     [
         new("New Journal Entry", "📝", new RelayCommand(NavigateToJournalEntries)),
         new("Total Expenses", "💸", new RelayCommand(NavigateToTotalExpenses)),
         new("Reconcile Bank", "🏦", new RelayCommand(NavigateToBankReconciliation)),
-        new("View Reports", "📊", new RelayCommand(NavigateToReports)),
-        new("Accounting Configuration", "🛠", new RelayCommand(NavigateToAccountingConfiguration))
+        new("View Reports", "📊", new RelayCommand(NavigateToReports))
     ];
 
     private IReadOnlyList<DashboardMetricCardViewModel> CreateMetricCards() =>
@@ -81,13 +78,10 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
 
     private void NavigateToReports() => NavigateTo(Routes.AccountingReports);
 
-    private void NavigateToChartOfAccounts() => NavigateTo(Routes.ChartOfAccounts);
-
-    private void NavigateToAccountingConfiguration() => NavigateTo(Routes.AccountingConfiguration);
+    private static void NavigateToChartOfAccounts() =>
+        WeakReferenceMessenger.Default.Send(new ModuleSelected(Routes.ChartOfAccounts));
 
     private void GoToDashboardFromBreadcrumb() => NavigateTo(Routes.AccountingDashboard);
-
-    private void GoToConfigurationFromBreadcrumb() => NavigateTo(Routes.AccountingConfiguration);
 
     private static void EnsureRouteIsNotNull(string route)
     {
@@ -107,19 +101,11 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
 
     private static bool IsDashboardRoute(string route) => route is Routes.AccountingOverview or Routes.AccountingDashboard;
 
-    private static bool IsNestedConfigurationRoute(string route) =>
-        route.StartsWith(Routes.AccountingConfiguration + "/", StringComparison.Ordinal);
-
     private static string GetPrimaryRoute(string route)
     {
         if (IsDashboardRoute(route))
         {
             return Routes.AccountingDashboard;
-        }
-
-        if (IsNestedConfigurationRoute(route))
-        {
-            return Routes.AccountingConfiguration;
         }
 
         return route;
@@ -131,7 +117,6 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
         Routes.AccountingTransactions => 1,
         Routes.BankReconciliation => 2,
         Routes.AccountingReports => 3,
-        Routes.AccountingConfiguration => 4,
         _ => throw new InvalidOperationException($"Route '{route}' is not handled by the Accounting tabs.")
     };
 
@@ -141,7 +126,6 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
         1 => Routes.AccountingTransactions,
         2 => Routes.BankReconciliation,
         3 => Routes.AccountingReports,
-        4 => Routes.AccountingConfiguration,
         _ => Routes.AccountingDashboard
     };
 
@@ -172,24 +156,6 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
     private object EnsureReportsContent() =>
         ReportsContent ??= _routeResolver.Resolve(Routes.AccountingReports);
 
-    private AccountingConfigurationViewModel EnsureConfigurationContent()
-    {
-        ConfigurationContent ??= _routeResolver.Resolve(Routes.AccountingConfiguration) as AccountingConfigurationViewModel
-            ?? throw new InvalidOperationException("Could not resolve Accounting Configuration content.");
-
-        return ConfigurationContent;
-    }
-
-    private string ResolveNestedRouteTitle(string route)
-    {
-        var resolvedContent = _routeResolver.Resolve(route);
-        EnsureResolvedContentIsNotNull(resolvedContent);
-
-        return (resolvedContent as IRouteableViewModel)?.Title
-            ?? (resolvedContent as IApplicationModule)?.Title
-            ?? "Details";
-    }
-
     private string ResolveBreadcrumbLeafTitle(string route)
     {
         return GetPrimaryRoute(route) switch
@@ -198,8 +164,6 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
             Routes.AccountingTransactions => "Journal Entries",
             Routes.BankReconciliation => "Bank Reconciliation",
             Routes.AccountingReports => "Reports",
-            Routes.AccountingConfiguration when IsNestedConfigurationRoute(route) => ResolveNestedRouteTitle(route),
-            Routes.AccountingConfiguration => "Configuration",
             _ => "Accounting"
         };
     }
@@ -218,13 +182,6 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
         }
 
         var primaryRoute = GetPrimaryRoute(route);
-        if (primaryRoute == Routes.AccountingConfiguration && IsNestedConfigurationRoute(route))
-        {
-            Breadcrumbs.Add(new BreadcrumbItemModel("Configuration", Routes.AccountingConfiguration, true, _goToConfigurationCommand));
-            Breadcrumbs.Add(new BreadcrumbItemModel(ResolveBreadcrumbLeafTitle(route), route));
-            return;
-        }
-
         Breadcrumbs.Add(new BreadcrumbItemModel(ResolveBreadcrumbLeafTitle(route), primaryRoute));
     }
 
@@ -257,10 +214,6 @@ public partial class AccountingDashboardViewModel : ObservableObject, IApplicati
                 break;
             case Routes.AccountingReports:
                 EnsureResolvedContentIsNotNull(EnsureReportsContent());
-                break;
-            case Routes.AccountingConfiguration:
-                var configurationContent = EnsureConfigurationContent();
-                configurationContent.NavigateTo(route, parameter);
                 break;
             default:
                 throw new InvalidOperationException($"Route '{route}' is not handled by the Accounting tabs.");

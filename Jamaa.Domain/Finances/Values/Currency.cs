@@ -1,8 +1,3 @@
 ﻿namespace Domain.Finances.Values;
 
-public class Currency
-{
-    public Currency()
-    {
-    }
-}
+public record Currency(string Code, string Symbol);

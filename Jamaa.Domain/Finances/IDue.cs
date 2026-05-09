@@ -3,7 +3,7 @@ using Domain.Finances.Values;
 
 namespace Domain.Finances;
 
-public interface IFee
+public interface IDue
 {
     Guid Id { get; }
     string Name { get; }

@@ -28,7 +28,7 @@ public class MainWindowViewModelTests
     }
 
     [Fact]
-    public void Receive_ShouldSelectAccountingItemForNestedConfigurationRoutes()
+    public void Receive_ShouldSelectBuiltInSettingsItemForNestedConfigurationRoutes()
     {
         // Arrange
         var routeResolver = CreateRouteResolver();
@@ -39,20 +39,49 @@ public class MainWindowViewModelTests
         viewModel.Receive(new ModuleSelected(Routes.FiscalCalendarAndPeriods));
 
         // Assert
-        viewModel.SelectedItem.ShouldNotBeNull();
-        viewModel.SelectedItem!.Title.ShouldBe("Accounting");
+        viewModel.SelectedItem.ShouldBeNull();
     }
 
     [Fact]
-    public void Receive_ShouldUseAccountingDashboardHostForAccountingSubRoutes()
+    public void Receive_ShouldSelectBuiltInSettingsItemForSettingsRoute()
     {
-        // Arrange
+        var routeResolver = CreateRouteResolver();
+        var navigationItemsProvider = new NavigationItemsProvider();
+        using var viewModel = new MainWindowViewModel(routeResolver, navigationItemsProvider);
+
+        viewModel.Receive(new ModuleSelected(Routes.Settings));
+
+        viewModel.SelectedItem.ShouldBeNull();
+    }
+
+    [Fact]
+    public void NavigateToSettings_ShouldSendSettingsRouteToShell()
+    {
         var routeResolver = Substitute.For<IRouteResolver>();
-        var accountingHost = Substitute.For<IApplicationModule, INavigationHost>();
+        var settingsHost = Substitute.For<IApplicationModule, INavigationHost>();
         routeResolver
             .Resolve(Arg.Any<string>(), Arg.Any<object?>())
             .Returns(call => new TestApplicationModule((string)call[0]));
-        routeResolver.Resolve(Routes.AccountingDashboard, Arg.Any<object?>()).Returns(accountingHost);
+        routeResolver.Resolve(Routes.Settings, Arg.Any<object?>()).Returns(settingsHost);
+
+        var navigationItemsProvider = new NavigationItemsProvider();
+        using var viewModel = new MainWindowViewModel(routeResolver, navigationItemsProvider);
+
+        viewModel.NavigateToSettings();
+
+        viewModel.ActiveModule.ShouldBe(settingsHost);
+    }
+
+    [Fact]
+    public void Receive_ShouldUseSettingsHostForAccountingConfigurationSubRoutes()
+    {
+        // Arrange
+        var routeResolver = Substitute.For<IRouteResolver>();
+        var settingsHost = Substitute.For<IApplicationModule, INavigationHost>();
+        routeResolver
+            .Resolve(Arg.Any<string>(), Arg.Any<object?>())
+            .Returns(call => new TestApplicationModule((string)call[0]));
+        routeResolver.Resolve(Routes.Settings, Arg.Any<object?>()).Returns(settingsHost);
 
         var navigationItemsProvider = new NavigationItemsProvider();
         using var viewModel = new MainWindowViewModel(routeResolver, navigationItemsProvider);
@@ -61,9 +90,9 @@ public class MainWindowViewModelTests
         viewModel.Receive(new ModuleSelected(Routes.ChartOfAccounts));
 
         // Assert
-        viewModel.ActiveModule.ShouldBe(accountingHost);
-        ((INavigationHost)accountingHost).Received(1).NavigateTo(Routes.ChartOfAccounts, null);
-        routeResolver.Received(1).Resolve(Routes.AccountingDashboard, null);
+        viewModel.ActiveModule.ShouldBe(settingsHost);
+        ((INavigationHost)settingsHost).Received(1).NavigateTo(Routes.ChartOfAccounts, null);
+        routeResolver.Received(1).Resolve(Routes.Settings, null);
     }
 
     [Fact]
