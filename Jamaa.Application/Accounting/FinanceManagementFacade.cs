@@ -251,18 +251,12 @@ public class FinanceManagementFacade : IFinanceManagementFacade
     public Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat,
         int decimalPrecision, IReadOnlyList<Currency> availableCurrencies)
     {
-        // Map domain Currency → application-layer Currency so the persisted event type name
-        // stays as "Jamaa.Application.Finances.Values.Currency" for journal backward-compatibility.
-        var appCurrencies = availableCurrencies
-            ?.Select(c => new Values.Currency(c.Code, c.Symbol))
-            .ToList() ?? [];
-
         var command = new UpdateAccountingSettings(
             OrganisationId.With(organisationId),
             baseCurrency,
             dateFormat,
             decimalPrecision,
-            appCurrencies);
+            [.. availableCurrencies]);
 
         _commandProcessor.Tell(command);
         return Task.CompletedTask;

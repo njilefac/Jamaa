@@ -1,9 +1,9 @@
 using Akka.Actor;
 using Akka.Persistence;
+using Domain.Accounting.Values;
 using Domain.Organisation.Values;
 using Jamaa.Application.Accounting.Commands;
 using Jamaa.Application.Accounting.Events;
-using Jamaa.Application.Accounting.Values;
 
 namespace Jamaa.Application.Accounting.Aggregates;
 
@@ -93,7 +93,7 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
         _state.BaseCurrency = @event.BaseCurrency;
         _state.DateFormat = @event.DateFormat;
         _state.DecimalPrecision = @event.DecimalPrecision;
-        _state.AvailableCurrencies = [.. @event.AvailableCurrencies ?? []];
+        _state.AvailableCurrencies = [.. @event.AvailableCurrencies];
     }
 
     // Operation: validates that the base currency is a non-empty, known ISO 4217 code.
@@ -165,7 +165,7 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
     // Operation: validates that the managed available currency list is present and has valid entries.
     public static bool TryValidateAvailableCurrencies(IReadOnlyList<Currency> currencies, out string error)
     {
-        if (currencies is null || currencies.Count == 0)
+        if (currencies.Count == 0)
         {
             error = "At least one available currency is required.";
             return false;

@@ -1,5 +1,5 @@
+using Domain.Accounting.Values;
 using Domain.Organisation.Values;
-using Jamaa.Application.Accounting.Values;
 using Jamaa.Application.Shared;
 
 namespace Jamaa.Application.Accounting.Events;

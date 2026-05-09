@@ -1,6 +1,6 @@
 using System.Linq;
+using Domain.Accounting.Values;
 using Jamaa.Application.Accounting.Aggregates;
-using Jamaa.Application.Accounting.Values;
 using Shouldly;
 using Xunit;
 

@@ -1,5 +1,5 @@
+using Domain.Accounting.Values;
 using Domain.Organisation.Values;
-using Jamaa.Application.Accounting.Values;
 
 namespace Jamaa.Application.Accounting.Commands;
 
