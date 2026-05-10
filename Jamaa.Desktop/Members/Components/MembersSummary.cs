@@ -17,10 +17,10 @@ public partial class MembersSummary : ObservableObject, IDisposable
 
     [ObservableProperty] private uint _totalMembersCount;
 
-    public MembersSummary(IOrganisationManagementFacade organisationManagementFacade,
+    public MembersSummary(IOrganisationFacade organisationFacade,
         IUserSessionService userSessionService)
     {
-        _disposables.Add(organisationManagementFacade.CurrentMembers.Subscribe(m =>
+        _disposables.Add(organisationFacade.CurrentMembers.Subscribe(m =>
         {
             TotalMembersCount++;
             if (m.Gender == Gender.Male)
@@ -29,7 +29,7 @@ public partial class MembersSummary : ObservableObject, IDisposable
                 FemaleMembersCount++;
         }));
 
-        _disposables.Add(organisationManagementFacade.MemberDeleted.Subscribe(m =>
+        _disposables.Add(organisationFacade.MemberDeleted.Subscribe(m =>
         {
             TotalMembersCount--;
             if (m.Gender == Gender.Male)

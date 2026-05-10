@@ -32,7 +32,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
     private const string OrgId = "org-save-button-test";
     private readonly BehaviorSubject<AccountingSettingsData?> _currentSettingsSubject;
 
-    private readonly IFinanceManagementFacade _facade;
+    private readonly IAccountingFacade _facade;
     private readonly INotificationService _notificationService;
     private readonly Subject<AccountingSettingsData> _settingsUpdatedSubject;
     private readonly AccountingCurrencyAndDateFormatsViewModel _vm;
@@ -42,7 +42,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         _currentSettingsSubject = new BehaviorSubject<AccountingSettingsData?>(null);
         _settingsUpdatedSubject = new Subject<AccountingSettingsData>();
 
-        _facade = Substitute.For<IFinanceManagementFacade>();
+        _facade = Substitute.For<IAccountingFacade>();
         _notificationService = Substitute.For<INotificationService>();
         _facade.CurrentAccountingSettings.Returns(_currentSettingsSubject.AsObservable());
         _facade.AccountingSettingsUpdated.Returns(_settingsUpdatedSubject.AsObservable());

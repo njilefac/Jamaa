@@ -16,6 +16,18 @@ public class AccountData
     public AccountData? Parent { get; set; }
 }
 
+public class ChartOfAccountsData
+{
+    public required string OrganisationId { get; set; }
+    public IList<AccountData> Accounts { get; set; } = new List<AccountData>();
+}
+
+public class FiscalCalendarData
+{
+    public required string OrganisationId { get; set; }
+    public IList<FiscalYearData> FiscalYears { get; set; } = new List<FiscalYearData>();
+}
+
 public class AccountingPeriodData
 {
     public required string Id { get; set; }

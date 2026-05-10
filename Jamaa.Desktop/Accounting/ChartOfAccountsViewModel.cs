@@ -26,7 +26,7 @@ namespace Jamaa.Desktop.Accounting;
 public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IApplicationModule, IRouteableViewModel
 {
     private readonly List<AccountData> _allAccountData = [];
-    private readonly IFinanceManagementFacade _financeFacade;
+    private readonly IAccountingFacade _financeFacade;
     private readonly INotificationService _notificationService;
     private readonly IUserSessionService _userSessionService;
 
@@ -76,7 +76,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     private string _statusMessage = string.Empty;
 
     public ChartOfAccountsViewModel(
-        IFinanceManagementFacade financeFacade,
+        IAccountingFacade financeFacade,
         IUserSessionService userSessionService,
         INotificationService notificationService)
     {
@@ -169,7 +169,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         var session = _userSessionService.CurrentUserSession;
         if (session?.Organisation?.Id == null) return;
 
-        var accounts = await _financeFacade.GetAccounts(session.Organisation.Id);
+        var chartOfAccounts = await _financeFacade.GetChartOfAccounts(session.Organisation.Id);
+        var accounts = chartOfAccounts.Accounts;
         _allAccountData.Clear();
         _allAccountData.AddRange(accounts);
 
@@ -470,8 +471,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     {
         try
         {
-            var accounts = await _financeFacade.GetAccounts(organisationId);
-            var account = accounts.FirstOrDefault(current => current.Id == accountId);
+            var chartOfAccounts = await _financeFacade.GetChartOfAccounts(organisationId);
+            var account = chartOfAccounts.Accounts.FirstOrDefault(current => current.Id == accountId);
             return account is not null && account.IsActive == isActiveTarget;
         }
         catch
@@ -619,8 +620,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     {
         try
         {
-            var accounts = await _financeFacade.GetAccounts(organisationId);
-            return accounts.Any(account =>
+            var chartOfAccounts = await _financeFacade.GetChartOfAccounts(organisationId);
+            return chartOfAccounts.Accounts.Any(account =>
                 account.OrganisationId == organisationId &&
                 string.Equals(account.Code, code, StringComparison.Ordinal) &&
                 string.Equals(account.Name, name, StringComparison.Ordinal) &&

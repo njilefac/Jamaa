@@ -32,7 +32,7 @@ public partial class MembersOverviewViewModel : ObservableValidator,
     [ObservableProperty] private MembersSummary _membersSummary;
 
     public MembersOverviewViewModel(
-        IOrganisationManagementFacade organisationManagementFacade,
+        IOrganisationFacade organisationFacade,
         MembersSummary membersSummary,
         IRouteResolver routeResolver)
     {

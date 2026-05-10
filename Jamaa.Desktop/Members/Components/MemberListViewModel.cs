@@ -31,7 +31,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
 {
     private readonly INotificationService _notificationService;
 
-    private readonly IOrganisationManagementFacade _organisationManagementFacade;
+    private readonly IOrganisationFacade _organisationFacade;
     private readonly IDisposable? _subscription;
     [ObservableProperty] private object? _activeContent;
 
@@ -45,7 +45,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     [ObservableProperty] private string? _searchTerm;
 
 
-    public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
+    public MemberListViewModel(IOrganisationFacade organisationFacade,
         MemberRegistrationViewModel memberRegistrationViewModel,
         MemberEndRegistrationViewModel memberEndRegistrationViewModel,
         MemberProfileViewModel memberProfileViewModel,
@@ -55,7 +55,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         var syncContext = SynchronizationContext.Current;
         MemberRegistrationViewModel = memberRegistrationViewModel;
         MemberEndRegistrationViewModel = memberEndRegistrationViewModel;
-        _organisationManagementFacade = organisationManagementFacade;
+        _organisationFacade = organisationFacade;
         _notificationService = notificationService;
 
         var membersSourceList = new SourceCache<MemberViewModel, string>(m => m.Id);
@@ -73,9 +73,9 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             .Subscribe(_ => EnsureSelection());
 
         _subscription = new CompositeDisposable(
-            _organisationManagementFacade.CurrentMembers
+            _organisationFacade.CurrentMembers
                 .Subscribe(m => membersSourceList.AddOrUpdate(MapToViewModel(m))),
-            _organisationManagementFacade.MemberUpdated
+            _organisationFacade.MemberUpdated
                 .Subscribe(m =>
                 {
                     var existing = membersSourceList.Lookup(m.Id);
@@ -84,7 +84,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
                     else
                         membersSourceList.AddOrUpdate(MapToViewModel(m));
                 }),
-            _organisationManagementFacade.MemberDeleted
+            _organisationFacade.MemberDeleted
                 .Subscribe(m => membersSourceList.Remove(m.Id))
         );
 
@@ -139,8 +139,8 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         {
             var subject = $"{request.Result.FirstName} {request.Result.LastName}";
             await _notificationService.TrackOperationAsync(
-                () => _organisationManagementFacade.RegisterMember(request.Result),
-                _organisationManagementFacade.CurrentMembers,
+                () => _organisationFacade.RegisterMember(request.Result),
+                _organisationFacade.CurrentMembers,
                 m => m.FirstName == request.Result.FirstName && m.LastName == request.Result.LastName,
                 TimeSpan.FromSeconds(10),
                 "Member",
@@ -199,8 +199,8 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
 
         var subject = $"{member.FirstName} {member.LastName}";
         await _notificationService.TrackOperationAsync(
-            () => _organisationManagementFacade.UpdateMember(request),
-            _organisationManagementFacade.MemberUpdated,
+            () => _organisationFacade.UpdateMember(request),
+            _organisationFacade.MemberUpdated,
             m => m.Id == member.Id,
             TimeSpan.FromSeconds(10),
             "Member",

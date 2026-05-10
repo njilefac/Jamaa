@@ -3,12 +3,11 @@ using Jamaa.Application.Accounting.Models;
 
 namespace Jamaa.Application.Accounting;
 
-public interface IFinanceManagementFacade
+public interface IAccountingFacade
 {
-    // Reactive streams (push fiscal-year changes and current state)
-    IObservable<FiscalYearData> CurrentFiscalYears { get; }
-    IObservable<FiscalYearData> FiscalYearUpdated { get; }
-    IObservable<FiscalYearData> FiscalYearDeleted { get; }
+    // Reactive streams (push full fiscal-calendar snapshots)
+    IObservable<FiscalCalendarData> CurrentFiscalCalendar { get; }
+    IObservable<FiscalCalendarData> FiscalCalendarUpdated { get; }
 
     // Reactive streams (push chart-of-accounts row changes)
     IObservable<AccountData> AccountCreated { get; }
@@ -52,7 +51,7 @@ public interface IFinanceManagementFacade
         IReadOnlyList<Currency> availableCurrencies);
 
     // Read operations (one-off query)
-    Task<IList<AccountData>> GetAccounts(string organisationId);
-    Task<IList<FiscalYearData>> GetFiscalYears(string organisationId);
+    Task<ChartOfAccountsData> GetChartOfAccounts(string organisationId);
+    Task<FiscalCalendarData> GetFiscalCalendar(string organisationId);
     Task<AccountingSettingsData?> GetAccountingSettings(string organisationId);
 }

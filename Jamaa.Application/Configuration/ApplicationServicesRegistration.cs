@@ -19,8 +19,8 @@ public static class ApplicationServicesRegistration
 
         services.AddProxiedScoped<ISetupService, SetupService>();
 
-        services.AddProxiedSingleton<IOrganisationManagementFacade, OrganisationManagementFacade>();
-        services.AddProxiedSingleton<IFinanceManagementFacade, FinanceManagementFacade>();
+        services.AddProxiedSingleton<IOrganisationFacade, OrganisationFacade>();
+        services.AddProxiedSingleton<IAccountingFacade, AccountingFacade>();
 
         services.AddScoped<IQueryProcessor, QueryProcessor>();
 

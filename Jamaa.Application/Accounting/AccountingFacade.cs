@@ -20,17 +20,16 @@ namespace Jamaa.Application.Accounting;
 
 using AccountData = AccountData;
 using AccountingSettingsData = AccountingSettingsData;
-using FiscalYearData = FiscalYearData;
 
-public class FinanceManagementFacade : IFinanceManagementFacade
+public class AccountingFacade : IAccountingFacade
 {
     private readonly IActorRef _commandProcessor;
     private readonly BehaviorSubject<AccountingSettingsData?> _currentAccountingSettings;
-    private readonly ReplaySubject<FiscalYearData> _currentFiscalYears;
+    private readonly BehaviorSubject<FiscalCalendarData?> _currentFiscalCalendar;
     private readonly IServiceScopeFactory _scopeFactory;
     private string? _lastSeededOrganisationId;
 
-    public FinanceManagementFacade(
+    public AccountingFacade(
         IRequiredActor<CommandProcessor> commandProcessorProvider,
         IServiceScopeFactory scopeFactory,
         IDataChangeNotifier dataChangeNotifier,
@@ -39,13 +38,16 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         _commandProcessor = commandProcessorProvider.ActorRef;
         _scopeFactory = scopeFactory;
 
-        _currentFiscalYears = new ReplaySubject<FiscalYearData>();
-        CurrentFiscalYears = _currentFiscalYears;
+        _currentFiscalCalendar = new BehaviorSubject<FiscalCalendarData?>(null);
+        CurrentFiscalCalendar = _currentFiscalCalendar
+            .Where(calendar => calendar is not null)
+            .Select(calendar => calendar!);
 
-        dataChangeNotifier.Insertions
-            .OfType<DataModels.FiscalYearData>()
-            .Select(fiscalYear => fiscalYear.ToPresentationModel())
-            .Subscribe(_currentFiscalYears.OnNext);
+        FiscalCalendarUpdated = BuildFiscalCalendarUpdates(dataChangeNotifier);
+
+        // Keep the current-calendar snapshot up-to-date whenever data changes.
+        FiscalCalendarUpdated
+            .Subscribe(calendar => _currentFiscalCalendar.OnNext(calendar));
 
         AccountCreated = dataChangeNotifier.Insertions.OfType<DataModels.AccountData>()
             .Select(account => account.ToPresentationModel());
@@ -58,10 +60,6 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         AccountReactivated = dataChangeNotifier.Updates.OfType<DataModels.AccountData>().Where(a => a.IsActive)
             .Select(account => account.ToPresentationModel());
 
-        FiscalYearUpdated = BuildFiscalYearUpdates(dataChangeNotifier);
-        FiscalYearDeleted = dataChangeNotifier.Deletions.OfType<DataModels.FiscalYearData>()
-            .Select(fiscalYear => fiscalYear.ToPresentationModel());
-
         _currentAccountingSettings = new BehaviorSubject<AccountingSettingsData?>(null);
         CurrentAccountingSettings = _currentAccountingSettings;
         AccountingSettingsUpdated = BuildAccountingSettingsUpdates(dataChangeNotifier);
@@ -72,7 +70,7 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         // Subscribe after stream fields are initialized and seed from the already-authenticated session.
         userSessionService.UserSessions
             .StartWith(userSessionService.CurrentUserSession)
-            .Select(SeedFiscalYearsSafely)
+            .Select(SeedFiscalCalendarSafely)
             .Concat()
             .Subscribe(_ => { });
 
@@ -83,9 +81,8 @@ public class FinanceManagementFacade : IFinanceManagementFacade
             .Subscribe(_ => { });
     }
 
-    public IObservable<FiscalYearData> CurrentFiscalYears { get; }
-    public IObservable<FiscalYearData> FiscalYearUpdated { get; }
-    public IObservable<FiscalYearData> FiscalYearDeleted { get; }
+    public IObservable<FiscalCalendarData> CurrentFiscalCalendar { get; }
+    public IObservable<FiscalCalendarData> FiscalCalendarUpdated { get; }
     public IObservable<AccountData> AccountCreated { get; }
     public IObservable<AccountData> AccountUpdated { get; }
     public IObservable<AccountData> AccountDeleted { get; }
@@ -262,20 +259,24 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         return Task.CompletedTask;
     }
 
-    // Integration: reads the materialized fiscal-year view.
-    public async Task<IList<AccountData>> GetAccounts(string organisationId)
+    // Integration: reads the materialized chart-of-accounts view for the given organisation.
+    public async Task<ChartOfAccountsData> GetChartOfAccounts(string organisationId)
     {
         var accounts = await QueryAsync(queryProcessor =>
             queryProcessor.Get(new GetAccountsByOrganisation(OrganisationId.With(organisationId))));
-        return accounts.Select(account => account.ToPresentationModel()).ToList();
+        return accounts.ToChartOfAccountsReadModel(organisationId);
     }
 
-    // Integration: reads the materialized fiscal-year view.
-    public async Task<IList<FiscalYearData>> GetFiscalYears(string organisationId)
+    // Integration: reads the full fiscal calendar (all fiscal years with their accounting periods) for the given organisation.
+    public async Task<FiscalCalendarData> GetFiscalCalendar(string organisationId)
     {
         var fiscalYears = await QueryAsync(queryProcessor =>
             queryProcessor.Get(new GetFiscalYearsByOrganisation(OrganisationId.With(organisationId))));
-        return fiscalYears.Select(fiscalYear => fiscalYear.ToPresentationModel()).ToList();
+        return new FiscalCalendarData
+        {
+            OrganisationId = organisationId,
+            FiscalYears = fiscalYears.Select(fiscalYear => fiscalYear.ToPresentationModel()).ToList()
+        };
     }
 
     // Integration: reads the materialized accounting settings view.
@@ -286,22 +287,15 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         return settings?.ToPresentationModel();
     }
 
-    // Integration: builds a safe async seeding step for one session emission.
-    private static IObservable<Unit> SeedFiscalYearsSafely(UserSession? session,
-        Func<UserSession?, Task> seedFiscalYears)
+    // Integration: wraps fiscal-calendar seeding safely so stream errors don't terminate the session pipeline.
+    private IObservable<Unit> SeedFiscalCalendarSafely(UserSession? session)
     {
-        return Observable.FromAsync(() => seedFiscalYears(session))
+        return Observable.FromAsync(() => InitializeCurrentFiscalCalendarAsync(session))
             .Catch<Unit, Exception>(_ => Observable.Empty<Unit>());
     }
 
-    // Integration: builds the seeding workflow for one session while keeping the stream alive on failure.
-    private IObservable<Unit> SeedFiscalYearsSafely(UserSession? session)
-    {
-        return SeedFiscalYearsSafely(session, InitializeCurrentFiscalYearsAsync);
-    }
-
-    // Integration: seeds the current-fiscal-year stream from the active session organisation.
-    private async Task InitializeCurrentFiscalYearsAsync(UserSession? session)
+    // Integration: seeds the current-fiscal-calendar stream from the active session organisation.
+    private async Task InitializeCurrentFiscalCalendarAsync(UserSession? session)
     {
         var organisationId = session?.Organisation?.Id;
         if (string.IsNullOrWhiteSpace(organisationId)) return;
@@ -309,8 +303,8 @@ public class FinanceManagementFacade : IFinanceManagementFacade
         // Guard: skip re-seeding if the same session is re-emitted in succession.
         if (organisationId == _lastSeededOrganisationId) return;
 
-        var existingFiscalYears = await GetFiscalYears(organisationId);
-        foreach (var fiscalYear in existingFiscalYears) _currentFiscalYears.OnNext(fiscalYear);
+        var calendar = await GetFiscalCalendar(organisationId);
+        _currentFiscalCalendar.OnNext(calendar);
 
         _lastSeededOrganisationId = organisationId;
     }
@@ -401,47 +395,52 @@ public class FinanceManagementFacade : IFinanceManagementFacade
             $"{settings.OrganisationId}|{settings.BaseCurrency}|{settings.DateFormat}|{settings.DecimalPrecision}|[{string.Join(';', currencies)}]";
     }
 
-    // Operation: merges direct fiscal-year updates with period-driven fiscal-year refreshes.
-    private IObservable<FiscalYearData> BuildFiscalYearUpdates(IDataChangeNotifier dataChangeNotifier)
+    // Operation: reloads the full fiscal calendar whenever any fiscal-year or period row changes.
+    private IObservable<FiscalCalendarData> BuildFiscalCalendarUpdates(IDataChangeNotifier dataChangeNotifier)
     {
-        var fiscalYearUpdates = dataChangeNotifier.Updates.OfType<DataModels.FiscalYearData>()
-            .Select(fiscalYear => fiscalYear.ToPresentationModel());
+        var fiscalYearChanges = Observable.Merge(
+                dataChangeNotifier.Insertions.OfType<DataModels.FiscalYearData>(),
+                dataChangeNotifier.Updates.OfType<DataModels.FiscalYearData>(),
+                dataChangeNotifier.Deletions.OfType<DataModels.FiscalYearData>())
+            .Select(fiscalYear => fiscalYear.OrganisationId);
 
-        var periodDrivenUpdates = Observable.Merge(
+        var periodChanges = Observable.Merge(
                 dataChangeNotifier.Insertions.OfType<DataModels.AccountingPeriodData>(),
                 dataChangeNotifier.Updates.OfType<DataModels.AccountingPeriodData>(),
                 dataChangeNotifier.Deletions.OfType<DataModels.AccountingPeriodData>())
-            .Select(period => (period.OrganisationId, period.FiscalYearId))
-            .GroupBy(period => $"{period.OrganisationId}:{period.FiscalYearId}")
+            .Select(period => period.OrganisationId);
+
+        return fiscalYearChanges
+            .Merge(periodChanges)
+            .Where(organisationId => !string.IsNullOrWhiteSpace(organisationId))
+            .GroupBy(organisationId => organisationId)
             .SelectMany(group => group
                 .Throttle(TimeSpan.FromMilliseconds(120))
-                .SelectMany(period =>
-                    Observable.FromAsync(() => GetFiscalYearById(period.OrganisationId, period.FiscalYearId)))
-                .Where(fiscalYear => fiscalYear is not null)
-                .Select(fiscalYear => fiscalYear!));
-
-        return fiscalYearUpdates
-            .Merge(periodDrivenUpdates)
-            .DistinctUntilChanged(BuildFiscalYearSnapshotKey);
+                .SelectMany(organisationId =>
+                    Observable.FromAsync(() => GetFiscalCalendar(organisationId))
+                        .Catch<FiscalCalendarData, Exception>(_ => Observable.Empty<FiscalCalendarData>())))
+            .DistinctUntilChanged(BuildFiscalCalendarSnapshotKey);
     }
 
-    // Operation: resolves one fiscal year by identifier from the organisation read model.
-    private async Task<FiscalYearData?> GetFiscalYearById(string organisationId, string fiscalYearId)
+    // Operation: builds a deterministic key for fiscal-calendar payload deduplication.
+    private static string BuildFiscalCalendarSnapshotKey(FiscalCalendarData calendar)
     {
-        var fiscalYears = await GetFiscalYears(organisationId);
-        return fiscalYears.FirstOrDefault(fiscalYear => fiscalYear.Id == fiscalYearId);
-    }
+        var fiscalYearTokens = calendar.FiscalYears
+            .OrderBy(fiscalYear => fiscalYear.StartDate)
+            .ThenBy(fiscalYear => fiscalYear.Id)
+            .Select(fiscalYear =>
+            {
+                var periodTokens = (fiscalYear.Periods ?? [])
+                    .OrderBy(period => period.SequenceNumber)
+                    .ThenBy(period => period.Id)
+                    .Select(period =>
+                        $"{period.Id}|{period.SequenceNumber}|{period.StartDate:O}|{period.EndDate:O}|{(period.IsLocked ? 1 : 0)}");
 
-    // Operation: builds a deterministic key for fiscal-year payload deduplication.
-    private static string BuildFiscalYearSnapshotKey(FiscalYearData fiscalYear)
-    {
-        var periodTokens = (fiscalYear.Periods ?? [])
-            .OrderBy(period => period.SequenceNumber)
-            .ThenBy(period => period.Id)
-            .Select(period =>
-                $"{period.Id}|{period.SequenceNumber}|{period.StartDate:O}|{period.EndDate:O}|{(period.IsLocked ? 1 : 0)}");
+                return
+                    $"{fiscalYear.Id}|{fiscalYear.StartDate:O}|{fiscalYear.EndDate:O}|{(fiscalYear.IsLocked ? 1 : 0)}|[{string.Join(";", periodTokens)}]";
+            });
 
-        return
-            $"{fiscalYear.Id}|{fiscalYear.OrganisationId}|{fiscalYear.StartDate:O}|{fiscalYear.EndDate:O}|{(fiscalYear.IsLocked ? 1 : 0)}|[{string.Join(";", periodTokens)}]";
+        return $"{calendar.OrganisationId}|[{string.Join(";", fiscalYearTokens)}]";
     }
 }
+

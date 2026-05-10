@@ -18,13 +18,13 @@ using Jamaa.Data.Notifiers;
 
 namespace Jamaa.Application.Organisation;
 
-public class OrganisationManagementFacade : IOrganisationManagementFacade
+public class OrganisationFacade : IOrganisationFacade
 {
     private readonly IActorRef _commandProcessor;
     private readonly ReplaySubject<MemberData> _currentMembers;
     private readonly IQueryProcessor _queryProcessor;
 
-    public OrganisationManagementFacade(IRequiredActor<CommandProcessor> commandProcessorProvider,
+    public OrganisationFacade(IRequiredActor<CommandProcessor> commandProcessorProvider,
         IQueryProcessor queryProcessor,
         IDataChangeNotifier dataChangeNotifier,
         IUserSessionService userSessionService)

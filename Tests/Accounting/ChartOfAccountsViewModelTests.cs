@@ -22,7 +22,7 @@ namespace UnitTests.Accounting;
 
 public class ChartOfAccountsViewModelTests
 {
-    private readonly IFinanceManagementFacade _financeFacade = Substitute.For<IFinanceManagementFacade>();
+    private readonly IAccountingFacade _accountFacade = Substitute.For<IAccountingFacade>();
     private readonly INotificationService _notificationService = Substitute.For<INotificationService>();
     private readonly IUserSessionService _userSessionService = Substitute.For<IUserSessionService>();
 
@@ -32,17 +32,17 @@ public class ChartOfAccountsViewModelTests
         var session = new UserSession(true, "testuser", Guid.NewGuid(), org);
 
         _userSessionService.CurrentUserSession.Returns(session);
-        _financeFacade.GetAccounts(Arg.Any<string>())
-            .Returns(Task.FromResult<IList<AccountData>>(new List<AccountData>()));
+        _accountFacade.GetChartOfAccounts(Arg.Any<string>())
+            .Returns(orgId => Task.FromResult(new ChartOfAccountsData { OrganisationId = orgId.ArgAt<string>(0), Accounts = new List<AccountData>() }));
 
-        _financeFacade.AccountCreated.Returns(Observable.Empty<AccountData>());
-        _financeFacade.AccountUpdated.Returns(Observable.Empty<AccountData>());
-        _financeFacade.AccountDeleted.Returns(Observable.Empty<AccountData>());
+        _accountFacade.AccountCreated.Returns(Observable.Empty<AccountData>());
+        _accountFacade.AccountUpdated.Returns(Observable.Empty<AccountData>());
+        _accountFacade.AccountDeleted.Returns(Observable.Empty<AccountData>());
     }
 
     private ChartOfAccountsViewModel CreateViewModel()
     {
-        return new ChartOfAccountsViewModel(_financeFacade, _userSessionService, _notificationService);
+        return new ChartOfAccountsViewModel(_accountFacade, _userSessionService, _notificationService);
     }
 
     [Fact]
@@ -75,9 +75,9 @@ public class ChartOfAccountsViewModelTests
         // Arrange – use a ReplaySubject so TrackOperationAsync receives the event
         // even if it subscribes slightly after the emission
         var updatedSubject = new ReplaySubject<AccountData>(1);
-        _financeFacade.AccountUpdated.Returns(updatedSubject);
+        _accountFacade.AccountUpdated.Returns(updatedSubject);
 
-        _financeFacade.UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", "Updated description", AccountType.Asset,
+        _accountFacade.UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", "Updated description", AccountType.Asset,
                 null)
             .Returns(_ =>
             {
@@ -102,7 +102,7 @@ public class ChartOfAccountsViewModelTests
         await viewModel.AddAccountCommand.ExecuteAsync(null);
 
         // Assert – facade was called
-        await _financeFacade.Received(1).UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", "Updated description",
+        await _accountFacade.Received(1).UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", "Updated description",
             AccountType.Asset, null);
         // Assert – success notification was shown
         _notificationService.Received(1).Show(
@@ -119,11 +119,11 @@ public class ChartOfAccountsViewModelTests
     {
         // Arrange – AccountCreated is the confirmation observable for create
         var createdSubject = new ReplaySubject<AccountData>(1);
-        _financeFacade.AccountCreated.Returns(createdSubject);
-        _financeFacade.AccountUpdated.Returns(Observable.Empty<AccountData>());
-        _financeFacade.AccountDeleted.Returns(Observable.Empty<AccountData>());
+        _accountFacade.AccountCreated.Returns(createdSubject);
+        _accountFacade.AccountUpdated.Returns(Observable.Empty<AccountData>());
+        _accountFacade.AccountDeleted.Returns(Observable.Empty<AccountData>());
 
-        _financeFacade.CreateAccount("org-1", "1100", "Bank", "Primary bank account", AccountType.Asset, null)
+        _accountFacade.CreateAccount("org-1", "1100", "Bank", "Primary bank account", AccountType.Asset, null)
             .Returns(_ =>
             {
                 createdSubject.OnNext(new AccountData
@@ -144,7 +144,7 @@ public class ChartOfAccountsViewModelTests
         await viewModel.AddAccountCommand.ExecuteAsync(null);
 
         // Assert – facade was called
-        await _financeFacade.Received(1)
+        await _accountFacade.Received(1)
             .CreateAccount("org-1", "1100", "Bank", "Primary bank account", AccountType.Asset, null);
         // Assert – success notification was shown
         _notificationService.Received(1).Show(
@@ -158,7 +158,7 @@ public class ChartOfAccountsViewModelTests
     public async Task AddAccountCommand_ShouldReloadTreeFromReadModel_WhenCreatedAccountIsChildOfExistingParent()
     {
         var createdSubject = new ReplaySubject<AccountData>(1);
-        _financeFacade.AccountCreated.Returns(createdSubject);
+        _accountFacade.AccountCreated.Returns(createdSubject);
 
         var parentAccount = new AccountData
         {
@@ -179,11 +179,11 @@ public class ChartOfAccountsViewModelTests
             ParentId = "parent-1"
         };
 
-        _financeFacade.GetAccounts("org-1").Returns(
-            Task.FromResult<IList<AccountData>>(new List<AccountData> { parentAccount }),
-            Task.FromResult<IList<AccountData>>(new List<AccountData> { parentAccount, childAccount }));
+        _accountFacade.GetChartOfAccounts("org-1").Returns(
+            Task.FromResult(new ChartOfAccountsData { OrganisationId = "org-1", Accounts = new List<AccountData> { parentAccount } }),
+            Task.FromResult(new ChartOfAccountsData { OrganisationId = "org-1", Accounts = new List<AccountData> { parentAccount, childAccount } }));
 
-        _financeFacade.CreateAccount("org-1", "1010", "Cash", "Cash on hand", AccountType.Asset, "parent-1")
+        _accountFacade.CreateAccount("org-1", "1010", "Cash", "Cash on hand", AccountType.Asset, "parent-1")
             .Returns(_ =>
             {
                 createdSubject.OnNext(childAccount);
@@ -237,14 +237,14 @@ public class ChartOfAccountsViewModelTests
     {
         // Arrange
         var deletedSubject = new ReplaySubject<AccountData>(1);
-        _financeFacade.AccountDeleted.Returns(deletedSubject);
+        _accountFacade.AccountDeleted.Returns(deletedSubject);
 
         var initialAccount = new AccountData
             { Id = "acc-1", Code = "1000", Name = "Cash", OrganisationId = "org-1", Type = AccountType.Asset };
-        _financeFacade.GetAccounts("org-1")
-            .Returns(Task.FromResult<IList<AccountData>>(new List<AccountData> { initialAccount }));
+        _accountFacade.GetChartOfAccounts("org-1")
+            .Returns(Task.FromResult(new ChartOfAccountsData { OrganisationId = "org-1", Accounts = new List<AccountData> { initialAccount } }));
 
-        _financeFacade.DeleteAccount("org-1", "acc-1")
+        _accountFacade.DeleteAccount("org-1", "acc-1")
             .Returns(_ =>
             {
                 deletedSubject.OnNext(initialAccount);
@@ -258,15 +258,15 @@ public class ChartOfAccountsViewModelTests
         viewModel.Accounts.Count.ShouldBe(1);
         viewModel.SelectedAccount = viewModel.Accounts[0];
 
-        // After deletion GetAccounts returns empty
-        _financeFacade.GetAccounts("org-1").Returns(Task.FromResult<IList<AccountData>>(new List<AccountData>()));
+        // After deletion GetChartOfAccounts returns empty
+        _accountFacade.GetChartOfAccounts("org-1").Returns(Task.FromResult(new ChartOfAccountsData { OrganisationId = "org-1", Accounts = new List<AccountData>() }));
 
         // Act
         await viewModel.DeleteAccountCommand.ExecuteAsync(null);
         await WaitUntilAsync(() => viewModel.Accounts.Count == 0, "the deleted account to be removed from the tree");
 
         // Assert
-        await _financeFacade.Received(1).DeleteAccount("org-1", "acc-1");
+        await _accountFacade.Received(1).DeleteAccount("org-1", "acc-1");
         _notificationService.Received(1).Show(
             Arg.Any<string>(),
             Arg.Is<string>(s => s.Contains("Deleted") || s.Contains("Cash")),
@@ -279,7 +279,7 @@ public class ChartOfAccountsViewModelTests
     public async Task DeleteAccountCommand_ShouldRemoveChildFromUi_WhenDeleteEventArrivesAfterProjectionCatchUp()
     {
         var deletedSubject = new ReplaySubject<AccountData>(1);
-        _financeFacade.AccountDeleted.Returns(deletedSubject);
+        _accountFacade.AccountDeleted.Returns(deletedSubject);
 
         var parent = new AccountData
         {
@@ -301,10 +301,10 @@ public class ChartOfAccountsViewModelTests
         };
 
         var readModelAccounts = new List<AccountData> { parent, child };
-        _financeFacade.GetAccounts("org-1")
-            .Returns(_ => Task.FromResult<IList<AccountData>>(readModelAccounts.ToList()));
+        _accountFacade.GetChartOfAccounts("org-1")
+            .Returns(_ => Task.FromResult(new ChartOfAccountsData { OrganisationId = "org-1", Accounts = readModelAccounts.ToList() }));
 
-        _financeFacade.DeleteAccount("org-1", "child-1")
+        _accountFacade.DeleteAccount("org-1", "child-1")
             .Returns(_ =>
             {
                 readModelAccounts.RemoveAll(account => account.Id == child.Id);
@@ -329,7 +329,7 @@ public class ChartOfAccountsViewModelTests
                 viewModel.Accounts[0].SubAccounts.Count == 0,
             "the deleted child account to disappear from the parent");
 
-        await _financeFacade.Received(1).DeleteAccount("org-1", "child-1");
+        await _accountFacade.Received(1).DeleteAccount("org-1", "child-1");
         viewModel.Accounts.Count.ShouldBe(1);
         viewModel.Accounts[0].Id.ShouldBe("parent-1");
         viewModel.Accounts[0].SubAccounts.ShouldBeEmpty();
@@ -338,7 +338,7 @@ public class ChartOfAccountsViewModelTests
     [Fact]
     public async Task ToggleActive_ShouldConfirmFromReadModel_WhenDeactivateEventIsMissing()
     {
-        _financeFacade.AccountDeactivated.Returns(Observable.Empty<AccountData>());
+        _accountFacade.AccountDeactivated.Returns(Observable.Empty<AccountData>());
 
         var readModelAccounts = new List<AccountData>
         {
@@ -353,10 +353,10 @@ public class ChartOfAccountsViewModelTests
             }
         };
 
-        _financeFacade.GetAccounts("org-1")
-            .Returns(_ => Task.FromResult<IList<AccountData>>(readModelAccounts.ToList()));
+        _accountFacade.GetChartOfAccounts("org-1")
+            .Returns(_ => Task.FromResult(new ChartOfAccountsData { OrganisationId = "org-1", Accounts = readModelAccounts.ToList() }));
 
-        _financeFacade.DeactivateAccount("org-1", "acc-1")
+        _accountFacade.DeactivateAccount("org-1", "acc-1")
             .Returns(_ =>
             {
                 readModelAccounts[0] = new AccountData
@@ -379,7 +379,7 @@ public class ChartOfAccountsViewModelTests
         var item = viewModel.Accounts.Single(account => account.Id == "acc-1");
         await InvokePrivateToggleAccountActiveAsync(viewModel, item);
 
-        await _financeFacade.Received(1).DeactivateAccount("org-1", "acc-1");
+        await _accountFacade.Received(1).DeactivateAccount("org-1", "acc-1");
         _notificationService.Received().Show(
             "Account",
             Arg.Is<string>(message => message.Contains("Deactivated", StringComparison.OrdinalIgnoreCase)),
@@ -394,8 +394,8 @@ public class ChartOfAccountsViewModelTests
     public async Task AddAccountCommand_ShouldSucceed_WhenCreateEventIsMissing_ButReadModelShowsAccount()
     {
         var deletedSubject = new ReplaySubject<AccountData>(1);
-        _financeFacade.AccountDeleted.Returns(deletedSubject);
-        _financeFacade.AccountCreated.Returns(Observable.Empty<AccountData>());
+        _accountFacade.AccountDeleted.Returns(deletedSubject);
+        _accountFacade.AccountCreated.Returns(Observable.Empty<AccountData>());
 
         var initialAccount = new AccountData
         {
@@ -417,10 +417,10 @@ public class ChartOfAccountsViewModelTests
         };
 
         var readModelAccounts = new List<AccountData> { initialAccount };
-        _financeFacade.GetAccounts("org-1")
-            .Returns(_ => Task.FromResult<IList<AccountData>>(readModelAccounts.ToList()));
+        _accountFacade.GetChartOfAccounts("org-1")
+            .Returns(_ => Task.FromResult(new ChartOfAccountsData { OrganisationId = "org-1", Accounts = readModelAccounts.ToList() }));
 
-        _financeFacade.DeleteAccount("org-1", "acc-1")
+        _accountFacade.DeleteAccount("org-1", "acc-1")
             .Returns(_ =>
             {
                 readModelAccounts.RemoveAll(account => account.Id == "acc-1");
@@ -428,7 +428,7 @@ public class ChartOfAccountsViewModelTests
                 return Task.CompletedTask;
             });
 
-        _financeFacade.CreateAccount("org-1", "1001", "Bank", "Primary bank account", AccountType.Asset, null)
+        _accountFacade.CreateAccount("org-1", "1001", "Bank", "Primary bank account", AccountType.Asset, null)
             .Returns(_ =>
             {
                 readModelAccounts.Add(createdAccount);
@@ -450,7 +450,7 @@ public class ChartOfAccountsViewModelTests
 
         await viewModel.AddAccountCommand.ExecuteAsync(null);
 
-        await _financeFacade.Received(1)
+        await _accountFacade.Received(1)
             .CreateAccount("org-1", "1001", "Bank", "Primary bank account", AccountType.Asset, null);
         _notificationService.Received().Show(
             Arg.Any<string>(),
@@ -615,7 +615,7 @@ public class ChartOfAccountsViewModelTests
             new() { Id = "1", Code = "1000", Type = AccountType.Asset, OrganisationId = "org-1", Name = "A" },
             new() { Id = "2", Code = "1005", Type = AccountType.Asset, OrganisationId = "org-1", Name = "B" }
         };
-        _financeFacade.GetAccounts(Arg.Any<string>()).Returns(Task.FromResult<IList<AccountData>>(accounts));
+        _accountFacade.GetChartOfAccounts(Arg.Any<string>()).Returns(orgId => Task.FromResult(new ChartOfAccountsData { OrganisationId = orgId.ArgAt<string>(0), Accounts = accounts }));
 
         var viewModel = CreateViewModel();
         await InvokePrivateLoadAccountsAsync(viewModel);

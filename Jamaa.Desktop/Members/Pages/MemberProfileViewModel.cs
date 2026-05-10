@@ -18,7 +18,7 @@ namespace Jamaa.Desktop.Members.Pages;
 public partial class MemberProfileViewModel : ObservableObject, IRouteableViewModel
 {
     private readonly INotificationService _notificationService;
-    private readonly IOrganisationManagementFacade _organisationManagementFacade;
+    private readonly IOrganisationFacade _organisationFacade;
 
     [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     private DateTime _birthDate;
@@ -60,10 +60,10 @@ public partial class MemberProfileViewModel : ObservableObject, IRouteableViewMo
 
     [ObservableProperty] private int _selectedTabIndex;
 
-    public MemberProfileViewModel(IOrganisationManagementFacade organisationManagementFacade,
+    public MemberProfileViewModel(IOrganisationFacade organisationFacade,
         INotificationService notificationService)
     {
-        _organisationManagementFacade = organisationManagementFacade;
+        _organisationFacade = organisationFacade;
         _notificationService = notificationService;
     }
 
@@ -132,8 +132,8 @@ public partial class MemberProfileViewModel : ObservableObject, IRouteableViewMo
 
         var subject = $"{request.FirstName} {request.LastName}";
         var isConfirmed = await _notificationService.TrackOperationAsync(
-            () => _organisationManagementFacade.UpdateMember(request),
-            _organisationManagementFacade.MemberUpdated,
+            () => _organisationFacade.UpdateMember(request),
+            _organisationFacade.MemberUpdated,
             m => m.Id == _originalMember.Id,
             TimeSpan.FromSeconds(10),
             "Member",

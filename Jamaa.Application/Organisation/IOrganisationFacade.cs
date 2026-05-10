@@ -4,7 +4,7 @@ using Jamaa.Data.Models.Organisation;
 
 namespace Jamaa.Application.Organisation;
 
-public interface IOrganisationManagementFacade
+public interface IOrganisationFacade
 {
     IObservable<MemberData> MemberUpdated { get; }
     IObservable<MemberData> MemberDeleted { get; }

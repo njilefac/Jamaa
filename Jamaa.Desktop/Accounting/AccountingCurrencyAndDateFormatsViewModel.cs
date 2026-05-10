@@ -23,7 +23,7 @@ namespace Jamaa.Desktop.Accounting;
 public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObject, IApplicationModule,
     IRouteableViewModel, IDisposable
 {
-    private readonly IFinanceManagementFacade _financeManagementFacade;
+    private readonly IAccountingFacade _accountingFacade;
     private readonly INotificationService _notificationService;
     private readonly string _organisationId;
     private readonly CompositeDisposable _subscriptions = [];
@@ -72,24 +72,24 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     [ObservableProperty] private string _statusMessage = string.Empty;
 
     public AccountingCurrencyAndDateFormatsViewModel(
-        IFinanceManagementFacade financeManagementFacade,
+        IAccountingFacade accountingFacade,
         IUserSessionService userSessionService,
         INotificationService notificationService)
     {
         var syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
 
-        _financeManagementFacade = financeManagementFacade;
+        _accountingFacade = accountingFacade;
         _notificationService = notificationService;
         _organisationId = ResolveOrganisationId(userSessionService);
         AvailableCurrencies.CollectionChanged += OnAvailableCurrenciesChanged;
 
         _subscriptions.Add(
-            financeManagementFacade.CurrentAccountingSettings
+            accountingFacade.CurrentAccountingSettings
                 .ObserveOn(syncContext)
                 .Subscribe(ApplySettings, HandleStreamError));
 
         _subscriptions.Add(
-            financeManagementFacade.AccountingSettingsUpdated
+            accountingFacade.AccountingSettingsUpdated
                 .Where(settings => settings.OrganisationId == _organisationId)
                 .ObserveOn(syncContext)
                 .Subscribe(ApplySettings, HandleStreamError));
@@ -204,13 +204,13 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
             .ToList();
 
         var isConfirmed = await _notificationService.TrackOperationAsync(
-            () => _financeManagementFacade.UpdateAccountingSettings(
+            () => _accountingFacade.UpdateAccountingSettings(
                 _organisationId,
                 expectedBaseCurrency,
                 expectedDateFormat,
                 expectedDecimalPrecision,
                 availableCurrencies),
-            _financeManagementFacade.AccountingSettingsUpdated,
+            _accountingFacade.AccountingSettingsUpdated,
             settings =>
                 settings.OrganisationId == _organisationId &&
                 NormalizeCurrencyCode(settings.BaseCurrency) == expectedBaseCurrency &&

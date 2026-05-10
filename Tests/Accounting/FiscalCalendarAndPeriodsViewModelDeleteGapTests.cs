@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -21,26 +20,23 @@ namespace UnitTests.Accounting;
 public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposable
 {
     private const string OrgId = "org-fiscal-delete-gap-tests";
-    private readonly Subject<FiscalYearData> _currentFiscalYears;
+    private readonly Subject<FiscalCalendarData> _currentFiscalCalendar;
+    private readonly Subject<FiscalCalendarData> _fiscalCalendarUpdated;
 
-    private readonly IFinanceManagementFacade _financeFacade;
-    private readonly Subject<FiscalYearData> _fiscalYearDeleted;
-    private readonly Subject<FiscalYearData> _fiscalYearUpdated;
+    private readonly IAccountingFacade _financeFacade;
     private readonly INotificationService _notificationService;
     private readonly FiscalCalendarAndPeriodsViewModel _viewModel;
 
     public FiscalCalendarAndPeriodsViewModelDeleteGapTests()
     {
-        _financeFacade = Substitute.For<IFinanceManagementFacade>();
+        _financeFacade = Substitute.For<IAccountingFacade>();
         _notificationService = Substitute.For<INotificationService>();
 
-        _currentFiscalYears = new Subject<FiscalYearData>();
-        _fiscalYearUpdated = new Subject<FiscalYearData>();
-        _fiscalYearDeleted = new Subject<FiscalYearData>();
+        _currentFiscalCalendar = new Subject<FiscalCalendarData>();
+        _fiscalCalendarUpdated = new Subject<FiscalCalendarData>();
 
-        _financeFacade.CurrentFiscalYears.Returns(_currentFiscalYears.AsObservable());
-        _financeFacade.FiscalYearUpdated.Returns(_fiscalYearUpdated.AsObservable());
-        _financeFacade.FiscalYearDeleted.Returns(_fiscalYearDeleted.AsObservable());
+        _financeFacade.CurrentFiscalCalendar.Returns(_currentFiscalCalendar.AsObservable());
+        _financeFacade.FiscalCalendarUpdated.Returns(_fiscalCalendarUpdated.AsObservable());
 
         var organisation = new OrganisationData { Id = OrgId, Name = "Test Organisation" };
         var userSession = new UserSession(true, "admin", Guid.NewGuid(), organisation);
@@ -53,9 +49,8 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
     public void Dispose()
     {
         _viewModel.Dispose();
-        _currentFiscalYears.Dispose();
-        _fiscalYearUpdated.Dispose();
-        _fiscalYearDeleted.Dispose();
+        _currentFiscalCalendar.Dispose();
+        _fiscalCalendarUpdated.Dispose();
     }
 
     [Fact]
@@ -84,7 +79,7 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
             NotificationType.Warning);
 
         _financeFacade.ReceivedCalls()
-            .Any(call => call.GetMethodInfo().Name == nameof(IFinanceManagementFacade.DeleteFiscalYear))
+            .Any(call => call.GetMethodInfo().Name == nameof(IAccountingFacade.DeleteFiscalYear))
             .ShouldBeFalse();
     }
 
@@ -107,9 +102,10 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
         var deletedFiscalYearId = _viewModel.SelectedFiscalYear!.Id.ToString();
 
         _financeFacade.DeleteFiscalYear(OrgId, deletedFiscalYearId).Returns(Task.CompletedTask);
-        _financeFacade.GetFiscalYears(OrgId).Returns(Task.FromResult<IList<FiscalYearData>>(new List<FiscalYearData>
+        _financeFacade.GetFiscalCalendar(OrgId).Returns(Task.FromResult(new FiscalCalendarData
         {
-            CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31))
+            OrganisationId = OrgId,
+            FiscalYears = [CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31))]
         }));
 
         await InvokePrivateDeleteFiscalYear();
@@ -133,14 +129,27 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
         var deletedFiscalYearId = _viewModel.SelectedFiscalYear!.Id.ToString();
 
         _financeFacade.DeleteFiscalYear(OrgId, deletedFiscalYearId).Returns(Task.CompletedTask);
-        _financeFacade.GetFiscalYears(OrgId).Returns(
-            Task.FromResult<IList<FiscalYearData>>(new List<FiscalYearData>
-            {
-                CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31))
-            }),
-            Task.FromException<IList<FiscalYearData>>(new InvalidOperationException("refresh failed")));
+        // GetFiscalCalendar always throws — simulates the reload failing after confirmed deletion.
+        _financeFacade.GetFiscalCalendar(OrgId)
+            .Returns(Task.FromException<FiscalCalendarData>(new InvalidOperationException("refresh failed")));
 
-        await InvokePrivateDeleteFiscalYear();
+        var survivingCalendar = new FiscalCalendarData
+        {
+            OrganisationId = OrgId,
+            FiscalYears = [CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31))]
+        };
+
+        var deleteTask = InvokePrivateDeleteFiscalYear();
+        await Task.Delay(60);
+
+        // Confirm deletion via the calendar update stream; also push to the current-calendar stream
+        // so ApplyFiscalCalendarSnapshot removes the deleted year before the reload is attempted.
+        _fiscalCalendarUpdated.OnNext(survivingCalendar);
+        _currentFiscalCalendar.OnNext(survivingCalendar);
+
+        await deleteTask;
+        // Allow the ObserveOn(threadPool) subscription to process the current-calendar update.
+        await Task.Delay(120);
 
         _viewModel.FiscalYears.Count.ShouldBe(1);
         _viewModel.FiscalYears.Single().StartDate.Year.ShouldBe(2026);
@@ -149,7 +158,7 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
     }
 
     [Fact]
-    public async Task DeleteFiscalYear_DoesNotReappear_WhenStaleCurrentFiscalYearSnapshotArrives()
+    public async Task DeleteFiscalYear_RemovesDeletedYear_WhenCalendarUpdatedConfirmsDeletion()
     {
         await SeedTwoFiscalYears();
 
@@ -158,55 +167,19 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
 
         _financeFacade.DeleteFiscalYear(OrgId, deletedFiscalYearId).Returns(Task.CompletedTask);
 
-        var survivingFiscalYear = CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31));
-        _financeFacade.GetFiscalYears(OrgId).Returns(Task.FromResult<IList<FiscalYearData>>([survivingFiscalYear]));
-
-        await InvokePrivateDeleteFiscalYear();
-
-        var staleDeletedSnapshot = new FiscalYearData
+        var survivingCalendar = new FiscalCalendarData
         {
-            Id = deletedFiscalYearId,
             OrganisationId = OrgId,
-            StartDate = new DateTime(2027, 1, 1),
-            EndDate = new DateTime(2027, 12, 31),
-            IsLocked = false,
-            Periods = []
+            FiscalYears = [CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31))]
         };
+        _financeFacade.GetFiscalCalendar(OrgId).Returns(Task.FromResult(survivingCalendar));
 
-        _currentFiscalYears.OnNext(staleDeletedSnapshot);
-        await Task.Delay(120);
+        var deleteTask = InvokePrivateDeleteFiscalYear();
+        await Task.Delay(60);
 
-        _viewModel.FiscalYears.Count.ShouldBe(1);
-        _viewModel.FiscalYears.Single().StartDate.Year.ShouldBe(2026);
-    }
-
-    [Fact]
-    public async Task DeleteFiscalYear_DoesNotReappear_WhenStaleFiscalYearUpdatedSnapshotArrives()
-    {
-        await SeedTwoFiscalYears();
-
-        _viewModel.SelectedFiscalYear = _viewModel.FiscalYears.First(fiscalYear => fiscalYear.StartDate.Year == 2027);
-        var deletedFiscalYearId = _viewModel.SelectedFiscalYear!.Id.ToString();
-
-        _financeFacade.DeleteFiscalYear(OrgId, deletedFiscalYearId).Returns(Task.CompletedTask);
-
-        var survivingFiscalYear = CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31));
-        _financeFacade.GetFiscalYears(OrgId).Returns(Task.FromResult<IList<FiscalYearData>>([survivingFiscalYear]));
-
-        await InvokePrivateDeleteFiscalYear();
-
-        var staleDeletedUpdate = new FiscalYearData
-        {
-            Id = deletedFiscalYearId,
-            OrganisationId = OrgId,
-            StartDate = new DateTime(2027, 1, 1),
-            EndDate = new DateTime(2027, 12, 31),
-            IsLocked = false,
-            Periods = []
-        };
-
-        _fiscalYearUpdated.OnNext(staleDeletedUpdate);
-        await Task.Delay(120);
+        // Emit calendar without the deleted fiscal year to confirm deletion.
+        _fiscalCalendarUpdated.OnNext(survivingCalendar);
+        await deleteTask;
 
         _viewModel.FiscalYears.Count.ShouldBe(1);
         _viewModel.FiscalYears.Single().StartDate.Year.ShouldBe(2026);
@@ -214,20 +187,53 @@ public sealed class FiscalCalendarAndPeriodsViewModelDeleteGapTests : IDisposabl
 
     private async Task SeedContiguousFiscalYears()
     {
-        _currentFiscalYears.OnNext(CreateFiscalYearData("2022", new DateTime(2022, 1, 1), new DateTime(2022, 12, 31)));
-        _currentFiscalYears.OnNext(CreateFiscalYearData("2023", new DateTime(2023, 1, 1), new DateTime(2023, 12, 31)));
-        _currentFiscalYears.OnNext(CreateFiscalYearData("2024", new DateTime(2024, 1, 1), new DateTime(2024, 12, 31)));
+        _currentFiscalCalendar.OnNext(new FiscalCalendarData
+        {
+            OrganisationId = OrgId,
+            FiscalYears =
+            [
+                CreateFiscalYearData("2022", new DateTime(2022, 1, 1), new DateTime(2022, 12, 31)),
+                CreateFiscalYearData("2023", new DateTime(2023, 1, 1), new DateTime(2023, 12, 31)),
+                CreateFiscalYearData("2024", new DateTime(2024, 1, 1), new DateTime(2024, 12, 31))
+            ]
+        });
 
-        // ObserveOn(SynchronizationContext) callbacks run asynchronously.
-        await Task.Delay(120);
+        await WaitForFiscalYearsAsync(2022, 2023, 2024);
     }
 
     private async Task SeedTwoFiscalYears()
     {
-        _currentFiscalYears.OnNext(CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31)));
-        _currentFiscalYears.OnNext(CreateFiscalYearData("2027", new DateTime(2027, 1, 1), new DateTime(2027, 12, 31)));
+        _currentFiscalCalendar.OnNext(new FiscalCalendarData
+        {
+            OrganisationId = OrgId,
+            FiscalYears =
+            [
+                CreateFiscalYearData("2026", new DateTime(2026, 1, 1), new DateTime(2026, 12, 31)),
+                CreateFiscalYearData("2027", new DateTime(2027, 1, 1), new DateTime(2027, 12, 31))
+            ]
+        });
 
-        await Task.Delay(120);
+        await WaitForFiscalYearsAsync(2026, 2027);
+    }
+
+    private async Task WaitForFiscalYearsAsync(params int[] expectedStartYears)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(2);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            var loadedYears = _viewModel.FiscalYears
+                .Select(fiscalYear => fiscalYear.StartDate.Year)
+                .ToHashSet();
+
+            if (expectedStartYears.All(loadedYears.Contains))
+                return;
+
+            await Task.Delay(20);
+        }
+
+        var actual = string.Join(", ", _viewModel.FiscalYears.Select(fiscalYear => fiscalYear.StartDate.Year));
+        throw new TimeoutException($"Timed out waiting for fiscal years: {string.Join(", ", expectedStartYears)}. Actual: {actual}");
     }
 
     private static FiscalYearData CreateFiscalYearData(string suffix, DateTime startDate, DateTime endDate)
