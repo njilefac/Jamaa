@@ -34,9 +34,31 @@ public partial class AccountItemViewModel : ObservableObject
     private AccountType _type;
 
     [ObservableProperty]
+    private string _currencySymbol = string.Empty;
+
+    [ObservableProperty]
+    private int _decimalPrecision = 2;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanEditOpeningBalance))]
     [NotifyPropertyChangedFor(nameof(AggregatedOpeningBalance))]
+    [NotifyPropertyChangedFor(nameof(FormattedOpeningBalance))]
+    [NotifyPropertyChangedFor(nameof(FormattedAggregatedOpeningBalance))]
     private decimal _openingBalance;
+
+    public void ForceFormatOpeningBalance()
+    {
+        OnPropertyChanged(nameof(OpeningBalance));
+    }
+
+    public string FormattedOpeningBalance => FormatCurrency(OpeningBalance);
+    public string FormattedAggregatedOpeningBalance => FormatCurrency(AggregatedOpeningBalance);
+
+    private string FormatCurrency(decimal value)
+    {
+        var format = $"F{DecimalPrecision}";
+        return $"{CurrencySymbol} {value.ToString(format)}".Trim();
+    }
 
     public string DisplayLabel => $"{Code} - {Name}";
     public string TypeDisplay => Type.ToString();
@@ -64,10 +86,28 @@ public partial class AccountItemViewModel : ObservableObject
         }
     }
 
+    partial void OnOpeningBalanceChanged(decimal value)
+    {
+        PropagateBalanceChange();
+    }
+
+    partial void OnCurrencySymbolChanged(string value)
+    {
+        OnPropertyChanged(nameof(FormattedOpeningBalance));
+        OnPropertyChanged(nameof(FormattedAggregatedOpeningBalance));
+    }
+
+    partial void OnDecimalPrecisionChanged(int value)
+    {
+        OnPropertyChanged(nameof(FormattedOpeningBalance));
+        OnPropertyChanged(nameof(FormattedAggregatedOpeningBalance));
+    }
+
     // Operation: syncs child balance changes up the tree for parent aggregation.
     public void PropagateBalanceChange()
     {
         OnPropertyChanged(nameof(AggregatedOpeningBalance));
+        OnPropertyChanged(nameof(FormattedAggregatedOpeningBalance));
         Parent?.PropagateBalanceChange();
     }
 

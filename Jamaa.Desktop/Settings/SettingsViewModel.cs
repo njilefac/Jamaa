@@ -83,16 +83,12 @@ public partial class SettingsViewModel : ObservableObject, IApplicationModule, I
     // Operation: resolves the route that should be rendered in the accounting settings host.
     private static string ResolveAccountingSettingsRoute(string route)
     {
-        if (route == Routes.Settings || route == Routes.OrganisationContactDetails)
-            return Routes.AccountingConfiguration;
-
-        return route;
+        return route == Routes.Settings ? Routes.AccountingConfiguration : route;
     }
 
     private static bool IsAccountingRoute(string route)
     {
         return route == Routes.Settings
-               || route == Routes.OrganisationContactDetails
                || route == Routes.AccountingConfiguration
                || route.StartsWith(Routes.AccountingConfiguration + "/", StringComparison.Ordinal);
     }

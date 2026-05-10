@@ -6,9 +6,15 @@
     x:DataType="accounting:OpeningBalancesAndMigrationViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
+    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
+    xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <converters:DecimalToFormattedStringConverter x:Key="DecimalToFormattedStringConverter" />
+    </UserControl.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*">
         <StackPanel Margin="20,16,20,0" Spacing="8">
@@ -25,10 +31,10 @@
         <Grid
             Grid.Row="2"
             Margin="20,0,20,20"
-            RowDefinitions="*,Auto">
+            RowDefinitions="*">
             <!--  Account list with hierarchical indentation (flat ItemsRepeater)  -->
             <ScrollViewer>
-                <ItemsRepeater ItemsSource="{Binding AccountTree}">
+                <ItemsRepeater ItemsSource="{Binding LeafAccounts}">
                     <ItemsRepeater.Layout>
                         <StackLayout Spacing="0" />
                     </ItemsRepeater.Layout>
@@ -38,12 +44,9 @@
                                 BorderBrush="{DynamicResource AppBorderColor}"
                                 BorderThickness="0,0,0,1"
                                 Padding="8,12">
-                                <Grid ColumnDefinitions="*,120,100">
-                                    <!--  Account Info (indented by Depth)  -->
-                                    <StackPanel
-                                        Grid.Column="0"
-                                        Margin="{Binding Depth, StringFormat='({0}*12) 0 0 0'}"
-                                        Spacing="4">
+                                <Grid ColumnDefinitions="400,150,*">
+                                    <!--  Account Info  -->
+                                    <StackPanel Grid.Column="0" Spacing="4">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock FontWeight="Bold" Text="{Binding Code}" />
                                             <TextBlock FontSize="12" Text="{Binding Name}" />
@@ -55,56 +58,35 @@
                                     </StackPanel>
 
                                     <!--  Balance: Leaf Input or Parent Readonly  -->
-                                    <Border
-                                        BorderBrush="{DynamicResource AppBorderColor}"
-                                        BorderThickness="1"
-                                        Grid.Column="1"
-                                        Padding="8">
-                                        <StackPanel>
-                                            <!--  Leaf: editable balance  -->
-                                            <TextBox
-                                                HorizontalAlignment="Stretch"
-                                                IsVisible="{Binding IsLeafAccount}"
-                                                Text="{Binding OpeningBalance, StringFormat=F2}"
-                                                Watermark="0.00" />
-                                            <!--  Parent: aggregated readonly  -->
-                                            <TextBlock
-                                                FontWeight="Bold"
-                                                Foreground="{DynamicResource SystemAccentColor}"
-                                                HorizontalAlignment="Center"
-                                                IsVisible="{Binding IsLeafAccount, Converter={x:Static BoolConverters.Not}}"
-                                                Text="{Binding AggregatedOpeningBalance, StringFormat=F2}"
-                                                VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <!--  Account Role Label  -->
-                                    <TextBlock
-                                        FontSize="10"
-                                        Foreground="{DynamicResource AppTextSecondary}"
-                                        Grid.Column="2"
-                                        Text="{Binding IsLeafAccount, StringFormat='Leaf (Edit)|Parent (Agg)'}"
-                                        VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <!--  Leaf: editable balance  -->
+                                        <TextBox
+                                            HorizontalAlignment="Stretch"
+                                            IsVisible="{Binding IsLeafAccount}"
+                                            Watermark="0.00">
+                                            <Interaction.Behaviors>
+                                                <behaviors:RefreshOnLostFocusBehavior />
+                                            </Interaction.Behaviors>
+                                            <TextBox.Text>
+                                                <MultiBinding Converter="{StaticResource DecimalToFormattedStringConverter}" Mode="TwoWay">
+                                                    <Binding Path="OpeningBalance" UpdateSourceTrigger="LostFocus" />
+                                                    <Binding Path="DecimalPrecision" />
+                                                </MultiBinding>
+                                            </TextBox.Text>
+                                            <TextBox.InnerLeftContent>
+                                                <TextBlock
+                                                    Margin="8,0,0,0"
+                                                    Text="{Binding CurrencySymbol}"
+                                                    VerticalAlignment="Center" />
+                                            </TextBox.InnerLeftContent>
+                                        </TextBox>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
             </ScrollViewer>
-
-            <!--  Status banner  -->
-            <StackPanel
-                Grid.Row="1"
-                Margin="0,12,0,0"
-                Spacing="12">
-                <Border Background="{DynamicResource AppBorderColor}" Height="1" />
-                <TextBlock
-                    FontSize="12"
-                    Foreground="{DynamicResource AppTextSecondary}"
-                    IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                    Text="{Binding StatusMessage}"
-                    TextWrapping="Wrap" />
-            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>

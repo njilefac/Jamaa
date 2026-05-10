@@ -336,6 +336,12 @@
         <Compile Update="Accounting\DashboardShortcutViewModel.cs">
             <DependentUpon>AccountingDashboard.axaml</DependentUpon>
         </Compile>
+        <Compile Update="Accounting\OpeningBalancesAndMigrationViewModel.cs">
+          <DependentUpon>OpeningBalancesAndMigrationPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\JournalEntryListItemViewModel.cs">
+          <DependentUpon>JournalEntriesPage.axaml</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>

@@ -17,13 +17,10 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
     private readonly IUserSessionService _userSessionService;
 
     [ObservableProperty]
-    private ObservableCollection<AccountItemViewModel> _accountTree = [];
+    private ObservableCollection<AccountItemViewModel> _leafAccounts = [];
 
-    [ObservableProperty]
-    private string _statusMessage = string.Empty;
-
-    [ObservableProperty]
-    private bool _isLoading;
+    private string _currencySymbol = string.Empty;
+    private int _decimalPrecision = 2;
 
     public OpeningBalancesAndMigrationViewModel(
         IAccountingFacade accountingFacade,
@@ -40,26 +37,40 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
         var session = _userSessionService.CurrentUserSession;
         if (session?.Organisation?.Id == null) return;
 
-        IsLoading = true;
         try
         {
+            var settings = await _accountingFacade.GetAccountingSettings(session.Organisation.Id);
+            if (settings != null)
+            {
+                _decimalPrecision = settings.DecimalPrecision;
+                _currencySymbol = settings.AvailableCurrencies
+                    .FirstOrDefault(c => c.CurrencyCode == settings.BaseCurrency)?
+                    .CurrencySymbol ?? string.Empty;
+            }
+
             var chartOfAccounts = await _accountingFacade.GetChartOfAccounts(session.Organisation.Id);
             var accounts = chartOfAccounts.Accounts;
             var tree = BuildAccountTree(accounts);
+            var leaves = Flatten(tree).Where(a => a.IsLeafAccount).ToList();
 
-            AccountTree.Clear();
-            foreach (var root in tree)
-                AccountTree.Add(root);
+            LeafAccounts.Clear();
+            foreach (var leaf in leaves)
+                LeafAccounts.Add(leaf);
+        }
+        catch (Exception)
+        {
+            // Silently fail or log in a real app
+        }
+    }
 
-            StatusMessage = "Chart of Accounts loaded.";
-        }
-        catch (Exception ex)
+    // Operation: flattens the hierarchical tree into a flat list.
+    private IEnumerable<AccountItemViewModel> Flatten(IEnumerable<AccountItemViewModel> nodes)
+    {
+        foreach (var node in nodes)
         {
-            StatusMessage = $"Error loading accounts: {ex.Message}";
-        }
-        finally
-        {
-            IsLoading = false;
+            yield return node;
+            foreach (var child in Flatten(node.SubAccounts))
+                yield return child;
         }
     }
 
@@ -79,7 +90,9 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
                 Description = a.Description,
                 Type = a.Type,
                 IsActive = a.IsActive,
-                OpeningBalance = 0m
+                OpeningBalance = 0m,
+                CurrencySymbol = _currencySymbol,
+                DecimalPrecision = _decimalPrecision
             };
             return vm;
         }).ToList();
@@ -102,17 +115,6 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
         }
 
         return roots;
-    }
-
-    // Operation: propagates leaf account balance changes up the tree for parent aggregation.
-    [RelayCommand]
-    public void OnLeafBalanceChanged(AccountItemViewModel account)
-    {
-        if (!account.IsLeafAccount)
-            return;
-
-        account.PropagateBalanceChange();
-        StatusMessage = $"Opening balance updated for {account.Name}. Parent accounts aggregate automatically.";
     }
 
     public Guid Id => Guid.Parse("b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e");
