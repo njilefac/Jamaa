@@ -84,7 +84,7 @@
                     BorderThickness="1"
                     ClipToBounds="True"
                     CornerRadius="8">
-                    <TreeDataGrid IsEnabled="{Binding IsOperationInFlight, Converter={StaticResource InvertBoolToEnabledConverter}}" Source="{Binding Source}" />
+                    <TreeDataGrid IsEnabled="{Binding IsOperationInFlight, Converter={StaticResource InvertBoolToEnabledConverter}}" x:Name="AccountsTreeDataGrid" />
                 </Border>
             </DockPanel>
 

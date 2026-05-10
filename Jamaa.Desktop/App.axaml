@@ -105,6 +105,9 @@
         <DataTemplate DataType="{x:Type accounting:UserRolesAndApprovalsViewModel}">
             <accounting:UserRolesAndApprovalsPage />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type accounting:OpeningBalancesAndMigrationViewModel}">
+            <accounting:OpeningBalancesAndMigrationPage />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type accounting:AccountLedgerViewModel}">
             <accounting:AccountLedgerPage />
         </DataTemplate>

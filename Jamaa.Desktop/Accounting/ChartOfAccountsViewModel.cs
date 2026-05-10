@@ -6,9 +6,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Controls;
-using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.Controls.Selection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -26,7 +23,7 @@ namespace Jamaa.Desktop.Accounting;
 public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IApplicationModule, IRouteableViewModel
 {
     private readonly List<AccountData> _allAccountData = [];
-    private readonly IAccountingFacade _financeFacade;
+    private readonly IAccountingFacade _accountingFacade;
     private readonly INotificationService _notificationService;
     private readonly IUserSessionService _userSessionService;
 
@@ -70,21 +67,18 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
     [ObservableProperty] private AccountItemViewModel? _selectedParentAccount;
 
-    [ObservableProperty] private HierarchicalTreeDataGridSource<AccountItemViewModel>? _source;
-
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
     private string _statusMessage = string.Empty;
 
     public ChartOfAccountsViewModel(
-        IAccountingFacade financeFacade,
+        IAccountingFacade accountingFacade,
         IUserSessionService userSessionService,
         INotificationService notificationService)
     {
-        _financeFacade = financeFacade;
+        _accountingFacade = accountingFacade;
         _userSessionService = userSessionService;
         _notificationService = notificationService;
 
-        InitializeSource();
         LoadAccounts();
         if (SynchronizationContext.Current is { } syncContext)
             SetupReactiveUpdates(syncContext);
@@ -121,44 +115,14 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         return syncContext is null ? source : source.ObserveOn(syncContext);
     }
 
-    private void InitializeSource()
-    {
-        Source = new HierarchicalTreeDataGridSource<AccountItemViewModel>(Accounts)
-        {
-            Columns =
-            {
-                new HierarchicalExpanderColumn<AccountItemViewModel>(
-                    new TextColumn<AccountItemViewModel, string>("Code", x => x.Code,
-                        options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
-                    x => x.SubAccounts),
-                new TextColumn<AccountItemViewModel, string>("Name", x => x.Name,
-                    options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
-                new TextColumn<AccountItemViewModel, string>("Description", x => x.Description,
-                    options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
-                new TextColumn<AccountItemViewModel, string>("Type", x => x.TypeDisplay,
-                    options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true })
-            }
-        };
-
-        var selection = new TreeDataGridRowSelectionModel<AccountItemViewModel>(Source)
-        {
-            SingleSelect = true
-        };
-
-        Source.Selection = selection;
-
-        selection.SelectionChanged += (_, _) => { SelectedAccount = selection.SelectedItem; };
-    }
-
-
     private void SetupReactiveUpdates(SynchronizationContext? syncContext)
     {
         ObserveOnIfAvailable(
-                _financeFacade.AccountCreated
-                    .Merge(_financeFacade.AccountUpdated)
-                    .Merge(_financeFacade.AccountDeleted)
-                    .Merge(_financeFacade.AccountDeactivated)
-                    .Merge(_financeFacade.AccountReactivated)
+                _accountingFacade.AccountCreated
+                    .Merge(_accountingFacade.AccountUpdated)
+                    .Merge(_accountingFacade.AccountDeleted)
+                    .Merge(_accountingFacade.AccountDeactivated)
+                    .Merge(_accountingFacade.AccountReactivated)
                     .Throttle(TimeSpan.FromMilliseconds(100)),
                 syncContext)
             .Subscribe(_ => LoadAccounts());
@@ -169,7 +133,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         var session = _userSessionService.CurrentUserSession;
         if (session?.Organisation?.Id == null) return;
 
-        var chartOfAccounts = await _financeFacade.GetChartOfAccounts(session.Organisation.Id);
+        var chartOfAccounts = await _accountingFacade.GetChartOfAccounts(session.Organisation.Id);
         var accounts = chartOfAccounts.Accounts;
         _allAccountData.Clear();
         _allAccountData.AddRange(accounts);
@@ -414,12 +378,12 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
         if (item.IsActive)
             await _notificationService.TrackOperationAsync(
-                () => _financeFacade.DeactivateAccount(orgId, accountId),
+                () => _accountingFacade.DeactivateAccount(orgId, accountId),
                 BuildAccountStateChangeConfirmationObservable(
                     orgId,
                     accountId,
                     false,
-                    _financeFacade.AccountDeactivated),
+                    _accountingFacade.AccountDeactivated),
                 TimeSpan.FromSeconds(10),
                 "Account",
                 "Deactivated",
@@ -427,12 +391,12 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                 SetOperationInFlight);
         else
             await _notificationService.TrackOperationAsync(
-                () => _financeFacade.ReactivateAccount(orgId, accountId),
+                () => _accountingFacade.ReactivateAccount(orgId, accountId),
                 BuildAccountStateChangeConfirmationObservable(
                     orgId,
                     accountId,
                     true,
-                    _financeFacade.AccountReactivated),
+                    _accountingFacade.AccountReactivated),
                 TimeSpan.FromSeconds(10),
                 "Account",
                 "Reactivated",
@@ -471,7 +435,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     {
         try
         {
-            var chartOfAccounts = await _financeFacade.GetChartOfAccounts(organisationId);
+            var chartOfAccounts = await _accountingFacade.GetChartOfAccounts(organisationId);
             var account = chartOfAccounts.Accounts.FirstOrDefault(current => current.Id == accountId);
             return account is not null && account.IsActive == isActiveTarget;
         }
@@ -529,9 +493,9 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             var accountId = SelectedAccount.Id;
             var subject = AccountName;
             var isConfirmed = await _notificationService.TrackOperationAsync(
-                () => _financeFacade.UpdateAccount(orgId, accountId, AccountCode, AccountName, AccountDescription,
+                () => _accountingFacade.UpdateAccount(orgId, accountId, AccountCode, AccountName, AccountDescription,
                     SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
-                _financeFacade.AccountUpdated,
+                _accountingFacade.AccountUpdated,
                 a => a.Id == accountId,
                 TimeSpan.FromSeconds(10),
                 "Account",
@@ -551,7 +515,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             var accountType = SelectedAccountType ?? AccountType.Asset;
             var confirmationSource = AccountCreationConfirmationSource.None;
             var isConfirmed = await _notificationService.TrackOperationAsync(
-                () => _financeFacade.CreateAccount(orgId, code, AccountName, AccountDescription, accountType,
+                () => _accountingFacade.CreateAccount(orgId, code, AccountName, AccountDescription, accountType,
                     parentAccountId),
                 BuildAccountCreationConfirmationObservable(orgId, code, name, accountType, parentAccountId)
                     .Do(source => confirmationSource = source)
@@ -577,7 +541,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         AccountType type,
         string? parentAccountId)
     {
-        var createdEvents = _financeFacade.AccountCreated
+        var createdEvents = _accountingFacade.AccountCreated
             .Where(account =>
                 account.OrganisationId == organisationId &&
                 string.Equals(account.Code, code, StringComparison.Ordinal) &&
@@ -620,7 +584,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     {
         try
         {
-            var chartOfAccounts = await _financeFacade.GetChartOfAccounts(organisationId);
+            var chartOfAccounts = await _accountingFacade.GetChartOfAccounts(organisationId);
             return chartOfAccounts.Accounts.Any(account =>
                 account.OrganisationId == organisationId &&
                 string.Equals(account.Code, code, StringComparison.Ordinal) &&
@@ -648,8 +612,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         var subject = SelectedAccount.Name;
 
         var isConfirmed = await _notificationService.TrackOperationAsync(
-            () => _financeFacade.DeleteAccount(orgId, accountId),
-            _financeFacade.AccountDeleted,
+            () => _accountingFacade.DeleteAccount(orgId, accountId),
+            _accountingFacade.AccountDeleted,
             account => account.Id == accountId,
             TimeSpan.FromSeconds(10),
             "Account",
@@ -670,7 +634,6 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         if (IsOperationInFlight) return;
 
         SelectedAccount = null;
-        if (Source?.Selection is ITreeDataGridRowSelectionModel<AccountItemViewModel> selection) selection.Clear();
         AccountCode = string.Empty;
         AccountName = string.Empty;
         AccountDescription = string.Empty;

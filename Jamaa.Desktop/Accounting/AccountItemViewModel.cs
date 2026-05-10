@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Domain.Accounting.Values;
@@ -32,6 +33,11 @@ public partial class AccountItemViewModel : ObservableObject
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(TypeDisplay))]
     private AccountType _type;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanEditOpeningBalance))]
+    [NotifyPropertyChangedFor(nameof(AggregatedOpeningBalance))]
+    private decimal _openingBalance;
+
     public string DisplayLabel => $"{Code} - {Name}";
     public string TypeDisplay => Type.ToString();
 
@@ -39,6 +45,31 @@ public partial class AccountItemViewModel : ObservableObject
 
     public string ToggleStateLabel => IsActive ? "Active" : "Inactive";
     public string ToggleActiveToolTip => IsActive ? "Deactivate this account" : "Reactivate this account";
+
+    // Operation: returns true if this account is a leaf (no children); only leaf accounts can have manually-entered opening balances.
+    public bool IsLeafAccount => SubAccounts.Count == 0;
+
+    // Operation: returns true if this is a leaf account and thus can be edited.
+    public bool CanEditOpeningBalance => IsLeafAccount;
+
+    // Operation: calculates the aggregated opening balance for this account (sum of children if parent, or own balance if leaf).
+    public decimal AggregatedOpeningBalance
+    {
+        get
+        {
+            if (IsLeafAccount)
+                return OpeningBalance;
+
+            return SubAccounts.Sum(child => child.AggregatedOpeningBalance);
+        }
+    }
+
+    // Operation: syncs child balance changes up the tree for parent aggregation.
+    public void PropagateBalanceChange()
+    {
+        OnPropertyChanged(nameof(AggregatedOpeningBalance));
+        Parent?.PropagateBalanceChange();
+    }
 
     // Commands assigned by the parent ViewModel when building the tree.
     public IRelayCommand? EditCommand { get; set; }
