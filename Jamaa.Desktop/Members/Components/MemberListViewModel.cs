@@ -255,7 +255,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
 
     public static MemberData MapToData(MemberViewModel member)
     {
-        return new MemberData
+        var memberData = new MemberData
         {
             Id = member.Id,
             FirstName = member.FirstName,
@@ -263,26 +263,35 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             LastName = member.LastName,
             Gender = member.Gender,
             OrganisationId = member.OrganisationId,
+            Organisation = null!, // To be loaded from DB or assigned by caller
             PictureData = member.PictureData,
-            Registration = member.Registration == null
-                ? new RegistrationData
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    MemberId = member.Id,
-                    StartDate = DateTime.Now,
-                    MembershipType = MembershipType.Regular,
-                    Status = RegistrationStatus.Probation
-                }
-                : new RegistrationData
-                {
-                    Id = member.Registration.Id,
-                    StartDate = member.Registration.StartDate,
-                    EndDate = member.Registration.EndDate,
-                    MembershipType = member.Registration.MembershipType,
-                    Status = member.Registration.Status,
-                    MemberId = member.Id
-                }
+            Registration = null! // Assigned below
         };
+
+        memberData.Registration = member.Registration == null
+            ? new RegistrationData
+            {
+                Id = Guid.NewGuid().ToString(),
+                MemberId = member.Id,
+                StartDate = DateTime.Now,
+                MembershipType = MembershipType.Regular,
+                Status = RegistrationStatus.Probation,
+                Member = memberData,
+                Organisation = null! // To be loaded from DB or assigned by caller
+            }
+            : new RegistrationData
+            {
+                Id = member.Registration.Id,
+                StartDate = member.Registration.StartDate,
+                EndDate = member.Registration.EndDate,
+                MembershipType = member.Registration.MembershipType,
+                Status = member.Registration.Status,
+                MemberId = member.Id,
+                Member = memberData,
+                Organisation = null! // To be loaded from DB or assigned by caller
+            };
+
+        return memberData;
     }
 
     partial void OnDisplayModeChanging(MemberListDisplayMode value)

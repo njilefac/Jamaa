@@ -6,13 +6,13 @@ namespace Jamaa.Data.Models.Members;
 
 public class MemberData
 {
-    [Key] public string Id { get; set; }
-    public string LastName { get; set; }
+    [Key] public required string Id { get; set; }
+    public required string LastName { get; set; }
     public string? MiddleName { get; set; }
-    public string FirstName { get; set; }
+    public required string FirstName { get; set; }
     public Gender Gender { get; set; }
-    public OrganisationData Organisation { get; set; }
-    public string OrganisationId { get; set; }
-    public RegistrationData Registration { get; set; }
+    public required OrganisationData Organisation { get; set; }
+    public required string OrganisationId { get; set; }
+    public required RegistrationData Registration { get; set; }
     public byte[]? PictureData { get; set; }
 }

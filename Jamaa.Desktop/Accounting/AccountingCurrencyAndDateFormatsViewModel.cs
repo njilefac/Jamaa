@@ -60,7 +60,9 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(RemoveSelectedCurrencyCommand))]
     private string _selectedAvailableCurrencyCode = string.Empty;
 
-    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FormattingPreview))]
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FormattingPreview))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveSelectedCurrencyCommand))]
     private string _selectedBaseCurrency = "USD";
 
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(FormattingPreview))]
@@ -320,6 +322,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     {
         return !IsOperationInFlight
                && !string.IsNullOrWhiteSpace(SelectedAvailableCurrencyCode)
+               && !string.Equals(SelectedAvailableCurrencyCode, SelectedBaseCurrency, StringComparison.OrdinalIgnoreCase)
                && AvailableCurrencies.Any(currency => currency.CurrencyCode == SelectedAvailableCurrencyCode);
     }
 

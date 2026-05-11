@@ -9,7 +9,7 @@ namespace Jamaa.Desktop.Members.ViewModels;
 public partial class RegistrationViewModel : ValidatableFormViewModel
 {
     [ObservableProperty] private DateTime? _endDate;
-    [ObservableProperty] private string _id;
+    [ObservableProperty] private string _id = string.Empty;
     [ObservableProperty] private MembershipType _membershipType;
     [ObservableProperty] private DateTime _startDate;
     [ObservableProperty] private RegistrationStatus _status;

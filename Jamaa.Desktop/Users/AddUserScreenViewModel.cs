@@ -3,7 +3,7 @@ using Jamaa.Application.Users.Services;
 
 namespace Jamaa.Desktop.Users;
 
-public class AddUserScreenViewModel(IUserSessionService userSessionService) : ObservableObject
+public class AddUserScreenViewModel() : ObservableObject
 {
     public string? UrlPathSegment => "add user";
 }

@@ -32,12 +32,12 @@ public class UserRepository(JamaaDbContext dbContext) : IUserRepository
 
         // Update properties of the tracked entity
         existingUserData.DashboardLayout = user.DashboardLayout;
-        existingUserData.UserName = user.Account.Credentials.UserName;
-        existingUserData.Password = user.Account.Credentials.Password;
+        existingUserData.UserName = user.Account.Credentials.UserName ?? string.Empty;
+        existingUserData.Password = user.Account.Credentials.Password ?? string.Empty;
         existingUserData.Email = user.Account.Email;
-        existingUserData.FirstName = user.FirstName;
-        existingUserData.MiddleName = user.MiddleName;
-        existingUserData.LastName = user.LastName;
+        existingUserData.FirstName = user.FirstName ?? string.Empty;
+        existingUserData.MiddleName = user.MiddleName ?? string.Empty;
+        existingUserData.LastName = user.LastName ?? string.Empty;
         existingUserData.IsActive = user.Account.IsActive ?? false;
         existingUserData.IsSuperUser = user.Account.IsSuperUser ?? false;
 

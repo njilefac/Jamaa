@@ -385,15 +385,6 @@ public class AccountingFacade : IAccountingFacade
     }
 
     // Operation: builds a deterministic key for accounting-settings deduplication across row and list changes.
-    private static string BuildAccountingSettingsSnapshotKey(AccountingSettingsData settings)
-    {
-        var currencies = (settings.AvailableCurrencies ?? [])
-            .OrderBy(currency => currency.CurrencyCode)
-            .Select(currency => $"{currency.CurrencyCode}:{currency.CurrencySymbol}");
-
-        return
-            $"{settings.OrganisationId}|{settings.BaseCurrency}|{settings.DateFormat}|{settings.DecimalPrecision}|[{string.Join(';', currencies)}]";
-    }
 
     // Operation: reloads the full fiscal calendar whenever any fiscal-year or period row changes.
     private IObservable<FiscalCalendarData> BuildFiscalCalendarUpdates(IDataChangeNotifier dataChangeNotifier)

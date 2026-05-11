@@ -7,12 +7,13 @@ namespace Jamaa.Application.Members.Aggregates;
 
 public class MemberAggregate : ReceiveActor
 {
-    private Member _state;
-
     public MemberAggregate(MemberId id)
     {
+        _id = id;
         Receive<UpdateMemberRegistration>(OnUpdateRegistration);
     }
+
+    private readonly MemberId _id;
 
     private void OnUpdateRegistration(UpdateMemberRegistration command)
     {

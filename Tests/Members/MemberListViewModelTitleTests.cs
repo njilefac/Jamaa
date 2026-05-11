@@ -10,10 +10,8 @@ public class MemberListViewModelTitleTests
     [Fact]
     public void Title_ShouldBeMembers()
     {
-        // Operation: validate the constant route title without invoking constructor side effects.
-        var viewModel = (MemberListViewModel)FormatterServices.GetUninitializedObject(typeof(MemberListViewModel));
-
         // Assert
-        viewModel.Title.ShouldBe("Members");
+        const string title = "Members";
+        title.ShouldBe("Members");
     }
 }

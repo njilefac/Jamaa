@@ -44,7 +44,7 @@ public class DashboardViewModelTests
     {
         // Arrange
         var userSessionService = Substitute.For<IUserSessionService>();
-        userSessionService.CurrentUserSession.Returns((UserSession)null);
+        userSessionService.CurrentUserSession.Returns((UserSession?)null);
 
         var userRepository = Substitute.For<IUserRepository>();
 
@@ -66,7 +66,7 @@ public class DashboardViewModelTests
         userSessionService.CurrentUserSession.Returns(userSession);
 
         var userRepository = Substitute.For<IUserRepository>();
-        userRepository.GetById(userId).Returns((User)null); // User not found
+        userRepository.GetById(userId).Returns((User?)null); // User not found
 
         var viewModel = new DashboardViewModel(userSessionService, userRepository);
 

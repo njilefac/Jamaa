@@ -445,15 +445,22 @@ public class OrganisationProjection : ReceivePersistentActor
         var matchingOrganisation = await dbContext.Organisations.FirstOrDefaultAsync(x => x.Id == @event.EntityId);
         if (matchingOrganisation != null)
         {
+            var memberId = Guid.NewGuid().ToString();
+            var registrationId = Guid.NewGuid().ToString();
+
             var registrationData = new RegistrationData
             {
+                Id = registrationId,
+                MemberId = memberId,
                 Organisation = matchingOrganisation,
                 MembershipType = @event.MembershipType,
                 StartDate = @event.RegistrationBegin,
-                Status = RegistrationStatus.Full
+                Status = RegistrationStatus.Full,
+                Member = null! // Will be linked below
             };
             var memberData = new MemberData
             {
+                Id = memberId,
                 FirstName = @event.FirstName,
                 MiddleName = @event.MiddleName,
                 LastName = @event.LastName,
@@ -462,6 +469,7 @@ public class OrganisationProjection : ReceivePersistentActor
                 Organisation = matchingOrganisation,
                 Registration = registrationData
             };
+            registrationData.Member = memberData;
 
             matchingOrganisation.Members.Add(memberData);
 

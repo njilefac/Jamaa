@@ -96,7 +96,8 @@ public partial class MemberProfileViewModel : ObservableObject, IRouteableViewMo
             MembershipType = member.Registration.MembershipType,
             Status = member.Registration.Status,
             MemberId = member.Registration.MemberId,
-            Organisation = member.Registration.Organisation
+            Organisation = member.Registration.Organisation,
+            Member = member
         };
 
         if (args.TargetTab != null)

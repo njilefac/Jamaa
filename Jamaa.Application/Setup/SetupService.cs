@@ -24,7 +24,7 @@ public class SetupService(
         string? lastName)
     {
         logger.LogInformation("creating super user account...");
-        var newSuperUser = new User(username, password, email, firstName, string.Empty, lastName,
+        var newSuperUser = new User(username, password, email ?? string.Empty, firstName, string.Empty, lastName,
             true);
         var superUser = await users.Add(newSuperUser);
         logger.LogInformation("super user account created!");

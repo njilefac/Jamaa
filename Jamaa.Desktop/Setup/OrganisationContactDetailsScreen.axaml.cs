@@ -5,10 +5,14 @@ namespace Jamaa.Desktop.Setup;
 
 public partial class OrganisationContactDetailsScreen : UserControl
 {
-    public OrganisationContactDetailsScreen(OrganisationContactDetailsViewModel viewModel)
+    public OrganisationContactDetailsScreen()
+    {
+        InitializeComponent();
+    }
+
+    public OrganisationContactDetailsScreen(OrganisationContactDetailsViewModel viewModel) : this()
     {
         DataContext = viewModel;
-        InitializeComponent();
     }
 
     private void InitializeComponent()
