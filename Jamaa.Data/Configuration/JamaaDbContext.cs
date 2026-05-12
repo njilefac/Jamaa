@@ -28,6 +28,7 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifi
     public DbSet<AccountingPeriodData> AccountingPeriods { get; set; }
     public DbSet<AccountingSettingsData> AccountingSettings { get; set; }
     public DbSet<AccountingAvailableCurrencyData> AccountingAvailableCurrencies { get; set; }
+    public DbSet<AccountingPeriodBalanceData> AccountingPeriodBalances { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -109,6 +110,15 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifi
             .HasKey(currency => new { currency.OrganisationId, currency.CurrencyCode });
         modelBuilder.Entity<AccountingAvailableCurrencyData>()
             .Property(currency => currency.CurrencyCode).IsRequired();
+
+        modelBuilder.Entity<AccountingPeriodBalanceData>().ToTable("AccountingPeriodBalances");
+        modelBuilder.Entity<AccountingPeriodBalanceData>()
+            .Property(balance => balance.Id).IsRequired();
+        modelBuilder.Entity<AccountingPeriodBalanceData>()
+            .Property(balance => balance.OrganisationId).IsRequired();
+        modelBuilder.Entity<AccountingPeriodBalanceData>()
+            .HasIndex(balance => new { balance.OrganisationId, balance.AccountId, balance.FiscalYearId, balance.AccountingPeriodId })
+            .IsUnique();
         modelBuilder.Entity<AccountingAvailableCurrencyData>()
             .Property(currency => currency.CurrencySymbol).IsRequired();
 
@@ -134,6 +144,30 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifi
             .HasDefaultValue(true);
         modelBuilder.Entity<AccountData>()
             .HasIndex(account => new { account.OrganisationId, account.Code })
+            .IsUnique();
+
+        modelBuilder.Entity<AccountingPeriodBalanceData>().ToTable("AccountingPeriodBalances");
+        modelBuilder.Entity<AccountingPeriodBalanceData>()
+            .HasKey(balance => balance.Id);
+        modelBuilder.Entity<AccountingPeriodBalanceData>()
+            .Property(balance => balance.OrganisationId).IsRequired();
+        modelBuilder.Entity<AccountingPeriodBalanceData>()
+            .HasOne(balance => balance.Account)
+            .WithMany()
+            .HasForeignKey(balance => balance.AccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<AccountingPeriodBalanceData>()
+            .HasOne(balance => balance.FiscalYear)
+            .WithMany()
+            .HasForeignKey(balance => balance.FiscalYearId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<AccountingPeriodBalanceData>()
+            .HasOne(balance => balance.AccountingPeriod)
+            .WithMany()
+            .HasForeignKey(balance => balance.AccountingPeriodId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<AccountingPeriodBalanceData>()
+            .HasIndex(balance => new { balance.OrganisationId, balance.AccountId, balance.FiscalYearId, balance.AccountingPeriodId })
             .IsUnique();
     }
 

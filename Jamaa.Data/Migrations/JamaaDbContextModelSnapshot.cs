@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jamaa.Data.Migrations
 {
     [DbContext(typeof(JamaaDbContext))]
-    partial class LibotaDbContextModelSnapshot : ModelSnapshot
+    partial class JamaaDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -32,11 +32,11 @@ namespace Jamaa.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
-                        .HasDefaultValue(true)
-                        .HasColumnType("INTEGER");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Name")
-
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -75,6 +75,47 @@ namespace Jamaa.Data.Migrations
                     b.HasKey("OrganisationId", "CurrencyCode");
 
                     b.ToTable("AccountingAvailableCurrencies", (string)null);
+                });
+
+            modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingPeriodBalanceData", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AccountingPeriodId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("ClosingBalance")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FiscalYearId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("OpeningBalance")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OrganisationId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("AccountingPeriodId");
+
+                    b.HasIndex("FiscalYearId");
+
+                    b.HasIndex("OrganisationId", "AccountId", "FiscalYearId", "AccountingPeriodId")
+                        .IsUnique();
+
+                    b.ToTable("AccountingPeriodBalances", (string)null);
                 });
 
             modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingPeriodData", b =>
@@ -310,6 +351,33 @@ namespace Jamaa.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("AccountingSettings");
+                });
+
+            modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingPeriodBalanceData", b =>
+                {
+                    b.HasOne("Jamaa.Data.Models.Finances.AccountData", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Jamaa.Data.Models.Finances.AccountingPeriodData", "AccountingPeriod")
+                        .WithMany()
+                        .HasForeignKey("AccountingPeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Jamaa.Data.Models.Finances.FiscalYearData", "FiscalYear")
+                        .WithMany()
+                        .HasForeignKey("FiscalYearId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("AccountingPeriod");
+
+                    b.Navigation("FiscalYear");
                 });
 
             modelBuilder.Entity("Jamaa.Data.Models.Finances.AccountingPeriodData", b =>

@@ -18,4 +18,15 @@ public class AccountQueryHandler(JamaaDbContext dbContext) : IAccountQueryHandle
             .OrderBy(a => a.Code)
             .ToListAsync();
     }
+
+    public async Task<decimal> GetOpeningBalance(string organisationId, string accountId, string fiscalYearId,
+        string accountingPeriodId)
+    {
+        var id = $"{accountId}-{fiscalYearId}-{accountingPeriodId}";
+        var balance = await dbContext.Set<AccountingPeriodBalanceData>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        return balance?.OpeningBalance ?? 0m;
+    }
 }

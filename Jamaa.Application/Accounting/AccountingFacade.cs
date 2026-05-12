@@ -11,6 +11,7 @@ using Jamaa.Application.Accounting.Models;
 using Jamaa.Application.Shared;
 using Jamaa.Application.Users;
 using Jamaa.Application.Users.Services;
+using Jamaa.Data.Queries.Finances;
 using Jamaa.Data.Notifiers;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,6 +60,8 @@ public class AccountingFacade : IAccountingFacade
             .Select(account => account.ToPresentationModel());
         AccountReactivated = dataChangeNotifier.Updates.OfType<DataModels.AccountData>().Where(a => a.IsActive)
             .Select(account => account.ToPresentationModel());
+        AccountOpeningBalanceSet = dataChangeNotifier.Updates.OfType<DataModels.AccountingPeriodBalanceData>()
+            .Select(balance => balance.ToPresentationModel());
 
         _currentAccountingSettings = new BehaviorSubject<AccountingSettingsData?>(null);
         CurrentAccountingSettings = _currentAccountingSettings;
@@ -88,6 +91,7 @@ public class AccountingFacade : IAccountingFacade
     public IObservable<AccountData> AccountDeleted { get; }
     public IObservable<AccountData> AccountDeactivated { get; }
     public IObservable<AccountData> AccountReactivated { get; }
+    public IObservable<AccountingPeriodBalanceData> AccountOpeningBalanceSet { get; }
     public IObservable<AccountingSettingsData?> CurrentAccountingSettings { get; }
     public IObservable<AccountingSettingsData> AccountingSettingsUpdated { get; }
 
@@ -167,6 +171,20 @@ public class AccountingFacade : IAccountingFacade
         var command = new ReactivateAccount(
             OrganisationId.With(organisationId),
             AccountId.With(accountId));
+
+        _commandProcessor.Tell(command);
+        return Task.CompletedTask;
+    }
+
+    public Task SetAccountOpeningBalance(string organisationId, string accountId, string fiscalYearId,
+        string accountingPeriodId, decimal openingBalance)
+    {
+        var command = new SetAccountOpeningBalance(
+            OrganisationId.With(organisationId),
+            AccountId.With(accountId),
+            new FiscalYearId(fiscalYearId),
+            new AccountingPeriodId(accountingPeriodId),
+            openingBalance);
 
         _commandProcessor.Tell(command);
         return Task.CompletedTask;
@@ -285,6 +303,14 @@ public class AccountingFacade : IAccountingFacade
         var settings = await QueryAsync(queryProcessor =>
             queryProcessor.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId))));
         return settings?.ToPresentationModel();
+    }
+
+    public async Task<decimal> GetAccountOpeningBalance(string organisationId, string accountId, string fiscalYearId,
+        string accountingPeriodId)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var queryHandler = scope.ServiceProvider.GetRequiredService<IAccountQueryHandler>();
+        return await queryHandler.GetOpeningBalance(organisationId, accountId, fiscalYearId, accountingPeriodId);
     }
 
     // Integration: wraps fiscal-calendar seeding safely so stream errors don't terminate the session pipeline.

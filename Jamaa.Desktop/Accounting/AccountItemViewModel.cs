@@ -33,33 +33,6 @@ public partial class AccountItemViewModel : ObservableObject
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(TypeDisplay))]
     private AccountType _type;
 
-    [ObservableProperty]
-    private string _currencySymbol = string.Empty;
-
-    [ObservableProperty]
-    private int _decimalPrecision = 2;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanEditOpeningBalance))]
-    [NotifyPropertyChangedFor(nameof(AggregatedOpeningBalance))]
-    [NotifyPropertyChangedFor(nameof(FormattedOpeningBalance))]
-    [NotifyPropertyChangedFor(nameof(FormattedAggregatedOpeningBalance))]
-    private decimal _openingBalance;
-
-    public void ForceFormatOpeningBalance()
-    {
-        OnPropertyChanged(nameof(OpeningBalance));
-    }
-
-    public string FormattedOpeningBalance => FormatCurrency(OpeningBalance);
-    public string FormattedAggregatedOpeningBalance => FormatCurrency(AggregatedOpeningBalance);
-
-    private string FormatCurrency(decimal value)
-    {
-        var format = $"F{DecimalPrecision}";
-        return $"{CurrencySymbol} {value.ToString(format)}".Trim();
-    }
-
     public string DisplayLabel => $"{Code} - {Name}";
     public string TypeDisplay => Type.ToString();
 
@@ -68,48 +41,8 @@ public partial class AccountItemViewModel : ObservableObject
     public string ToggleStateLabel => IsActive ? "Active" : "Inactive";
     public string ToggleActiveToolTip => IsActive ? "Deactivate this account" : "Reactivate this account";
 
-    // Operation: returns true if this account is a leaf (no children); only leaf accounts can have manually-entered opening balances.
+    // Operation: returns true if this account is a leaf (no children).
     public bool IsLeafAccount => SubAccounts.Count == 0;
-
-    // Operation: returns true if this is a leaf account and thus can be edited.
-    public bool CanEditOpeningBalance => IsLeafAccount;
-
-    // Operation: calculates the aggregated opening balance for this account (sum of children if parent, or own balance if leaf).
-    public decimal AggregatedOpeningBalance
-    {
-        get
-        {
-            if (IsLeafAccount)
-                return OpeningBalance;
-
-            return SubAccounts.Sum(child => child.AggregatedOpeningBalance);
-        }
-    }
-
-    partial void OnOpeningBalanceChanged(decimal value)
-    {
-        PropagateBalanceChange();
-    }
-
-    partial void OnCurrencySymbolChanged(string value)
-    {
-        OnPropertyChanged(nameof(FormattedOpeningBalance));
-        OnPropertyChanged(nameof(FormattedAggregatedOpeningBalance));
-    }
-
-    partial void OnDecimalPrecisionChanged(int value)
-    {
-        OnPropertyChanged(nameof(FormattedOpeningBalance));
-        OnPropertyChanged(nameof(FormattedAggregatedOpeningBalance));
-    }
-
-    // Operation: syncs child balance changes up the tree for parent aggregation.
-    public void PropagateBalanceChange()
-    {
-        OnPropertyChanged(nameof(AggregatedOpeningBalance));
-        OnPropertyChanged(nameof(FormattedAggregatedOpeningBalance));
-        Parent?.PropagateBalanceChange();
-    }
 
     // Commands assigned by the parent ViewModel when building the tree.
     public IRelayCommand? EditCommand { get; set; }

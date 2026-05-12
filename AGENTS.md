@@ -264,6 +264,50 @@ Uses Castle DynamicProxy to wrap interfaces with authorization checks.
 
 ---
 
+## End-to-End: Adding a New Event Type
+
+When adding a new event (e.g., `AccountOpeningBalanceSet`), you must ensure it flows through the entire system. Missing one step will result in the UI not updating.
+
+### Step 1: Define Command & Event
+- **Location**: `Jamaa.Application/{Feature}/Commands/` and `Events/` (or `Jamaa.Domain`)
+- **Action**: Define immutable records for the intent (Command) and the fact (Event).
+
+### Step 2: Handle Command in Aggregate
+- **Location**: `Jamaa.Application/{Feature}/Aggregates/`
+- **Action**:
+  - Add `ReceiveAsync<TCommand>(handler)` to constructor.
+  - Implement handler: validate, create event, call `PersistEvent(@event)`.
+  - Add `Apply(@event)` method to update internal actor state.
+
+### Step 3: Tag the Event for Projections (CRITICAL)
+- **Location**: `Jamaa.Application/Shared/JamaaEventTagger.cs`
+- **Action**: Add the event to the `ToJournal` switch statement. 
+- **Why**: Projections filter events by tags (e.g., `OrganisationEvent`, `FinanceChanged`). If not tagged, the projection will never see the event.
+
+### Step 4: Update Read Model (Persistence)
+- **Location**: `Jamaa.Data/Configuration/JamaaDbContext.cs` and `Jamaa.Data/Models/`
+- **Action**:
+  - Add or update the POCO model in `Jamaa.Data/Models/`.
+  - Add a `DbSet<TModel>` to `JamaaDbContext`.
+  - Configure the mapping in `OnModelCreating` (or via `IEntityTypeConfiguration`).
+  - Generate a migration: `dotnet ef migrations add MyNewChange`.
+
+### Step 5: Implement Projection Handler
+- **Location**: `Jamaa.Application/Shared/JamaaEventProjection.cs`
+- **Action**:
+  - Implement `Task Handle(TEvent @event, JamaaDbContext dbContext)`.
+  - Register it in `RegisterEventHandlers()`: `ReceiveAsync<TEvent>(e => Handle(e, dbContext))`.
+- **Note**: This is where the event is transformed into a database row update.
+
+### Step 6: Expose via Query & UI
+- **Location**: `Jamaa.Data/Queries/` and `Jamaa.Desktop/{Feature}/`
+- **Action**:
+  - Create/Update a query handler to read the new data from `JamaaDbContext`.
+  - Update the ViewModel to execute the query and expose the result as an `[ObservableProperty]`.
+  - Update the View (`.axaml`) to bind to the new property.
+
+---
+
 ## Build & Deployment Workflows
 
 ### Local Development
@@ -359,6 +403,8 @@ When assigned a task:
 - [ ] Enforce strict MVVM: no control/template/style composition in ViewModels
 - [ ] If modifying commands: Update aggregate handlers + tests
 - [ ] If adding a domain event: Add handler in aggregate `Apply()` method
+- [ ] **Crucial**: Tag new events in `JamaaEventTagger.cs` for projection
+- [ ] **Crucial**: Implement handler in `JamaaEventProjection.cs` for read model updates
 - [ ] Register new services in `ApplicationServicesRegistration`
 - [ ] Mirror test structure in `Tests/` directory
 - [ ] Use `var`, `nameof()`, async/await consistently

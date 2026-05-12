@@ -39,12 +39,12 @@
                         <StackLayout Spacing="0" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="accounting:AccountItemViewModel">
+                        <DataTemplate x:DataType="accounting:OpeningBalanceItemViewModel">
                             <Border
                                 BorderBrush="{DynamicResource AppBorderColor}"
                                 BorderThickness="0,0,0,1"
                                 Padding="8,12">
-                                <Grid ColumnDefinitions="400,150,*">
+                                <Grid ColumnDefinitions="400,150,Auto,*">
                                     <!--  Account Info  -->
                                     <StackPanel Grid.Column="0" Spacing="4">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -68,10 +68,11 @@
                                                 <behaviors:RefreshOnLostFocusBehavior />
                                             </Interaction.Behaviors>
                                             <TextBox.Text>
-                                                <MultiBinding Converter="{StaticResource DecimalToFormattedStringConverter}" Mode="TwoWay">
-                                                    <Binding Path="OpeningBalance" UpdateSourceTrigger="LostFocus" />
-                                                    <Binding Path="DecimalPrecision" />
-                                                </MultiBinding>
+                                                <Binding
+                                                    Converter="{StaticResource DecimalToFormattedStringConverter}"
+                                                    Mode="TwoWay"
+                                                    Path="OpeningBalance"
+                                                    UpdateSourceTrigger="PropertyChanged" />
                                             </TextBox.Text>
                                             <TextBox.InnerLeftContent>
                                                 <TextBlock
@@ -80,6 +81,25 @@
                                                     VerticalAlignment="Center" />
                                             </TextBox.InnerLeftContent>
                                         </TextBox>
+                                    </StackPanel>
+
+                                    <!--  Actions  -->
+                                    <StackPanel
+                                        Grid.Column="2"
+                                        Margin="12,0,0,0"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                        <Button
+                                            Command="{Binding SaveOpeningBalanceCommand}"
+                                            IsEnabled="{Binding !IsSaving}"
+                                            IsVisible="{Binding IsLeafAccount}"
+                                            Padding="12,6"
+                                            Theme="{DynamicResource SolidButton}">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <PathIcon Data="{StaticResource save_regular}" Height="14" />
+                                                <TextBlock Text="Save" />
+                                            </StackPanel>
+                                        </Button>
                                     </StackPanel>
                                 </Grid>
                             </Border>

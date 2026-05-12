@@ -29,6 +29,7 @@ public class CommandProcessor : ReceiveActor
         ReceiveAsync<UpdateAccountingPeriod>(OnUpdateAccountingPeriod);
         ReceiveAsync<DeleteAccountingPeriod>(OnDeleteAccountingPeriod);
         ReceiveAsync<UpdateAccountingSettings>(OnUpdateAccountingSettings);
+        ReceiveAsync<SetAccountOpeningBalance>(OnSetAccountOpeningBalance);
     }
 
     private Task OnCreateFiscalYear(CreateFiscalYear command)
@@ -151,6 +152,13 @@ public class CommandProcessor : ReceiveActor
         return Task.CompletedTask;
     }
 
+    private Task OnSetAccountOpeningBalance(SetAccountOpeningBalance command)
+    {
+        var balanceAggregate = ResolveAccountingPeriodBalanceAggregate(command.OrganisationId);
+        balanceAggregate.Tell(command);
+        return Task.CompletedTask;
+    }
+
     private Task OnUpdateMember(UpdateMember command)
     {
         var organisation = ResolveOrganisationAggregate(command.OrganisationId);
@@ -202,6 +210,25 @@ public class CommandProcessor : ReceiveActor
             return existing;
 
         return Context.ActorOf(AccountingSettingsAggregate.Props(organisationId), actorName);
+    }
+
+    // Integration: routes all accounting-period-balance commands for one organisation through a single aggregate actor instance.
+    private IActorRef ResolveAccountingPeriodBalanceAggregate(OrganisationId organisationId)
+    {
+        var actorName = BuildAccountingPeriodBalanceActorName(organisationId);
+        var existing = Context.Child(actorName);
+        if (!Equals(existing, ActorRefs.Nobody))
+            return existing;
+
+        return Context.ActorOf(AccountingPeriodBalanceAggregate.Props(organisationId), actorName);
+    }
+
+    // Operation: converts one organisation id into a valid deterministic Akka actor name for accounting-period-balance aggregates.
+    private static string BuildAccountingPeriodBalanceActorName(OrganisationId organisationId)
+    {
+        var raw = organisationId.Value;
+        var sanitized = new string(raw.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+        return string.IsNullOrWhiteSpace(sanitized) ? "balances_default" : $"balances_{sanitized}";
     }
 
     // Operation: converts one organisation id into a valid deterministic Akka actor name for accounting-settings aggregates.

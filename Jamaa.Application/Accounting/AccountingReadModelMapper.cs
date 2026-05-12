@@ -128,4 +128,18 @@ internal static class AccountingReadModelMapper
         };
     }
 
+    internal static AccountingPeriodBalanceData ToPresentationModel(this DataModels.AccountingPeriodBalanceData balance)
+    {
+        return new AccountingPeriodBalanceData
+        {
+            Id = balance.Id,
+            AccountId = balance.AccountId,
+            FiscalYearId = balance.FiscalYearId,
+            AccountingPeriodId = balance.AccountingPeriodId,
+            OrganisationId = balance.OrganisationId,
+            OpeningBalance = balance.OpeningBalance,
+            ClosingBalance = balance.ClosingBalance
+        };
+    }
+
 }

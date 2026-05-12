@@ -55,6 +55,8 @@ public sealed class JamaaEventTagger : IWriteEventAdapter
                 new[] { OrganisationEvent, FinanceChanged }),
             AccountReactivated accountReactivated => new Tagged(accountReactivated,
                 new[] { OrganisationEvent, FinanceChanged }),
+            AccountOpeningBalanceSet accountOpeningBalanceSet => new Tagged(accountOpeningBalanceSet,
+                new[] { OrganisationEvent, FinanceChanged }),
             _ => evt
         };
     }

@@ -15,6 +15,7 @@ public interface IAccountingFacade
     IObservable<AccountData> AccountDeleted { get; }
     IObservable<AccountData> AccountDeactivated { get; }
     IObservable<AccountData> AccountReactivated { get; }
+    IObservable<AccountingPeriodBalanceData> AccountOpeningBalanceSet { get; }
 
     // Reactive streams (push accounting settings changes)
     IObservable<AccountingSettingsData?> CurrentAccountingSettings { get; }
@@ -38,6 +39,8 @@ public interface IAccountingFacade
     Task DeleteAccount(string organisationId, string accountId);
     Task DeactivateAccount(string organisationId, string accountId);
     Task ReactivateAccount(string organisationId, string accountId);
+    Task SetAccountOpeningBalance(string organisationId, string accountId, string fiscalYearId,
+        string accountingPeriodId, decimal openingBalance);
 
     Task CreateAccountingPeriod(string organisationId, string fiscalYearId, int sequenceNumber, DateTime startDate,
         DateTime endDate, bool isLocked);
@@ -54,4 +57,6 @@ public interface IAccountingFacade
     Task<ChartOfAccountsData> GetChartOfAccounts(string organisationId);
     Task<FiscalCalendarData> GetFiscalCalendar(string organisationId);
     Task<AccountingSettingsData?> GetAccountingSettings(string organisationId);
+    Task<decimal> GetAccountOpeningBalance(string organisationId, string accountId, string fiscalYearId,
+        string accountingPeriodId);
 }

@@ -32,3 +32,10 @@ public record DeactivateAccount(
 public record ReactivateAccount(
     OrganisationId OrganisationId,
     AccountId AccountId);
+
+public record SetAccountOpeningBalance(
+    OrganisationId OrganisationId,
+    AccountId AccountId,
+    FiscalYearId FiscalYearId,
+    AccountingPeriodId AccountingPeriodId,
+    decimal OpeningBalance);

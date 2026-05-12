@@ -92,7 +92,7 @@ public class OrganisationProjection : ReceivePersistentActor
     private async Task TryProcess(IJamaaEvent evt)
     {
         using var scope = _serviceProvider.CreateScope();
-        using var dbContext = scope.ServiceProvider.GetRequiredService<JamaaDbContext>();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<JamaaDbContext>();
 
         await (evt switch
         {
@@ -106,6 +106,7 @@ public class OrganisationProjection : ReceivePersistentActor
             AccountDeleted accountDeleted => Handle(accountDeleted, dbContext),
             AccountDeactivated accountDeactivated => Handle(accountDeactivated, dbContext),
             AccountReactivated accountReactivated => Handle(accountReactivated, dbContext),
+            AccountOpeningBalanceSet accountOpeningBalanceSet => Handle(accountOpeningBalanceSet, dbContext),
             FiscalYearCreated fiscalYearCreated => Handle(fiscalYearCreated, dbContext),
             FiscalYearUpdated fiscalYearUpdated => Handle(fiscalYearUpdated, dbContext),
             FiscalYearDeleted fiscalYearDeleted => Handle(fiscalYearDeleted, dbContext),
@@ -181,6 +182,33 @@ public class OrganisationProjection : ReceivePersistentActor
         if (account is null) return;
 
         account.IsActive = true;
+        await SaveChangesWithSqliteRetryAsync(dbContext);
+    }
+
+    private async Task Handle(AccountOpeningBalanceSet @event, JamaaDbContext dbContext)
+    {
+        var id = $"{@event.AccountId.Value}-{@event.FiscalYearId.Value}-{@event.AccountingPeriodId.Value}";
+        var balance = await dbContext.AccountingPeriodBalances
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (balance == null)
+        {
+            balance = new AccountingPeriodBalanceData
+            {
+                Id = id,
+                AccountId = @event.AccountId.Value,
+                FiscalYearId = @event.FiscalYearId.Value,
+                AccountingPeriodId = @event.AccountingPeriodId.Value,
+                OrganisationId = @event.OrganisationId.Value,
+                OpeningBalance = @event.OpeningBalance
+            };
+            dbContext.AccountingPeriodBalances.Add(balance);
+        }
+        else
+        {
+            balance.OpeningBalance = @event.OpeningBalance;
+        }
+
         await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 

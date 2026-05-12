@@ -48,3 +48,13 @@ public record AccountReactivated(
 {
     public string EntityId => AccountId.Value;
 }
+
+public record AccountOpeningBalanceSet(
+    OrganisationId OrganisationId,
+    AccountId AccountId,
+    FiscalYearId FiscalYearId,
+    AccountingPeriodId AccountingPeriodId,
+    decimal OpeningBalance) : IJamaaEvent
+{
+    public string EntityId => AccountId.Value;
+}
