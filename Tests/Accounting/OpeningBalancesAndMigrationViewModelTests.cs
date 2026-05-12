@@ -64,6 +64,37 @@ public class OpeningBalancesAndMigrationViewModelTests
     }
 
     [Fact]
+    public async Task LoadAccountsAsync_WhenPeriodIsLocked_SetsIsLockedOnViewModels()
+    {
+        // Arrange
+        var fy2025 = new FiscalYearData
+        {
+            Id = "fy-2025",
+            OrganisationId = OrgId,
+            StartDate = new DateTime(2025, 1, 1),
+            EndDate = new DateTime(2025, 12, 31),
+            IsLocked = true, // Locked
+            Periods = new List<AccountingPeriodData>
+            {
+                new() { Id = "p-2025-01", FiscalYearId = "fy-2025", OrganisationId = OrgId, SequenceNumber = 1, IsLocked = true }
+            }
+        };
+        _accountingFacade.GetFiscalCalendar(OrgId).Returns(Task.FromResult(new FiscalCalendarData { OrganisationId = OrgId, FiscalYears = new List<FiscalYearData> { fy2025 } }));
+        _accountingFacade.GetChartOfAccounts(OrgId).Returns(Task.FromResult(new ChartOfAccountsData { OrganisationId = OrgId, Accounts = new List<AccountData> { new() { Id = "acc-1", OrganisationId = OrgId, Code = "1000", Name = "Assets", IsActive = true } } }));
+
+        // Act
+        await _viewModel.LoadAccountsAsync();
+
+        // Assert
+        _viewModel.LeafAccounts.ShouldNotBeEmpty();
+        foreach (var account in _viewModel.LeafAccounts)
+        {
+            account.IsLocked.ShouldBeTrue();
+            account.SaveOpeningBalanceCommand.CanExecute(null).ShouldBeFalse();
+        }
+    }
+
+    [Fact]
     public async Task LoadAccountsAsync_SelectsFirstOpenPeriodOfFirstOpenFiscalYear()
     {
         // Arrange
@@ -208,7 +239,7 @@ public class OpeningBalancesAndMigrationViewModelTests
         // Assert
         _notificationService.Received(1).Show(
             "Opening Balance",
-            Arg.Is<string>(s => s.Contains("Saved") && s.Contains("1100 - Cash")),
+            Arg.Is<string>(s => s.Contains("Saved") && s.Contains("Cash")),
             NotificationType.Success
         );
     }
@@ -255,8 +286,102 @@ public class OpeningBalancesAndMigrationViewModelTests
         // Assert
         _notificationService.Received(1).Show(
             "Opening Balance",
-            Arg.Is<string>(s => s.Contains("Saved") && s.Contains("1100 - Cash")),
+            Arg.Is<string>(s => s.Contains("Saved") && s.Contains("Cash")),
             NotificationType.Success
         );
+    }
+
+    [Fact]
+    public async Task LoadAccountsAsync_ShowsAllLeafAccountsAndLocksThoseWithOpeningBalance()
+    {
+        // Arrange
+        var fy2025 = new FiscalYearData
+        {
+            Id = "fy-2025",
+            OrganisationId = OrgId,
+            StartDate = new DateTime(2025, 1, 1),
+            EndDate = new DateTime(2025, 12, 31),
+            IsLocked = false,
+            Periods = new List<AccountingPeriodData>
+            {
+                new() { Id = "p-2025-01", FiscalYearId = "fy-2025", OrganisationId = OrgId, SequenceNumber = 1, IsLocked = false }
+            }
+        };
+        _accountingFacade.GetFiscalCalendar(OrgId).Returns(Task.FromResult(new FiscalCalendarData { OrganisationId = OrgId, FiscalYears = new List<FiscalYearData> { fy2025 } }));
+        
+        _accountingFacade.GetChartOfAccounts(OrgId).Returns(Task.FromResult(new ChartOfAccountsData
+        {
+            OrganisationId = OrgId,
+            Accounts = new List<AccountData>
+            {
+                new() { Id = "acc-1", OrganisationId = OrgId, Code = "1000", Name = "Assets", Type = Domain.Accounting.Values.AccountType.Asset },
+                new() { Id = "acc-cash", OrganisationId = OrgId, Code = "1100", Name = "Cash", ParentId = "acc-1", Type = Domain.Accounting.Values.AccountType.Asset },
+                new() { Id = "acc-bank", OrganisationId = OrgId, Code = "1200", Name = "Bank", ParentId = "acc-1", Type = Domain.Accounting.Values.AccountType.Asset }
+            }
+        }));
+
+        // Cash has opening balance, Bank does not
+        _accountingFacade.GetAccountOpeningBalance(OrgId, "acc-cash", "fy-2025", "p-2025-01").Returns(100m);
+        _accountingFacade.GetAccountOpeningBalance(OrgId, "acc-bank", "fy-2025", "p-2025-01").Returns(0m);
+
+        // Act
+        await _viewModel.LoadAccountsAsync();
+
+        // Assert
+        _viewModel.LeafAccounts.Count.ShouldBe(2);
+        
+        var bank = _viewModel.LeafAccounts.First(a => a.Id == "acc-bank");
+        bank.OpeningBalance.ShouldBe(0m);
+        bank.IsLocked.ShouldBeFalse();
+
+        var cash = _viewModel.LeafAccounts.First(a => a.Id == "acc-cash");
+        cash.OpeningBalance.ShouldBe(100m);
+        cash.IsLocked.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task OnAccountOpeningBalanceSet_UpdatesBalanceAndLocksAccount()
+    {
+        // Arrange
+        var fy2025 = new FiscalYearData
+        {
+            Id = "fy-2025",
+            OrganisationId = OrgId,
+            StartDate = new DateTime(2025, 1, 1),
+            EndDate = new DateTime(2025, 12, 31),
+            IsLocked = false,
+            Periods = new List<AccountingPeriodData>
+            {
+                new() { Id = "p-2025-01", FiscalYearId = "fy-2025", OrganisationId = OrgId, SequenceNumber = 1, IsLocked = false }
+            }
+        };
+        _accountingFacade.GetFiscalCalendar(OrgId).Returns(Task.FromResult(new FiscalCalendarData { OrganisationId = OrgId, FiscalYears = new List<FiscalYearData> { fy2025 } }));
+        
+        var balanceSubject = new System.Reactive.Subjects.Subject<AccountingPeriodBalanceData>();
+        _accountingFacade.AccountOpeningBalanceSet.Returns(balanceSubject);
+
+        // Use the instance created in constructor which subscribed to balanceSubject
+        var viewModel = new OpeningBalancesAndMigrationViewModel(_accountingFacade, _userSessionService, _notificationService);
+
+        await viewModel.LoadAccountsAsync();
+
+        var leaf = viewModel.LeafAccounts.First(a => a.Id == "acc-1-1");
+        leaf.OpeningBalance.ShouldBe(0m);
+        leaf.IsLocked.ShouldBeFalse();
+
+        // Act
+        balanceSubject.OnNext(new AccountingPeriodBalanceData 
+        { 
+            AccountId = "acc-1-1", 
+            FiscalYearId = "fy-2025", 
+            AccountingPeriodId = "p-2025-01",
+            OrganisationId = OrgId,
+            OpeningBalance = 123.45m,
+            Id = "acc-1-1-fy-2025-p-2025-01"
+        });
+
+        // Assert
+        leaf.OpeningBalance.ShouldBe(123.45m);
+        leaf.IsLocked.ShouldBeTrue();
     }
 }

@@ -94,6 +94,8 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
     [NotifyCanExecuteChangedFor(nameof(RevertFiscalYearCommand))]
     [NotifyCanExecuteChangedFor(nameof(RegeneratePeriodsCommand))]
     [NotifyCanExecuteChangedFor(nameof(BeginAddPeriodCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmAddPeriodCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteSelectedPeriodCommand))]
     private FiscalYearEditorItemViewModel? _selectedFiscalYear;
 
     private FiscalYearDraftSnapshot? _selectedFiscalYearSnapshot;
@@ -585,7 +587,7 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
 
     private bool CanBeginAddPeriod()
     {
-        return !IsOperationInFlight && !IsAddingPeriod && SelectedFiscalYear is { IsLocked: false };
+        return !IsOperationInFlight && SelectedFiscalYear is { IsLocked: false } && !IsAddingPeriod;
     }
 
     private bool CanCancelAddPeriod()
@@ -597,7 +599,7 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
     {
         return !IsOperationInFlight &&
                IsAddingPeriod &&
-               SelectedFiscalYear is not null &&
+               SelectedFiscalYear is { IsLocked: false } &&
                DraftNewPeriodEndDate.Date >= DraftNewPeriodStartDate.Date;
     }
 
@@ -647,6 +649,7 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
     {
         return !IsOperationInFlight &&
                SelectedFiscalYear is not null &&
+               !SelectedFiscalYear.IsLocked &&
                DraftEndDate.Date >= DraftStartDate.Date;
     }
 
@@ -654,6 +657,7 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
     {
         return !IsOperationInFlight &&
                SelectedFiscalYear is not null &&
+               !SelectedFiscalYear.IsLocked &&
                FiscalYears.Count > 1 &&
                FiscalYears.Any(fiscalYear => fiscalYear.Id == SelectedFiscalYear.Id) &&
                CanDeleteSelectedFiscalYearWithoutCreatingGap();
@@ -798,7 +802,7 @@ public partial class FiscalCalendarAndPeriodsViewModel : ObservableObject, IAppl
 
     private bool CanRegeneratePeriods()
     {
-        return !IsOperationInFlight && SelectedFiscalYear is not null;
+        return !IsOperationInFlight && SelectedFiscalYear is { IsLocked: false };
     }
 
     private bool CanCloseSelectedPeriod()

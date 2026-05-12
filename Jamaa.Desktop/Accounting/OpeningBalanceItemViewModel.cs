@@ -24,7 +24,13 @@ public partial class OpeningBalanceItemViewModel(
     [ObservableProperty] private string _currencySymbol = string.Empty;
     [ObservableProperty] private int _decimalPrecision = 2;
     [ObservableProperty] private decimal _openingBalance;
-    [ObservableProperty] private bool _isSaving;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveOpeningBalanceCommand))]
+    private bool _isSaving;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveOpeningBalanceCommand))]
+    private bool _isLocked;
 
     public void ForceFormatOpeningBalance()
     {
@@ -34,14 +40,14 @@ public partial class OpeningBalanceItemViewModel(
     [ObservableProperty] private string _fiscalYearId = string.Empty;
     [ObservableProperty] private string _accountingPeriodId = string.Empty;
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSaveOpeningBalance))]
     private async Task SaveOpeningBalanceAsync()
     {
         var session = userSessionService.CurrentUserSession;
         if (session?.Organisation?.Id == null) return;
 
         var orgId = session.Organisation.Id;
-        var subject = $"{Code} - {Name}";
+        var subject = $"Opening balance for account - {Name}";
 
         await notificationService.TrackOperationAsync(
             () => accountingFacade.SetAccountOpeningBalance(
@@ -57,6 +63,8 @@ public partial class OpeningBalanceItemViewModel(
             subject,
             inFlight => IsSaving = inFlight);
     }
+
+    private bool CanSaveOpeningBalance() => !IsLocked && !IsSaving;
 
     private IObservable<bool> BuildSaveConfirmationObservable(string organisationId)
     {

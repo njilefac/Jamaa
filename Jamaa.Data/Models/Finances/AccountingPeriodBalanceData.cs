@@ -10,7 +10,7 @@ public class AccountingPeriodBalanceData
     public required string AccountingPeriodId { get; set; }
     public required string OrganisationId { get; set; }
     public decimal OpeningBalance { get; set; }
-    public decimal ClosingBalance { get; set; }
+    public decimal? ClosingBalance { get; set; }
 
     public AccountData? Account { get; set; }
     public FiscalYearData? FiscalYear { get; set; }

@@ -26,6 +26,7 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
 
     private string _fiscalYearId = string.Empty;
     private string _accountingPeriodId = string.Empty;
+    private bool _isLocked = true;
 
     public OpeningBalancesAndMigrationViewModel(
         IAccountingFacade accountingFacade,
@@ -44,9 +45,10 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
     private void OnAccountOpeningBalanceSet(Jamaa.Application.Accounting.Models.AccountingPeriodBalanceData balance)
     {
         var leaf = LeafAccounts.FirstOrDefault(a => a.Id == balance.AccountId);
-        if (leaf != null && leaf.OpeningBalance != balance.OpeningBalance)
+        if (leaf != null)
         {
             leaf.OpeningBalance = balance.OpeningBalance;
+            leaf.IsLocked = balance.OpeningBalance != 0 || _isLocked;
         }
     }
 
@@ -84,6 +86,13 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
             {
                 _fiscalYearId = migrationPeriod.FiscalYearId;
                 _accountingPeriodId = migrationPeriod.Id;
+                _isLocked = migrationPeriod.IsLocked;
+            }
+            else
+            {
+                _fiscalYearId = string.Empty;
+                _accountingPeriodId = string.Empty;
+                _isLocked = true;
             }
 
             var accounts = chartOfAccounts.Accounts;
@@ -93,6 +102,13 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
             LeafAccounts.Clear();
             foreach (var leaf in leaves)
             {
+                decimal openingBalance = 0;
+                if (!string.IsNullOrEmpty(_fiscalYearId) && !string.IsNullOrEmpty(_accountingPeriodId))
+                {
+                    openingBalance = await _accountingFacade.GetAccountOpeningBalance(
+                        session.Organisation.Id, leaf.Id, _fiscalYearId, _accountingPeriodId);
+                }
+
                 var openingBalanceVm = new OpeningBalanceItemViewModel(_accountingFacade, _userSessionService, _notificationService)
                 {
                     Id = leaf.Id,
@@ -103,14 +119,10 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
                     CurrencySymbol = _currencySymbol,
                     DecimalPrecision = _decimalPrecision,
                     FiscalYearId = _fiscalYearId,
-                    AccountingPeriodId = _accountingPeriodId
+                    AccountingPeriodId = _accountingPeriodId,
+                    IsLocked = openingBalance != 0 || _isLocked,
+                    OpeningBalance = openingBalance
                 };
-
-                if (!string.IsNullOrEmpty(_fiscalYearId) && !string.IsNullOrEmpty(_accountingPeriodId))
-                {
-                    openingBalanceVm.OpeningBalance = await _accountingFacade.GetAccountOpeningBalance(
-                        session.Organisation.Id, leaf.Id, _fiscalYearId, _accountingPeriodId);
-                }
 
                 LeafAccounts.Add(openingBalanceVm);
             }

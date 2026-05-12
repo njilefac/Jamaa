@@ -74,6 +74,9 @@
                                                     Path="OpeningBalance"
                                                     UpdateSourceTrigger="PropertyChanged" />
                                             </TextBox.Text>
+                                            <TextBox.IsReadOnly>
+                                                <Binding Path="IsLocked" />
+                                            </TextBox.IsReadOnly>
                                             <TextBox.InnerLeftContent>
                                                 <TextBlock
                                                     Margin="8,0,0,0"
@@ -83,7 +86,6 @@
                                         </TextBox>
                                     </StackPanel>
 
-                                    <!--  Actions  -->
                                     <StackPanel
                                         Grid.Column="2"
                                         Margin="12,0,0,0"
@@ -92,7 +94,7 @@
                                         <Button
                                             Command="{Binding SaveOpeningBalanceCommand}"
                                             IsEnabled="{Binding !IsSaving}"
-                                            IsVisible="{Binding IsLeafAccount}"
+                                            IsVisible="{Binding !IsLocked}"
                                             Padding="12,6"
                                             Theme="{DynamicResource SolidButton}">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
