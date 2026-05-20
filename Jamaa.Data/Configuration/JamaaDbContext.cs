@@ -34,7 +34,7 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifi
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlite(
-            $"Filename={_dbOptions.DataFile}",
+            $"Data Source={_dbOptions.DataFile};Cache=Shared;",
             options => { options.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName); });
     }
 

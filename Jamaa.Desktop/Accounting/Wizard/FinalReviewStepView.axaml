@@ -1,0 +1,61 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Accounting.Wizard.FinalReviewStepView"
+    x:DataType="wizard:FinalReviewStepViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:wizard="clr-namespace:Jamaa.Desktop.Accounting.Wizard"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel
+        HorizontalAlignment="Center"
+        Spacing="30"
+        VerticalAlignment="Center">
+        <TextBlock
+            Classes="h3"
+            HorizontalAlignment="Center"
+            Text="Final Review &amp; Ledger Initialization" />
+
+        <Border
+            Classes="card"
+            MaxWidth="500"
+            Padding="25">
+            <StackPanel Spacing="15">
+                <TextBlock FontWeight="Bold" Text="Review the configuration before going live:" />
+                <StackPanel Margin="10,0,0,0" Spacing="5">
+                    <TextBlock Text="✓ Fiscal Calendar Defined" />
+                    <TextBlock Text="✓ Chart of Accounts Mapped" />
+                    <TextBlock Text="✓ Opening Balances Balanced" />
+                </StackPanel>
+
+                <Separator Margin="0,10" />
+
+                <TextBlock Classes="caption" Text="By clicking 'Initialize Ledger', the system will:" />
+                <StackPanel Margin="10,0,0,0" Spacing="2">
+                    <TextBlock Classes="caption" Text="• Lock the setup state" />
+                    <TextBlock Classes="caption" Text="• Take a BalanceSnapshot for the period" />
+                    <TextBlock Classes="caption" Text="• Record initializing journal entries" />
+                    <TextBlock Classes="caption" Text="• Transition to ActiveMode" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Button
+            Classes="primary"
+            Command="{Binding InitializeLedgerCommand}"
+            Content="Initialize Ledger"
+            HorizontalAlignment="Center"
+            IsEnabled="{Binding !IsInitialized}"
+            Padding="30,15" />
+
+        <TextBlock
+            FontWeight="Bold"
+            Foreground="Green"
+            HorizontalAlignment="Center"
+            IsVisible="{Binding IsInitialized}"
+            Text="Ledger successfully initialized!" />
+    </StackPanel>
+</UserControl>

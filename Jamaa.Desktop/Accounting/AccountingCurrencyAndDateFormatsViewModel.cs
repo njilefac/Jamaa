@@ -552,12 +552,12 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         RefreshSaveState();
     }
 
-    partial void OnSelectedDateFormatChanged(string _)
+    partial void OnSelectedDateFormatChanged(string value)
     {
         RefreshSaveState();
     }
 
-    partial void OnSelectedDecimalPrecisionChanged(int _)
+    partial void OnSelectedDecimalPrecisionChanged(int value)
     {
         RefreshSaveState();
     }
@@ -567,7 +567,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         OnPropertyChanged(nameof(HasStatusMessage));
     }
 
-    partial void OnCurrencyStatusMessageChanged(string _)
+    partial void OnCurrencyStatusMessageChanged(string value)
     {
         OnPropertyChanged(nameof(HasCurrencyStatusMessage));
     }

@@ -82,7 +82,7 @@ public static class ServiceCollectionExtensions
                 });
 
                 var connectionString =
-                    $"Data Source={ResolveDataPath(configuration) ?? throw new InvalidOperationException()};";
+                    $"Data Source={ResolveDataPath(configuration) ?? throw new InvalidOperationException()};Cache=Shared;";
 
 
                 builder.WithSqlPersistence(connectionString,

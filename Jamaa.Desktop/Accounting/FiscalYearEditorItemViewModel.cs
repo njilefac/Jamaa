@@ -61,17 +61,17 @@ public partial class FiscalYearEditorItemViewModel : ObservableObject
         Name = BuildName(StartDate, EndDate);
     }
 
-    partial void OnStartDateChanged(DateTime _)
+    partial void OnStartDateChanged(DateTime value)
     {
         RaiseDerivedStateChanged();
     }
 
-    partial void OnEndDateChanged(DateTime _)
+    partial void OnEndDateChanged(DateTime value)
     {
         RaiseDerivedStateChanged();
     }
 
-    partial void OnIsLockedChanged(bool _)
+    partial void OnIsLockedChanged(bool value)
     {
         RaiseDerivedStateChanged();
     }

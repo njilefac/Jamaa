@@ -546,7 +546,7 @@ public class OrganisationProjection : ReceivePersistentActor
     // Operation: persists projection writes with transient SQLite lock retries.
     private async Task SaveChangesWithSqliteRetryAsync(JamaaDbContext dbContext)
     {
-        const int maxAttempts = 4;
+        const int maxAttempts = 5;
 
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
             try
@@ -554,9 +554,18 @@ public class OrganisationProjection : ReceivePersistentActor
                 await dbContext.SaveChangesAsync();
                 return;
             }
-            catch (Exception exception) when (IsTransientSqliteLock(exception) && attempt < maxAttempts)
+            catch (Exception exception) when (IsTransientSqliteLock(exception))
             {
-                var delay = TimeSpan.FromMilliseconds(75 * attempt);
+                if (attempt == maxAttempts)
+                {
+                    _logger.LogError(
+                        exception,
+                        "SQLite database is locked after {MaxAttempts} attempts. Projection may be out of sync.",
+                        maxAttempts);
+                    throw;
+                }
+
+                var delay = TimeSpan.FromMilliseconds(Math.Pow(2, attempt) * 50 + Random.Shared.Next(0, 50));
                 _logger.LogWarning(
                     exception,
                     "Transient SQLite lock while saving projection changes. Retrying in {DelayMs}ms (attempt {Attempt}/{MaxAttempts}).",
@@ -566,8 +575,6 @@ public class OrganisationProjection : ReceivePersistentActor
 
                 await Task.Delay(delay);
             }
-
-        await dbContext.SaveChangesAsync();
     }
 
     // Operation: identifies retry-safe SQLite lock/busy failures.

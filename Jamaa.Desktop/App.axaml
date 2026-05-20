@@ -16,7 +16,9 @@
     xmlns:setup="clr-namespace:Jamaa.Desktop.Setup"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     xmlns:sty="using:FluentAvalonia.Styling"
+    xmlns:u="https://irihi.tech/ursa"
     xmlns:u-semi="clr-namespace:Ursa.Themes.Semi;assembly=Ursa.Themes.Semi"
+    xmlns:wizard="clr-namespace:Jamaa.Desktop.Accounting.Wizard"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Application.Resources>
@@ -30,14 +32,15 @@
             <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
             <converters:IncrementConverter x:Key="IncrementConverter" />
             <converters:HalfWidthConverter x:Key="HalfWidthConverter" />
+            <converters:StepStateConverter x:Key="StepStateConverter" />
         </ResourceDictionary>
     </Application.Resources>
 
     <Application.Styles>
+        <u-semi:SemiTheme />
         <husk:HuskuiTheme Corner="Normal" />
         <sty:FluentAvaloniaTheme />
         <semi:SemiTheme />
-        <u-semi:SemiTheme />
         <StyleInclude Source="avares://Semi.Avalonia.DataGrid/Index.axaml" />
         <StyleInclude Source="avares://Semi.Avalonia.TreeDataGrid/Index.axaml" />
         <StyleInclude Source="avares://Jamaa/Styles/JamaaStyles.axaml" />
@@ -110,6 +113,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type accounting:AccountLedgerViewModel}">
             <accounting:AccountLedgerPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type wizard:AccountingSetupWizardViewModel}">
+            <wizard:AccountingSetupWizardPage />
         </DataTemplate>
         <DataTemplate DataType="{x:Type components:MemberListViewModel}">
             <components:MembersList />

@@ -26,6 +26,7 @@ public static class Routes
     public const string UserRolesAndApprovals = "/accounting/configuration/user-roles-approvals";
     public const string AccountLedger = "/accounting/configuration/account-ledger";
     public const string OpeningBalancesAndMigration = "/accounting/configuration/opening-balances-migration";
+    public const string AccountingSetupWizard = "/accounting/configuration/setup-wizard";
     public const string Settings = "/settings";
     public const string EventsConfiguration = "/settings/events-configuration";
     public const string OrganisationContactDetails = "/settings/organisation-contact-details";

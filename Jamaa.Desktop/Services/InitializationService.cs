@@ -13,6 +13,7 @@ using Jamaa.Data.Configuration;
 using Jamaa.Desktop.Accounting;
 using Jamaa.Desktop.Assets.Resources;
 using Jamaa.Desktop.Configuration.Extensions;
+using Jamaa.Desktop.Accounting.Wizard;
 using Jamaa.Desktop.Dashboard;
 using Jamaa.Desktop.Events;
 using Jamaa.Desktop.Members.Components;
@@ -207,6 +208,7 @@ public static partial class InitializationService
                         new RouteMap(Routes.AutomationRules, typeof(AutomationRulesViewModel)),
                         new RouteMap(Routes.UserRolesAndApprovals, typeof(UserRolesAndApprovalsViewModel)),
                         new RouteMap(Routes.OpeningBalancesAndMigration, typeof(OpeningBalancesAndMigrationViewModel)),
+                        new RouteMap(Routes.AccountingSetupWizard, typeof(AccountingSetupWizardViewModel)),
                         new RouteMap(Routes.AccountLedger, typeof(AccountLedgerViewModel))
                     ]),
                     new RouteMap(Routes.EventsConfiguration, typeof(EventsConfigurationViewModel))
@@ -228,6 +230,10 @@ public static partial class InitializationService
     {
         var dataContext = serviceProvider.GetService<JamaaDbContext>();
         if (dataContext == null) return;
+
+        // Enable WAL mode and set busy timeout for better concurrency
+        dataContext.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
+        dataContext.Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
 
         var pendingMigrations = GetPendingMigrations(dataContext);
         if (pendingMigrations.Length != 0)
