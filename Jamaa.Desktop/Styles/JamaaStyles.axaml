@@ -4,7 +4,9 @@
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:icons="using:FluentIcons.Avalonia.Fluent"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
+    xmlns:sharedControls="clr-namespace:Jamaa.Desktop.Shared.Controls"
     xmlns:u="https://irihi.tech/ursa"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.PreviewWith>
@@ -45,6 +47,92 @@
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
     </Style>
+
+    <!--  Shared StepTimeline Styles  -->
+    <Style Selector="sharedControls|StepTimeline ListBox.timeline-steps">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="ClipToBounds" Value="False" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline ListBox.timeline-steps ListBoxItem">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="ClipToBounds" Value="False" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline ListBox.timeline-steps ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline ListBox.timeline-steps ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <Style Selector="sharedControls|StepTimeline Border.step-bubble">
+        <Setter Property="Background" Value="{DynamicResource WizardStepUncompletedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderColor}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline Border.step-bubble[Tag=Completed]">
+        <Setter Property="Background" Value="{DynamicResource WizardStepCompletedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WizardStepCompletedForegroundBrush}" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline Border.step-bubble[Tag=Active]">
+        <Setter Property="Background" Value="{DynamicResource WizardStepActiveBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource WizardStepActiveForegroundBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline Border.step-bubble[Tag=Disabled]">
+        <Setter Property="Background" Value="{DynamicResource WizardStepDisabledBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppDividerColor}" />
+        <Setter Property="Opacity" Value="0.6" />
+    </Style>
+
+    <Style Selector="sharedControls|StepTimeline TextBlock.step-number">
+        <Setter Property="Foreground" Value="{DynamicResource WizardStepUncompletedForegroundBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline Border.step-bubble[Tag=Completed] TextBlock.step-number">
+        <Setter Property="Foreground" Value="{DynamicResource WizardStepCompletedForegroundBrush}" />
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline Border.step-bubble[Tag=Active] TextBlock.step-number">
+        <Setter Property="Foreground" Value="{DynamicResource WizardStepActiveForegroundBrush}" />
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline Border.step-bubble[Tag=Disabled] TextBlock.step-number">
+        <Setter Property="Foreground" Value="{DynamicResource WizardStepDisabledForegroundBrush}" />
+    </Style>
+
+    <Style Selector="sharedControls|StepTimeline icons|SymbolIcon.step-check">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline Border.step-bubble[Tag=Completed] icons|SymbolIcon.step-check">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource WizardStepCompletedForegroundBrush}" />
+    </Style>
+
+    <Style Selector="sharedControls|StepTimeline Border.step-connector">
+        <Setter Property="Background" Value="{DynamicResource WizardStepUncompletedForegroundBrush}" />
+        <Setter Property="Opacity" Value="0.35" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline Border.step-connector[Tag=Completed]">
+        <Setter Property="Background" Value="{DynamicResource WizardStepCompletedForegroundBrush}" />
+        <Setter Property="Opacity" Value="0.8" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline Border.step-connector[Tag=Disabled]">
+        <Setter Property="Background" Value="{DynamicResource WizardStepDisabledForegroundBrush}" />
+        <Setter Property="Opacity" Value="0.4" />
+    </Style>
+
+    <Style Selector="sharedControls|StepTimeline TextBlock.step-title">
+        <Setter Property="Foreground" Value="{DynamicResource WizardStepUncompletedForegroundBrush}" />
+    </Style>
+    <Style Selector="sharedControls|StepTimeline TextBlock.step-description">
+        <Setter Property="Foreground" Value="{DynamicResource WizardStepUncompletedForegroundBrush}" />
+        <Setter Property="Opacity" Value="0.7" />
+    </Style>
+
     <Style Selector="TextBlock.form.label">
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="VerticalAlignment" Value="Center" />

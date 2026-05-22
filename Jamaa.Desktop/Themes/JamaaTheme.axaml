@@ -56,6 +56,16 @@
             <SolidColorBrush Color="#FEF2F2" x:Key="ValidationErrorBackground" />
             <SolidColorBrush Color="#EF4444" x:Key="ValidationErrorBrush" />
             <SolidColorBrush Color="#991B1B" x:Key="ValidationErrorForeground" />
+
+            <!--  Wizard Steps  -->
+            <SolidColorBrush Color="#DCFCE7" x:Key="WizardStepCompletedBrush" />
+            <SolidColorBrush Color="#15803D" x:Key="WizardStepCompletedForegroundBrush" />
+            <SolidColorBrush Color="#DBEAFE" x:Key="WizardStepActiveBrush" />
+            <SolidColorBrush Color="#1D4ED8" x:Key="WizardStepActiveForegroundBrush" />
+            <SolidColorBrush Color="#F1F5F9" x:Key="WizardStepUncompletedBrush" />
+            <SolidColorBrush Color="#475569" x:Key="WizardStepUncompletedForegroundBrush" />
+            <SolidColorBrush Color="#F8FAFC" x:Key="WizardStepDisabledBrush" />
+            <SolidColorBrush Color="#94A3B8" x:Key="WizardStepDisabledForegroundBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <Color x:Key="JamaaPrimaryColor">#479EF5</Color>
@@ -109,6 +119,16 @@
             <SolidColorBrush Color="#442726" x:Key="ValidationErrorBackground" />
             <SolidColorBrush Color="#F1707B" x:Key="ValidationErrorBrush" />
             <SolidColorBrush Color="#FFFFFF" x:Key="ValidationErrorForeground" />
+
+            <!--  Wizard Steps  -->
+            <SolidColorBrush Color="#14532D" x:Key="WizardStepCompletedBrush" />
+            <SolidColorBrush Color="#BBF7D0" x:Key="WizardStepCompletedForegroundBrush" />
+            <SolidColorBrush Color="#1E3A8A" x:Key="WizardStepActiveBrush" />
+            <SolidColorBrush Color="#BFDBFE" x:Key="WizardStepActiveForegroundBrush" />
+            <SolidColorBrush Color="#2B2B2B" x:Key="WizardStepUncompletedBrush" />
+            <SolidColorBrush Color="#D2D0CE" x:Key="WizardStepUncompletedForegroundBrush" />
+            <SolidColorBrush Color="#252525" x:Key="WizardStepDisabledBrush" />
+            <SolidColorBrush Color="#484644" x:Key="WizardStepDisabledForegroundBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

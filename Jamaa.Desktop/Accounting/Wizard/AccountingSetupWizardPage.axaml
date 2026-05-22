@@ -7,53 +7,10 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:icons="using:FluentIcons.Avalonia.Fluent"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:u="https://irihi.tech/ursa"
+    xmlns:sharedControls="clr-namespace:Jamaa.Desktop.Shared.Controls"
     xmlns:wizard="clr-namespace:Jamaa.Desktop.Accounting.Wizard"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <Color x:Key="StepCompletedColor">#DCFCE7</Color>
-            <Color x:Key="StepCompletedForeground">#15803D</Color>
-            <Color x:Key="StepActiveColor">#DBEAFE</Color>
-            <Color x:Key="StepActiveForeground">#1D4ED8</Color>
-            <Color x:Key="StepUncompletedColor">#F1F5F9</Color>
-            <Color x:Key="StepUncompletedForeground">#475569</Color>
-            <Color x:Key="StepDisabledColor">#F8FAFC</Color>
-            <Color x:Key="StepDisabledForeground">#94A3B8</Color>
-
-            <SolidColorBrush Color="{StaticResource StepCompletedColor}" x:Key="StepCompletedBrush" />
-            <SolidColorBrush Color="{StaticResource StepCompletedForeground}" x:Key="StepCompletedForegroundBrush" />
-            <SolidColorBrush Color="{StaticResource StepActiveColor}" x:Key="StepActiveBrush" />
-            <SolidColorBrush Color="{StaticResource StepActiveForeground}" x:Key="StepActiveForegroundBrush" />
-            <SolidColorBrush Color="{StaticResource StepUncompletedColor}" x:Key="StepUncompletedBrush" />
-            <SolidColorBrush Color="{StaticResource StepUncompletedForeground}" x:Key="StepUncompletedForegroundBrush" />
-            <SolidColorBrush Color="{StaticResource StepDisabledColor}" x:Key="StepDisabledBrush" />
-            <SolidColorBrush Color="{StaticResource StepDisabledForeground}" x:Key="StepDisabledForegroundBrush" />
-        </ResourceDictionary>
-    </UserControl.Resources>
-
-    <UserControl.Styles>
-        <Style Selector="ListBox.wizard-steps">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Style Selector="^ ListBoxItem">
-                <Setter Property="Padding" Value="0" />
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="Margin" Value="0,0,16,0" />
-                <Setter Property="ClipToBounds" Value="False" />
-                <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                    <Setter Property="Background" Value="Transparent" />
-                </Style>
-                <Style Selector="^:selected /template/ ContentPresenter#PART_ContentPresenter">
-                    <Setter Property="Background" Value="Transparent" />
-                </Style>
-            </Style>
-        </Style>
-    </UserControl.Styles>
 
     <Grid Margin="20" RowDefinitions="Auto, *, Auto">
         <!--  Header & Stepper  -->
@@ -65,119 +22,13 @@
                 Classes="h2"
                 HorizontalAlignment="Center"
                 Text="Accounting Setup Wizard" />
-            <ListBox
-                Classes="wizard-steps"
+            <sharedControls:StepTimeline
                 HorizontalAlignment="Center"
                 ItemsSource="{Binding Steps}"
-                SelectedIndex="{Binding CurrentStepIndex}">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="wizard:WizardStepViewModel">
-                        <Border
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Height="60"
-                            Padding="12,8"
-                            Width="220">
-                            <Border.Styles>
-                                <!--  Default (Uncompleted)  -->
-                                <Style Selector="Border">
-                                    <Setter Property="Background" Value="{StaticResource StepUncompletedBrush}" />
-                                    <Setter Property="BorderBrush" Value="{DynamicResource AppBorderColor}" />
-                                </Style>
-                                <Style Selector="TextBlock.title">
-                                    <Setter Property="Foreground" Value="{StaticResource StepUncompletedForegroundBrush}" />
-                                </Style>
-                                <Style Selector="TextBlock.desc">
-                                    <Setter Property="Foreground" Value="{StaticResource StepUncompletedForegroundBrush}" />
-                                    <Setter Property="Opacity" Value="0.7" />
-                                </Style>
-                                <Style Selector="icons|SymbolIcon.check">
-                                    <Setter Property="IsVisible" Value="False" />
-                                </Style>
-
-                                <!--  Completed  -->
-                                <Style Selector="Border[Tag=Completed]">
-                                    <Setter Property="Background" Value="{StaticResource StepCompletedBrush}" />
-                                    <Setter Property="BorderBrush" Value="{StaticResource StepCompletedForegroundBrush}" />
-                                </Style>
-                                <Style Selector="Border[Tag=Completed] TextBlock.title">
-                                    <Setter Property="Foreground" Value="{StaticResource StepCompletedForegroundBrush}" />
-                                </Style>
-                                <Style Selector="Border[Tag=Completed] TextBlock.desc">
-                                    <Setter Property="Foreground" Value="{StaticResource StepCompletedForegroundBrush}" />
-                                </Style>
-                                <Style Selector="Border[Tag=Completed] icons|SymbolIcon.check">
-                                    <Setter Property="IsVisible" Value="True" />
-                                    <Setter Property="Foreground" Value="{StaticResource StepCompletedForegroundBrush}" />
-                                </Style>
-
-                                <!--  Active (Selected)  -->
-                                <!--
-                                    We can't easily bind to ListBoxItem.IsSelected here without complex tricks,
-                                    but we can use a property in VM or use a trigger on the border if we had one.
-                                    Actually, ListBoxItem is the parent. We can use a trick with Classes or just rely on a new 'IsActive' property in VM.
-                                    Alternatively, we can use the Tag and bind it to a converter that checks if it's the current index.
-                                -->
-                            </Border.Styles>
-                            <Border.Tag>
-                                <MultiBinding Converter="{StaticResource StepStateConverter}">
-                                    <Binding Path="IsCompleted" />
-                                    <Binding Path="$parent[ListBoxItem].IsSelected" />
-                                    <Binding Path="IsEnabled" />
-                                </MultiBinding>
-                            </Border.Tag>
-
-                            <!--  State Selectors via Tag  -->
-                            <Border.Styles>
-                                <Style Selector="Border[Tag=Active]">
-                                    <Setter Property="Background" Value="{StaticResource StepActiveBrush}" />
-                                    <Setter Property="BorderBrush" Value="{StaticResource StepActiveForegroundBrush}" />
-                                    <Setter Property="BorderThickness" Value="2" />
-                                </Style>
-                                <Style Selector="Border[Tag=Active] TextBlock.title">
-                                    <Setter Property="Foreground" Value="{StaticResource StepActiveForegroundBrush}" />
-                                    <Setter Property="FontWeight" Value="Bold" />
-                                </Style>
-                                <Style Selector="Border[Tag=Active] TextBlock.desc">
-                                    <Setter Property="Foreground" Value="{StaticResource StepActiveForegroundBrush}" />
-                                </Style>
-
-                                <Style Selector="Border[Tag=Disabled]">
-                                    <Setter Property="Background" Value="{StaticResource StepDisabledBrush}" />
-                                    <Setter Property="BorderBrush" Value="{DynamicResource AppDividerColor}" />
-                                    <Setter Property="Opacity" Value="0.5" />
-                                </Style>
-                            </Border.Styles>
-
-                            <Grid ColumnDefinitions="Auto, *">
-                                <icons:SymbolIcon
-                                    Classes="check"
-                                    Grid.Column="0"
-                                    Margin="0,0,8,0"
-                                    Symbol="Checkmark" />
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock
-                                        Classes="title"
-                                        FontSize="14"
-                                        FontWeight="SemiBold"
-                                        Text="{Binding Title}"
-                                        TextTrimming="CharacterEllipsis" />
-                                    <TextBlock
-                                        Classes="caption desc"
-                                        FontSize="11"
-                                        Text="{Binding Description}"
-                                        TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                Orientation="Horizontal"
+                SelectedIndex="{Binding CurrentStepIndex}"
+                ShowStepDescription="True"
+                ShowStepTitle="True" />
         </StackPanel>
 
         <!--  Content Area  -->

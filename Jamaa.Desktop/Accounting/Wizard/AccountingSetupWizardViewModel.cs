@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Shared;
+using Jamaa.Desktop.Shared.Controls;
 
 namespace Jamaa.Desktop.Accounting.Wizard;
 
@@ -39,10 +40,10 @@ public partial class AccountingSetupWizardViewModel : ObservableObject, IApplica
 
     private void InitializeSteps()
     {
-        Steps.Add(new WizardStepViewModel("Fiscal Calendar & Currency", "Phase 1: Define your fiscal year and operational currency."));
-        Steps.Add(new WizardStepViewModel("Chart of Accounts", "Phase 2: Build or select your account structure."));
-        Steps.Add(new WizardStepViewModel("Opening Balances", "Phase 3: Enter starting balances for your leaf accounts."));
-        Steps.Add(new WizardStepViewModel("Final Review", "Phase 4: Review and initialize the ledger."));
+        Steps.Add(new WizardStepViewModel("Fiscal Calendar & Currency", "Phase 1: Define your fiscal year and operational currency.", stepNumber: 1));
+        Steps.Add(new WizardStepViewModel("Chart of Accounts", "Phase 2: Build or select your account structure.", stepNumber: 2));
+        Steps.Add(new WizardStepViewModel("Opening Balances", "Phase 3: Enter starting balances for your leaf accounts.", stepNumber: 3));
+        Steps.Add(new WizardStepViewModel("Final Review", "Phase 4: Review and initialize the ledger.", stepNumber: 4, hasConnector: false));
     }
 
     [RelayCommand(CanExecute = nameof(CanGoNext))]
@@ -93,17 +94,21 @@ public partial class AccountingSetupWizardViewModel : ObservableObject, IApplica
     }
 }
 
-public partial class WizardStepViewModel : ObservableObject
+public partial class WizardStepViewModel : ObservableObject, IStepTimelineStep
 {
     [ObservableProperty] private string _title;
     [ObservableProperty] private string _description;
+    [ObservableProperty] private int _stepNumber;
+    [ObservableProperty] private bool _hasConnector;
     [ObservableProperty] private bool _isCompleted;
     [ObservableProperty] private bool _isEnabled = true;
 
-    public WizardStepViewModel(string title, string description, bool isEnabled = true)
+    public WizardStepViewModel(string title, string description, int stepNumber, bool hasConnector = true, bool isEnabled = true)
     {
         _title = title;
         _description = description;
+        _stepNumber = stepNumber;
+        _hasConnector = hasConnector;
         _isEnabled = isEnabled;
     }
 }
