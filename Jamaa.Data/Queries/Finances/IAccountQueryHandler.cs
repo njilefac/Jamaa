@@ -10,4 +10,5 @@ public interface IAccountQueryHandler
     Task<IList<AccountData>> Get(GetAccountsByOrganisation query);
     Task<decimal> GetOpeningBalance(string organisationId, string accountId, string fiscalYearId,
         string accountingPeriodId);
+    Task<bool> HasOpeningBalances(string organisationId);
 }

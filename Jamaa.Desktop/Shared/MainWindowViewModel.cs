@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Jamaa.Application.Accounting;
+using Jamaa.Application.Users.Services;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Models;
 using Jamaa.Desktop.Services.Navigation.Values;
@@ -16,15 +20,24 @@ public partial class MainWindowViewModel : ObservableValidator,
     IDisposable
 {
     private readonly Dictionary<string, IApplicationModule?> _moduleCache = new();
+    private readonly IAccountingFacade _accountingFacade;
     private readonly IRouteResolver _routeResolver;
+    private readonly IUserSessionService _userSessionService;
     [ObservableProperty] private IApplicationModule? _activeModule;
     private bool _isSynchronizingSelection;
     [ObservableProperty] private IEnumerable<NavigationItemModel> _menuItems;
     [ObservableProperty] private NavigationItemModel? _selectedItem;
+    private long _navigationVersion;
 
-    public MainWindowViewModel(IRouteResolver routeResolver, INavigationItemsProvider navigationItemsProvider)
+    public MainWindowViewModel(
+        IRouteResolver routeResolver,
+        INavigationItemsProvider navigationItemsProvider,
+        IAccountingFacade accountingFacade,
+        IUserSessionService userSessionService)
     {
         _routeResolver = routeResolver;
+        _accountingFacade = accountingFacade;
+        _userSessionService = userSessionService;
 
         WeakReferenceMessenger.Default.RegisterAll(this);
 
@@ -40,6 +53,15 @@ public partial class MainWindowViewModel : ObservableValidator,
 
     public void Receive(ModuleSelected message)
     {
+        var navigationVersion = Interlocked.Increment(ref _navigationVersion);
+
+        if (IsAccountingModuleRootRoute(message.Route))
+        {
+            SynchronizeSelectedItem(message.Route);
+            _ = HandleAccountingModuleSelectionAsync(navigationVersion);
+            return;
+        }
+
         var moduleRoute = ResolveModuleRoute(message.Route);
         var module = GetModuleForRoute(moduleRoute);
         var shouldDelegateToHost = message.Route != moduleRoute;
@@ -112,6 +134,9 @@ public partial class MainWindowViewModel : ObservableValidator,
     {
         var allItems = FlattenNavigationItems(MenuItems).ToList();
 
+        if (IsAccountingModuleRootRoute(route))
+            return allItems.FirstOrDefault(x => x.TargetRoute == Routes.AccountingDashboard);
+
         if (route.StartsWith(Routes.AccountingOverview, StringComparison.Ordinal))
             return allItems.FirstOrDefault(x => x.TargetRoute == Routes.AccountingDashboard);
 
@@ -150,6 +175,37 @@ public partial class MainWindowViewModel : ObservableValidator,
             Routes.Settings => Routes.Settings,
             _ => route
         };
+    }
+
+    private async Task HandleAccountingModuleSelectionAsync(long navigationVersion)
+    {
+        try
+        {
+            var route = await ResolveAccountingModuleRouteAsync();
+            if (navigationVersion != Interlocked.Read(ref _navigationVersion)) return;
+
+            ActiveModule = GetModuleForRoute(route);
+        }
+        catch
+        {
+            if (navigationVersion != Interlocked.Read(ref _navigationVersion)) return;
+
+            ActiveModule = GetModuleForRoute(Routes.AccountingDashboard);
+        }
+    }
+
+    private async Task<string> ResolveAccountingModuleRouteAsync()
+    {
+        var organisationId = _userSessionService.CurrentUserSession?.Organisation?.Id;
+        if (string.IsNullOrWhiteSpace(organisationId)) return Routes.AccountingDashboard;
+
+        var isSetupComplete = await _accountingFacade.IsAccountingSetupComplete(organisationId);
+        return isSetupComplete ? Routes.AccountingDashboard : Routes.AccountingSetupWizard;
+    }
+
+    private static bool IsAccountingModuleRootRoute(string route)
+    {
+        return route is Routes.AccountingOverview or Routes.AccountingDashboard;
     }
 
     private static bool IsAccountingConfigurationRoute(string route)

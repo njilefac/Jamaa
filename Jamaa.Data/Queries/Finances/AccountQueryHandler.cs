@@ -29,4 +29,11 @@ public class AccountQueryHandler(JamaaDbContext dbContext) : IAccountQueryHandle
 
         return balance?.OpeningBalance ?? 0m;
     }
+
+    public async Task<bool> HasOpeningBalances(string organisationId)
+    {
+        return await dbContext.Set<AccountingPeriodBalanceData>()
+            .AsNoTracking()
+            .AnyAsync(balance => balance.OrganisationId == organisationId);
+    }
 }

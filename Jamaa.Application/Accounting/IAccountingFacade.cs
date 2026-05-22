@@ -59,4 +59,5 @@ public interface IAccountingFacade
     Task<AccountingSettingsData?> GetAccountingSettings(string organisationId);
     Task<decimal> GetAccountOpeningBalance(string organisationId, string accountId, string fiscalYearId,
         string accountingPeriodId);
+    Task<bool> IsAccountingSetupComplete(string organisationId);
 }

@@ -313,6 +313,34 @@ public class AccountingFacade : IAccountingFacade
         return await queryHandler.GetOpeningBalance(organisationId, accountId, fiscalYearId, accountingPeriodId);
     }
 
+    public async Task<bool> IsAccountingSetupComplete(string organisationId)
+    {
+        var fiscalCalendarTask = GetFiscalCalendar(organisationId);
+        var settingsTask = GetAccountingSettings(organisationId);
+        var chartOfAccountsTask = GetChartOfAccounts(organisationId);
+        var openingBalancesTask = HasOpeningBalances(organisationId);
+
+        await Task.WhenAll(fiscalCalendarTask, settingsTask, chartOfAccountsTask, openingBalancesTask);
+
+        var fiscalCalendar = await fiscalCalendarTask;
+        var settings = await settingsTask;
+        var chartOfAccounts = await chartOfAccountsTask;
+        var hasOpeningBalances = await openingBalancesTask;
+
+        return fiscalCalendar.FiscalYears.Count > 0
+               && settings is { AvailableCurrencies.Count: > 0 }
+               && chartOfAccounts.Accounts.Count > 0
+               && hasOpeningBalances;
+    }
+
+    // Operation: checks whether any opening balance rows exist for the organisation.
+    private async Task<bool> HasOpeningBalances(string organisationId)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var queryHandler = scope.ServiceProvider.GetRequiredService<IAccountQueryHandler>();
+        return await queryHandler.HasOpeningBalances(organisationId);
+    }
+
     // Integration: wraps fiscal-calendar seeding safely so stream errors don't terminate the session pipeline.
     private IObservable<Unit> SeedFiscalCalendarSafely(UserSession? session)
     {
@@ -447,7 +475,7 @@ public class AccountingFacade : IAccountingFacade
             .ThenBy(fiscalYear => fiscalYear.Id)
             .Select(fiscalYear =>
             {
-                var periodTokens = (fiscalYear.Periods ?? [])
+                var periodTokens = fiscalYear.Periods
                     .OrderBy(period => period.SequenceNumber)
                     .ThenBy(period => period.Id)
                     .Select(period =>

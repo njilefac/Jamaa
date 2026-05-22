@@ -23,7 +23,6 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
     private readonly IRelayCommand _openCurrencyAndDateFormatsCommand;
     private readonly IRelayCommand _openFiscalCalendarAndPeriodsCommand;
     private readonly IRelayCommand _openOpeningBalancesAndMigrationCommand;
-    private readonly IRelayCommand _openSetupWizardCommand;
     private readonly IRelayCommand _openTaxGroupsAndAuthoritiesCommand;
     private readonly IRelayCommand _openUserRolesAndApprovalsCommand;
     private readonly IRouteResolver _routeResolver;
@@ -42,7 +41,6 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
         _openAutomationRulesCommand = new RelayCommand(OpenAutomationRules);
         _openUserRolesAndApprovalsCommand = new RelayCommand(OpenUserRolesAndApprovals);
         _openOpeningBalancesAndMigrationCommand = new RelayCommand(OpenOpeningBalancesAndMigration);
-        _openSetupWizardCommand = new RelayCommand(OpenSetupWizard);
         _goToConfigurationFromBreadcrumbCommand = new RelayCommand(GoToConfigurationFromBreadcrumb);
         ConfigurationCards = CreateConfigurationCards();
         ShowConfigurationCards();
@@ -104,8 +102,7 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
             new("Tax Groups & Authorities", _openTaxGroupsAndAuthoritiesCommand),
             new("Automation Rules", _openAutomationRulesCommand),
             new("User Roles & Approvals", _openUserRolesAndApprovalsCommand),
-            new("Opening Balances & Migration", _openOpeningBalancesAndMigrationCommand),
-            new("Accounting Setup Wizard", _openSetupWizardCommand)
+            new("Opening Balances & Migration", _openOpeningBalancesAndMigrationCommand)
         ];
     }
 
@@ -144,10 +141,6 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
         RequestNavigation(Routes.OpeningBalancesAndMigration);
     }
 
-    private void OpenSetupWizard()
-    {
-        RequestNavigation(Routes.AccountingSetupWizard);
-    }
 
     private void RequestNavigation(string route)
     {
