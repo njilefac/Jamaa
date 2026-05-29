@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jamaa.Application.Accounting;
-using Jamaa.Application.Accounting.Models;
 using Jamaa.Application.Users.Services;
 using Jamaa.Desktop.Services.Notifications;
 using System;
@@ -49,7 +48,8 @@ public partial class OpeningBalanceItemViewModel(
         var orgId = session.Organisation.Id;
         var subject = $"Opening balance for account - {Name}";
 
-        await notificationService.TrackOperationAsync(
+        // Integration: sends command, waits for confirmation, then refreshes UI on success
+        var isConfirmed = await notificationService.TrackOperationAsync(
             () => accountingFacade.SetAccountOpeningBalance(
                 orgId,
                 Id,
@@ -62,6 +62,13 @@ public partial class OpeningBalanceItemViewModel(
             "Saved",
             subject,
             inFlight => IsSaving = inFlight);
+
+        if (isConfirmed)
+        {
+            // Operation: locks account and refreshes textbox display after successful save
+            IsLocked = true;
+            ForceFormatOpeningBalance();
+        }
     }
 
     private bool CanSaveOpeningBalance() => !IsLocked && !IsSaving;
