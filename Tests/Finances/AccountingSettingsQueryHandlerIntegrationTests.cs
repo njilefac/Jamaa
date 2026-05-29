@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Domain.Accounting.Queries;
 using Domain.Organisation.Values;
@@ -8,6 +9,7 @@ using Domain.Shared.Values;
 using Jamaa.Data.Configuration;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Queries.Finances;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Shouldly;
@@ -35,7 +37,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
         }
         finally
         {
-            if (File.Exists(databasePath)) File.Delete(databasePath);
+            TryDeleteDatabaseFile(databasePath);
         }
     }
 
@@ -85,7 +87,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
         }
         finally
         {
-            if (File.Exists(databasePath)) File.Delete(databasePath);
+            TryDeleteDatabaseFile(databasePath);
         }
     }
 
@@ -135,21 +137,24 @@ public class AccountingSettingsQueryHandlerIntegrationTests
             }
 
             // Assert updated values are queryable
-            await using var readerCtx = new JamaaDbContext(options);
-            var handler = new AccountingSettingsQueryHandler(readerCtx);
+            await using (var readerCtx = new JamaaDbContext(options))
+            {
+                var handler = new AccountingSettingsQueryHandler(readerCtx);
 
-            var result =
-                await handler.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
+                var result =
+                    await handler.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With(organisationId)));
 
-            result.ShouldNotBeNull();
-            result.BaseCurrency.ShouldBe("EUR");
-            result.DateFormat.ShouldBe("YYYY-MM-DD");
-            result.DecimalPrecision.ShouldBe(4);
-            result.AvailableCurrencies.First(currency => currency.CurrencyCode == "EUR").CurrencySymbol.ShouldBe("EUR");
-            result.AvailableCurrencies.Select(currency => currency.CurrencyCode).ShouldBe(["EUR", "GBP"], true);
+                result.ShouldNotBeNull();
+                result.BaseCurrency.ShouldBe("EUR");
+                result.DateFormat.ShouldBe("YYYY-MM-DD");
+                result.DecimalPrecision.ShouldBe(4);
+                result.AvailableCurrencies.First(currency => currency.CurrencyCode == "EUR").CurrencySymbol.ShouldBe("EUR");
+                result.AvailableCurrencies.Select(currency => currency.CurrencyCode).ShouldBe(["EUR", "GBP"], true);
+            }
         }
         finally
         {
+            SqliteConnection.ClearAllPools();
             if (File.Exists(databasePath)) File.Delete(databasePath);
         }
     }
@@ -194,18 +199,46 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                 await setupCtx.SaveChangesAsync();
             }
 
-            await using var readerCtx = new JamaaDbContext(options);
-            var handler = new AccountingSettingsQueryHandler(readerCtx);
+            await using (var readerCtx = new JamaaDbContext(options))
+            {
+                var handler = new AccountingSettingsQueryHandler(readerCtx);
 
-            var result = await handler.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With("org-b")));
+                var result = await handler.Get(new GetAccountingSettingsByOrganisation(OrganisationId.With("org-b")));
 
-            result.ShouldNotBeNull();
-            result.OrganisationId.ShouldBe("org-b");
-            result.BaseCurrency.ShouldBe("GBP");
+                result.ShouldNotBeNull();
+                result.OrganisationId.ShouldBe("org-b");
+                result.BaseCurrency.ShouldBe("GBP");
+            }
         }
         finally
         {
-            if (File.Exists(databasePath)) File.Delete(databasePath);
+            TryDeleteDatabaseFile(databasePath);
+        }
+    }
+
+    // Operation: best-effort cleanup for SQLite temp files that may be briefly locked by pooled connections.
+    private static void TryDeleteDatabaseFile(string databasePath)
+    {
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            try
+            {
+                SqliteConnection.ClearAllPools();
+
+                if (!File.Exists(databasePath))
+                    return;
+
+                File.Delete(databasePath);
+                return;
+            }
+            catch (IOException) when (attempt < 4)
+            {
+                Thread.Sleep(100);
+            }
+            catch (UnauthorizedAccessException) when (attempt < 4)
+            {
+                Thread.Sleep(100);
+            }
         }
     }
 }

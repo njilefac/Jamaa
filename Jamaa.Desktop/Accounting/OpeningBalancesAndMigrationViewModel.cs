@@ -19,7 +19,7 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
     private readonly INotificationService _notificationService;
 
     [ObservableProperty]
-    private ObservableCollection<OpeningBalanceItemViewModel> _leafAccounts = [];
+    private ObservableCollection<OpeningBalanceItemViewModel> _accounts = [];
 
     private string _currencySymbol = string.Empty;
     private int _decimalPrecision = 2;
@@ -44,15 +44,21 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
 
     private void OnAccountOpeningBalanceSet(Jamaa.Application.Accounting.Models.AccountingPeriodBalanceData balance)
     {
-        var leaf = LeafAccounts.FirstOrDefault(a => a.Id == balance.AccountId);
+        // Update the leaf account that was just saved
+        var leaf = FlattenVms(Accounts).FirstOrDefault(a => a.Id == balance.AccountId);
         if (leaf != null)
         {
             leaf.OpeningBalance = balance.OpeningBalance;
             leaf.IsLocked = balance.OpeningBalance != 0 || _isLocked;
+            leaf.ForceFormatOpeningBalance();
         }
+
+        // Recompute aggregated balances for all parent accounts
+        foreach (var root in Accounts)
+            ComputeParentBalance(root);
     }
 
-    // Integration: loads the chart of accounts and builds the hierarchical tree.
+    // Integration: loads all accounts (with hierarchy), fiscal calendar, and opening balances.
     internal async Task LoadAccountsAsync()
     {
         var session = _userSessionService.CurrentUserSession;
@@ -95,37 +101,11 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
                 _isLocked = true;
             }
 
-            var accounts = chartOfAccounts.Accounts;
-            var tree = await BuildAccountTreeAsync(accounts);
-            var leaves = Flatten(tree).Where(a => a.IsLeafAccount).ToList();
+            var roots = await BuildOpeningBalanceTreeAsync(session.Organisation.Id, chartOfAccounts.Accounts);
 
-            LeafAccounts.Clear();
-            foreach (var leaf in leaves)
-            {
-                decimal openingBalance = 0;
-                if (!string.IsNullOrEmpty(_fiscalYearId) && !string.IsNullOrEmpty(_accountingPeriodId))
-                {
-                    openingBalance = await _accountingFacade.GetAccountOpeningBalance(
-                        session.Organisation.Id, leaf.Id, _fiscalYearId, _accountingPeriodId);
-                }
-
-                var openingBalanceVm = new OpeningBalanceItemViewModel(_accountingFacade, _userSessionService, _notificationService)
-                {
-                    Id = leaf.Id,
-                    Code = leaf.Code,
-                    Name = leaf.Name,
-                    TypeDisplay = leaf.TypeDisplay,
-                    IsLeafAccount = leaf.IsLeafAccount,
-                    CurrencySymbol = _currencySymbol,
-                    DecimalPrecision = _decimalPrecision,
-                    FiscalYearId = _fiscalYearId,
-                    AccountingPeriodId = _accountingPeriodId,
-                    IsLocked = openingBalance != 0 || _isLocked,
-                    OpeningBalance = openingBalance
-                };
-
-                LeafAccounts.Add(openingBalanceVm);
-            }
+            Accounts.Clear();
+            foreach (var root in roots)
+                Accounts.Add(root);
         }
         catch (Exception)
         {
@@ -133,56 +113,88 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
         }
     }
 
-    // Operation: flattens the hierarchical tree into a flat list.
-    private IEnumerable<AccountItemViewModel> Flatten(IEnumerable<AccountItemViewModel> nodes)
-    {
-        foreach (var node in nodes)
-        {
-            yield return node;
-            foreach (var child in Flatten(node.SubAccounts))
-                yield return child;
-        }
-    }
-
-    // Operation: builds a hierarchical tree from a flat list of accounts.
-    private async Task<List<AccountItemViewModel>> BuildAccountTreeAsync(
+    // Integration: builds the full account tree as OpeningBalanceItemViewModels and loads leaf balances.
+    private async Task<List<OpeningBalanceItemViewModel>> BuildOpeningBalanceTreeAsync(
+        string organisationId,
         IEnumerable<Jamaa.Application.Accounting.Models.AccountData> accounts)
     {
         var accountList = accounts.ToList();
-        var viewModels = new List<AccountItemViewModel>();
 
-        foreach (var a in accountList)
-        {
-            var vm = new AccountItemViewModel
+        // First pass: create a VM for every account.
+        var vmLookup = accountList.ToDictionary(
+            a => a.Id,
+            a => new OpeningBalanceItemViewModel(_accountingFacade, _userSessionService, _notificationService)
             {
                 Id = a.Id,
                 Code = a.Code,
                 Name = a.Name,
-                Description = a.Description,
-                Type = a.Type,
-                IsActive = a.IsActive
-            };
-            viewModels.Add(vm);
-        }
+                TypeDisplay = a.Type.ToString(),
+                CurrencySymbol = _currencySymbol,
+                DecimalPrecision = _decimalPrecision,
+                FiscalYearId = _fiscalYearId,
+                AccountingPeriodId = _accountingPeriodId,
+            });
 
-        var lookup = viewModels.ToDictionary(a => a.Id);
-        var roots = new List<AccountItemViewModel>();
-
+        // Second pass: wire up parent–child relationships.
+        var roots = new List<OpeningBalanceItemViewModel>();
         foreach (var accountData in accountList)
         {
-            var vm = lookup[accountData.Id];
-            if (accountData.ParentId != null && lookup.TryGetValue(accountData.ParentId, out var parentVm))
-            {
-                vm.Parent = parentVm;
+            var vm = vmLookup[accountData.Id];
+            if (accountData.ParentId != null && vmLookup.TryGetValue(accountData.ParentId, out var parentVm))
                 parentVm.SubAccounts.Add(vm);
+            else
+                roots.Add(vm);
+        }
+
+        // Third pass: mark leaf/parent and fetch opening balances for leaves.
+        foreach (var vm in vmLookup.Values)
+        {
+            vm.IsLeafAccount = vm.SubAccounts.Count == 0;
+
+            if (vm.IsLeafAccount)
+            {
+                decimal balance = 0;
+                if (!string.IsNullOrEmpty(_fiscalYearId) && !string.IsNullOrEmpty(_accountingPeriodId))
+                    balance = await _accountingFacade.GetAccountOpeningBalance(
+                        organisationId, vm.Id, _fiscalYearId, _accountingPeriodId);
+
+                vm.OpeningBalance = balance;
+                vm.IsLocked = balance != 0 || _isLocked;
             }
             else
             {
-                roots.Add(vm);
+                // Parent accounts are always read-only; balance is derived from children.
+                vm.IsLocked = true;
             }
         }
 
+        // Fourth pass: compute aggregated balances for parent accounts (bottom-up).
+        foreach (var root in roots)
+            ComputeParentBalance(root);
+
         return roots;
+    }
+
+    // Operation: recursively computes and sets the aggregated opening balance for a parent node.
+    private static decimal ComputeParentBalance(OpeningBalanceItemViewModel node)
+    {
+        if (node.IsLeafAccount) return node.OpeningBalance;
+
+        var total = node.SubAccounts.Sum(child => ComputeParentBalance(child));
+        node.OpeningBalance = total;
+        return total;
+    }
+
+    // Operation: flattens the hierarchical VM tree into a flat sequence.
+    private static IEnumerable<OpeningBalanceItemViewModel> FlattenVms(
+        IEnumerable<OpeningBalanceItemViewModel> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            yield return node;
+            foreach (var child in FlattenVms(node.SubAccounts))
+                yield return child;
+        }
     }
 
     public Guid Id => Guid.Parse("b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e");

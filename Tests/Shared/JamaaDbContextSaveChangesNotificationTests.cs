@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Domain.Shared.Values;
 using Jamaa.Data.Configuration;
 using Jamaa.Data.Notifiers;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -34,6 +35,7 @@ public class JamaaDbContextSaveChangesNotificationTests
         }
         finally
         {
+            SqliteConnection.ClearAllPools();
             if (File.Exists(databasePath)) File.Delete(databasePath);
         }
     }
@@ -57,6 +59,7 @@ public class JamaaDbContextSaveChangesNotificationTests
         }
         finally
         {
+            SqliteConnection.ClearAllPools();
             if (File.Exists(databasePath)) File.Delete(databasePath);
         }
     }

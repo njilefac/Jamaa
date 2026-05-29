@@ -9,6 +9,7 @@ using Domain.Shared.Values;
 using Jamaa.Data.Configuration;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Queries.Finances;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Shouldly;
@@ -98,6 +99,7 @@ public class FiscalCalendarQueryHandlerIntegrationTests
         }
         finally
         {
+            SqliteConnection.ClearAllPools();
             if (File.Exists(databasePath)) File.Delete(databasePath);
         }
     }

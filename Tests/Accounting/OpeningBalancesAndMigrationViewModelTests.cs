@@ -34,7 +34,7 @@ public class OpeningBalancesAndMigrationViewModelTests
         var session = new UserSession(true, "admin", Guid.NewGuid(), organisation);
         _userSessionService.CurrentUserSession.Returns(session);
 
-        _accountingFacade.GetAccountingSettings(OrgId).Returns(Task.FromResult(new AccountingSettingsData
+        _accountingFacade.GetAccountingSettings(OrgId).Returns(Task.FromResult<AccountingSettingsData?>(new AccountingSettingsData
         {
             OrganisationId = OrgId,
             BaseCurrency = "USD",
@@ -86,8 +86,8 @@ public class OpeningBalancesAndMigrationViewModelTests
         await _viewModel.LoadAccountsAsync();
 
         // Assert
-        _viewModel.LeafAccounts.ShouldNotBeEmpty();
-        foreach (var account in _viewModel.LeafAccounts)
+        GetLeafAccounts(_viewModel).ShouldNotBeEmpty();
+        foreach (var account in GetLeafAccounts(_viewModel))
         {
             account.IsLocked.ShouldBeTrue();
             account.SaveOpeningBalanceCommand.CanExecute(null).ShouldBeFalse();
@@ -152,7 +152,7 @@ public class OpeningBalancesAndMigrationViewModelTests
         await _viewModel.LoadAccountsAsync();
 
         // Assert
-        var leafAccount = _viewModel.LeafAccounts.FirstOrDefault(a => a.Id == "acc-1-1");
+        var leafAccount = GetLeafAccounts(_viewModel).FirstOrDefault(a => a.Id == "acc-1-1");
         leafAccount.ShouldNotBeNull();
         leafAccount.FiscalYearId.ShouldBe("fy-2025");
         leafAccount.AccountingPeriodId.ShouldBe("p-2025-02");
@@ -178,7 +178,7 @@ public class OpeningBalancesAndMigrationViewModelTests
         
         await _viewModel.LoadAccountsAsync();
 
-        var leafAccount = _viewModel.LeafAccounts.First(a => a.Id == "acc-1-1");
+        var leafAccount = GetLeafAccounts(_viewModel).First(a => a.Id == "acc-1-1");
         leafAccount.OpeningBalance = 123.45m;
 
         // Act
@@ -217,7 +217,7 @@ public class OpeningBalancesAndMigrationViewModelTests
 
         await _viewModel.LoadAccountsAsync();
 
-        var leafAccount = _viewModel.LeafAccounts.First(a => a.Id == "acc-1-1");
+        var leafAccount = GetLeafAccounts(_viewModel).First(a => a.Id == "acc-1-1");
         leafAccount.OpeningBalance = 123.45m;
 
         // Act
@@ -275,7 +275,7 @@ public class OpeningBalancesAndMigrationViewModelTests
 
         await _viewModel.LoadAccountsAsync();
 
-        var leafAccount = _viewModel.LeafAccounts.First(a => a.Id == "acc-1-1");
+        var leafAccount = GetLeafAccounts(_viewModel).First(a => a.Id == "acc-1-1");
         leafAccount.OpeningBalance = 123.45m;
 
         // Act
@@ -328,13 +328,13 @@ public class OpeningBalancesAndMigrationViewModelTests
         await _viewModel.LoadAccountsAsync();
 
         // Assert
-        _viewModel.LeafAccounts.Count.ShouldBe(2);
+        GetLeafAccounts(_viewModel).Count().ShouldBe(2);
         
-        var bank = _viewModel.LeafAccounts.First(a => a.Id == "acc-bank");
+        var bank = GetLeafAccounts(_viewModel).First(a => a.Id == "acc-bank");
         bank.OpeningBalance.ShouldBe(0m);
         bank.IsLocked.ShouldBeFalse();
 
-        var cash = _viewModel.LeafAccounts.First(a => a.Id == "acc-cash");
+        var cash = GetLeafAccounts(_viewModel).First(a => a.Id == "acc-cash");
         cash.OpeningBalance.ShouldBe(100m);
         cash.IsLocked.ShouldBeTrue();
     }
@@ -365,7 +365,7 @@ public class OpeningBalancesAndMigrationViewModelTests
 
         await viewModel.LoadAccountsAsync();
 
-        var leaf = viewModel.LeafAccounts.First(a => a.Id == "acc-1-1");
+        var leaf = GetLeafAccounts(viewModel).First(a => a.Id == "acc-1-1");
         leaf.OpeningBalance.ShouldBe(0m);
         leaf.IsLocked.ShouldBeFalse();
 
@@ -383,5 +383,20 @@ public class OpeningBalancesAndMigrationViewModelTests
         // Assert
         leaf.OpeningBalance.ShouldBe(123.45m);
         leaf.IsLocked.ShouldBeTrue();
+    }
+    private static IEnumerable<OpeningBalanceItemViewModel> GetLeafAccounts(OpeningBalancesAndMigrationViewModel viewModel)
+    {
+        return Flatten(viewModel.Accounts).Where(account => account.IsLeafAccount);
+    }
+
+    private static IEnumerable<OpeningBalanceItemViewModel> Flatten(IEnumerable<OpeningBalanceItemViewModel> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            yield return node;
+
+            foreach (var child in Flatten(node.SubAccounts))
+                yield return child;
+        }
     }
 }

@@ -74,6 +74,7 @@ public class OrganisationProjectionTests
         {
             await actorSystem.Terminate();
 
+            SqliteConnection.ClearAllPools();
             if (File.Exists(databasePath)) File.Delete(databasePath);
         }
     }

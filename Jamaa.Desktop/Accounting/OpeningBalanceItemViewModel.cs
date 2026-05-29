@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jamaa.Application.Accounting;
@@ -19,17 +20,30 @@ public partial class OpeningBalanceItemViewModel(
     [ObservableProperty] private string _code = string.Empty;
     [ObservableProperty] private string _name = string.Empty;
     [ObservableProperty] private string _typeDisplay = string.Empty;
-    [ObservableProperty] private bool _isLeafAccount;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanEdit))]
+    [NotifyCanExecuteChangedFor(nameof(SaveOpeningBalanceCommand))]
+    private bool _isLeafAccount;
+
     [ObservableProperty] private string _currencySymbol = string.Empty;
     [ObservableProperty] private int _decimalPrecision = 2;
     [ObservableProperty] private decimal _openingBalance;
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveOpeningBalanceCommand))]
     private bool _isSaving;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanEdit))]
     [NotifyCanExecuteChangedFor(nameof(SaveOpeningBalanceCommand))]
     private bool _isLocked;
+
+    /// <summary>True for editable leaf accounts that have no saved balance yet.</summary>
+    public bool CanEdit => IsLeafAccount && !IsLocked;
+
+    /// <summary>Children of this account in the hierarchy (empty for leaf accounts).</summary>
+    public ObservableCollection<OpeningBalanceItemViewModel> SubAccounts { get; } = [];
 
     public void ForceFormatOpeningBalance()
     {
@@ -71,7 +85,8 @@ public partial class OpeningBalanceItemViewModel(
         }
     }
 
-    private bool CanSaveOpeningBalance() => !IsLocked && !IsSaving;
+    // Operation: guard for the save command — only editable leaf accounts without a saved balance can save.
+    private bool CanSaveOpeningBalance() => IsLeafAccount && !IsLocked && !IsSaving;
 
     private IObservable<bool> BuildSaveConfirmationObservable(string organisationId)
     {
