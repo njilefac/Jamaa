@@ -243,10 +243,10 @@ public class ChartOfAccountsViewModelTests
         await WaitUntilAsync(() => viewModel.Accounts.Count == 1, "the parent account to load");
 
         viewModel.SelectedAccountType = AccountType.Asset;
+        viewModel.SelectedParentAccount = viewModel.FilteredParentAccounts.Single(account => account.Id == "parent-1");
         viewModel.AccountCode = "1010";
         viewModel.AccountName = "Cash";
         viewModel.AccountDescription = "Cash on hand";
-        viewModel.SelectedParentAccount = viewModel.FilteredParentAccounts.Single(account => account.Id == "parent-1");
 
         await viewModel.AddAccountCommand.ExecuteAsync(null);
         await WaitUntilAsync(() =>
@@ -615,27 +615,56 @@ public class ChartOfAccountsViewModelTests
     }
 
     [Fact]
+    public async Task SelectedParentAccount_ShouldAllowClearingBackToBlank()
+    {
+        var parentAccount = new AccountData
+        {
+            Id = "parent-1",
+            OrganisationId = "org-1",
+            Code = "1100",
+            Name = "Assets",
+            Type = AccountType.Asset
+        };
+
+        _accountFacade.GetChartOfAccounts("org-1").Returns(Task.FromResult(new ChartOfAccountsData
+            { OrganisationId = "org-1", Accounts = [parentAccount] }));
+
+        var viewModel = CreateViewModel();
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 1, "parent account to load");
+
+        viewModel.SelectedAccountType = AccountType.Asset;
+        viewModel.SelectedParentAccount = viewModel.FilteredParentAccounts.Single(account => account.Id == "parent-1");
+        viewModel.SelectedParentAccount.ShouldNotBeNull();
+
+        var blankOption = viewModel.FilteredParentAccounts.First(account =>
+            string.IsNullOrEmpty(account.Id) && string.IsNullOrEmpty(account.Name));
+        viewModel.SelectedParentAccount = blankOption;
+
+        viewModel.SelectedParentAccount.ShouldBeNull();
+    }
+
+    [Fact]
     public void SelectedAccountType_Change_ShouldSuggestCode()
     {
         var viewModel = CreateViewModel();
 
         viewModel.SelectedAccountType = AccountType.Asset;
-        viewModel.AccountCode.ShouldBe("1000");
+        viewModel.AccountCode.ShouldBe("1100");
 
         viewModel.SelectedAccountType = AccountType.Liability;
-        viewModel.AccountCode.ShouldBe("2000");
+        viewModel.AccountCode.ShouldBe("2100");
 
         viewModel.SelectedAccountType = AccountType.Equity;
-        viewModel.AccountCode.ShouldBe("3000");
+        viewModel.AccountCode.ShouldBe("3100");
 
         viewModel.SelectedAccountType = AccountType.Revenue;
-        viewModel.AccountCode.ShouldBe("4000");
+        viewModel.AccountCode.ShouldBe("4100");
 
         viewModel.SelectedAccountType = AccountType.Expense;
-        viewModel.AccountCode.ShouldBe("5000");
+        viewModel.AccountCode.ShouldBe("5100");
 
         viewModel.AccountName = "Admin Fees";
-        viewModel.AccountCode.ShouldBe("6000");
+        viewModel.AccountCode.ShouldBe("6100");
     }
 
     [Fact]
@@ -672,7 +701,112 @@ public class ChartOfAccountsViewModelTests
 
         viewModel.SelectedAccountType = AccountType.Asset;
 
-        viewModel.AccountCode.ShouldBe("1006");
+        viewModel.AccountCode.ShouldBe("1105");
+    }
+
+    [Fact]
+    public async Task SuggestAccountCode_ShouldUseSiblingGapStrategy_WhenParentIsSelected()
+    {
+        var parentId = "parent-1";
+        var accounts = new List<AccountData>
+        {
+            new() { Id = parentId, Code = "1100", Type = AccountType.Asset, OrganisationId = "org-1", Name = "Assets" },
+            new() { Id = "1", Code = "1110", Type = AccountType.Asset, OrganisationId = "org-1", Name = "A", ParentId = parentId },
+            new() { Id = "2", Code = "1115", Type = AccountType.Asset, OrganisationId = "org-1", Name = "B", ParentId = parentId }
+        };
+        _accountFacade.GetChartOfAccounts(Arg.Any<string>()).Returns(orgId =>
+            Task.FromResult(new ChartOfAccountsData { OrganisationId = orgId.ArgAt<string>(0), Accounts = accounts }));
+
+        var viewModel = CreateViewModel();
+        await InvokePrivateLoadAccountsAsync(viewModel);
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 1, "existing account tree to load before suggesting sibling code");
+
+        viewModel.SelectedAccountType = AccountType.Asset;
+        viewModel.SelectedParentAccount = viewModel.Accounts.Single();
+
+        viewModel.AccountCode.ShouldBe("1125");
+    }
+
+    [Fact]
+    public async Task SuggestAccountCode_ShouldRecomputeWhenParentChanges()
+    {
+        var parent1Id = "parent-1";
+        var parent2Id = "parent-2";
+        var accounts = new List<AccountData>
+        {
+            new() { Id = parent1Id, Code = "1100", Type = AccountType.Asset, OrganisationId = "org-1", Name = "Assets 1" },
+            new() { Id = parent2Id, Code = "1200", Type = AccountType.Asset, OrganisationId = "org-1", Name = "Assets 2" },
+            new() { Id = "child-1", Code = "1110", Type = AccountType.Asset, OrganisationId = "org-1", Name = "A", ParentId = parent1Id },
+            new() { Id = "child-2", Code = "1115", Type = AccountType.Asset, OrganisationId = "org-1", Name = "B", ParentId = parent1Id },
+            new() { Id = "child-3", Code = "1210", Type = AccountType.Asset, OrganisationId = "org-1", Name = "C", ParentId = parent2Id }
+        };
+        _accountFacade.GetChartOfAccounts(Arg.Any<string>()).Returns(orgId =>
+            Task.FromResult(new ChartOfAccountsData { OrganisationId = orgId.ArgAt<string>(0), Accounts = accounts }));
+
+        var viewModel = CreateViewModel();
+        await InvokePrivateLoadAccountsAsync(viewModel);
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 2, "existing account tree to load before suggesting by parent");
+
+        viewModel.SelectedAccountType = AccountType.Asset;
+        viewModel.SelectedParentAccount = viewModel.Accounts.Single(a => a.Id == parent1Id);
+        viewModel.AccountCode.ShouldBe("1125");
+
+        viewModel.SelectedParentAccount = viewModel.Accounts.Single(a => a.Id == parent2Id);
+        viewModel.AccountCode.ShouldBe("1220");
+    }
+
+    [Fact]
+    public async Task SuggestAccountCode_WhenParentChangesToCollidingSuggestion_ShouldShowValidationError()
+    {
+        var parentId = "parent-1";
+        var accounts = new List<AccountData>
+        {
+            new() { Id = "top-1", Code = "1110", Type = AccountType.Asset, OrganisationId = "org-1", Name = "Main Asset" },
+            new() { Id = parentId, Code = "1100", Type = AccountType.Asset, OrganisationId = "org-1", Name = "Assets Group" }
+        };
+        _accountFacade.GetChartOfAccounts(Arg.Any<string>()).Returns(orgId =>
+            Task.FromResult(new ChartOfAccountsData { OrganisationId = orgId.ArgAt<string>(0), Accounts = accounts }));
+
+        var viewModel = CreateViewModel();
+        await InvokePrivateLoadAccountsAsync(viewModel);
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 2, "existing accounts to load before parent collision check");
+
+        viewModel.SelectedAccountType = AccountType.Asset;
+        viewModel.SelectedParentAccount = viewModel.Accounts.Single(a => a.Id == parentId);
+
+        viewModel.AccountCode.ShouldBe("1110");
+        viewModel.HasErrors.ShouldBeTrue();
+        var errorMessages = viewModel.GetErrors(nameof(viewModel.AccountCode))
+            .Select(error => error.ToString())
+            .Where(message => !string.IsNullOrWhiteSpace(message))
+            .ToList();
+        errorMessages.ShouldContain(message => message!.Contains("Account code already exists.", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SuggestAccountCode_ShouldThrow_WhenBlockIsExhausted()
+    {
+        var accounts = Enumerable.Range(1000, 1000)
+            .Select(index => new AccountData
+            {
+                Id = $"asset-{index}",
+                Code = index.ToString(),
+                Type = AccountType.Asset,
+                OrganisationId = "org-1",
+                Name = $"Asset {index}"
+            })
+            .ToList();
+
+        _accountFacade.GetChartOfAccounts(Arg.Any<string>()).Returns(orgId =>
+            Task.FromResult(new ChartOfAccountsData { OrganisationId = orgId.ArgAt<string>(0), Accounts = accounts }));
+
+        var viewModel = CreateViewModel();
+        await InvokePrivateLoadAccountsAsync(viewModel);
+        await WaitUntilAsync(() => viewModel.Accounts.Count >= 1, "exhausted block accounts to load");
+
+        var exception = Should.Throw<InvalidOperationException>(() => viewModel.SelectedAccountType = AccountType.Asset);
+        exception.Message.ShouldContain("[1000-1999]");
+        exception.Message.ShouldContain("All 1000 numbers are already used");
     }
 
     [Fact]

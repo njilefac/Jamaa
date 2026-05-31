@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Domain.Accounting.Service;
 using Domain.Accounting.Values;
 using Jamaa.Application.Accounting;
 using Jamaa.Application.Accounting.Models;
@@ -22,6 +23,7 @@ namespace Jamaa.Desktop.Accounting;
 
 public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IApplicationModule, IRouteableViewModel
 {
+    private static readonly AccountItemViewModel NoParentOption = new();
     private readonly List<AccountData> _allAccountData = [];
     private readonly IAccountingFacade _accountingFacade;
     private readonly INotificationService _notificationService;
@@ -299,11 +301,14 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         if (vm.SelectedAccountType == null)
             return ValidationResult.Success;
 
-        if (!vm.IsCodeInRange(vm.SelectedAccountType.Value, code, vm.AccountName))
+        if (!AccountCodeSuggester.IsCodeInRange(vm.SelectedAccountType.Value, code, vm.AccountName))
         {
-            var (min, max) = vm.GetCodeRange(vm.SelectedAccountType.Value, vm.AccountName);
+            var (min, max) = AccountCodeSuggester.GetCodeRange(vm.SelectedAccountType.Value, vm.AccountName);
             return new ValidationResult($"Code for {vm.SelectedAccountType.Value} must be between {min} and {max}");
         }
+
+        if (vm.HasAccountCodeCollision(code))
+            return new ValidationResult("Account code already exists.");
 
         return ValidationResult.Success;
     }
@@ -316,26 +321,30 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         ValidateProperty(AccountCode, nameof(AccountCode));
     }
 
+    partial void OnSelectedParentAccountChanged(AccountItemViewModel? value)
+    {
+        if (ReferenceEquals(value, NoParentOption))
+        {
+            SelectedParentAccount = null;
+            return;
+        }
+
+        _ = value;
+        SuggestAccountCode();
+        ValidateProperty(AccountCode, nameof(AccountCode));
+    }
+
     private void SuggestAccountCode()
     {
         if (IsEditMode || SelectedAccountType == null) return;
 
-        var (min, max) = GetCodeRange(SelectedAccountType.Value, AccountName);
-
-        var existingCodes = _allAccountData
-            .Where(a => int.TryParse(a.Code, out var c) && c >= min && c <= max)
-            .Select(a => int.Parse(a.Code))
-            .ToList();
-
-        if (existingCodes.Count == 0)
-        {
-            AccountCode = min.ToString();
-        }
-        else
-        {
-            var nextCode = existingCodes.Max() + 1;
-            if (nextCode <= max) AccountCode = nextCode.ToString();
-        }
+        var nextCode = AccountCodeSuggester.SuggestNextCode(
+            SelectedAccountType.Value,
+            AccountName,
+            SelectedParentAccount?.Id,
+            _allAccountData.Select(account =>
+                new AccountCodeSuggester.AccountCodeContext(account.Id, account.Code, account.Type, account.ParentId)));
+        AccountCode = nextCode.ToString();
     }
 
     partial void OnAccountNameChanged(string value)
@@ -348,37 +357,11 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         }
     }
 
-    // OPERATION: returns a code range per account type and account naming policy.
-    private (int Min, int Max) GetCodeRange(AccountType type, string accountName)
-    {
-        // Expense fees are grouped in a separate 6000-range bucket.
-        if (type == AccountType.Expense && accountName.Contains("fee", StringComparison.OrdinalIgnoreCase))
-            return (6000, 6999);
-
-        return type switch
-        {
-            AccountType.Asset => (1000, 1999),
-            AccountType.Liability => (2000, 2999),
-            AccountType.Equity => (3000, 3999),
-            AccountType.Revenue => (4000, 4999),
-            AccountType.Expense => (5000, 5999),
-            _ => (1000, 9999)
-        };
-    }
-
-    // OPERATION: validates code parsing and range constraints.
-    private bool IsCodeInRange(AccountType type, string code, string accountName)
-    {
-        if (!int.TryParse(code, out var numericCode)) return false;
-
-        var (min, max) = GetCodeRange(type, accountName);
-        return numericCode >= min && numericCode <= max;
-    }
-
     private void RefreshFilteredParentAccounts()
     {
         var previousSelection = SelectedParentAccount;
         FilteredParentAccounts.Clear();
+        FilteredParentAccounts.Add(NoParentOption);
         var allAccounts = GetAllAccounts(Accounts);
         foreach (var account in allAccounts)
             if (CanBeParent(account))
@@ -426,6 +409,17 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         }
 
         return false;
+    }
+
+    private bool HasAccountCodeCollision(string code)
+    {
+        var normalizedCode = code.Trim();
+        if (normalizedCode.Length == 0) return false;
+
+        var currentAccountId = SelectedAccount?.Id;
+        return _allAccountData.Any(account =>
+            string.Equals(account.Code, normalizedCode, StringComparison.Ordinal) &&
+            !string.Equals(account.Id, currentAccountId, StringComparison.Ordinal));
     }
 
     // Operation: wires the row-level action commands to the parent ViewModel operations for one item.
