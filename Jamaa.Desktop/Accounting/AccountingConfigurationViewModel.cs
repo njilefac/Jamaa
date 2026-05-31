@@ -22,7 +22,6 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
     private readonly IRelayCommand _openChartOfAccountsCommand;
     private readonly IRelayCommand _openCurrencyAndDateFormatsCommand;
     private readonly IRelayCommand _openFiscalCalendarAndPeriodsCommand;
-    private readonly IRelayCommand _openOpeningBalancesAndMigrationCommand;
     private readonly IRelayCommand _openTaxGroupsAndAuthoritiesCommand;
     private readonly IRelayCommand _openUserRolesAndApprovalsCommand;
     private readonly IRouteResolver _routeResolver;
@@ -40,7 +39,6 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
         _openTaxGroupsAndAuthoritiesCommand = new RelayCommand(OpenTaxGroupsAndAuthorities);
         _openAutomationRulesCommand = new RelayCommand(OpenAutomationRules);
         _openUserRolesAndApprovalsCommand = new RelayCommand(OpenUserRolesAndApprovals);
-        _openOpeningBalancesAndMigrationCommand = new RelayCommand(OpenOpeningBalancesAndMigration);
         _goToConfigurationFromBreadcrumbCommand = new RelayCommand(GoToConfigurationFromBreadcrumb);
         ConfigurationCards = CreateConfigurationCards();
         ShowConfigurationCards();
@@ -101,8 +99,7 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
             new("COA Structure & Mappings", _openChartOfAccountsCommand),
             new("Tax Groups & Authorities", _openTaxGroupsAndAuthoritiesCommand),
             new("Automation Rules", _openAutomationRulesCommand),
-            new("User Roles & Approvals", _openUserRolesAndApprovalsCommand),
-            new("Opening Balances & Migration", _openOpeningBalancesAndMigrationCommand)
+            new("User Roles & Approvals", _openUserRolesAndApprovalsCommand)
         ];
     }
 
@@ -136,12 +133,6 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
         RequestNavigation(Routes.UserRolesAndApprovals);
     }
 
-    private void OpenOpeningBalancesAndMigration()
-    {
-        RequestNavigation(Routes.OpeningBalancesAndMigration);
-    }
-
-
     private void RequestNavigation(string route)
     {
         WeakReferenceMessenger.Default.Send(new ModuleSelected(route));
@@ -171,7 +162,6 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
             Routes.TaxGroupsAndAuthorities => "Tax Groups & Authorities",
             Routes.AutomationRules => "Automation Rules",
             Routes.UserRolesAndApprovals => "User Roles & Approvals",
-            Routes.OpeningBalancesAndMigration => "Opening Balances & Migration",
             Routes.AccountingSetupWizard => "Accounting Setup Wizard",
             Routes.AccountLedger => "Account Ledger",
             _ => ResolveFromViewModel(route)

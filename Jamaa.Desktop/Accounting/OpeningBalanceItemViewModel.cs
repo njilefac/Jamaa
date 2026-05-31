@@ -16,6 +16,8 @@ public partial class OpeningBalanceItemViewModel(
     INotificationService notificationService)
     : ObservableObject
 {
+    public event Action<OpeningBalanceItemViewModel>? OpeningBalanceSaved;
+
     [ObservableProperty] private string _id = string.Empty;
     [ObservableProperty] private string _code = string.Empty;
     [ObservableProperty] private string _name = string.Empty;
@@ -82,6 +84,7 @@ public partial class OpeningBalanceItemViewModel(
             // Operation: locks account and refreshes textbox display after successful save
             IsLocked = true;
             ForceFormatOpeningBalance();
+            OpeningBalanceSaved?.Invoke(this);
         }
     }
 

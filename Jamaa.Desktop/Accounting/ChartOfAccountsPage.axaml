@@ -5,6 +5,7 @@
     x:Class="Jamaa.Desktop.Accounting.ChartOfAccountsPage"
     x:DataType="vm:ChartOfAccountsViewModel"
     xmlns="https://github.com/avaloniaui"
+    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
     xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -46,6 +47,52 @@
                 Classes="Small"
                 Command="{Binding ViewLedgerCommand}"
                 Content="📒 View Ledger" />
+        </DataTemplate>
+
+        <converters:DecimalToFormattedStringConverter x:Key="DecimalToFormattedStringConverter" />
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="OpeningBalanceCellTemplate">
+            <Panel>
+                <TextBox
+                    HorizontalAlignment="Stretch"
+                    IsReadOnly="{Binding IsOpeningBalanceLocked}"
+                    IsVisible="{Binding IsLeafAccount}"
+                    Watermark="0.00">
+                    <Interaction.Behaviors>
+                        <behaviors:RefreshOnLostFocusBehavior />
+                    </Interaction.Behaviors>
+                    <TextBox.Text>
+                        <Binding
+                            Converter="{StaticResource DecimalToFormattedStringConverter}"
+                            Mode="TwoWay"
+                            Path="OpeningBalance"
+                            UpdateSourceTrigger="PropertyChanged" />
+                    </TextBox.Text>
+                    <TextBox.InnerLeftContent>
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            Text="{Binding CurrencySymbol}"
+                            VerticalAlignment="Center" />
+                    </TextBox.InnerLeftContent>
+                </TextBox>
+
+                <TextBlock
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource AppTextSecondary}"
+                    HorizontalAlignment="Right"
+                    IsVisible="{Binding !IsLeafAccount}"
+                    Text="{Binding OpeningBalance, Converter={StaticResource DecimalToFormattedStringConverter}}"
+                    VerticalAlignment="Center" />
+            </Panel>
+        </DataTemplate>
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="SaveOpeningBalanceCellTemplate">
+            <Button
+                Classes="Small"
+                Command="{Binding SaveOpeningBalanceCommand}"
+                Content="Save"
+                IsEnabled="{Binding CanSaveOpeningBalance}"
+                IsVisible="{Binding CanEditOpeningBalance}" />
         </DataTemplate>
     </UserControl.Resources>
 

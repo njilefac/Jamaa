@@ -276,6 +276,7 @@ public class OpeningBalancesAndMigrationViewModelTests
         await _viewModel.LoadAccountsAsync();
 
         var leafAccount = GetLeafAccounts(_viewModel).First(a => a.Id == "acc-1-1");
+        var parentAccount = Flatten(_viewModel.Accounts).First(a => a.Id == "acc-1");
         leafAccount.OpeningBalance = 123.45m;
 
         // Act
@@ -284,6 +285,7 @@ public class OpeningBalancesAndMigrationViewModelTests
         await leafAccount.SaveOpeningBalanceCommand.ExecuteAsync(null);
 
         // Assert
+        parentAccount.OpeningBalance.ShouldBe(123.45m);
         _notificationService.Received(1).Show(
             "Opening Balance",
             Arg.Is<string>(s => s.Contains("Saved") && s.Contains("Cash")),

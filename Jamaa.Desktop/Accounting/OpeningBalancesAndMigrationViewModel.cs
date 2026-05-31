@@ -53,9 +53,12 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
             leaf.ForceFormatOpeningBalance();
         }
 
-        // Recompute aggregated balances for all parent accounts
-        foreach (var root in Accounts)
-            ComputeParentBalance(root);
+        RecomputeParentBalances();
+    }
+
+    private void OnOpeningBalanceSaved(OpeningBalanceItemViewModel _)
+    {
+        RecomputeParentBalances();
     }
 
     // Integration: loads all accounts (with hierarchy), fiscal calendar, and opening balances.
@@ -135,6 +138,9 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
                 AccountingPeriodId = _accountingPeriodId,
             });
 
+        foreach (var vm in vmLookup.Values)
+            vm.OpeningBalanceSaved += OnOpeningBalanceSaved;
+
         // Second pass: wire up parent–child relationships.
         var roots = new List<OpeningBalanceItemViewModel>();
         foreach (var accountData in accountList)
@@ -169,10 +175,20 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
         }
 
         // Fourth pass: compute aggregated balances for parent accounts (bottom-up).
-        foreach (var root in roots)
-            ComputeParentBalance(root);
+        RecomputeParentBalances(roots);
 
         return roots;
+    }
+
+    private void RecomputeParentBalances()
+    {
+        RecomputeParentBalances(Accounts);
+    }
+
+    private static void RecomputeParentBalances(IEnumerable<OpeningBalanceItemViewModel> roots)
+    {
+        foreach (var root in roots)
+            ComputeParentBalance(root);
     }
 
     // Operation: recursively computes and sets the aggregated opening balance for a parent node.

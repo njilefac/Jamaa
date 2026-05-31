@@ -31,6 +31,8 @@ public partial class ChartOfAccountsPage : UserControl
         if (DataContext is not ChartOfAccountsViewModel viewModel) return;
 
         if (Resources["AccountEditCellTemplate"] is not IDataTemplate editCellTemplate ||
+            Resources["OpeningBalanceCellTemplate"] is not IDataTemplate openingBalanceCellTemplate ||
+            Resources["SaveOpeningBalanceCellTemplate"] is not IDataTemplate saveOpeningBalanceCellTemplate ||
             Resources["AccountActiveStateCellTemplate"] is not IDataTemplate toggleActiveCellTemplate ||
             Resources["AccountLedgerCellTemplate"] is not IDataTemplate ledgerCellTemplate)
             return;
@@ -51,6 +53,8 @@ public partial class ChartOfAccountsPage : UserControl
                     options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                 new TextColumn<AccountItemViewModel, string>("Type", account => account.TypeDisplay,
                     options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                new TemplateColumn<AccountItemViewModel>("Opening Balance", openingBalanceCellTemplate),
+                new TemplateColumn<AccountItemViewModel>(string.Empty, saveOpeningBalanceCellTemplate),
                 new TemplateColumn<AccountItemViewModel>(string.Empty, editCellTemplate),
                 new TemplateColumn<AccountItemViewModel>(string.Empty, toggleActiveCellTemplate),
                 new TemplateColumn<AccountItemViewModel>(string.Empty, ledgerCellTemplate)

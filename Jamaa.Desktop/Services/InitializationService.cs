@@ -207,7 +207,6 @@ public static partial class InitializationService
                         new RouteMap(Routes.TaxGroupsAndAuthorities, typeof(TaxGroupsAndAuthoritiesViewModel)),
                         new RouteMap(Routes.AutomationRules, typeof(AutomationRulesViewModel)),
                         new RouteMap(Routes.UserRolesAndApprovals, typeof(UserRolesAndApprovalsViewModel)),
-                        new RouteMap(Routes.OpeningBalancesAndMigration, typeof(OpeningBalancesAndMigrationViewModel)),
                         new RouteMap(Routes.AccountingSetupWizard, typeof(AccountingSetupWizardViewModel)),
                         new RouteMap(Routes.AccountLedger, typeof(AccountLedgerViewModel))
                     ]),

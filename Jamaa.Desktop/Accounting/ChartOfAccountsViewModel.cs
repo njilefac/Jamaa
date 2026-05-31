@@ -26,6 +26,11 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     private readonly IAccountingFacade _accountingFacade;
     private readonly INotificationService _notificationService;
     private readonly IUserSessionService _userSessionService;
+    private string _currencySymbol = string.Empty;
+    private int _decimalPrecision = 2;
+    private string _fiscalYearId = string.Empty;
+    private string _accountingPeriodId = string.Empty;
+    private bool _isSelectedPeriodLocked = true;
 
     [ObservableProperty]
     [NotifyDataErrorInfo]
@@ -126,26 +131,41 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                     .Throttle(TimeSpan.FromMilliseconds(100)),
                 syncContext)
             .Subscribe(_ => LoadAccounts());
+
+        ObserveOnIfAvailable(_accountingFacade.AccountOpeningBalanceSet, syncContext)
+            .Subscribe(OnAccountOpeningBalanceSet);
     }
 
     private async void LoadAccounts()
     {
         var session = _userSessionService.CurrentUserSession;
         if (session?.Organisation?.Id == null) return;
+        var organisationId = session.Organisation.Id;
 
-        var chartOfAccounts = await _accountingFacade.GetChartOfAccounts(session.Organisation.Id);
+        var settings = await _accountingFacade.GetAccountingSettings(organisationId);
+        if (settings != null)
+        {
+            _decimalPrecision = settings.DecimalPrecision;
+            _currencySymbol = settings.AvailableCurrencies
+                .FirstOrDefault(currency => currency.CurrencyCode == settings.BaseCurrency)?
+                .CurrencySymbol ?? string.Empty;
+        }
+
+        SelectOpeningBalancePeriod(await _accountingFacade.GetFiscalCalendar(organisationId));
+
+        var chartOfAccounts = await _accountingFacade.GetChartOfAccounts(organisationId);
         var accounts = chartOfAccounts.Accounts;
         _allAccountData.Clear();
         _allAccountData.AddRange(accounts);
 
         Accounts.Clear();
-        var rootAccounts = BuildAccountTree(accounts);
+        var rootAccounts = await BuildAccountTree(accounts, organisationId);
         foreach (var root in rootAccounts) Accounts.Add(root);
 
         RefreshFilteredParentAccounts();
     }
 
-    private List<AccountItemViewModel> BuildAccountTree(IEnumerable<AccountData> accounts)
+    private async Task<List<AccountItemViewModel>> BuildAccountTree(IEnumerable<AccountData> accounts, string organisationId)
     {
         var accountList = accounts.ToList();
 
@@ -158,7 +178,11 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                 Name = a.Name,
                 Description = a.Description,
                 Type = a.Type,
-                IsActive = a.IsActive
+                IsActive = a.IsActive,
+                CurrencySymbol = _currencySymbol,
+                DecimalPrecision = _decimalPrecision,
+                FiscalYearId = _fiscalYearId,
+                AccountingPeriodId = _accountingPeriodId
             };
             AssignItemCommands(vm);
             return vm;
@@ -181,7 +205,59 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             }
         }
 
+        foreach (var vm in viewModels)
+        {
+            vm.IsLeafAccount = vm.SubAccounts.Count == 0;
+
+            if (vm.IsLeafAccount)
+            {
+                var openingBalance = 0m;
+                if (!string.IsNullOrWhiteSpace(_fiscalYearId) && !string.IsNullOrWhiteSpace(_accountingPeriodId))
+                {
+                    openingBalance = await _accountingFacade.GetAccountOpeningBalance(
+                        organisationId,
+                        vm.Id,
+                        _fiscalYearId,
+                        _accountingPeriodId);
+                }
+
+                vm.OpeningBalance = openingBalance;
+                vm.IsOpeningBalanceLocked = openingBalance != 0m || _isSelectedPeriodLocked;
+            }
+            else
+            {
+                vm.IsOpeningBalanceLocked = true;
+            }
+
+            vm.SaveOpeningBalanceCommand?.NotifyCanExecuteChanged();
+        }
+
+        RecomputeParentOpeningBalances(roots);
         return roots;
+    }
+
+    private void SelectOpeningBalancePeriod(FiscalCalendarData fiscalCalendar)
+    {
+        var migrationYear = fiscalCalendar.FiscalYears
+            .OrderBy(fiscalYear => fiscalYear.StartDate)
+            .FirstOrDefault(fiscalYear => !fiscalYear.IsLocked);
+
+        var migrationPeriod = migrationYear?.Periods
+            .OrderBy(period => period.SequenceNumber)
+            .ThenBy(period => period.StartDate)
+            .FirstOrDefault(period => !period.IsLocked);
+
+        if (migrationPeriod is null)
+        {
+            _fiscalYearId = string.Empty;
+            _accountingPeriodId = string.Empty;
+            _isSelectedPeriodLocked = true;
+            return;
+        }
+
+        _fiscalYearId = migrationPeriod.FiscalYearId;
+        _accountingPeriodId = migrationPeriod.Id;
+        _isSelectedPeriodLocked = migrationPeriod.IsLocked;
     }
 
     partial void OnSelectedAccountChanged(AccountItemViewModel? value)
@@ -358,6 +434,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         item.EditCommand = new RelayCommand(() => SelectAccountForEdit(item));
         item.ToggleActiveCommand = new AsyncRelayCommand(() => ToggleAccountActiveAsync(item));
         item.ViewLedgerCommand = new RelayCommand(() => NavigateToAccountLedger(item));
+        item.SaveOpeningBalanceCommand = new AsyncRelayCommand(() => SaveOpeningBalanceAsync(item));
     }
 
     // Operation: selects the given account for editing in the side form.
@@ -450,6 +527,131 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     {
         var navigationRequest = JournalEntriesNavigationRequest.ForAccount(item.Id, item.Code, item.Name);
         WeakReferenceMessenger.Default.Send(new ModuleSelected(Routes.AccountingTransactions, navigationRequest));
+    }
+
+    private void OnAccountOpeningBalanceSet(AccountingPeriodBalanceData balance)
+    {
+        if (!string.Equals(balance.FiscalYearId, _fiscalYearId, StringComparison.Ordinal) ||
+            !string.Equals(balance.AccountingPeriodId, _accountingPeriodId, StringComparison.Ordinal))
+            return;
+
+        var account = FlattenAccounts(Accounts).FirstOrDefault(current => current.Id == balance.AccountId);
+        if (account is null) return;
+
+        account.OpeningBalance = balance.OpeningBalance;
+        account.IsOpeningBalanceLocked = balance.OpeningBalance != 0m || _isSelectedPeriodLocked;
+        account.IsSavingOpeningBalance = false;
+        account.ForceFormatOpeningBalance();
+        account.SaveOpeningBalanceCommand?.NotifyCanExecuteChanged();
+        RecomputeOpeningBalancesToRoot(account.IsLeafAccount ? account.Parent : account);
+    }
+
+    private async Task SaveOpeningBalanceAsync(AccountItemViewModel item)
+    {
+        if (!item.CanSaveOpeningBalance) return;
+
+        var session = _userSessionService.CurrentUserSession;
+        if (session?.Organisation?.Id == null) return;
+
+        var organisationId = session.Organisation.Id;
+        var subject = $"Opening balance for account - {item.Name}";
+
+        var isConfirmed = await _notificationService.TrackOperationAsync(
+            () => _accountingFacade.SetAccountOpeningBalance(
+                organisationId,
+                item.Id,
+                _fiscalYearId,
+                _accountingPeriodId,
+                item.OpeningBalance),
+            BuildSaveOpeningBalanceConfirmationObservable(organisationId, item),
+            TimeSpan.FromSeconds(10),
+            "Opening Balance",
+            "Saved",
+            subject,
+            inFlight =>
+            {
+                item.IsSavingOpeningBalance = inFlight;
+                item.SaveOpeningBalanceCommand?.NotifyCanExecuteChanged();
+            });
+
+        if (!isConfirmed) return;
+
+        item.IsOpeningBalanceLocked = true;
+        item.IsSavingOpeningBalance = false;
+        item.ForceFormatOpeningBalance();
+        item.SaveOpeningBalanceCommand?.NotifyCanExecuteChanged();
+        RecomputeOpeningBalancesToRoot(item.Parent);
+    }
+
+    private IObservable<bool> BuildSaveOpeningBalanceConfirmationObservable(string organisationId, AccountItemViewModel item)
+    {
+        var matchingEvents = _accountingFacade.AccountOpeningBalanceSet
+            .Where(balance =>
+                balance.AccountId == item.Id &&
+                balance.FiscalYearId == _fiscalYearId &&
+                balance.AccountingPeriodId == _accountingPeriodId)
+            .Select(_ => true);
+
+        var readModelPolling = Observable.Interval(TimeSpan.FromMilliseconds(250))
+            .StartWith(0L)
+            .SelectMany(_ => Observable.FromAsync(() =>
+                HasOpeningBalanceAppearedAsync(organisationId, item)))
+            .Where(isPresent => isPresent)
+            .Take(1);
+
+        return matchingEvents.Merge(readModelPolling).Take(1);
+    }
+
+    private async Task<bool> HasOpeningBalanceAppearedAsync(string organisationId, AccountItemViewModel item)
+    {
+        var openingBalance = await _accountingFacade.GetAccountOpeningBalance(
+            organisationId,
+            item.Id,
+            _fiscalYearId,
+            _accountingPeriodId);
+
+        return openingBalance == item.OpeningBalance;
+    }
+
+    private void RecomputeParentOpeningBalances()
+    {
+        RecomputeParentOpeningBalances(Accounts);
+    }
+
+    private static void RecomputeParentOpeningBalances(IEnumerable<AccountItemViewModel> roots)
+    {
+        foreach (var root in roots)
+            ComputeParentOpeningBalance(root);
+    }
+
+    private static void RecomputeOpeningBalancesToRoot(AccountItemViewModel? node)
+    {
+        var current = node;
+        while (current is not null)
+        {
+            current.OpeningBalance = current.SubAccounts.Sum(child => child.OpeningBalance);
+            current = current.Parent;
+        }
+    }
+
+    private static decimal ComputeParentOpeningBalance(AccountItemViewModel node)
+    {
+        if (node.IsLeafAccount) return node.OpeningBalance;
+
+        var total = node.SubAccounts.Sum(ComputeParentOpeningBalance);
+        node.OpeningBalance = total;
+        return total;
+    }
+
+    private static IEnumerable<AccountItemViewModel> FlattenAccounts(IEnumerable<AccountItemViewModel> roots)
+    {
+        foreach (var root in roots)
+        {
+            yield return root;
+
+            foreach (var child in FlattenAccounts(root.SubAccounts))
+                yield return child;
+        }
     }
 
     private bool CanAddAccount()

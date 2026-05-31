@@ -35,5 +35,9 @@ public class RefreshOnLostFocusBehavior : Behavior<TextBox>
         {
             vm.ForceFormatOpeningBalance();
         }
+        else if (AssociatedObject?.DataContext is AccountItemViewModel accountItemViewModel)
+        {
+            accountItemViewModel.ForceFormatOpeningBalance();
+        }
     }
 }

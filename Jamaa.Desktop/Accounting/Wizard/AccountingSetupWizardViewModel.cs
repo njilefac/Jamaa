@@ -41,9 +41,8 @@ public partial class AccountingSetupWizardViewModel : ObservableObject, IApplica
     private void InitializeSteps()
     {
         Steps.Add(new WizardStepViewModel("Fiscal Calendar & Currency", "Phase 1: Define your fiscal year and operational currency.", stepNumber: 1));
-        Steps.Add(new WizardStepViewModel("Chart of Accounts", "Phase 2: Build or select your account structure.", stepNumber: 2));
-        Steps.Add(new WizardStepViewModel("Opening Balances", "Phase 3: Enter starting balances for your leaf accounts.", stepNumber: 3));
-        Steps.Add(new WizardStepViewModel("Final Review", "Phase 4: Review and initialize the ledger.", stepNumber: 4, hasConnector: false));
+        Steps.Add(new WizardStepViewModel("Chart of Accounts", "Phase 2: Build your account structure and set opening balances for leaf accounts.", stepNumber: 2));
+        Steps.Add(new WizardStepViewModel("Final Review", "Phase 3: Review and initialize the ledger.", stepNumber: 3, hasConnector: false));
     }
 
     [RelayCommand(CanExecute = nameof(CanGoNext))]
@@ -78,8 +77,7 @@ public partial class AccountingSetupWizardViewModel : ObservableObject, IApplica
         {
             0 => _serviceProvider.GetService(typeof(FiscalCalendarAndCurrencyStepViewModel)),
             1 => _routeResolver.Resolve(Routes.ChartOfAccounts),
-            2 => _routeResolver.Resolve(Routes.OpeningBalancesAndMigration),
-            3 => _serviceProvider.GetService(typeof(FinalReviewStepViewModel)),
+            2 => _serviceProvider.GetService(typeof(FinalReviewStepViewModel)),
             _ => null
         };
 

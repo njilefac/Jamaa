@@ -34,10 +34,59 @@ public class ChartOfAccountsViewModelTests
         _userSessionService.CurrentUserSession.Returns(session);
         _accountFacade.GetChartOfAccounts(Arg.Any<string>())
             .Returns(orgId => Task.FromResult(new ChartOfAccountsData { OrganisationId = orgId.ArgAt<string>(0), Accounts = new List<AccountData>() }));
+        _accountFacade.GetAccountingSettings(Arg.Any<string>())
+            .Returns(orgId => Task.FromResult<AccountingSettingsData?>(new AccountingSettingsData
+            {
+                OrganisationId = orgId.ArgAt<string>(0),
+                BaseCurrency = "USD",
+                DateFormat = "yyyy-MM-dd",
+                DecimalPrecision = 2,
+                AvailableCurrencies =
+                [
+                    new AccountingAvailableCurrencyData
+                    {
+                        OrganisationId = orgId.ArgAt<string>(0),
+                        CurrencyCode = "USD",
+                        CurrencySymbol = "$"
+                    }
+                ]
+            }));
+        _accountFacade.GetFiscalCalendar(Arg.Any<string>())
+            .Returns(orgId => Task.FromResult(new FiscalCalendarData
+            {
+                OrganisationId = orgId.ArgAt<string>(0),
+                FiscalYears =
+                [
+                    new FiscalYearData
+                    {
+                        Id = "fy-2025",
+                        OrganisationId = orgId.ArgAt<string>(0),
+                        StartDate = new DateTime(2025, 1, 1),
+                        EndDate = new DateTime(2025, 12, 31),
+                        IsLocked = false,
+                        Periods =
+                        [
+                            new AccountingPeriodData
+                            {
+                                Id = "p-2025-01",
+                                FiscalYearId = "fy-2025",
+                                OrganisationId = orgId.ArgAt<string>(0),
+                                SequenceNumber = 1,
+                                IsLocked = false
+                            }
+                        ]
+                    }
+                ]
+            }));
+        _accountFacade.GetAccountOpeningBalance(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
+            .Returns(Task.FromResult(0m));
 
         _accountFacade.AccountCreated.Returns(Observable.Empty<AccountData>());
         _accountFacade.AccountUpdated.Returns(Observable.Empty<AccountData>());
         _accountFacade.AccountDeleted.Returns(Observable.Empty<AccountData>());
+        _accountFacade.AccountDeactivated.Returns(Observable.Empty<AccountData>());
+        _accountFacade.AccountReactivated.Returns(Observable.Empty<AccountData>());
+        _accountFacade.AccountOpeningBalanceSet.Returns(Observable.Empty<AccountingPeriodBalanceData>());
     }
 
     private ChartOfAccountsViewModel CreateViewModel()
@@ -624,6 +673,122 @@ public class ChartOfAccountsViewModelTests
         viewModel.SelectedAccountType = AccountType.Asset;
 
         viewModel.AccountCode.ShouldBe("1006");
+    }
+
+    [Fact]
+    public async Task SaveOpeningBalance_ShouldUpdateParentComputedBalance()
+    {
+        var parent = new AccountData
+        {
+            Id = "parent-1",
+            OrganisationId = "org-1",
+            Code = "1000",
+            Name = "Assets",
+            Type = AccountType.Asset
+        };
+        var leaf = new AccountData
+        {
+            Id = "leaf-1",
+            OrganisationId = "org-1",
+            Code = "1010",
+            Name = "Cash",
+            ParentId = "parent-1",
+            Type = AccountType.Asset
+        };
+
+        _accountFacade.GetChartOfAccounts("org-1")
+            .Returns(Task.FromResult(new ChartOfAccountsData
+            {
+                OrganisationId = "org-1",
+                Accounts = [parent, leaf]
+            }));
+
+        var openingBalanceCallCount = 0;
+        _accountFacade.GetAccountOpeningBalance("org-1", "leaf-1", "fy-2025", "p-2025-01")
+            .Returns(_ =>
+            {
+                openingBalanceCallCount++;
+                return Task.FromResult(openingBalanceCallCount >= 3 ? 123.45m : 0m);
+            });
+
+        var viewModel = CreateViewModel();
+        await WaitUntilAsync(() => viewModel.Accounts.Count == 1 && viewModel.Accounts[0].SubAccounts.Count == 1,
+            "account hierarchy to load");
+
+        var leafItem = viewModel.Accounts[0].SubAccounts[0];
+        leafItem.OpeningBalance = 123.45m;
+
+        await leafItem.SaveOpeningBalanceCommand!.ExecuteAsync(null);
+
+        await _accountFacade.Received(1)
+            .SetAccountOpeningBalance("org-1", "leaf-1", "fy-2025", "p-2025-01", 123.45m);
+        viewModel.Accounts[0].OpeningBalance.ShouldBe(123.45m);
+        leafItem.IsOpeningBalanceLocked.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task SaveOpeningBalance_ShouldUpdateRootComputedBalance()
+    {
+        var root = new AccountData
+        {
+            Id = "root-1",
+            OrganisationId = "org-1",
+            Code = "1000",
+            Name = "Assets",
+            Type = AccountType.Asset
+        };
+        var parent = new AccountData
+        {
+            Id = "parent-1",
+            OrganisationId = "org-1",
+            Code = "1100",
+            Name = "Current Assets",
+            ParentId = "root-1",
+            Type = AccountType.Asset
+        };
+        var leaf = new AccountData
+        {
+            Id = "leaf-1",
+            OrganisationId = "org-1",
+            Code = "1110",
+            Name = "Cash",
+            ParentId = "parent-1",
+            Type = AccountType.Asset
+        };
+
+        _accountFacade.GetChartOfAccounts("org-1")
+            .Returns(Task.FromResult(new ChartOfAccountsData
+            {
+                OrganisationId = "org-1",
+                Accounts = [root, parent, leaf]
+            }));
+
+        var openingBalanceCallCount = 0;
+        _accountFacade.GetAccountOpeningBalance("org-1", "leaf-1", "fy-2025", "p-2025-01")
+            .Returns(_ =>
+            {
+                openingBalanceCallCount++;
+                return Task.FromResult(openingBalanceCallCount >= 3 ? 88.5m : 0m);
+            });
+
+        var viewModel = CreateViewModel();
+        await WaitUntilAsync(() =>
+                viewModel.Accounts.Count == 1 &&
+                viewModel.Accounts[0].SubAccounts.Count == 1 &&
+                viewModel.Accounts[0].SubAccounts[0].SubAccounts.Count == 1,
+            "three-level account hierarchy to load");
+
+        var rootItem = viewModel.Accounts[0];
+        var parentItem = rootItem.SubAccounts[0];
+        var leafItem = parentItem.SubAccounts[0];
+        leafItem.OpeningBalance = 88.5m;
+
+        await leafItem.SaveOpeningBalanceCommand!.ExecuteAsync(null);
+
+        await _accountFacade.Received(1)
+            .SetAccountOpeningBalance("org-1", "leaf-1", "fy-2025", "p-2025-01", 88.5m);
+        parentItem.OpeningBalance.ShouldBe(88.5m);
+        rootItem.OpeningBalance.ShouldBe(88.5m);
     }
 
     private static async Task InvokePrivateLoadAccountsAsync(ChartOfAccountsViewModel viewModel)
