@@ -156,6 +156,33 @@ public class AccountingSettingsAggregateTests
         error.ShouldNotBeEmpty();
     }
 
+    // --- TryValidateThousandSeparator ---
+
+    [Theory]
+    [InlineData(",")]
+    [InlineData(" ")]
+    [InlineData("'")]
+    public void TryValidateThousandSeparator_ShouldReturnTrue_ForValidSingleCharacter(string separator)
+    {
+        var result = AccountingSettingsAggregate.TryValidateThousandSeparator(separator, out var error);
+
+        result.ShouldBeTrue();
+        error.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("12")]
+    [InlineData("ab")]
+    [InlineData("1")]
+    public void TryValidateThousandSeparator_ShouldReturnFalse_ForInvalidSeparator(string separator)
+    {
+        var result = AccountingSettingsAggregate.TryValidateThousandSeparator(separator, out var error);
+
+        result.ShouldBeFalse();
+        error.ShouldNotBeEmpty();
+    }
+
     // --- TryValidateAvailableCurrencies ---
 
     [Fact]

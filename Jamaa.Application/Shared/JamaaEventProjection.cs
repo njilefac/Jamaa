@@ -388,6 +388,7 @@ public class OrganisationProjection : ReceivePersistentActor
                 BaseCurrency = @event.BaseCurrency,
                 DateFormat = @event.DateFormat,
                 DecimalPrecision = @event.DecimalPrecision,
+                ThousandSeparator = @event.ThousandSeparator,
                 AvailableCurrencies = (@event.AvailableCurrencies ?? [])
                     .Select(currency => new AccountingAvailableCurrencyData
                     {
@@ -403,6 +404,7 @@ public class OrganisationProjection : ReceivePersistentActor
             existing.BaseCurrency = @event.BaseCurrency;
             existing.DateFormat = @event.DateFormat;
             existing.DecimalPrecision = @event.DecimalPrecision;
+            existing.ThousandSeparator = @event.ThousandSeparator;
 
             dbContext.AccountingAvailableCurrencies.RemoveRange(existing.AvailableCurrencies);
             existing.AvailableCurrencies = (@event.AvailableCurrencies ?? [])

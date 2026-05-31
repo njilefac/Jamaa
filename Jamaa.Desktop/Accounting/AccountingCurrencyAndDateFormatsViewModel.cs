@@ -56,6 +56,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     private string _persistedBaseCurrency = "USD";
     private string _persistedDateFormat = "DD/MM/YYYY";
     private int _persistedDecimalPrecision = 2;
+    private string _persistedThousandSeparator = ",";
 
     [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(RemoveSelectedCurrencyCommand))]
     private string _selectedAvailableCurrencyCode = string.Empty;
@@ -70,6 +71,9 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
 
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(FormattingPreview))]
     private int _selectedDecimalPrecision = 2;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FormattingPreview))]
+    private string _selectedThousandSeparator = ",";
 
     [ObservableProperty] private string _statusMessage = string.Empty;
 
@@ -101,6 +105,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     public IReadOnlyList<AccountingAvailableCurrencyData> BaseCurrencyOptions => AvailableCurrencies;
     public IReadOnlyList<string> DateFormatOptions { get; } = ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"];
     public IReadOnlyList<int> DecimalPrecisionOptions { get; } = [0, 1, 2, 3, 4];
+    public IReadOnlyList<string> ThousandSeparatorOptions { get; } = [",", " ", "'"];
 
     public bool HasUnsavedChanges =>
         HasUnsavedBaseSettingsChanges || HasUnsavedCurrencyChanges;
@@ -108,7 +113,8 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     public bool HasUnsavedBaseSettingsChanges =>
         SelectedBaseCurrency != _persistedBaseCurrency ||
         SelectedDateFormat != _persistedDateFormat ||
-        SelectedDecimalPrecision != _persistedDecimalPrecision;
+        SelectedDecimalPrecision != _persistedDecimalPrecision ||
+        SelectedThousandSeparator != _persistedThousandSeparator;
 
     public bool HasUnsavedCurrencyChanges =>
         _hasPersistedSnapshot
@@ -121,6 +127,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         BaseCurrencyOptions.Any(option => option.CurrencyCode == SelectedBaseCurrency) &&
         DateFormatOptions.Any(option => option == SelectedDateFormat) &&
         DecimalPrecisionOptions.Any(option => option == SelectedDecimalPrecision) &&
+        ThousandSeparatorOptions.Any(option => option == SelectedThousandSeparator) &&
         AvailableCurrencies.All(IsValidCurrency);
 
     public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
@@ -132,7 +139,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         {
             var exampleDate = new DateTime(2026, 4, 24).ToString(ResolveDotNetDateFormat(SelectedDateFormat),
                 CultureInfo.InvariantCulture);
-            var exampleAmount = 1234567.0m.ToString($"N{SelectedDecimalPrecision}", CultureInfo.InvariantCulture);
+            var exampleAmount = FormatAmount(1234567.0m, SelectedDecimalPrecision, SelectedThousandSeparator);
             var symbol = ResolveBaseCurrencySymbol();
             return $"{symbol} {exampleAmount}   |   {exampleDate}";
         }
@@ -142,7 +149,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     {
         get
         {
-            var exampleAmount = 1234567.0m.ToString($"N{SelectedDecimalPrecision}", CultureInfo.InvariantCulture);
+            var exampleAmount = FormatAmount(1234567.0m, SelectedDecimalPrecision, SelectedThousandSeparator);
             var symbol = ResolveBaseCurrencySymbol();
             return $"{symbol} {exampleAmount}";
         }
@@ -200,6 +207,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         var expectedBaseCurrency = NormalizeCurrencyCode(SelectedBaseCurrency);
         var expectedDateFormat = SelectedDateFormat;
         var expectedDecimalPrecision = SelectedDecimalPrecision;
+        var expectedThousandSeparator = SelectedThousandSeparator;
         var expectedAvailableCurrencySnapshot = BuildAvailableCurrencySnapshotKeys(AvailableCurrencies);
         var availableCurrencies = AvailableCurrencies
             .Select(currency => new Currency(currency.CurrencyCode, currency.CurrencySymbol))
@@ -211,6 +219,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
                 expectedBaseCurrency,
                 expectedDateFormat,
                 expectedDecimalPrecision,
+                expectedThousandSeparator,
                 availableCurrencies),
             _accountingFacade.AccountingSettingsUpdated,
             settings =>
@@ -218,6 +227,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
                 NormalizeCurrencyCode(settings.BaseCurrency) == expectedBaseCurrency &&
                 settings.DateFormat == expectedDateFormat &&
                 settings.DecimalPrecision == expectedDecimalPrecision &&
+                NormalizeThousandSeparator(settings.ThousandSeparator) == expectedThousandSeparator &&
                 BuildAvailableCurrencySnapshotKeys(BuildPersistedCurrencies(settings, _organisationId))
                     .SequenceEqual(expectedAvailableCurrencySnapshot),
             TimeSpan.FromSeconds(10),
@@ -374,6 +384,8 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         _persistedBaseCurrency = normalizedBaseCurrency;
         _persistedDateFormat = settings.DateFormat;
         _persistedDecimalPrecision = settings.DecimalPrecision;
+        var normalizedThousandSeparator = NormalizeThousandSeparator(settings.ThousandSeparator);
+        _persistedThousandSeparator = normalizedThousandSeparator;
         _persistedAvailableCurrencySnapshotKeys = BuildAvailableCurrencySnapshotKeys(persistedCurrencies);
         _hasPersistedSnapshot = true;
 
@@ -386,6 +398,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         _lastKnownValidBaseCurrency = SelectedBaseCurrency;
         SelectedDateFormat = settings.DateFormat;
         SelectedDecimalPrecision = settings.DecimalPrecision;
+        SelectedThousandSeparator = normalizedThousandSeparator;
         SelectedAvailableCurrencyCode = persistedCurrencies.FirstOrDefault()?.CurrencyCode ?? string.Empty;
 
         RefreshSaveState();
@@ -481,6 +494,11 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         return value.Trim();
     }
 
+    private static string NormalizeThousandSeparator(string? value)
+    {
+        return string.IsNullOrEmpty(value) ? "," : value;
+    }
+
     private static bool IsValidCurrencyCode(string value)
     {
         if (string.IsNullOrWhiteSpace(value) || value.Length is < 3 or > 10) return false;
@@ -562,6 +580,12 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         RefreshSaveState();
     }
 
+    partial void OnSelectedThousandSeparatorChanged(string value)
+    {
+        _ = value;
+        RefreshSaveState();
+    }
+
     partial void OnStatusMessageChanged(string _)
     {
         OnPropertyChanged(nameof(HasStatusMessage));
@@ -585,5 +609,12 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         SaveAvailableCurrenciesCommand.NotifyCanExecuteChanged();
         AddCurrencyCommand.NotifyCanExecuteChanged();
         RemoveSelectedCurrencyCommand.NotifyCanExecuteChanged();
+    }
+
+    private static string FormatAmount(decimal amount, int precision, string thousandSeparator)
+    {
+        var format = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
+        format.NumberGroupSeparator = thousandSeparator;
+        return amount.ToString($"N{precision}", format);
     }
 }

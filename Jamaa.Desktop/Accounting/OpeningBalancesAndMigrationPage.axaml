@@ -28,11 +28,13 @@
                         <behaviors:RefreshOnLostFocusBehavior />
                     </Interaction.Behaviors>
                     <TextBox.Text>
-                        <Binding
+                        <MultiBinding
                             Converter="{StaticResource DecimalToFormattedStringConverter}"
-                            Mode="TwoWay"
-                            Path="OpeningBalance"
-                            UpdateSourceTrigger="PropertyChanged" />
+                            Mode="TwoWay">
+                            <Binding Path="OpeningBalance" />
+                            <Binding Path="DecimalPrecision" />
+                            <Binding Path="ThousandSeparator" />
+                        </MultiBinding>
                     </TextBox.Text>
                     <TextBox.InnerLeftContent>
                         <TextBlock
@@ -48,8 +50,15 @@
                     Foreground="{DynamicResource AppTextSecondary}"
                     HorizontalAlignment="Right"
                     IsVisible="{Binding !IsLeafAccount}"
-                    Text="{Binding OpeningBalance, Converter={StaticResource DecimalToFormattedStringConverter}}"
-                    VerticalAlignment="Center" />
+                    VerticalAlignment="Center">
+                    <TextBlock.Text>
+                        <MultiBinding Converter="{StaticResource DecimalToFormattedStringConverter}">
+                            <Binding Path="OpeningBalance" />
+                            <Binding Path="DecimalPrecision" />
+                            <Binding Path="ThousandSeparator" />
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
             </Panel>
         </DataTemplate>
 

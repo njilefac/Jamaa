@@ -47,6 +47,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         _facade.CurrentAccountingSettings.Returns(_currentSettingsSubject.AsObservable());
         _facade.AccountingSettingsUpdated.Returns(_settingsUpdatedSubject.AsObservable());
         _facade.UpdateAccountingSettings(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<string>(),
                 Arg.Any<IReadOnlyList<Currency>>())
             .Returns(Task.CompletedTask);
 
@@ -73,7 +74,8 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
     private async Task PushPersistedSettings(
         string currency = "USD",
         string dateFormat = "DD/MM/YYYY",
-        int precision = 2)
+        int precision = 2,
+        string thousandSeparator = ",")
     {
         var availableCurrencies = new[] { "USD", "KES", "EUR", "GBP", "ZAR", "NGN" };
         var symbols = new Dictionary<string, string>
@@ -91,6 +93,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
             BaseCurrency = currency,
             DateFormat = dateFormat,
             DecimalPrecision = precision,
+            ThousandSeparator = thousandSeparator,
             AvailableCurrencies = availableCurrencies
                 .Select(code => new AccountingAvailableCurrencyData
                 {
@@ -112,7 +115,8 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
     private async Task ConfirmPersistenceFromStream(
         string currency,
         string dateFormat,
-        int precision)
+        int precision,
+        string thousandSeparator = ",")
     {
         // Small initial delay so the in-flight save has had time to register its TCS.
         await Task.Delay(50);
@@ -123,6 +127,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
             BaseCurrency = currency,
             DateFormat = dateFormat,
             DecimalPrecision = precision,
+            ThousandSeparator = thousandSeparator,
             AvailableCurrencies = _vm.AvailableCurrencies
                 .Select(currencyData => new AccountingAvailableCurrencyData
                 {
@@ -393,7 +398,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         await PushPersistedSettings();
         _vm.SelectedBaseCurrency = "ZAR";
 
-        _facade.UpdateAccountingSettings(OrgId, "ZAR", "DD/MM/YYYY", 2, Arg.Any<IReadOnlyList<Currency>>())
+        _facade.UpdateAccountingSettings(OrgId, "ZAR", "DD/MM/YYYY", 2, ",", Arg.Any<IReadOnlyList<Currency>>())
             .Returns(Task.FromException(new InvalidOperationException("Simulated dispatch failure")));
 
         await _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
@@ -413,7 +418,7 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         await PushPersistedSettings();
         _vm.SelectedBaseCurrency = "NGN";
 
-        _facade.UpdateAccountingSettings(OrgId, "NGN", "DD/MM/YYYY", 2, Arg.Any<IReadOnlyList<Currency>>())
+        _facade.UpdateAccountingSettings(OrgId, "NGN", "DD/MM/YYYY", 2, ",", Arg.Any<IReadOnlyList<Currency>>())
             .Returns(Task.FromException(new InvalidOperationException("Transient error")));
 
         await _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
@@ -430,13 +435,13 @@ public class AccountingCurrencyAndDateFormatsViewModelSaveButtonTests : IDisposa
         _vm.SelectedBaseCurrency = "GBP";
 
         // First attempt fails
-        _facade.UpdateAccountingSettings(OrgId, "GBP", "DD/MM/YYYY", 2, Arg.Any<IReadOnlyList<Currency>>())
+        _facade.UpdateAccountingSettings(OrgId, "GBP", "DD/MM/YYYY", 2, ",", Arg.Any<IReadOnlyList<Currency>>())
             .Returns(Task.FromException(new InvalidOperationException("First failure")));
         await _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
         _vm.HasErrorStatus.ShouldBeTrue();
 
         // Second attempt succeeds
-        _facade.UpdateAccountingSettings(OrgId, "GBP", "DD/MM/YYYY", 2, Arg.Any<IReadOnlyList<Currency>>())
+        _facade.UpdateAccountingSettings(OrgId, "GBP", "DD/MM/YYYY", 2, ",", Arg.Any<IReadOnlyList<Currency>>())
             .Returns(Task.CompletedTask);
         var saveTask = _vm.SaveBaseSettingsCommand.ExecuteAsync(null);
         await ConfirmPersistenceFromStream("GBP", "DD/MM/YYYY", 2);

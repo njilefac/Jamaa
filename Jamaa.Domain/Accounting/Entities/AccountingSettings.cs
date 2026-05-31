@@ -14,12 +14,14 @@ public sealed record AccountingSettings
         string baseCurrency,
         string dateFormat,
         int decimalPrecision,
+        string thousandSeparator,
         IEnumerable<Currency>? availableCurrencies = null)
     {
         OrganisationId = organisationId;
         BaseCurrency = baseCurrency;
         DateFormat = dateFormat;
         DecimalPrecision = decimalPrecision;
+        ThousandSeparator = thousandSeparator;
         _availableCurrencies = availableCurrencies?.ToList() ?? [];
     }
 
@@ -27,5 +29,6 @@ public sealed record AccountingSettings
     public string BaseCurrency { get; }
     public string DateFormat { get; }
     public int DecimalPrecision { get; }
+    public string ThousandSeparator { get; }
     public IReadOnlyList<Currency> AvailableCurrencies => _availableCurrencies.AsReadOnly();
 }

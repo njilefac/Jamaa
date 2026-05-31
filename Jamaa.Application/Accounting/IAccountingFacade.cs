@@ -51,7 +51,7 @@ public interface IAccountingFacade
     Task DeleteAccountingPeriod(string organisationId, string fiscalYearId, string accountingPeriodId);
 
     Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat, int decimalPrecision,
-        IReadOnlyList<Currency> availableCurrencies);
+        string thousandSeparator, IReadOnlyList<Currency> availableCurrencies);
 
     // Read operations (one-off query)
     Task<ChartOfAccountsData> GetChartOfAccounts(string organisationId);

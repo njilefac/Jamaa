@@ -23,6 +23,7 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
 
     private string _currencySymbol = string.Empty;
     private int _decimalPrecision = 2;
+    private string _thousandSeparator = ",";
 
     private string _fiscalYearId = string.Empty;
     private string _accountingPeriodId = string.Empty;
@@ -73,6 +74,7 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
             if (settings != null)
             {
                 _decimalPrecision = settings.DecimalPrecision;
+                _thousandSeparator = settings.ThousandSeparator;
                 _currencySymbol = settings.AvailableCurrencies
                     .FirstOrDefault(c => c.CurrencyCode == settings.BaseCurrency)?
                     .CurrencySymbol ?? string.Empty;
@@ -134,6 +136,7 @@ public partial class OpeningBalancesAndMigrationViewModel : ObservableObject, IA
                 TypeDisplay = a.Type.ToString(),
                 CurrencySymbol = _currencySymbol,
                 DecimalPrecision = _decimalPrecision,
+                ThousandSeparator = _thousandSeparator,
                 FiscalYearId = _fiscalYearId,
                 AccountingPeriodId = _accountingPeriodId,
             });

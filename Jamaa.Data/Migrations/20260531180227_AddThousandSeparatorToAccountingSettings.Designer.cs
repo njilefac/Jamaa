@@ -3,6 +3,7 @@ using System;
 using Jamaa.Data.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jamaa.Data.Migrations
 {
     [DbContext(typeof(JamaaDbContext))]
-    partial class JamaaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260531180227_AddThousandSeparatorToAccountingSettings")]
+    partial class AddThousandSeparatorToAccountingSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.6");

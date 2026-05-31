@@ -28,7 +28,7 @@
                     Grid.Row="1"
                     Margin="0,6,0,0"
                     Opacity="0.7"
-                    Text="Define the organization functional currency, preferred date format, and decimal precision for accounting reports." />
+                    Text="Define the organization functional currency, preferred date format, decimal precision, and thousands separator for accounting reports." />
             </Grid>
         </husk:Card>
 
@@ -52,7 +52,7 @@
                                         <Grid
                                             Classes="page form"
                                             ColumnDefinitions="Auto,*"
-                                            RowDefinitions="Auto,Auto,Auto">
+                                            RowDefinitions="Auto,Auto,Auto,Auto">
                                             <TextBlock
                                                 Classes="form label"
                                                 Grid.Column="0"
@@ -98,6 +98,18 @@
                                                 Grid.Row="2"
                                                 ItemsSource="{Binding DecimalPrecisionOptions}"
                                                 SelectedItem="{Binding SelectedDecimalPrecision, Mode=TwoWay}" />
+
+                                            <TextBlock
+                                                Classes="form label"
+                                                Grid.Column="0"
+                                                Grid.Row="3"
+                                                Text="Thousands separator" />
+                                            <ComboBox
+                                                Classes="form field"
+                                                Grid.Column="1"
+                                                Grid.Row="3"
+                                                ItemsSource="{Binding ThousandSeparatorOptions}"
+                                                SelectedItem="{Binding SelectedThousandSeparator, Mode=TwoWay}" />
                                         </Grid>
 
                                         <WrapPanel ItemSpacing="10">

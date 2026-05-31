@@ -30,6 +30,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     private readonly IUserSessionService _userSessionService;
     private string _currencySymbol = string.Empty;
     private int _decimalPrecision = 2;
+    private string _thousandSeparator = ",";
     private string _fiscalYearId = string.Empty;
     private string _accountingPeriodId = string.Empty;
     private bool _isSelectedPeriodLocked = true;
@@ -148,6 +149,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         if (settings != null)
         {
             _decimalPrecision = settings.DecimalPrecision;
+            _thousandSeparator = settings.ThousandSeparator;
             _currencySymbol = settings.AvailableCurrencies
                 .FirstOrDefault(currency => currency.CurrencyCode == settings.BaseCurrency)?
                 .CurrencySymbol ?? string.Empty;
@@ -183,6 +185,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                 IsActive = a.IsActive,
                 CurrencySymbol = _currencySymbol,
                 DecimalPrecision = _decimalPrecision,
+                ThousandSeparator = _thousandSeparator,
                 FiscalYearId = _fiscalYearId,
                 AccountingPeriodId = _accountingPeriodId
             };

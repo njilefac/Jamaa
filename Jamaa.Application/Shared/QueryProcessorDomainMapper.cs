@@ -82,6 +82,7 @@ internal static class QueryProcessorDomainMapper
             settings.BaseCurrency,
             settings.DateFormat,
             settings.DecimalPrecision,
+            settings.ThousandSeparator,
             settings.AvailableCurrencies.Select(currency =>
                 new Currency(currency.CurrencyCode, currency.CurrencySymbol)));
     }

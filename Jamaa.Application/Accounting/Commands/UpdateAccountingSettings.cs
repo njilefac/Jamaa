@@ -8,4 +8,5 @@ public record UpdateAccountingSettings(
     string BaseCurrency,
     string DateFormat,
     int DecimalPrecision,
+    string ThousandSeparator,
     List<Currency> AvailableCurrencies);

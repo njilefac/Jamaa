@@ -1,16 +1,21 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
+using Avalonia.Threading;
 
 namespace Jamaa.Desktop.Accounting;
 
 public partial class ChartOfAccountsPage : UserControl
 {
     private TreeDataGridRowSelectionModel<AccountItemViewModel>? _selection;
+    private HierarchicalTreeDataGridSource<AccountItemViewModel>? _source;
     private ChartOfAccountsViewModel? _viewModel;
+    private readonly HashSet<string> _expandedAccountIds = [];
 
     public ChartOfAccountsPage()
     {
@@ -66,11 +71,16 @@ public partial class ChartOfAccountsPage : UserControl
             SingleSelect = true
         };
 
+        _source = source;
+        _source.RowExpanded += OnRowExpanded;
+        _source.RowCollapsed += OnRowCollapsed;
         _selection.SelectionChanged += OnSelectionChanged;
         source.Selection = _selection;
         AccountsTreeDataGrid.Source = source;
 
+        _viewModel.Accounts.CollectionChanged += OnAccountsCollectionChanged;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        RestoreExpandedRows();
     }
 
     private void OnSelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<AccountItemViewModel> e)
@@ -92,14 +102,74 @@ public partial class ChartOfAccountsPage : UserControl
         _selection?.Clear();
     }
 
+    private void OnAccountsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        _ = sender;
+        _ = e;
+
+        Dispatcher.UIThread.Post(RestoreExpandedRows, DispatcherPriority.Background);
+    }
+
+    private void OnRowExpanded(object? sender, RowEventArgs e)
+    {
+        _ = sender;
+        if (e.Row is not HierarchicalRow<AccountItemViewModel> row) return;
+
+        _expandedAccountIds.Add(row.Model.Id);
+    }
+
+    private void OnRowCollapsed(object? sender, RowEventArgs e)
+    {
+        _ = sender;
+        if (e.Row is not HierarchicalRow<AccountItemViewModel> row) return;
+
+        if (!IsAccountPresentInCurrentTree(row.Model.Id)) return;
+        _expandedAccountIds.Remove(row.Model.Id);
+    }
+
+    private void RestoreExpandedRows()
+    {
+        if (_source is null || _expandedAccountIds.Count == 0) return;
+
+        _source.ExpandCollapseRecursive(account => _expandedAccountIds.Contains(account.Id));
+    }
+
+    private bool IsAccountPresentInCurrentTree(string accountId)
+    {
+        if (_viewModel is null) return false;
+
+        return ContainsAccount(_viewModel.Accounts, accountId);
+    }
+
+    private static bool ContainsAccount(IEnumerable<AccountItemViewModel> accounts, string accountId)
+    {
+        foreach (var account in accounts)
+        {
+            if (account.Id == accountId) return true;
+            if (ContainsAccount(account.SubAccounts, accountId)) return true;
+        }
+
+        return false;
+    }
+
     private void DetachViewModelHandlers()
     {
+        if (_source is not null)
+        {
+            _source.RowExpanded -= OnRowExpanded;
+            _source.RowCollapsed -= OnRowCollapsed;
+        }
+
         if (_selection is not null)
             _selection.SelectionChanged -= OnSelectionChanged;
 
         if (_viewModel is not null)
+            _viewModel.Accounts.CollectionChanged -= OnAccountsCollectionChanged;
+
+        if (_viewModel is not null)
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
 
+        _source = null;
         _selection = null;
         _viewModel = null;
     }

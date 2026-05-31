@@ -122,6 +122,7 @@ internal static class AccountingReadModelMapper
             BaseCurrency = settings.BaseCurrency,
             DateFormat = settings.DateFormat,
             DecimalPrecision = settings.DecimalPrecision,
+            ThousandSeparator = settings.ThousandSeparator,
             AvailableCurrencies = settings.AvailableCurrencies
                 .Select(currency => currency.ToPresentationModel(settings.OrganisationId.Value))
                 .ToList()

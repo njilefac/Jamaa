@@ -264,13 +264,14 @@ public class AccountingFacade : IAccountingFacade
 
     // Integration: dispatches accounting settings update intent.
     public Task UpdateAccountingSettings(string organisationId, string baseCurrency, string dateFormat,
-        int decimalPrecision, IReadOnlyList<Currency> availableCurrencies)
+        int decimalPrecision, string thousandSeparator, IReadOnlyList<Currency> availableCurrencies)
     {
         var command = new UpdateAccountingSettings(
             OrganisationId.With(organisationId),
             baseCurrency,
             dateFormat,
             decimalPrecision,
+            thousandSeparator,
             [.. availableCurrencies]);
 
         _commandProcessor.Tell(command);
@@ -488,4 +489,3 @@ public class AccountingFacade : IAccountingFacade
         return $"{calendar.OrganisationId}|[{string.Join(";", fiscalYearTokens)}]";
     }
 }
-

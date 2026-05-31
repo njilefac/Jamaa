@@ -82,6 +82,7 @@ public class AccountingSettingsData
     public required string BaseCurrency { get; set; }
     public required string DateFormat { get; set; }
     public int DecimalPrecision { get; set; }
+    public required string ThousandSeparator { get; set; }
 
     public IList<AccountingAvailableCurrencyData> AvailableCurrencies { get; set; } =
         new List<AccountingAvailableCurrencyData>();

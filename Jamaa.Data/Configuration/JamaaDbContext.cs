@@ -100,6 +100,8 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifi
         modelBuilder.Entity<AccountingSettingsData>()
             .Property(settings => settings.DateFormat).IsRequired();
         modelBuilder.Entity<AccountingSettingsData>()
+            .Property(settings => settings.ThousandSeparator).IsRequired();
+        modelBuilder.Entity<AccountingSettingsData>()
             .HasMany(settings => settings.AvailableCurrencies)
             .WithOne(currency => currency.AccountingSettings)
             .HasForeignKey(currency => currency.OrganisationId)

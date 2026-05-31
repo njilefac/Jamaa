@@ -40,6 +40,7 @@ public partial class AccountItemViewModel : ObservableObject
 
     [ObservableProperty] private string _currencySymbol = string.Empty;
     [ObservableProperty] private int _decimalPrecision = 2;
+    [ObservableProperty] private string _thousandSeparator = ",";
     [ObservableProperty] private decimal _openingBalance;
     [ObservableProperty] private string _fiscalYearId = string.Empty;
     [ObservableProperty] private string _accountingPeriodId = string.Empty;

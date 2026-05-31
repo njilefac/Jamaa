@@ -41,6 +41,7 @@ public class ChartOfAccountsViewModelTests
                 BaseCurrency = "USD",
                 DateFormat = "yyyy-MM-dd",
                 DecimalPrecision = 2,
+                ThousandSeparator = ",",
                 AvailableCurrencies =
                 [
                     new AccountingAvailableCurrencyData

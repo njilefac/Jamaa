@@ -40,6 +40,7 @@ public class OpeningBalancesAndMigrationViewModelTests
             BaseCurrency = "USD",
             DateFormat = "yyyy-MM-dd",
             DecimalPrecision = 2,
+            ThousandSeparator = ",",
             AvailableCurrencies = new List<AccountingAvailableCurrencyData>
             {
                 new() { OrganisationId = OrgId, CurrencyCode = "USD", CurrencySymbol = "$" }

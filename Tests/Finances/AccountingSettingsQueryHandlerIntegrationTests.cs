@@ -59,6 +59,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                     BaseCurrency = "KES",
                     DateFormat = "DD/MM/YYYY",
                     DecimalPrecision = 2,
+                    ThousandSeparator = ",",
                     AvailableCurrencies =
                     [
                         new AccountingAvailableCurrencyData
@@ -81,6 +82,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
             result.BaseCurrency.ShouldBe("KES");
             result.DateFormat.ShouldBe("DD/MM/YYYY");
             result.DecimalPrecision.ShouldBe(2);
+            result.ThousandSeparator.ShouldBe(",");
             result.AvailableCurrencies.First(currency => currency.CurrencyCode == "KES").CurrencySymbol.ShouldBe("KSh");
             result.AvailableCurrencies.First(currency => currency.CurrencyCode == "USD").CurrencySymbol.ShouldBe("$");
             result.AvailableCurrencies.Select(currency => currency.CurrencyCode).ShouldBe(["KES", "USD"], true);
@@ -110,6 +112,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                     BaseCurrency = "USD",
                     DateFormat = "MM/DD/YYYY",
                     DecimalPrecision = 0,
+                    ThousandSeparator = ",",
                     AvailableCurrencies =
                     [
                         new AccountingAvailableCurrencyData
@@ -128,6 +131,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                 existing!.BaseCurrency = "EUR";
                 existing.DateFormat = "YYYY-MM-DD";
                 existing.DecimalPrecision = 4;
+                existing.ThousandSeparator = "'";
                 existing.AvailableCurrencies.Clear();
                 existing.AvailableCurrencies.Add(new AccountingAvailableCurrencyData
                     { OrganisationId = organisationId, CurrencyCode = "EUR", CurrencySymbol = "EUR" });
@@ -148,6 +152,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                 result.BaseCurrency.ShouldBe("EUR");
                 result.DateFormat.ShouldBe("YYYY-MM-DD");
                 result.DecimalPrecision.ShouldBe(4);
+                result.ThousandSeparator.ShouldBe("'");
                 result.AvailableCurrencies.First(currency => currency.CurrencyCode == "EUR").CurrencySymbol.ShouldBe("EUR");
                 result.AvailableCurrencies.Select(currency => currency.CurrencyCode).ShouldBe(["EUR", "GBP"], true);
             }
@@ -177,6 +182,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                         BaseCurrency = "USD",
                         DateFormat = "DD/MM/YYYY",
                         DecimalPrecision = 2,
+                        ThousandSeparator = ",",
                         AvailableCurrencies =
                         [
                             new AccountingAvailableCurrencyData
@@ -189,6 +195,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                         BaseCurrency = "GBP",
                         DateFormat = "MM/DD/YYYY",
                         DecimalPrecision = 3,
+                        ThousandSeparator = "'",
                         AvailableCurrencies =
                         [
                             new AccountingAvailableCurrencyData
@@ -208,6 +215,7 @@ public class AccountingSettingsQueryHandlerIntegrationTests
                 result.ShouldNotBeNull();
                 result.OrganisationId.ShouldBe("org-b");
                 result.BaseCurrency.ShouldBe("GBP");
+                result.ThousandSeparator.ShouldBe("'");
             }
         }
         finally

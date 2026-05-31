@@ -30,6 +30,7 @@ public partial class OpeningBalanceItemViewModel(
 
     [ObservableProperty] private string _currencySymbol = string.Empty;
     [ObservableProperty] private int _decimalPrecision = 2;
+    [ObservableProperty] private string _thousandSeparator = ",";
     [ObservableProperty] private decimal _openingBalance;
 
     [ObservableProperty]

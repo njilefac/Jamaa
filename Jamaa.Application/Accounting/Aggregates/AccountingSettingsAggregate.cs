@@ -62,6 +62,12 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
             return;
         }
 
+        if (!TryValidateThousandSeparator(command.ThousandSeparator, out var separatorError))
+        {
+            Sender.Tell(separatorError, Self);
+            return;
+        }
+
         if (!TryValidateAvailableCurrencies(command.AvailableCurrencies, out var currenciesError))
         {
             Sender.Tell(currenciesError, Self);
@@ -82,6 +88,7 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
             normalizedBaseCurrency,
             command.DateFormat.Trim(),
             command.DecimalPrecision,
+            command.ThousandSeparator,
             normalizedCurrencies);
 
         Persist(@event, Apply);
@@ -93,6 +100,7 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
         _state.BaseCurrency = @event.BaseCurrency;
         _state.DateFormat = @event.DateFormat;
         _state.DecimalPrecision = @event.DecimalPrecision;
+        _state.ThousandSeparator = @event.ThousandSeparator;
         _state.AvailableCurrencies = [.. @event.AvailableCurrencies];
     }
 
@@ -134,6 +142,31 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
         if (precision is < 0 or > 4)
         {
             error = "Decimal precision must be between 0 and 4.";
+            return false;
+        }
+
+        error = string.Empty;
+        return true;
+    }
+
+    // Operation: validates one thousand-group separator character for numeric display formatting.
+    public static bool TryValidateThousandSeparator(string separator, out string error)
+    {
+        if (separator is null || separator.Length == 0)
+        {
+            error = "Thousands separator must not be empty.";
+            return false;
+        }
+
+        if (separator.Length != 1)
+        {
+            error = "Thousands separator must be a single character.";
+            return false;
+        }
+
+        if (char.IsDigit(separator[0]))
+        {
+            error = "Thousands separator cannot be numeric.";
             return false;
         }
 
@@ -213,6 +246,7 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
         public string BaseCurrency { get; set; } = "USD";
         public string DateFormat { get; set; } = "DD/MM/YYYY";
         public int DecimalPrecision { get; set; } = 2;
+        public string ThousandSeparator { get; set; } = ",";
 
         public List<Currency> AvailableCurrencies { get; set; } =
         [
@@ -228,6 +262,7 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
                 BaseCurrency = BaseCurrency,
                 DateFormat = DateFormat,
                 DecimalPrecision = DecimalPrecision,
+                ThousandSeparator = ThousandSeparator,
                 AvailableCurrencies = [.. AvailableCurrencies]
             };
         }
@@ -237,6 +272,7 @@ public class AccountingSettingsAggregate : ReceivePersistentActor
             BaseCurrency = other.BaseCurrency;
             DateFormat = other.DateFormat;
             DecimalPrecision = other.DecimalPrecision;
+            ThousandSeparator = other.ThousandSeparator;
             AvailableCurrencies = [.. other.AvailableCurrencies];
         }
     }

@@ -56,4 +56,16 @@ public class DecimalToFormattedStringConverterTests
         // Assert
         result.ShouldBe("123.450");
     }
+
+    [Fact]
+    public void Convert_MultiBinding_UsesProvidedThousandSeparator()
+    {
+        var converter = new DecimalToFormattedStringConverter();
+        var culture = CultureInfo.InvariantCulture;
+        var values = new object[] { 1234567.89m, 2, "'" };
+
+        var result = converter.Convert(values, typeof(string), null, culture);
+
+        result.ShouldBe("1'234'567.89");
+    }
 }
