@@ -6,8 +6,7 @@ using Jamaa.Desktop.Accounting;
 namespace Jamaa.Desktop.Shared.Behaviors;
 
 /// <summary>
-/// A behavior that triggers a refresh of the OpeningBalance formatting when the TextBox loses focus.
-/// It calls ForceFormatOpeningBalance on the AccountItemViewModel if it's the DataContext.
+/// Refreshes the opening-balance display when the TextBox loses focus.
 /// </summary>
 public class RefreshOnLostFocusBehavior : Behavior<TextBox>
 {
@@ -31,11 +30,7 @@ public class RefreshOnLostFocusBehavior : Behavior<TextBox>
 
     private void OnLostFocus(object? sender, RoutedEventArgs e)
     {
-        if (AssociatedObject?.DataContext is OpeningBalanceItemViewModel vm)
-        {
-            vm.ForceFormatOpeningBalance();
-        }
-        else if (AssociatedObject?.DataContext is AccountItemViewModel accountItemViewModel)
+        if (AssociatedObject?.DataContext is AccountItemViewModel accountItemViewModel)
         {
             accountItemViewModel.ForceFormatOpeningBalance();
         }

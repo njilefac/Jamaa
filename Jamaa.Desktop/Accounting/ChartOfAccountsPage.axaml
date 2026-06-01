@@ -78,20 +78,29 @@
                     </TextBox.InnerLeftContent>
                 </TextBox>
 
-                <TextBlock
-                    FontWeight="SemiBold"
-                    Foreground="{DynamicResource AppTextSecondary}"
+                <StackPanel
                     HorizontalAlignment="Right"
                     IsVisible="{Binding !IsLeafAccount}"
+                    Orientation="Horizontal"
+                    Spacing="4"
                     VerticalAlignment="Center">
-                    <TextBlock.Text>
-                        <MultiBinding Converter="{StaticResource DecimalToFormattedStringConverter}">
-                            <Binding Path="OpeningBalance" />
-                            <Binding Path="DecimalPrecision" />
-                            <Binding Path="ThousandSeparator" />
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource AppTextSecondary}"
+                        Text="{Binding CurrencySymbol}"
+                        VerticalAlignment="Center" />
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource AppTextSecondary}">
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource DecimalToFormattedStringConverter}">
+                                <Binding Path="OpeningBalance" />
+                                <Binding Path="DecimalPrecision" />
+                                <Binding Path="ThousandSeparator" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
             </Panel>
         </DataTemplate>
 

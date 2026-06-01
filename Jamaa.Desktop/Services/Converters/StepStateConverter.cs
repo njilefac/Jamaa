@@ -16,8 +16,8 @@ public class StepStateConverter : IMultiValueConverter
         var isEnabled = values[2] is bool b3 && b3;
 
         if (!isEnabled) return "Disabled";
-        if (isSelected) return "Active";
         if (isCompleted) return "Completed";
+        if (isSelected) return "Active";
 
         return "Uncompleted";
     }
