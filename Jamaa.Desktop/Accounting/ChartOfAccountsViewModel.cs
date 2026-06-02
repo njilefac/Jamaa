@@ -540,7 +540,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         account.IsSavingOpeningBalance = false;
         account.ForceFormatOpeningBalance();
         account.SaveOpeningBalanceCommand?.NotifyCanExecuteChanged();
-        RecomputeOpeningBalancesToRootAndRefresh(account.IsLeafAccount ? account.Parent : account);
+        RecomputeParentOpeningBalances();
     }
 
     private async Task SaveOpeningBalanceAsync(AccountItemViewModel item)
@@ -577,7 +577,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         item.IsSavingOpeningBalance = false;
         item.ForceFormatOpeningBalance();
         item.SaveOpeningBalanceCommand?.NotifyCanExecuteChanged();
-        RecomputeOpeningBalancesToRootAndRefresh(item.Parent);
+        RecomputeParentOpeningBalances();
     }
 
     private IObservable<bool> BuildSaveOpeningBalanceConfirmationObservable(string organisationId, AccountItemViewModel item)
@@ -619,17 +619,6 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     {
         foreach (var root in roots)
             ComputeParentOpeningBalance(root);
-    }
-
-    private static void RecomputeOpeningBalancesToRootAndRefresh(AccountItemViewModel? node)
-    {
-        var current = node;
-        while (current is not null)
-        {
-            current.OpeningBalance = current.SubAccounts.Sum(child => child.OpeningBalance);
-            current.ForceFormatOpeningBalance();
-            current = current.Parent;
-        }
     }
 
     private static decimal ComputeParentOpeningBalance(AccountItemViewModel node)
