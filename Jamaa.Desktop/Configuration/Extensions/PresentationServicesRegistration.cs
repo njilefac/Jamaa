@@ -4,6 +4,7 @@ using Jamaa.Application.Users.Services;
 using Jamaa.Desktop.Dashboard;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Services;
+using Jamaa.Desktop.Services.Hosting;
 using Jamaa.Desktop.Services.Notifications;
 using Jamaa.Desktop.Shared;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,7 @@ public static class PresentationServicesRegistration
             services.AddSingleton<IRouteResolver, RouteResolver>();
             services.AddSingleton<IRouteRegistry, RouteRegistry>();
             services.AddSingleton<INavigationItemsProvider, NavigationItemsProvider>();
+            services.AddSingleton<IEmbeddedWebServer, EmbeddedWebServer>();
             services.AddSingleton<AvaloniaNotificationService>();
             services.AddSingleton<INotificationService>(sp => sp.GetRequiredService<AvaloniaNotificationService>());
             services.AddSingleton<Shell>();

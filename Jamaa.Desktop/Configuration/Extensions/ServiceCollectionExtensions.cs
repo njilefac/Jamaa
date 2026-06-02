@@ -6,6 +6,7 @@ using Akka.Hosting;
 using Akka.Logger.Serilog;
 using Akka.Persistence.Sql.Hosting;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using Domain.Shared.Values;
 using Jamaa.Application.Configuration;
 using Jamaa.Application.Shared;
@@ -59,18 +60,21 @@ public static class ServiceCollectionExtensions
 
                     system.WhenTerminated.ContinueWith(_ =>
                     {
-                        try
+                        Dispatcher.UIThread.Post(() =>
                         {
-                            applicationLifetime.Shutdown();
-                        }
-                        catch (TaskCanceledException)
-                        {
-                            // Ignore, the application is already shutting down
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "Error during application shutdown");
-                        }
+                            try
+                            {
+                                applicationLifetime.Shutdown();
+                            }
+                            catch (TaskCanceledException)
+                            {
+                                // Ignore, the application is already shutting down
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error(ex, "Error during application shutdown");
+                            }
+                        });
                     });
                 });
 

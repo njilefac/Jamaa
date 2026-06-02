@@ -22,6 +22,7 @@ using Jamaa.Desktop.Security;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Models;
 using Jamaa.Desktop.Services.Navigation.Values;
+using Jamaa.Desktop.Services.Hosting;
 using Jamaa.Desktop.Settings;
 using Jamaa.Desktop.Setup;
 using Jamaa.Desktop.Shared;
@@ -63,6 +64,8 @@ public static partial class InitializationService
         await UpdateStatus("Starting background services...", 75);
         await StartBackgroundServicesAsync(_serviceProvider);
 
+        await UpdateStatus($"started embedded server", 80);
+
         await UpdateStatus("Setting up diagnostics...", 90);
         SetupDiagnostics(_serviceProvider);
 
@@ -74,11 +77,14 @@ public static partial class InitializationService
 
     public static async Task ShutdownAsync()
     {
-        if (_serviceProvider == null) return;
+        var serviceProvider = _serviceProvider;
+        if (serviceProvider == null) return;
 
-        await SaveDashboardLayoutAsync(_serviceProvider);
-        await StopBackgroundServicesAsync(_serviceProvider);
-        DisposeServiceProvider(_serviceProvider);
+        _serviceProvider = null;
+
+        await SaveDashboardLayoutAsync(serviceProvider);
+        await StopBackgroundServicesAsync(serviceProvider);
+        await DisposeServiceProviderAsync(serviceProvider);
     }
 
     private static void UpdateDatabaseSafely(IServiceProvider serviceProvider)
@@ -110,14 +116,24 @@ public static partial class InitializationService
 
     private static async Task StopBackgroundServicesAsync(IServiceProvider serviceProvider)
     {
+        var embeddedWebServer = serviceProvider.GetService<IEmbeddedWebServer>();
+        if (embeddedWebServer != null)
+            await embeddedWebServer.StopAsync(CancellationToken.None).ConfigureAwait(false);
+
         var akkaService = serviceProvider.GetService<IHostedService>();
         if (akkaService != null)
             // Stop background services but avoid UI thread dependencies during disposal if not on UI thread
             await akkaService.StopAsync(CancellationToken.None).ConfigureAwait(false);
     }
 
-    private static void DisposeServiceProvider(IServiceProvider? serviceProvider)
+    private static async Task DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
     {
+        if (serviceProvider is IAsyncDisposable asyncDisposable)
+        {
+            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+            return;
+        }
+
         if (serviceProvider is IDisposable disposable) disposable.Dispose();
     }
 
@@ -165,6 +181,9 @@ public static partial class InitializationService
     {
         var akkaService = serviceProvider.GetRequiredService<IHostedService>();
         await akkaService.StartAsync(CancellationToken.None);
+
+        var embeddedWebServer = serviceProvider.GetRequiredService<IEmbeddedWebServer>();
+        await embeddedWebServer.StartAsync(CancellationToken.None);
     }
 
     private static void SetupDiagnostics(IServiceProvider serviceProvider)

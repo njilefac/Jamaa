@@ -84,6 +84,7 @@
         <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.6" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.6" />
         <PackageReference Include="Mvvm.CommonInteractions.Avalonia" Version="1.0.68" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Scrutor" Version="7.0.0" />
         <PackageReference Include="Semi.Avalonia" Version="11.3.7.3" />
         <PackageReference Include="Semi.Avalonia.DataGrid" Version="11.3.7.3" />
