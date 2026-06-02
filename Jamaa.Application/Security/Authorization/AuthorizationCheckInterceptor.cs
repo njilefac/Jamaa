@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Jamaa.Application.Security.Authorization;
 
-public class AuthorizationCheckInterceptor(
+public partial class AuthorizationCheckInterceptor(
     ILogger<AuthorizationCheckInterceptor> logger,
     IUserSessionService userSessionService) : IInterceptor
 {
@@ -24,9 +24,7 @@ public class AuthorizationCheckInterceptor(
                 throw new SecurityException(
                     $"unauthorized operation [{currentUserName} => {invocation.TargetType}.{invocation.Method.Name}]");
 
-            logger.LogInformation(
-                "checking authorization before calling {InvocationTargetType}.{MethodName}", invocation.TargetType,
-                invocation.Method.Name);
+            LogCheckingAuthorization(invocation.TargetType, invocation.Method.Name);
             invocation.Proceed();
         }
     }
