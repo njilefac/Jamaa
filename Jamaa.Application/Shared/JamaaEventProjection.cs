@@ -473,38 +473,39 @@ public class OrganisationProjection : ReceivePersistentActor
     private async Task Handle(MemberRegistered @event, JamaaDbContext dbContext)
     {
         var matchingOrganisation = await dbContext.Organisations.FirstOrDefaultAsync(x => x.Id == @event.EntityId);
-        if (matchingOrganisation != null)
+        if (matchingOrganisation is null) return;
+
+        var memberId = @event.Id.Value;
+        var alreadyProjected = await dbContext.Set<MemberData>().AnyAsync(member => member.Id == memberId);
+        if (alreadyProjected) return;
+
+        var registrationId = $"{memberId}-registration";
+
+        var registrationData = new RegistrationData
         {
-            var memberId = Guid.NewGuid().ToString();
-            var registrationId = Guid.NewGuid().ToString();
+            Id = registrationId,
+            MemberId = memberId,
+            Organisation = matchingOrganisation,
+            MembershipType = @event.MembershipType,
+            StartDate = @event.RegistrationBegin,
+            Status = RegistrationStatus.Full,
+            Member = null! // Will be linked below
+        };
+        var memberData = new MemberData
+        {
+            Id = memberId,
+            FirstName = @event.FirstName,
+            MiddleName = @event.MiddleName,
+            LastName = @event.LastName,
+            Gender = @event.Gender,
+            OrganisationId = @event.EntityId,
+            Organisation = matchingOrganisation,
+            Registration = registrationData
+        };
+        registrationData.Member = memberData;
 
-            var registrationData = new RegistrationData
-            {
-                Id = registrationId,
-                MemberId = memberId,
-                Organisation = matchingOrganisation,
-                MembershipType = @event.MembershipType,
-                StartDate = @event.RegistrationBegin,
-                Status = RegistrationStatus.Full,
-                Member = null! // Will be linked below
-            };
-            var memberData = new MemberData
-            {
-                Id = memberId,
-                FirstName = @event.FirstName,
-                MiddleName = @event.MiddleName,
-                LastName = @event.LastName,
-                Gender = @event.Gender,
-                OrganisationId = @event.EntityId,
-                Organisation = matchingOrganisation,
-                Registration = registrationData
-            };
-            registrationData.Member = memberData;
-
-            matchingOrganisation.Members.Add(memberData);
-
-            await SaveChangesWithSqliteRetryAsync(dbContext);
-        }
+        dbContext.Set<MemberData>().Add(memberData);
+        await SaveChangesWithSqliteRetryAsync(dbContext);
     }
 
     private async Task Handle(OrganisationCreated @event, JamaaDbContext dbContext)

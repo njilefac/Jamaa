@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System;
+using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -42,6 +44,7 @@ public partial class AccountItemViewModel : ObservableObject
     [ObservableProperty] private int _decimalPrecision = 2;
     [ObservableProperty] private string _thousandSeparator = ",";
     [ObservableProperty] private decimal _openingBalance;
+    private string _openingBalanceText = "0.00";
     [ObservableProperty] private string _fiscalYearId = string.Empty;
     [ObservableProperty] private string _accountingPeriodId = string.Empty;
 
@@ -72,8 +75,118 @@ public partial class AccountItemViewModel : ObservableObject
 
     public ObservableCollection<AccountItemViewModel> SubAccounts { get; } = [];
 
+    public string OpeningBalanceText
+    {
+        get => _openingBalanceText;
+        set
+        {
+            if (_openingBalanceText == value) return;
+
+            _openingBalanceText = value;
+            OnPropertyChanged();
+
+            if (TryParseOpeningBalance(value, out var openingBalance))
+            {
+                OpeningBalance = openingBalance;
+            }
+        }
+    }
+
     public void ForceFormatOpeningBalance()
     {
+        _openingBalanceText = FormatOpeningBalanceText();
         OnPropertyChanged(nameof(OpeningBalance));
+        OnPropertyChanged(nameof(OpeningBalanceText));
+    }
+
+    partial void OnOpeningBalanceChanged(decimal value)
+    {
+        _ = value;
+        _openingBalanceText = FormatOpeningBalanceText();
+        OnPropertyChanged(nameof(OpeningBalanceText));
+    }
+
+    partial void OnDecimalPrecisionChanged(int value)
+    {
+        _ = value;
+        _openingBalanceText = FormatOpeningBalanceText();
+        OnPropertyChanged(nameof(OpeningBalanceText));
+    }
+
+    partial void OnThousandSeparatorChanged(string value)
+    {
+        _ = value;
+        _openingBalanceText = FormatOpeningBalanceText();
+        OnPropertyChanged(nameof(OpeningBalanceText));
+    }
+
+    private string FormatOpeningBalanceText()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        var format = (NumberFormatInfo)culture.NumberFormat.Clone();
+        format.NumberGroupSeparator = ThousandSeparator;
+        return OpeningBalance.ToString($"N{DecimalPrecision}", format);
+    }
+
+    private bool TryParseOpeningBalance(string value, out decimal openingBalance)
+    {
+        var normalized = value.Trim()
+            .Replace(" ", string.Empty)
+            .Replace("'", string.Empty)
+            .Replace("_", string.Empty);
+
+        if (normalized.Length == 0)
+        {
+            openingBalance = 0m;
+            return false;
+        }
+
+        var lastDot = normalized.LastIndexOf('.');
+        var lastComma = normalized.LastIndexOf(',');
+
+        if (lastDot >= 0 && lastComma >= 0)
+        {
+            var decimalSeparator = lastDot > lastComma ? '.' : ',';
+            var grouped = decimalSeparator == '.'
+                ? normalized.Replace(",", string.Empty)
+                : normalized.Replace(".", string.Empty);
+            var invariantDecimal = grouped.Replace(decimalSeparator, '.');
+            return decimal.TryParse(invariantDecimal, NumberStyles.Any, CultureInfo.InvariantCulture, out openingBalance);
+        }
+
+        if (lastDot >= 0)
+        {
+            if (ShouldTreatSingleSeparatorAsDecimal(normalized, lastDot))
+            {
+                var invariantDecimal = normalized.Replace(",", string.Empty);
+                return decimal.TryParse(invariantDecimal, NumberStyles.Any, CultureInfo.InvariantCulture, out openingBalance);
+            }
+
+            var grouped = normalized.Replace(".", string.Empty);
+            return decimal.TryParse(grouped, NumberStyles.Any, CultureInfo.InvariantCulture, out openingBalance);
+        }
+
+        if (lastComma >= 0)
+        {
+            if (ShouldTreatSingleSeparatorAsDecimal(normalized, lastComma))
+            {
+                var invariantDecimal = normalized.Replace(",", ".");
+                return decimal.TryParse(invariantDecimal, NumberStyles.Any, CultureInfo.InvariantCulture, out openingBalance);
+            }
+
+            var grouped = normalized.Replace(",", string.Empty);
+            return decimal.TryParse(grouped, NumberStyles.Any, CultureInfo.InvariantCulture, out openingBalance);
+        }
+
+        if (decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.CurrentCulture, out openingBalance))
+            return true;
+
+        return decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out openingBalance);
+    }
+
+    private bool ShouldTreatSingleSeparatorAsDecimal(string value, int separatorIndex)
+    {
+        var digitsAfterSeparator = value.Length - separatorIndex - 1;
+        return digitsAfterSeparator > 0 && digitsAfterSeparator <= (DecimalPrecision <= 0 ? 1 : DecimalPrecision);
     }
 }

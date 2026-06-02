@@ -53,22 +53,19 @@
 
         <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="OpeningBalanceCellTemplate">
             <Panel>
-                <TextBox
-                    HorizontalAlignment="Stretch"
-                    IsReadOnly="{Binding IsOpeningBalanceLocked}"
-                    IsVisible="{Binding IsLeafAccount}"
-                    Watermark="0.00">
+                    <TextBox
+                        HorizontalAlignment="Stretch"
+                        IsReadOnly="{Binding IsOpeningBalanceLocked}"
+                        IsVisible="{Binding IsLeafAccount}"
+                        Watermark="0.00">
                     <Interaction.Behaviors>
                         <behaviors:RefreshOnLostFocusBehavior />
                     </Interaction.Behaviors>
                     <TextBox.Text>
-                        <MultiBinding
-                            Converter="{StaticResource DecimalToFormattedStringConverter}"
-                            Mode="TwoWay">
-                            <Binding Path="OpeningBalance" />
-                            <Binding Path="DecimalPrecision" />
-                            <Binding Path="ThousandSeparator" />
-                        </MultiBinding>
+                        <Binding
+                            Mode="TwoWay"
+                            Path="OpeningBalanceText"
+                            UpdateSourceTrigger="PropertyChanged" />
                     </TextBox.Text>
                     <TextBox.InnerLeftContent>
                         <TextBlock
