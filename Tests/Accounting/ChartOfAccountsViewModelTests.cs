@@ -616,6 +616,32 @@ public class ChartOfAccountsViewModelTests
     }
 
     [Fact]
+    public void RefreshFilteredParentAccounts_ShouldExcludeInactiveAccounts()
+    {
+        var viewModel = CreateViewModel();
+
+        var activeParent = new AccountItemViewModel
+            { Id = "parent-active", Code = "1000", Name = "Assets", Type = AccountType.Asset, IsActive = true };
+        var inactiveParent = new AccountItemViewModel
+            { Id = "parent-inactive", Code = "1100", Name = "Legacy Assets", Type = AccountType.Asset, IsActive = false };
+        var childAccount = new AccountItemViewModel
+            { Id = "child-1", Code = "1010", Name = "Cash", Type = AccountType.Asset, Parent = activeParent };
+
+        var accountsField =
+            typeof(ChartOfAccountsViewModel).GetField("_accounts", BindingFlags.NonPublic | BindingFlags.Instance);
+        accountsField!.SetValue(viewModel, new ObservableCollection<AccountItemViewModel> { activeParent, inactiveParent, childAccount });
+
+        var refreshMethod = typeof(ChartOfAccountsViewModel).GetMethod("RefreshFilteredParentAccounts",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        refreshMethod!.Invoke(viewModel, null);
+
+        viewModel.SelectedAccountType = AccountType.Asset;
+
+        viewModel.FilteredParentAccounts.ShouldContain(account => account.Id == "parent-active");
+        viewModel.FilteredParentAccounts.ShouldNotContain(account => account.Id == "parent-inactive");
+    }
+
+    [Fact]
     public async Task SelectedParentAccount_ShouldAllowClearingBackToBlank()
     {
         var parentAccount = new AccountData

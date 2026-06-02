@@ -390,11 +390,15 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         if (SelectedAccountType.HasValue && potentialParent.Type != SelectedAccountType.Value)
             return false;
 
-        // 2. Cannot be itself
+        // 2. Must be active
+        if (!potentialParent.IsActive)
+            return false;
+
+        // 3. Cannot be itself
         if (SelectedAccount != null && potentialParent.Id == SelectedAccount.Id)
             return false;
 
-        // 3. No cycles
+        // 4. No cycles
         if (SelectedAccount != null && IsDescendantOf(potentialParent, SelectedAccount))
             return false;
 
