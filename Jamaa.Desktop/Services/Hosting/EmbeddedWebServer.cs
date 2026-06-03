@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -47,8 +48,15 @@ public sealed partial class EmbeddedWebServer(
         {
             if (_application != null) return;
 
-            await EnsureElsaSchemaCompatibilityAsync(sqliteDatabaseConnection.Value, cancellationToken).ConfigureAwait(false);
             _application = BuildApplication();
+
+            // Run Elsa EF migrations manually before app startup so we control the order:
+            // 1. Run migrations (creates tables from the 3.5.3 migration history)
+            // 2. Add any missing columns introduced by newer Elsa model versions
+            // 3. Start the app (tenant activation will find a fully-compatible schema)
+            await MigrateElsaDatabasesAsync(cancellationToken).ConfigureAwait(false);
+            await EnsureElsaSchemaCompatibilityAsync(sqliteDatabaseConnection.Value, cancellationToken).ConfigureAwait(false);
+
             await _application.StartAsync(cancellationToken).ConfigureAwait(false);
             _baseAddress = ResolveBaseAddress(_application);
             _startedSource.TrySetResult(_baseAddress);
@@ -114,11 +122,19 @@ public sealed partial class EmbeddedWebServer(
         
         builder.Services.AddElsa(elsa =>
         {
-            elsa.UseWorkflowManagement(management => 
-                management.UseEntityFrameworkCore(ef => ef.UseSqlite(sqliteConnectionString, elsaSqliteOptions)));
+            elsa.UseWorkflowManagement(management =>
+                management.UseEntityFrameworkCore(ef =>
+                {
+                    ef.RunMigrations = false;
+                    ef.UseSqlite(sqliteConnectionString, elsaSqliteOptions);
+                }));
 
-            elsa.UseWorkflowRuntime(runtime => 
-                runtime.UseEntityFrameworkCore(ef => ef.UseSqlite(sqliteConnectionString, elsaSqliteOptions)));
+            elsa.UseWorkflowRuntime(runtime =>
+                runtime.UseEntityFrameworkCore(ef =>
+                {
+                    ef.RunMigrations = false;
+                    ef.UseSqlite(sqliteConnectionString, elsaSqliteOptions);
+                }));
 
             elsa.UseWorkflowsApi();
 
@@ -135,6 +151,23 @@ public sealed partial class EmbeddedWebServer(
         application.MapGet("/", () => Results.Text("Jamaa embedded server"));
         application.MapGet("/health", () => Results.Ok(new { status = "ok" }));
         return application;
+    }
+
+    private async Task MigrateElsaDatabasesAsync(CancellationToken cancellationToken)
+    {
+        if (_application == null) return;
+
+        await using var managementScope = _application.Services.CreateAsyncScope();
+        var managementFactory = managementScope.ServiceProvider
+            .GetRequiredService<IDbContextFactory<ManagementElsaDbContext>>();
+        await using var managementContext = await managementFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await managementContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var runtimeScope = _application.Services.CreateAsyncScope();
+        var runtimeFactory = runtimeScope.ServiceProvider
+            .GetRequiredService<IDbContextFactory<RuntimeElsaDbContext>>();
+        await using var runtimeContext = await runtimeFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await runtimeContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task EnsureElsaSchemaCompatibilityAsync(string connectionString, CancellationToken cancellationToken)
