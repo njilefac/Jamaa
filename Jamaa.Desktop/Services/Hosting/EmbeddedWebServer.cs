@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -9,6 +10,7 @@ using Elsa.EntityFrameworkCore.Extensions;
 using Elsa.EntityFrameworkCore.Modules.Management;
 using Elsa.EntityFrameworkCore.Modules.Runtime;
 using Elsa.Extensions;
+using Elsa.Tenants.Extensions;
 using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -48,14 +50,12 @@ public sealed partial class EmbeddedWebServer(
         {
             if (_application != null) return;
 
-            _application = BuildApplication();
+            var elsaManagementConnectionString = BuildElsaConnectionString(sqliteDatabaseConnection.Value, "elsa-management.db");
+            var elsaRuntimeConnectionString = BuildElsaConnectionString(sqliteDatabaseConnection.Value, "elsa-runtime.db");
+            _application = BuildApplication(elsaManagementConnectionString, elsaRuntimeConnectionString);
 
-            // Run Elsa EF migrations manually before app startup so we control the order:
-            // 1. Run migrations (creates tables from the 3.5.3 migration history)
-            // 2. Add any missing columns introduced by newer Elsa model versions
-            // 3. Start the app (tenant activation will find a fully-compatible schema)
-            await MigrateElsaDatabasesAsync(cancellationToken).ConfigureAwait(false);
-            await EnsureElsaSchemaCompatibilityAsync(sqliteDatabaseConnection.Value, cancellationToken).ConfigureAwait(false);
+            await EnsureElsaDatabasesReadyAsync(cancellationToken).ConfigureAwait(false);
+            await EnsureElsaSchemaCompatibilityAsync(elsaManagementConnectionString, cancellationToken).ConfigureAwait(false);
 
             await _application.StartAsync(cancellationToken).ConfigureAwait(false);
             _baseAddress = ResolveBaseAddress(_application);
@@ -97,7 +97,7 @@ public sealed partial class EmbeddedWebServer(
         _gate.Dispose();
     }
 
-    private WebApplication BuildApplication()
+    private WebApplication BuildApplication(string elsaManagementConnectionString, string elsaRuntimeConnectionString)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -114,36 +114,33 @@ public sealed partial class EmbeddedWebServer(
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog(embeddedLogger, dispose: true);
 
-        var sqliteConnectionString = sqliteDatabaseConnection.Value;
-        var elsaSqliteOptions = new ElsaDbContextOptions
-        {
-            SchemaName = null
-        };
-        
+        var elsaSqliteOptions = new ElsaDbContextOptions { SchemaName = null };
+
         builder.Services.AddElsa(elsa =>
         {
             elsa.UseWorkflowManagement(management =>
                 management.UseEntityFrameworkCore(ef =>
                 {
                     ef.RunMigrations = false;
-                    ef.UseSqlite(sqliteConnectionString, elsaSqliteOptions);
+                    ef.UseSqlite(elsaManagementConnectionString, elsaSqliteOptions);
                 }));
 
             elsa.UseWorkflowRuntime(runtime =>
                 runtime.UseEntityFrameworkCore(ef =>
                 {
                     ef.RunMigrations = false;
-                    ef.UseSqlite(sqliteConnectionString, elsaSqliteOptions);
+                    ef.UseSqlite(elsaRuntimeConnectionString, elsaSqliteOptions);
                 }));
 
             elsa.UseWorkflowsApi();
 
             elsa.UseScheduling();
             elsa.UseHttp();
+            elsa.UseTenants();
+            elsa.UseTenantHttpRouting(f => f.WithTenantHeader("x-tenant"));
         });
-        
+
         builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Loopback, 0));
-        
 
         builder.Services.AddRazorPages();
 
@@ -153,7 +150,13 @@ public sealed partial class EmbeddedWebServer(
         return application;
     }
 
-    private async Task MigrateElsaDatabasesAsync(CancellationToken cancellationToken)
+    /// <summary>
+    /// Calls EnsureCreatedAsync on each Elsa DbContext. On a fresh elsa.db this creates
+    /// the complete schema from the current entity model (Elsa 3.7.0), including all
+    /// columns that the 3.5.3 EF migrations never added. On an existing file it is a
+    /// fast no-op (returns false without touching the schema).
+    /// </summary>
+    private async Task EnsureElsaDatabasesReadyAsync(CancellationToken cancellationToken)
     {
         if (_application == null) return;
 
@@ -161,13 +164,13 @@ public sealed partial class EmbeddedWebServer(
         var managementFactory = managementScope.ServiceProvider
             .GetRequiredService<IDbContextFactory<ManagementElsaDbContext>>();
         await using var managementContext = await managementFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await managementContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+        await managementContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
 
         await using var runtimeScope = _application.Services.CreateAsyncScope();
         var runtimeFactory = runtimeScope.ServiceProvider
             .GetRequiredService<IDbContextFactory<RuntimeElsaDbContext>>();
         await using var runtimeContext = await runtimeFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        await runtimeContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+        await runtimeContext.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task EnsureElsaSchemaCompatibilityAsync(string connectionString, CancellationToken cancellationToken)
@@ -211,6 +214,14 @@ public sealed partial class EmbeddedWebServer(
         }
 
         return false;
+    }
+
+    private static string BuildElsaConnectionString(string jamaaConnectionString, string fileName)
+    {
+        var builder = new SqliteConnectionStringBuilder(jamaaConnectionString);
+        var directory = Path.GetDirectoryName(builder.DataSource) ?? AppContext.BaseDirectory;
+        builder.DataSource = Path.Combine(directory, fileName);
+        return builder.ConnectionString;
     }
 
     private static Uri ResolveBaseAddress(WebApplication application)
