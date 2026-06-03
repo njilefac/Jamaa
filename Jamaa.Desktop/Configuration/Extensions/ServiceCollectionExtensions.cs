@@ -23,6 +23,12 @@ namespace Jamaa.Desktop.Configuration.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    private static string ResolveSqliteConnectionString(IConfigurationRoot configurationRoot)
+    {
+        return
+            $"Data Source={ResolveDataPath(configurationRoot) ?? throw new InvalidOperationException()};Cache=Shared;";
+    }
+
     private static string ResolveDataPath(IConfigurationRoot configurationRoot)
     {
         var baseAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -85,8 +91,7 @@ public static class ServiceCollectionExtensions
                     b.AddLogger<SerilogLogger>();
                 });
 
-                var connectionString =
-                    $"Data Source={ResolveDataPath(configuration) ?? throw new InvalidOperationException()};Cache=Shared;";
+                var connectionString = ResolveSqliteConnectionString(configuration);
 
 
                 builder.WithSqlPersistence(connectionString,
@@ -105,24 +110,33 @@ public static class ServiceCollectionExtensions
         public ServiceCollection ConfigureServices(IConfigurationRoot configuration)
         {
             services.AddLogging();
+            var dataPath = ResolveDataPath(configuration);
+            var sqliteConnectionString = ResolveSqliteConnectionString(configuration);
+            var serilogLogger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration, new ConfigurationReaderOptions
+                {
+                    SectionName = "Serilog"
+                })
+                .CreateLogger();
+
+            Log.Logger = serilogLogger;
 
             services.Configure<DatabaseOptions>(options =>
             {
                 configuration.GetSection("Database").Bind(options);
-                options.DataFile = ResolveDataPath(configuration);
+                options.DataFile = dataPath;
             });
+
+            services.Configure<SyncfusionSettings>(configuration.GetSection(SyncfusionSettings.SectionName));
+            services.AddSingleton(new SqliteDatabaseConnection(sqliteConnectionString));
+            services.AddSingleton<IConfigurationRoot>(configuration);
+            services.AddSingleton<IConfiguration>(configuration);
 
             services
                 .RegisterApplicationServices()
                 .RegisterDataServices()
                 .RegisterPresentationServices()
-                .AddSerilog((_, l) =>
-                {
-                    l.ReadFrom.Configuration(configuration, new ConfigurationReaderOptions
-                    {
-                        SectionName = "Serilog"
-                    });
-                });
+                .AddSerilog(serilogLogger, dispose: false);
 
             return services;
         }

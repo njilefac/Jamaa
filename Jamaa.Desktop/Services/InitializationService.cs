@@ -10,6 +10,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Jamaa.Application.Shared.Logging;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Configuration;
+using Jamaa.Desktop.Configuration;
 using Jamaa.Desktop.Accounting;
 using Jamaa.Desktop.Assets.Resources;
 using Jamaa.Desktop.Configuration.Extensions;
@@ -31,6 +32,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Syncfusion.Licensing;
 using Serilog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -54,6 +57,9 @@ public static partial class InitializationService
 
         await UpdateStatus("Creating service provider...", 30);
         _serviceProvider = CreateServiceProvider(configuration, lifeTime);
+
+        await UpdateStatus("Initializing licenses...", 40);
+        InitializeSyncfusionLicense(_serviceProvider);
 
         await UpdateStatus("Registering routes...", 45);
         RegisterRoutes(_serviceProvider.GetRequiredService<IRouteRegistry>());
@@ -128,13 +134,15 @@ public static partial class InitializationService
 
     private static async Task DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
     {
-        if (serviceProvider is IAsyncDisposable asyncDisposable)
+        switch (serviceProvider)
         {
-            await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-            return;
+            case IAsyncDisposable asyncDisposable:
+                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                return;
+            case IDisposable disposable:
+                disposable.Dispose();
+                break;
         }
-
-        if (serviceProvider is IDisposable disposable) disposable.Dispose();
     }
 
     private static async Task UpdateStatus(string status, double progress)
@@ -184,6 +192,21 @@ public static partial class InitializationService
 
         var embeddedWebServer = serviceProvider.GetRequiredService<IEmbeddedWebServer>();
         await embeddedWebServer.StartAsync(CancellationToken.None);
+    }
+
+    private static void InitializeSyncfusionLicense(IServiceProvider serviceProvider)
+    {
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        var settings = serviceProvider.GetRequiredService<IOptions<SyncfusionSettings>>().Value;
+
+        if (string.IsNullOrWhiteSpace(settings.LicenseKey))
+        {
+            logger.LogWarning("Syncfusion license key is not configured.");
+            return;
+        }
+
+        SyncfusionLicenseProvider.RegisterLicense(settings.LicenseKey);
+        logger.LogInformation("Syncfusion license initialized.");
     }
 
     private static void SetupDiagnostics(IServiceProvider serviceProvider)
@@ -270,14 +293,6 @@ public static partial class InitializationService
         LogApplyingPendingMigrations(logger, string.Join(", ", pendingMigrations));
         dataContext.Database.Migrate();
         LogTheDatabaseWasUpgraded(logger);
-    }
-
-    // Since LoggerMessage is partial, we'd need to put this in a partial class 
-    // or just use logger.LogError directly for simplicity if it's not a performance-critical path.
-    // However, I will keep it simple for now or use the logger directly.
-    private static void LogException(ILogger logger)
-    {
-        logger.LogError("An error occurred during database update.");
     }
 
     private static void LogApplyingPendingMigrations(ILogger logger, string migrations)
