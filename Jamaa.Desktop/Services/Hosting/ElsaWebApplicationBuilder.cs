@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Threading.Tasks;
 using Elsa.EntityFrameworkCore;
 using Elsa.EntityFrameworkCore.Extensions;
 using Elsa.EntityFrameworkCore.Modules.Management;
@@ -14,7 +15,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Settings.Configuration;
 
 namespace Jamaa.Desktop.Services.Hosting;
 
@@ -36,18 +36,12 @@ public static class ElsaWebApplicationBuilder
             Args = [],
             ContentRootPath = AppContext.BaseDirectory
         });
+        builder.WebHost.UseStaticWebAssets();
 
-        // Configure logging
+        // Configure logging (reuse the app-wide Serilog instance and sinks).
         logger.LogInformation("ElsaWebApplicationBuilder: Configuring Serilog");
-        var embeddedLogger = new LoggerConfiguration()
-            .ReadFrom.Configuration(configuration, new ConfigurationReaderOptions
-            {
-                SectionName = "Serilog"
-            })
-            .CreateLogger();
-
         builder.Logging.ClearProviders();
-        builder.Logging.AddSerilog(embeddedLogger, dispose: true);
+        builder.Logging.AddSerilog(Log.Logger, dispose: false);
 
         // Configure Elsa services
         logger.LogInformation("ElsaWebApplicationBuilder: Adding Elsa services");
@@ -125,8 +119,9 @@ public static class ElsaWebApplicationBuilder
     private static void ConfigureMiddleware(WebApplication app)
     {
         // Static file serving (for Elsa Studio Blazor WASM assets and other static files)
-        // Note: We use UseStaticFiles() instead of MapStaticAssets() because
-        // we're serving Elsa's embedded resources, not a locally-built Blazor app
+        // Map generated static web assets (_framework, _content, scoped CSS, etc.)
+        // and serve any additional file-based assets from the host's web root.
+        app.MapStaticAssets();
         app.UseRouting();
         app.UseStaticFiles();
         app.UseCors();
@@ -140,9 +135,74 @@ public static class ElsaWebApplicationBuilder
         app.UseWorkflows();
 
         // Blazor WASM fallback for client-side routing
-        app.MapFallbackToPage("/");
+        app.MapFallback(ServeElsaStudioHostPageAsync);
 
         // Health check endpoint
         app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }));
+    }
+
+    private static Task ServeElsaStudioHostPageAsync(HttpContext context)
+    {
+        var basePath = context.Request.PathBase.Value ?? string.Empty;
+        var baseUrl = $"{context.Request.Scheme}://{context.Request.Host}";
+        var apiUrl = baseUrl + basePath + "/elsa/api";
+        var html = $$"""
+                    <!DOCTYPE html>
+                    <html>
+
+                    <head>
+                        <meta charset="utf-8"/>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+                        <title>Elsa Studio - Embedded</title>
+                        <base href="/"/>
+                        <link rel="apple-touch-icon" sizes="180x180" href="{{basePath}}/_content/Elsa.Studio.Shell/apple-touch-icon.png">
+                        <link rel="icon" type="image/png" sizes="32x32" href="{{basePath}}/_content/Elsa.Studio.Shell/favicon-32x32.png">
+                        <link rel="icon" type="image/png" sizes="16x16" href="{{basePath}}/_content/Elsa.Studio.Shell/favicon-16x16.png">
+                        <link rel="manifest" href="{{basePath}}/_content/Elsa.Studio.Shell/site.webmanifest">
+                        <link rel="preconnect" href="https://fonts.googleapis.com">
+                        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                        <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet"/>
+                        <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+                        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+                        <link href="https://fonts.googleapis.com/css2?family=Grandstander:wght@100&display=swap" rel="stylesheet">
+                        <link href="{{basePath}}/_content/MudBlazor/MudBlazor.min.css" rel="stylesheet"/>
+                        <link href="{{basePath}}/_content/CodeBeam.MudBlazor.Extensions/MudExtensions.min.css" rel="stylesheet"/>
+                        <link href="{{basePath}}/_content/Radzen.Blazor/css/material-base.css" rel="stylesheet">
+                        <link href="{{basePath}}/_content/Elsa.Studio.Shell/css/shell.css" rel="stylesheet">
+                        <link href="Jamaa.Elsa.Studio.styles.css" rel="stylesheet">
+                    </head>
+
+                    <body>
+                    <div id="app">
+                        <div class="loading-splash mud-container mud-container-maxwidth-false">
+                            <h5 class="mud-typography mud-typography-h5 mud-primary-text my-6">Loading Elsa Studio...</h5>
+                        </div>
+                    </div>
+
+                    <div id="blazor-error-ui">
+                        An unhandled error has occurred.
+                        <a href="" class="reload">Reload</a>
+                        <a class="dismiss">🗙</a>
+                    </div>
+                    <script src="{{basePath}}/_content/BlazorMonaco/jsInterop.js"></script>
+                    <script src="{{basePath}}/_content/BlazorMonaco/lib/monaco-editor/min/vs/loader.js"></script>
+                    <script src="{{basePath}}/_content/BlazorMonaco/lib/monaco-editor/min/vs/editor/editor.main.js"></script>
+                    <script src="{{basePath}}/_content/MudBlazor/MudBlazor.min.js"></script>
+                    <script src="{{basePath}}/_content/CodeBeam.MudBlazor.Extensions/MudExtensions.min.js"></script>
+                    <script src="{{basePath}}/_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+                    <script>
+                        window.getClientConfig = function() { return {
+                            "apiUrl": "{{apiUrl}}",
+                            "basePath": "{{basePath}}"
+                         } };
+                    </script>
+                    <script src="_framework/blazor.webassembly.js"></script>
+                    </body>
+
+                    </html>
+                    """;
+
+        context.Response.ContentType = "text/html; charset=utf-8";
+        return context.Response.WriteAsync(html);
     }
 }

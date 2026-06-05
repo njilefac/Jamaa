@@ -58,6 +58,8 @@ public static partial class InitializationService
         await UpdateStatus("Creating service provider...", 30);
         _serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
+        var embeddedWebServerTask = StartEmbeddedWebServerAsync(_serviceProvider);
+
         await UpdateStatus("Verifying licenses...", 40);
         InitializeSyncfusionLicense(_serviceProvider);
 
@@ -68,7 +70,7 @@ public static partial class InitializationService
         UpdateDatabaseSafely(_serviceProvider);
 
         await UpdateStatus("Starting background services...", 75);
-        await StartBackgroundServicesAsync(_serviceProvider);
+        await StartBackgroundServicesAsync(_serviceProvider, embeddedWebServerTask);
 
         await UpdateStatus($"started embedded server", 80);
 
@@ -185,13 +187,18 @@ public static partial class InitializationService
             .BuildServiceProvider();
     }
 
-    private static async Task StartBackgroundServicesAsync(IServiceProvider serviceProvider)
+    private static Task StartEmbeddedWebServerAsync(IServiceProvider serviceProvider)
+    {
+        var embeddedWebServer = serviceProvider.GetRequiredService<IEmbeddedWebServer>();
+        return embeddedWebServer.StartAsync(CancellationToken.None);
+    }
+
+    private static async Task StartBackgroundServicesAsync(IServiceProvider serviceProvider, Task embeddedWebServerTask)
     {
         var akkaService = serviceProvider.GetRequiredService<IHostedService>();
         await akkaService.StartAsync(CancellationToken.None);
 
-        var embeddedWebServer = serviceProvider.GetRequiredService<IEmbeddedWebServer>();
-        await embeddedWebServer.StartAsync(CancellationToken.None);
+        await embeddedWebServerTask.ConfigureAwait(false);
     }
 
     private static void InitializeSyncfusionLicense(IServiceProvider serviceProvider)
