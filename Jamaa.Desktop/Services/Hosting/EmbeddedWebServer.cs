@@ -1,19 +1,22 @@
 using System;
+using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Jamaa.Desktop.Configuration.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Jamaa.Desktop.Services.Hosting;
 
-public sealed partial class EmbeddedWebServer(ILogger<EmbeddedWebServer> logger) : IEmbeddedWebServer, IAsyncDisposable
+public sealed partial class EmbeddedWebServer(
+    ILogger<EmbeddedWebServer> logger,
+    SqliteDatabaseConnection sqliteDatabaseConnection,
+    IConfigurationRoot configuration) : IEmbeddedWebServer, IAsyncDisposable
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
     private WebApplication? _application;
@@ -34,14 +37,27 @@ public sealed partial class EmbeddedWebServer(ILogger<EmbeddedWebServer> logger)
         {
             if (_application != null) return;
 
-            _application = BuildApplication("", "");
+            logger.LogInformation("EmbeddedWebServer: Building Elsa connection strings");
+            var managementConnStr = BuildElsaConnectionString(sqliteDatabaseConnection.Value, "elsa-management.db");
+            var runtimeConnStr = BuildElsaConnectionString(sqliteDatabaseConnection.Value, "elsa-runtime.db");
+
+            logger.LogInformation("EmbeddedWebServer: Building Elsa + Studio WebApplication");
+            _application = ElsaWebApplicationBuilder.BuildElsaWebApplication(logger, managementConnStr, runtimeConnStr, configuration);
+
+            logger.LogInformation("EmbeddedWebServer: Starting WebApplication");
             await _application.StartAsync(cancellationToken).ConfigureAwait(false);
+
+            logger.LogInformation("EmbeddedWebServer: Initializing Elsa databases");
+            await ElsaDatabaseInitializer.InitializeAsync(_application, managementConnStr, runtimeConnStr, logger, cancellationToken).ConfigureAwait(false);
+
+            logger.LogInformation("EmbeddedWebServer: Resolving base address");
             _baseAddress = ResolveBaseAddress(_application);
             _startedSource.TrySetResult(_baseAddress);
             LogEmbeddedServerStarted(_baseAddress);
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "EmbeddedWebServer: Startup failed");
             _startedSource.TrySetException(ex);
             throw;
         }
@@ -59,9 +75,11 @@ public sealed partial class EmbeddedWebServer(ILogger<EmbeddedWebServer> logger)
         {
             if (_application == null) return;
 
+            logger.LogInformation("EmbeddedWebServer: Stopping");
             await _application.StopAsync(cancellationToken).ConfigureAwait(false);
             await _application.DisposeAsync().ConfigureAwait(false);
             _application = null;
+            logger.LogInformation("EmbeddedWebServer: Stopped");
         }
         finally
         {
@@ -75,20 +93,12 @@ public sealed partial class EmbeddedWebServer(ILogger<EmbeddedWebServer> logger)
         _gate.Dispose();
     }
 
-    private static WebApplication BuildApplication(string elsaManagementConnectionString, string elsaRuntimeConnectionString)
+    private static string BuildElsaConnectionString(string jamaaConnectionString, string fileName)
     {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            Args = [],
-            ContentRootPath = AppContext.BaseDirectory
-        });
-
-        builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Loopback, 0));
-
-        var application = builder.Build();
-        application.MapGet("/", () => Results.Text("Jamaa embedded server"));
-        application.MapGet("/health", () => Results.Ok(new { status = "ok" }));
-        return application;
+        var builder = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(jamaaConnectionString);
+        var directory = Path.GetDirectoryName(builder.DataSource) ?? AppContext.BaseDirectory;
+        builder.DataSource = Path.Combine(directory, fileName);
+        return builder.ConnectionString;
     }
 
     private static Uri ResolveBaseAddress(WebApplication application)
