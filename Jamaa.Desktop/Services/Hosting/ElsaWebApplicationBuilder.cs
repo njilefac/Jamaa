@@ -124,11 +124,12 @@ public static class ElsaWebApplicationBuilder
 
     private static void ConfigureMiddleware(WebApplication app)
     {
-        // Static assets and routing
-        app.MapStaticAssets();
+        // Static file serving (for Elsa Studio Blazor WASM assets and other static files)
+        // Note: We use UseStaticFiles() instead of MapStaticAssets() because
+        // we're serving Elsa's embedded resources, not a locally-built Blazor app
         app.UseRouting();
-        app.UseCors();
         app.UseStaticFiles();
+        app.UseCors();
 
         // Authentication & Authorization
         app.UseAuthentication();

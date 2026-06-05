@@ -116,7 +116,7 @@ public static class ElsaDatabaseInitializer
                 await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Log but don't fail - schema compatibility is a best-effort operation
             throw;
