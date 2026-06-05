@@ -58,7 +58,7 @@ public static partial class InitializationService
         await UpdateStatus("Creating service provider...", 30);
         _serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
-        await UpdateStatus("Initializing licenses...", 40);
+        await UpdateStatus("Verifying licenses...", 40);
         InitializeSyncfusionLicense(_serviceProvider);
 
         await UpdateStatus("Registering routes...", 45);
