@@ -16,7 +16,7 @@ public class User(
     Guid? id = null)
     : Person(firstName, middleName, lastName)
 {
-    public UserAccount Account =>  new(userName, password, email, isSuperUser, isActive, id);
+    public UserAccount Account => new(userName, password, email, isSuperUser, isActive, id);
     public string? DashboardLayout { get; set; } = dashboardLayout;
     public Guid? Id => id;
 }

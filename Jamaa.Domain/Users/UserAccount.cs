@@ -12,6 +12,6 @@ public record UserAccount(
     Guid? ExternalId = null)
 {
     public Guid Id { get; } = ExternalId ?? Guid.NewGuid();
-    public Credentials Credentials =>  new(UserName, Password);
+    public Credentials Credentials => new(UserName, Password);
     public DateTimeOffset CreatedOn { get; set; }
 }

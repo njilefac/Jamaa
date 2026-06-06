@@ -1,10 +1,12 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Akka.Event;
 using Akka.Hosting;
 using Akka.Logger.Serilog;
 using Akka.Persistence.Sql.Hosting;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using Domain.Shared.Values;
 using Jamaa.Application.Configuration;
 using Jamaa.Application.Shared;
@@ -21,6 +23,27 @@ namespace Jamaa.Desktop.Configuration.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    private static string ResolveSqliteConnectionString(IConfigurationRoot configurationRoot)
+    {
+        return
+            $"Data Source={ResolveDataPath(configurationRoot) ?? throw new InvalidOperationException()};Cache=Shared;";
+    }
+
+    private static string ResolveDataPath(IConfigurationRoot configurationRoot)
+    {
+        var baseAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        var jamaaDataFolder = Path.Combine(baseAppData, "Jamaa");
+
+        if (!Directory.Exists(jamaaDataFolder)) Directory.CreateDirectory(jamaaDataFolder);
+
+        var dbFileName = configurationRoot.GetSection("Database:DataFile").Value
+                         ?? throw new InvalidOperationException("Database filename missing in config.");
+
+        var dbPath = Path.Combine(jamaaDataFolder, dbFileName);
+        return dbPath;
+    }
+
     extension(ServiceCollection services)
     {
         public ServiceCollection ConfigureAkka(IClassicDesktopStyleApplicationLifetime applicationLifetime,
@@ -43,36 +66,39 @@ public static class ServiceCollectionExtensions
 
                     system.WhenTerminated.ContinueWith(_ =>
                     {
-                        try
+                        Dispatcher.UIThread.Post(() =>
                         {
-                            applicationLifetime.Shutdown();
-                        }
-                        catch (TaskCanceledException)
-                        {
-                            // Ignore, the application is already shutting down
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "Error during application shutdown");
-                        }
+                            try
+                            {
+                                applicationLifetime.Shutdown();
+                            }
+                            catch (TaskCanceledException)
+                            {
+                                // Ignore, the application is already shutting down
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error(ex, "Error during application shutdown");
+                            }
+                        });
                     });
                 });
 
                 builder.ConfigureLoggers(b =>
                 {
-                    b.LogLevel = Akka.Event.LogLevel.WarningLevel;
+                    b.LogLevel = LogLevel.WarningLevel;
                     b.ClearLoggers();
                     b.AddLogger<SerilogLogger>();
                 });
 
-                var connectionString = $"Data Source={ResolveDataPath(configuration) ?? throw new InvalidOperationException()};";
+                var connectionString = ResolveSqliteConnectionString(configuration);
 
 
                 builder.WithSqlPersistence(connectionString,
                     ProviderName.SQLiteMS,
                     journalBuilder: b =>
                     {
-                        b.AddWriteEventAdapter<LibotaEventTagger>("organisation-event-tagger", [typeof(ILibotaEvent)]);
+                        b.AddWriteEventAdapter<JamaaEventTagger>("organisation-event-tagger", [typeof(IJamaaEvent)]);
                     },
                     autoInitialize: true,
                     useWriterUuidColumn: true);
@@ -84,44 +110,35 @@ public static class ServiceCollectionExtensions
         public ServiceCollection ConfigureServices(IConfigurationRoot configuration)
         {
             services.AddLogging();
+            var dataPath = ResolveDataPath(configuration);
+            var sqliteConnectionString = ResolveSqliteConnectionString(configuration);
+            var serilogLogger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration, new ConfigurationReaderOptions
+                {
+                    SectionName = "Serilog"
+                })
+                .CreateLogger();
+
+            Log.Logger = serilogLogger;
 
             services.Configure<DatabaseOptions>(options =>
             {
                 configuration.GetSection("Database").Bind(options);
-                options.DataFile = ResolveDataPath(configuration);
+                options.DataFile = dataPath;
             });
+
+            services.Configure<SyncfusionSettings>(configuration.GetSection(SyncfusionSettings.SectionName));
+            services.AddSingleton(new SqliteDatabaseConnection(sqliteConnectionString));
+            services.AddSingleton<IConfigurationRoot>(configuration);
+            services.AddSingleton<IConfiguration>(configuration);
 
             services
                 .RegisterApplicationServices()
                 .RegisterDataServices()
                 .RegisterPresentationServices()
-                .AddSerilog((_, l) =>
-                {
-                    l.ReadFrom.Configuration(configuration, new ConfigurationReaderOptions
-                    {
-                        SectionName = "Serilog"
-                    });
-                });
+                .AddSerilog(serilogLogger, dispose: false);
 
             return services;
         }
-    }
-
-    private static string ResolveDataPath(IConfigurationRoot configurationRoot)
-    {
-        var baseAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-        var jamaaDataFolder = Path.Combine(baseAppData, "Jamaa");
-
-        if (!Directory.Exists(jamaaDataFolder))
-        {
-            Directory.CreateDirectory(jamaaDataFolder);
-        }
-
-        var dbFileName = configurationRoot.GetSection("Database:DataFile").Value
-                         ?? throw new InvalidOperationException("Database filename missing in config.");
-
-        var dbPath = Path.Combine(jamaaDataFolder, dbFileName);
-        return dbPath;
     }
 }

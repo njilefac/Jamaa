@@ -10,77 +10,31 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Jamaa.Application.Finances;
-using Jamaa.Application.Finances.Values;
+using Domain.Accounting.Values;
+using Jamaa.Application.Accounting;
+using Jamaa.Application.Accounting.Models;
 using Jamaa.Application.Users.Services;
-using Jamaa.Data.Models.Finances;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Notifications;
 using Jamaa.Desktop.Shared;
 
 namespace Jamaa.Desktop.Accounting;
 
-public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObject, IApplicationModule, IRouteableViewModel, IDisposable
+public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObject, IApplicationModule,
+    IRouteableViewModel, IDisposable
 {
-    private readonly IFinanceManagementFacade _financeManagementFacade;
+    private readonly IAccountingFacade _accountingFacade;
     private readonly INotificationService _notificationService;
     private readonly string _organisationId;
     private readonly CompositeDisposable _subscriptions = [];
-    private string _persistedBaseCurrency = "USD";
-    private string _persistedDateFormat = "DD/MM/YYYY";
-    private int _persistedDecimalPrecision = 2;
-    private IReadOnlyList<string> _persistedAvailableCurrencySnapshotKeys = ["EUR|EUR", "KES|KSh", "USD|$"];
+
+    [ObservableProperty] private string _currencyStatusMessage = string.Empty;
+
+    [ObservableProperty] private bool _hasCurrencyErrorStatus;
+
+    [ObservableProperty] private bool _hasErrorStatus;
+
     private bool _hasPersistedSnapshot;
-    private bool _isSynchronizingBaseCurrencySelection;
-    private string _lastKnownValidBaseCurrency = "USD";
-
-    public AccountingCurrencyAndDateFormatsViewModel(
-        IFinanceManagementFacade financeManagementFacade,
-        IUserSessionService userSessionService,
-        INotificationService notificationService)
-    {
-        var syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
-
-        _financeManagementFacade = financeManagementFacade;
-        _notificationService = notificationService;
-        _organisationId = ResolveOrganisationId(userSessionService);
-        AvailableCurrencies.CollectionChanged += OnAvailableCurrenciesChanged;
-
-        _subscriptions.Add(
-            financeManagementFacade.CurrentAccountingSettings
-                .ObserveOn(syncContext)
-                .Subscribe(ApplySettings, HandleStreamError));
-
-        _subscriptions.Add(
-            financeManagementFacade.AccountingSettingsUpdated
-                .Where(settings => settings.OrganisationId == _organisationId)
-                .ObserveOn(syncContext)
-                .Subscribe(ApplySettings, HandleStreamError));
-    }
-
-    public Guid Id => Guid.Parse("d3a693eb-5b4c-44ee-ae45-cf32b5ec4fe9");
-    public string Title => "Currency & Date Formats";
-    public object? HeaderContent => null;
-
-    public ObservableCollection<AccountingAvailableCurrencyData> AvailableCurrencies { get; } = [];
-    public IReadOnlyList<AccountingAvailableCurrencyData> BaseCurrencyOptions => AvailableCurrencies;
-    public IReadOnlyList<string> DateFormatOptions { get; } = ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"];
-    public IReadOnlyList<int> DecimalPrecisionOptions { get; } = [0, 1, 2, 3, 4];
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FormattingPreview))]
-    private string _selectedBaseCurrency = "USD";
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FormattingPreview))]
-    private string _selectedDateFormat = "DD/MM/YYYY";
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FormattingPreview))]
-    private int _selectedDecimalPrecision = 2;
-
-    [ObservableProperty]
-    private string _statusMessage = string.Empty;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveBaseSettingsCommand))]
@@ -89,26 +43,69 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     [NotifyCanExecuteChangedFor(nameof(AddCurrencyCommand))]
     private bool _isOperationInFlight;
 
-    [ObservableProperty]
-    private bool _hasErrorStatus;
+    private bool _isSynchronizingBaseCurrencySelection;
+    private string _lastKnownValidBaseCurrency = "USD";
 
-    [ObservableProperty]
-    private string _currencyStatusMessage = string.Empty;
-
-    [ObservableProperty]
-    private bool _hasCurrencyErrorStatus;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(AddCurrencyCommand))]
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(AddCurrencyCommand))]
     private string _newCurrencyCode = string.Empty;
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(AddCurrencyCommand))]
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(AddCurrencyCommand))]
     private string _newCurrencySymbol = string.Empty;
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(RemoveSelectedCurrencyCommand))]
+    private IReadOnlyList<string> _persistedAvailableCurrencySnapshotKeys = ["EUR|EUR", "KES|KSh", "USD|$"];
+    private string _persistedBaseCurrency = "USD";
+    private string _persistedDateFormat = "DD/MM/YYYY";
+    private int _persistedDecimalPrecision = 2;
+    private string _persistedThousandSeparator = ",";
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(RemoveSelectedCurrencyCommand))]
     private string _selectedAvailableCurrencyCode = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FormattingPreview))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveSelectedCurrencyCommand))]
+    private string _selectedBaseCurrency = "USD";
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FormattingPreview))]
+    private string _selectedDateFormat = "DD/MM/YYYY";
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FormattingPreview))]
+    private int _selectedDecimalPrecision = 2;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FormattingPreview))]
+    private string _selectedThousandSeparator = ",";
+
+    [ObservableProperty] private string _statusMessage = string.Empty;
+
+    public AccountingCurrencyAndDateFormatsViewModel(
+        IAccountingFacade accountingFacade,
+        IUserSessionService userSessionService,
+        INotificationService notificationService)
+    {
+        var syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
+
+        _accountingFacade = accountingFacade;
+        _notificationService = notificationService;
+        _organisationId = ResolveOrganisationId(userSessionService);
+        AvailableCurrencies.CollectionChanged += OnAvailableCurrenciesChanged;
+
+        _subscriptions.Add(
+            accountingFacade.CurrentAccountingSettings
+                .ObserveOn(syncContext)
+                .Subscribe(ApplySettings, HandleStreamError));
+
+        _subscriptions.Add(
+            accountingFacade.AccountingSettingsUpdated
+                .Where(settings => settings.OrganisationId == _organisationId)
+                .ObserveOn(syncContext)
+                .Subscribe(ApplySettings, HandleStreamError));
+    }
+
+    public ObservableCollection<AccountingAvailableCurrencyData> AvailableCurrencies { get; } = [];
+    public IReadOnlyList<AccountingAvailableCurrencyData> BaseCurrencyOptions => AvailableCurrencies;
+    public IReadOnlyList<string> DateFormatOptions { get; } = ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"];
+    public IReadOnlyList<int> DecimalPrecisionOptions { get; } = [0, 1, 2, 3, 4];
+    public IReadOnlyList<string> ThousandSeparatorOptions { get; } = [",", " ", "'"];
 
     public bool HasUnsavedChanges =>
         HasUnsavedBaseSettingsChanges || HasUnsavedCurrencyChanges;
@@ -116,11 +113,13 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     public bool HasUnsavedBaseSettingsChanges =>
         SelectedBaseCurrency != _persistedBaseCurrency ||
         SelectedDateFormat != _persistedDateFormat ||
-        SelectedDecimalPrecision != _persistedDecimalPrecision;
+        SelectedDecimalPrecision != _persistedDecimalPrecision ||
+        SelectedThousandSeparator != _persistedThousandSeparator;
 
     public bool HasUnsavedCurrencyChanges =>
         _hasPersistedSnapshot
-            ? !BuildAvailableCurrencySnapshotKeys(AvailableCurrencies).SequenceEqual(_persistedAvailableCurrencySnapshotKeys)
+            ? !BuildAvailableCurrencySnapshotKeys(AvailableCurrencies)
+                .SequenceEqual(_persistedAvailableCurrencySnapshotKeys)
             : AvailableCurrencies.Count > 0;
 
     public bool IsSelectionValid =>
@@ -128,6 +127,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         BaseCurrencyOptions.Any(option => option.CurrencyCode == SelectedBaseCurrency) &&
         DateFormatOptions.Any(option => option == SelectedDateFormat) &&
         DecimalPrecisionOptions.Any(option => option == SelectedDecimalPrecision) &&
+        ThousandSeparatorOptions.Any(option => option == SelectedThousandSeparator) &&
         AvailableCurrencies.All(IsValidCurrency);
 
     public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
@@ -137,8 +137,9 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     {
         get
         {
-            var exampleDate = new DateTime(2026, 4, 24).ToString(ResolveDotNetDateFormat(SelectedDateFormat), CultureInfo.InvariantCulture);
-            var exampleAmount = 1234567.0m.ToString($"N{SelectedDecimalPrecision}", CultureInfo.InvariantCulture);
+            var exampleDate = new DateTime(2026, 4, 24).ToString(ResolveDotNetDateFormat(SelectedDateFormat),
+                CultureInfo.InvariantCulture);
+            var exampleAmount = FormatAmount(1234567.0m, SelectedDecimalPrecision, SelectedThousandSeparator);
             var symbol = ResolveBaseCurrencySymbol();
             return $"{symbol} {exampleAmount}   |   {exampleDate}";
         }
@@ -148,7 +149,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     {
         get
         {
-            var exampleAmount = 1234567.0m.ToString($"N{SelectedDecimalPrecision}", CultureInfo.InvariantCulture);
+            var exampleAmount = FormatAmount(1234567.0m, SelectedDecimalPrecision, SelectedThousandSeparator);
             var symbol = ResolveBaseCurrencySymbol();
             return $"{symbol} {exampleAmount}";
         }
@@ -157,27 +158,45 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     public string DatePreview =>
         new DateTime(2026, 4, 24).ToString(ResolveDotNetDateFormat(SelectedDateFormat), CultureInfo.InvariantCulture);
 
-    [RelayCommand(CanExecute = nameof(CanSaveBaseSettings))]
-    private Task SaveBaseSettings() =>
-        DispatchSettingsSaveAsync(
-            setStatus: msg => StatusMessage = msg,
-            setError: err => HasErrorStatus = err);
+    public Guid Id => Guid.Parse("d3a693eb-5b4c-44ee-ae45-cf32b5ec4fe9");
+    public string Title => "Currency & Date Formats";
+    public object? HeaderContent => null;
 
-    private bool CanSaveBaseSettings() =>
-        !IsOperationInFlight
-        && IsSelectionValid
-        && HasUnsavedBaseSettingsChanges;
+    public void Dispose()
+    {
+        AvailableCurrencies.CollectionChanged -= OnAvailableCurrenciesChanged;
+        _subscriptions.Dispose();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanSaveBaseSettings))]
+    private Task SaveBaseSettings()
+    {
+        return DispatchSettingsSaveAsync(
+            msg => StatusMessage = msg,
+            err => HasErrorStatus = err);
+    }
+
+    private bool CanSaveBaseSettings()
+    {
+        return !IsOperationInFlight
+               && IsSelectionValid
+               && HasUnsavedBaseSettingsChanges;
+    }
 
     [RelayCommand(CanExecute = nameof(CanSaveAvailableCurrencies))]
-    private Task SaveAvailableCurrencies() =>
-        DispatchSettingsSaveAsync(
-            setStatus: msg => CurrencyStatusMessage = msg,
-            setError: err => HasCurrencyErrorStatus = err);
+    private Task SaveAvailableCurrencies()
+    {
+        return DispatchSettingsSaveAsync(
+            msg => CurrencyStatusMessage = msg,
+            err => HasCurrencyErrorStatus = err);
+    }
 
-    private bool CanSaveAvailableCurrencies() =>
-        !IsOperationInFlight
-        && IsSelectionValid
-        && HasUnsavedCurrencyChanges;
+    private bool CanSaveAvailableCurrencies()
+    {
+        return !IsOperationInFlight
+               && IsSelectionValid
+               && HasUnsavedCurrencyChanges;
+    }
 
     // Integration: dispatches accounting settings update and waits for persistence confirmation.
     private async Task DispatchSettingsSaveAsync(Action<string> setStatus, Action<bool> setError)
@@ -188,35 +207,35 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         var expectedBaseCurrency = NormalizeCurrencyCode(SelectedBaseCurrency);
         var expectedDateFormat = SelectedDateFormat;
         var expectedDecimalPrecision = SelectedDecimalPrecision;
+        var expectedThousandSeparator = SelectedThousandSeparator;
         var expectedAvailableCurrencySnapshot = BuildAvailableCurrencySnapshotKeys(AvailableCurrencies);
         var availableCurrencies = AvailableCurrencies
             .Select(currency => new Currency(currency.CurrencyCode, currency.CurrencySymbol))
             .ToList();
 
         var isConfirmed = await _notificationService.TrackOperationAsync(
-            sendCommand: () => _financeManagementFacade.UpdateAccountingSettings(
+            () => _accountingFacade.UpdateAccountingSettings(
                 _organisationId,
                 expectedBaseCurrency,
                 expectedDateFormat,
                 expectedDecimalPrecision,
+                expectedThousandSeparator,
                 availableCurrencies),
-            confirmationObservable: _financeManagementFacade.AccountingSettingsUpdated,
-            matcherPredicate: settings =>
+            _accountingFacade.AccountingSettingsUpdated,
+            settings =>
                 settings.OrganisationId == _organisationId &&
                 NormalizeCurrencyCode(settings.BaseCurrency) == expectedBaseCurrency &&
                 settings.DateFormat == expectedDateFormat &&
                 settings.DecimalPrecision == expectedDecimalPrecision &&
+                NormalizeThousandSeparator(settings.ThousandSeparator) == expectedThousandSeparator &&
                 BuildAvailableCurrencySnapshotKeys(BuildPersistedCurrencies(settings, _organisationId))
                     .SequenceEqual(expectedAvailableCurrencySnapshot),
-            timeout: TimeSpan.FromSeconds(10),
-            operationName: "Accounting settings",
-            successAction: "Saved",
+            TimeSpan.FromSeconds(10),
+            "Accounting settings",
+            "Saved",
             inFlightChanged: SetOperationInFlight);
 
-        if (!isConfirmed)
-        {
-            setError(true);
-        }
+        if (!isConfirmed) setError(true);
     }
 
     [RelayCommand(CanExecute = nameof(CanAddCurrency))]
@@ -254,10 +273,8 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         });
 
         if (!BaseCurrencyOptions.Any(option => option.CurrencyCode == SelectedBaseCurrency))
-        {
             // Bootstrap empty-state: ensure the first added currency can be saved immediately.
             SelectedBaseCurrency = normalizedCode;
-        }
 
         SelectedAvailableCurrencyCode = normalizedCode;
         NewCurrencyCode = string.Empty;
@@ -279,10 +296,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     [RelayCommand(CanExecute = nameof(CanRemoveSelectedCurrency))]
     private void RemoveSelectedCurrency()
     {
-        if (!CanRemoveSelectedCurrency())
-        {
-            return;
-        }
+        if (!CanRemoveSelectedCurrency()) return;
 
         if (IsDeletingBaseCurrency())
         {
@@ -297,18 +311,14 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
             return;
         }
 
-        var itemToRemove = AvailableCurrencies.FirstOrDefault(currency => currency.CurrencyCode == SelectedAvailableCurrencyCode);
-        if (itemToRemove is null)
-        {
-            return;
-        }
+        var itemToRemove =
+            AvailableCurrencies.FirstOrDefault(currency => currency.CurrencyCode == SelectedAvailableCurrencyCode);
+        if (itemToRemove is null) return;
 
         AvailableCurrencies.Remove(itemToRemove);
 
         if (SelectedBaseCurrency == itemToRemove.CurrencyCode)
-        {
             SelectedBaseCurrency = AvailableCurrencies.First().CurrencyCode;
-        }
 
         SelectedAvailableCurrencyCode = AvailableCurrencies.FirstOrDefault()?.CurrencyCode ?? string.Empty;
         HasErrorStatus = false;
@@ -322,6 +332,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     {
         return !IsOperationInFlight
                && !string.IsNullOrWhiteSpace(SelectedAvailableCurrencyCode)
+               && !string.Equals(SelectedAvailableCurrencyCode, SelectedBaseCurrency, StringComparison.OrdinalIgnoreCase)
                && AvailableCurrencies.Any(currency => currency.CurrencyCode == SelectedAvailableCurrencyCode);
     }
 
@@ -358,16 +369,14 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     private static string ResolveOrganisationId(IUserSessionService userSessionService)
     {
         return userSessionService.CurrentUserSession?.Organisation?.Id
-               ?? throw new InvalidOperationException("An active session with an organisation is required to manage accounting settings.");
+               ?? throw new InvalidOperationException(
+                   "An active session with an organisation is required to manage accounting settings.");
     }
 
     // Operation: applies a received settings snapshot to the observable properties.
     private void ApplySettings(AccountingSettingsData? settings)
     {
-        if (settings is null || settings.OrganisationId != _organisationId)
-        {
-            return;
-        }
+        if (settings is null || settings.OrganisationId != _organisationId) return;
 
         var persistedCurrencies = BuildPersistedCurrencies(settings, _organisationId);
         var normalizedBaseCurrency = NormalizeCurrencyCode(settings.BaseCurrency);
@@ -375,14 +384,13 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         _persistedBaseCurrency = normalizedBaseCurrency;
         _persistedDateFormat = settings.DateFormat;
         _persistedDecimalPrecision = settings.DecimalPrecision;
+        var normalizedThousandSeparator = NormalizeThousandSeparator(settings.ThousandSeparator);
+        _persistedThousandSeparator = normalizedThousandSeparator;
         _persistedAvailableCurrencySnapshotKeys = BuildAvailableCurrencySnapshotKeys(persistedCurrencies);
         _hasPersistedSnapshot = true;
 
         AvailableCurrencies.Clear();
-        foreach (var currency in persistedCurrencies)
-        {
-            AvailableCurrencies.Add(currency);
-        }
+        foreach (var currency in persistedCurrencies) AvailableCurrencies.Add(currency);
 
         SelectedBaseCurrency = persistedCurrencies.Any(currency => currency.CurrencyCode == normalizedBaseCurrency)
             ? normalizedBaseCurrency
@@ -390,6 +398,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         _lastKnownValidBaseCurrency = SelectedBaseCurrency;
         SelectedDateFormat = settings.DateFormat;
         SelectedDecimalPrecision = settings.DecimalPrecision;
+        SelectedThousandSeparator = normalizedThousandSeparator;
         SelectedAvailableCurrencyCode = persistedCurrencies.FirstOrDefault()?.CurrencyCode ?? string.Empty;
 
         RefreshSaveState();
@@ -419,9 +428,10 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
 
 
     // Operation: extracts, normalizes, and defaults persisted currencies with symbols.
-    private static List<AccountingAvailableCurrencyData> BuildPersistedCurrencies(AccountingSettingsData settings, string organisationId)
+    private static List<AccountingAvailableCurrencyData> BuildPersistedCurrencies(AccountingSettingsData settings,
+        string organisationId)
     {
-        var normalized = (settings.AvailableCurrencies ?? [])
+        var normalized = settings.AvailableCurrencies
             .Select(currency => new AccountingAvailableCurrencyData
             {
                 OrganisationId = organisationId,
@@ -436,24 +446,20 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
 
         var normalizedBase = NormalizeCurrencyCode(settings.BaseCurrency);
         if (normalized.All(currency => currency.CurrencyCode != normalizedBase))
-        {
             normalized.Add(new AccountingAvailableCurrencyData
             {
                 OrganisationId = organisationId,
                 CurrencyCode = normalizedBase,
                 CurrencySymbol = normalizedBase
             });
-        }
 
         if (normalized.Count == 0)
-        {
             normalized.Add(new AccountingAvailableCurrencyData
             {
                 OrganisationId = organisationId,
                 CurrencyCode = "USD",
                 CurrencySymbol = "$"
             });
-        }
 
         return normalized
             .GroupBy(currency => currency.CurrencyCode)
@@ -462,11 +468,13 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
             .ToList();
     }
 
-    private static IReadOnlyList<string> BuildAvailableCurrencySnapshotKeys(IEnumerable<AccountingAvailableCurrencyData> currencies)
+    private static IReadOnlyList<string> BuildAvailableCurrencySnapshotKeys(
+        IEnumerable<AccountingAvailableCurrencyData> currencies)
     {
         return currencies
             .OrderBy(currency => currency.CurrencyCode)
-            .Select(currency => $"{NormalizeCurrencyCode(currency.CurrencyCode)}|{NormalizeCurrencySymbol(currency.CurrencySymbol)}")
+            .Select(currency =>
+                $"{NormalizeCurrencyCode(currency.CurrencyCode)}|{NormalizeCurrencySymbol(currency.CurrencySymbol)}")
             .ToList();
     }
 
@@ -486,12 +494,14 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         return value.Trim();
     }
 
+    private static string NormalizeThousandSeparator(string? value)
+    {
+        return string.IsNullOrEmpty(value) ? "," : value;
+    }
+
     private static bool IsValidCurrencyCode(string value)
     {
-        if (string.IsNullOrWhiteSpace(value) || value.Length is < 3 or > 10)
-        {
-            return false;
-        }
+        if (string.IsNullOrWhiteSpace(value) || value.Length is < 3 or > 10) return false;
 
         return value.All(char.IsLetter);
     }
@@ -511,9 +521,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         var insertIndex = 0;
         while (insertIndex < AvailableCurrencies.Count
                && string.CompareOrdinal(AvailableCurrencies[insertIndex].CurrencyCode, currency.CurrencyCode) < 0)
-        {
             insertIndex++;
-        }
 
         AvailableCurrencies.Insert(insertIndex, currency);
     }
@@ -527,10 +535,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
     // Operation: restores a valid base-currency code if UI binding transiently clears selection.
     private void EnsureBaseCurrencySelection()
     {
-        if (_isSynchronizingBaseCurrencySelection || AvailableCurrencies.Count == 0)
-        {
-            return;
-        }
+        if (_isSynchronizingBaseCurrencySelection || AvailableCurrencies.Count == 0) return;
 
         if (AvailableCurrencies.Any(currency => currency.CurrencyCode == SelectedBaseCurrency))
         {
@@ -538,9 +543,10 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
             return;
         }
 
-        var fallbackBaseCurrency = AvailableCurrencies.Any(currency => currency.CurrencyCode == _lastKnownValidBaseCurrency)
-            ? _lastKnownValidBaseCurrency
-            : AvailableCurrencies.First().CurrencyCode;
+        var fallbackBaseCurrency =
+            AvailableCurrencies.Any(currency => currency.CurrencyCode == _lastKnownValidBaseCurrency)
+                ? _lastKnownValidBaseCurrency
+                : AvailableCurrencies.First().CurrencyCode;
 
         _isSynchronizingBaseCurrencySelection = true;
         SelectedBaseCurrency = fallbackBaseCurrency;
@@ -559,9 +565,7 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         if (!_isSynchronizingBaseCurrencySelection
             && !string.IsNullOrWhiteSpace(value)
             && AvailableCurrencies.Any(currency => currency.CurrencyCode == value))
-        {
             _lastKnownValidBaseCurrency = value;
-        }
 
         RefreshSaveState();
     }
@@ -576,7 +580,13 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         RefreshSaveState();
     }
 
-    partial void OnStatusMessageChanged(string value)
+    partial void OnSelectedThousandSeparatorChanged(string value)
+    {
+        _ = value;
+        RefreshSaveState();
+    }
+
+    partial void OnStatusMessageChanged(string _)
     {
         OnPropertyChanged(nameof(HasStatusMessage));
     }
@@ -601,10 +611,10 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         RemoveSelectedCurrencyCommand.NotifyCanExecuteChanged();
     }
 
-    public void Dispose()
+    private static string FormatAmount(decimal amount, int precision, string thousandSeparator)
     {
-        AvailableCurrencies.CollectionChanged -= OnAvailableCurrenciesChanged;
-        _subscriptions.Dispose();
+        var format = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
+        format.NumberGroupSeparator = thousandSeparator;
+        return amount.ToString($"N{precision}", format);
     }
 }
-

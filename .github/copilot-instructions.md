@@ -30,6 +30,13 @@ For clean code, design principles, and implementation heuristics, also apply `.j
    - Views (.axaml) + ViewModels (.cs) in `Jamaa.Desktop/{Feature}/`
    - Use `[ObservableProperty]` on private fields
    - Dispatch commands through application layer, never direct DB access
+   - **Strict MVVM enforcement**:
+     - ViewModels must not create or style UI controls (`Button`, `ToggleSwitch`, etc.)
+     - ViewModels must not assign UI classes, templates, or visual resources
+     - ViewModels must not expose methods that wire `IDataTemplate`/`DataTemplate` columns (for example `Configure*Template*` methods)
+     - Prefer template selection/composition in `.axaml` via `DataTemplate`, selector, behavior, or view code-behind helper for all UI composition needs
+     - All control composition, templates, classes, and visual states belong in `.axaml` (or view code-behind only when unavoidable)
+     - ViewModels expose state/commands only; views own presentation details
 
 4. **Application Logic (Akka Actors)**
    - Aggregates in `Jamaa.Application/{Feature}/Aggregates/`
@@ -59,6 +66,7 @@ For clean code, design principles, and implementation heuristics, also apply `.j
 - Prefer data handoff between steps over shared mutable state where practical.
 - Keep domain code pure and free from infrastructure/framework concerns.
 - In UI code, preserve MVVM separation and avoid inline styles when shared styles/themes already exist.
+- Treat MVVM boundary violations as blockers: if a ViewModel contains presentation composition, refactor it into view markup/resources.
 - In actor-based code, prefer immutable messages, focused actors, and explicit state transitions.
 - If a method or class feels like it has multiple conceptual levels, split it.
 

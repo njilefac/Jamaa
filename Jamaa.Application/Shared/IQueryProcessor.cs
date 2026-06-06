@@ -1,19 +1,19 @@
+using Domain.Accounting.Entities;
+using Domain.Accounting.Queries;
+using Domain.Members;
 using Domain.Members.Queries;
-using Domain.Finances.Queries;
+using Domain.Organisation;
 using Domain.Organisation.Queries;
-using Jamaa.Data.Models.Finances;
-using Jamaa.Data.Models.Members;
-using Jamaa.Data.Models.Organisation;
 
 namespace Jamaa.Application.Shared;
 
 public interface IQueryProcessor
 {
-    Task<List<OrganisationData>> Get(GetAllOrganisations query);
-    Task<OrganisationData?> Get(GetOrganisationByName query);
+    Task<List<OrganisationSummary>> Get(GetAllOrganisations query);
+    Task<OrganisationSummary?> Get(GetOrganisationByName query);
 
-    Task<IList<MemberData>> Get(GetMembersByOrganisation query);
-    Task<IList<AccountData>> Get(GetAccountsByOrganisation query);
-    Task<IList<FiscalYearData>> Get(GetFiscalYearsByOrganisation query);
-    Task<AccountingSettingsData?> Get(GetAccountingSettingsByOrganisation query);
+    Task<IList<MemberProfile>> Get(GetMembersByOrganisation query);
+    Task<IList<Account>> Get(GetAccountsByOrganisation query);
+    Task<IList<FiscalYear>> Get(GetFiscalYearsByOrganisation query);
+    Task<AccountingSettings?> Get(GetAccountingSettingsByOrganisation query);
 }

@@ -5,6 +5,7 @@
     x:Class="Jamaa.Desktop.Accounting.ChartOfAccountsPage"
     x:DataType="vm:ChartOfAccountsViewModel"
     xmlns="https://github.com/avaloniaui"
+    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
     xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -21,6 +22,93 @@
             FalseValue="True"
             TrueValue="False"
             x:Key="InvertBoolToEnabledConverter" />
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountEditCellTemplate">
+            <Button
+                Classes="Small"
+                Command="{Binding EditCommand}"
+                Content="✏ Edit" />
+        </DataTemplate>
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountActiveStateCellTemplate">
+            <Border Classes="coa-account-state-cell">
+                <ToggleSwitch
+                    Classes="coa-account-state-toggle"
+                    Command="{Binding ToggleActiveCommand}"
+                    IsChecked="{Binding IsActive, Mode=OneWay}"
+                    OffContent="{Binding ToggleStateLabel}"
+                    OnContent="{Binding ToggleStateLabel}"
+                    ToolTip.Tip="{Binding ToggleActiveToolTip}" />
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountLedgerCellTemplate">
+            <Button
+                Classes="Small"
+                Command="{Binding ViewLedgerCommand}"
+                Content="📒 View Ledger" />
+        </DataTemplate>
+
+        <converters:DecimalToFormattedStringConverter x:Key="DecimalToFormattedStringConverter" />
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="OpeningBalanceCellTemplate">
+            <Panel>
+                    <TextBox
+                        HorizontalAlignment="Stretch"
+                        IsReadOnly="{Binding IsOpeningBalanceLocked}"
+                        IsVisible="{Binding IsLeafAccount}"
+                        Watermark="0.00">
+                    <Interaction.Behaviors>
+                        <behaviors:RefreshOnLostFocusBehavior />
+                    </Interaction.Behaviors>
+                    <TextBox.Text>
+                        <Binding
+                            Mode="TwoWay"
+                            Path="OpeningBalanceText"
+                            UpdateSourceTrigger="PropertyChanged" />
+                    </TextBox.Text>
+                    <TextBox.InnerLeftContent>
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            Text="{Binding CurrencySymbol}"
+                            VerticalAlignment="Center" />
+                    </TextBox.InnerLeftContent>
+                </TextBox>
+
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    IsVisible="{Binding !IsLeafAccount}"
+                    Orientation="Horizontal"
+                    Spacing="4"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource AppTextSecondary}"
+                        Text="{Binding CurrencySymbol}"
+                        VerticalAlignment="Center" />
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource AppTextSecondary}">
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource DecimalToFormattedStringConverter}">
+                                <Binding Path="OpeningBalance" />
+                                <Binding Path="DecimalPrecision" />
+                                <Binding Path="ThousandSeparator" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </Panel>
+        </DataTemplate>
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="SaveOpeningBalanceCellTemplate">
+            <Button
+                Classes="Small"
+                Command="{Binding SaveOpeningBalanceCommand}"
+                Content="Save"
+                IsEnabled="{Binding CanSaveOpeningBalance}"
+                IsVisible="{Binding CanEditOpeningBalance}" />
+        </DataTemplate>
     </UserControl.Resources>
 
     <Grid Margin="20" RowDefinitions="Auto,*">
@@ -58,7 +146,7 @@
                     BorderThickness="1"
                     ClipToBounds="True"
                     CornerRadius="8">
-                    <TreeDataGrid IsEnabled="{Binding IsOperationInFlight, Converter={StaticResource InvertBoolToEnabledConverter}}" Source="{Binding Source}" />
+                    <TreeDataGrid IsEnabled="{Binding IsOperationInFlight, Converter={StaticResource InvertBoolToEnabledConverter}}" x:Name="AccountsTreeDataGrid" />
                 </Border>
             </DockPanel>
 
@@ -120,6 +208,16 @@
                             </StackPanel>
 
                             <StackPanel Spacing="4">
+                                <TextBlock Classes="form label" Text="Description" />
+                                <TextBox
+                                    AcceptsReturn="True"
+                                    MinHeight="64"
+                                    Text="{Binding AccountDescription}"
+                                    TextWrapping="Wrap"
+                                    Watermark="Optional account description" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
                                 <TextBlock Classes="form label" Text="Parent Account" />
                                 <TextBlock
                                     FontSize="11"
@@ -130,7 +228,7 @@
                                     ItemsSource="{Binding FilteredParentAccounts}"
                                     SelectedItem="{Binding SelectedParentAccount}">
                                     <ComboBox.ItemTemplate>
-                                        <DataTemplate>
+                                        <DataTemplate x:DataType="vm:AccountItemViewModel">
                                             <TextBlock Text="{Binding Name}" />
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
@@ -150,7 +248,13 @@
                                     Foreground="{DynamicResource ValidationErrorBrush}"
                                     HorizontalAlignment="Stretch"
                                     IsVisible="{Binding SelectedAccount, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                    ToolTip.Tip="Permanently delete this account" />
+                                    ToolTip.Tip="{Binding DeleteAccountTooltip}" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource AppTextSecondary}"
+                                    IsVisible="{Binding HasStatusMessage}"
+                                    Text="{Binding StatusMessage}"
+                                    TextWrapping="Wrap" />
                             </StackPanel>
 
                         </StackPanel>

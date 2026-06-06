@@ -28,19 +28,16 @@ public class UserRepository(JamaaDbContext dbContext) : IUserRepository
     public async Task<User> Update(User user)
     {
         var existingUserData = await dbContext.Users.FindAsync(user.Account.Id);
-        if (existingUserData == null)
-        {
-            throw new KeyNotFoundException($"User with ID {user.Account.Id} not found.");
-        }
+        if (existingUserData == null) throw new KeyNotFoundException($"User with ID {user.Account.Id} not found.");
 
         // Update properties of the tracked entity
         existingUserData.DashboardLayout = user.DashboardLayout;
-        existingUserData.UserName = user.Account.Credentials.UserName;
-        existingUserData.Password = user.Account.Credentials.Password;
+        existingUserData.UserName = user.Account.Credentials.UserName ?? string.Empty;
+        existingUserData.Password = user.Account.Credentials.Password ?? string.Empty;
         existingUserData.Email = user.Account.Email;
-        existingUserData.FirstName = user.FirstName;
-        existingUserData.MiddleName = user.MiddleName;
-        existingUserData.LastName = user.LastName;
+        existingUserData.FirstName = user.FirstName ?? string.Empty;
+        existingUserData.MiddleName = user.MiddleName ?? string.Empty;
+        existingUserData.LastName = user.LastName ?? string.Empty;
         existingUserData.IsActive = user.Account.IsActive ?? false;
         existingUserData.IsSuperUser = user.Account.IsSuperUser ?? false;
 
@@ -62,7 +59,7 @@ public class UserRepository(JamaaDbContext dbContext) : IUserRepository
     public async Task<User?> SingleOrDefault(Predicate<User> matchesCondition)
     {
         var responseList = await dbContext.Users.ToListAsync();
-        var allUsers =  responseList.Select(UserData.Map).ToList();
+        var allUsers = responseList.Select(UserData.Map).ToList();
         return allUsers.SingleOrDefault(x => matchesCondition(x));
     }
 }

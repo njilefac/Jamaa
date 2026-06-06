@@ -1,8 +1,12 @@
 namespace Jamaa.Desktop.Dashboard;
 
-public partial class EmptyCellViewModel : WidgetViewModelBase
+public class EmptyCellViewModel : WidgetViewModelBase
 {
-    public EmptyCellViewModel() { Title = string.Empty; }
+    public EmptyCellViewModel()
+    {
+        Title = string.Empty;
+    }
+
     public EmptyCellViewModel(int row, int column, BoxSize size)
     {
         Title = string.Empty;

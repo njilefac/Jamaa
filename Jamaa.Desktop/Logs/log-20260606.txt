@@ -1,0 +1,9 @@
+2026-06-06 09:19:53.755 +02:00 [WRN] The entity type 'WorkflowDefinition' is configured to use schema 'Elsa', but SQLite does not support schemas. This configuration will be ignored by the SQLite provider.
+2026-06-06 09:19:54.322 +02:00 [WRN] The entity type 'WorkflowInstance' is configured to use schema 'Elsa', but SQLite does not support schemas. This configuration will be ignored by the SQLite provider.
+2026-06-06 09:19:56.922 +02:00 [WRN] The entity type 'SerializedKeyValuePair' is configured to use schema 'Elsa', but SQLite does not support schemas. This configuration will be ignored by the SQLite provider.
+2026-06-06 09:19:56.923 +02:00 [WRN] The entity type 'ActivityExecutionRecord' is configured to use schema 'Elsa', but SQLite does not support schemas. This configuration will be ignored by the SQLite provider.
+2026-06-06 09:19:56.923 +02:00 [WRN] The entity type 'BookmarkQueueItem' is configured to use schema 'Elsa', but SQLite does not support schemas. This configuration will be ignored by the SQLite provider.
+2026-06-06 09:19:56.923 +02:00 [WRN] The entity type 'StoredBookmark' is configured to use schema 'Elsa', but SQLite does not support schemas. This configuration will be ignored by the SQLite provider.
+2026-06-06 09:19:56.923 +02:00 [WRN] The entity type 'StoredTrigger' is configured to use schema 'Elsa', but SQLite does not support schemas. This configuration will be ignored by the SQLite provider.
+2026-06-06 09:19:56.924 +02:00 [WRN] The entity type 'WorkflowExecutionLogRecord' is configured to use schema 'Elsa', but SQLite does not support schemas. This configuration will be ignored by the SQLite provider.
+2026-06-06 09:19:56.924 +02:00 [WRN] The entity type 'WorkflowInboxMessage' is configured to use schema 'Elsa', but SQLite does not support schemas. This configuration will be ignored by the SQLite provider.

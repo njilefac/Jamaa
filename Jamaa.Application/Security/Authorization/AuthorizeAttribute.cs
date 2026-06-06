@@ -1,7 +1,7 @@
-namespace Jamaa.Application.Security.Authorization
+namespace Jamaa.Application.Security.Authorization;
+
+[AttributeUsage(AttributeTargets.Method)]
+public class AuthorizeAttribute : Attribute
 {
-    public class AuthorizeAttribute : Attribute
-    {
-        public string? Operation { get; set; }
-    }
+    public string? Operation { get; set; }
 }

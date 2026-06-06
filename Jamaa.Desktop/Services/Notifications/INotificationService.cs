@@ -12,5 +12,6 @@ public enum NotificationType
 
 public interface INotificationService
 {
-    void Show(string title, string message, NotificationType type = NotificationType.Information, TimeSpan? expiration = null, Action? onClick = null, Action? onClose = null);
+    void Show(string title, string message, NotificationType type = NotificationType.Information,
+        TimeSpan? expiration = null, Action? onClick = null, Action? onClose = null);
 }

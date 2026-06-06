@@ -1,34 +1,20 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace Jamaa.Desktop.Members.Components;
 
 public partial class MemberCard : UserControl
 {
-    private bool _isPressed;
     public static readonly StyledProperty<bool> IsSelectedProperty =
         AvaloniaProperty.Register<MemberCard, bool>(nameof(IsSelected));
+
+    private bool _isPressed;
 
     static MemberCard()
     {
         IsSelectedProperty.Changed.AddClassHandler<MemberCard>((x, e) => x.OnIsSelectedChanged(e));
-    }
-
-    private void OnIsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
-    {
-        if (e.NewValue is true)
-        {
-            Focus();
-        }
-    }
-
-    public bool IsSelected
-    {
-        get => GetValue(IsSelectedProperty);
-        set => SetValue(IsSelectedProperty, value);
     }
 
     public MemberCard()
@@ -37,6 +23,17 @@ public partial class MemberCard : UserControl
         PointerPressed += OnPointerPressed;
         PointerReleased += OnPointerReleased;
         PointerCaptureLost += OnPointerCaptureLost;
+    }
+
+    public bool IsSelected
+    {
+        get => GetValue(IsSelectedProperty);
+        set => SetValue(IsSelectedProperty, value);
+    }
+
+    private void OnIsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is true) Focus();
     }
 
     private void OnPointerPressed(object? sender, PointerPressedEventArgs e)

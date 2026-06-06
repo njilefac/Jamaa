@@ -9,7 +9,6 @@ namespace Jamaa.Desktop.Shared;
 [UsedImplicitly]
 public partial class Shell : AppWindow
 {
-
     public Shell()
     {
         InitializeComponent();

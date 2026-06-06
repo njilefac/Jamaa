@@ -1,16 +1,16 @@
 <UserControl
-    x:Class="Jamaa.Desktop.Members.Components.MembersGrid"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
-    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
-    xmlns:vm="clr-namespace:Jamaa.Desktop.Members.ViewModels"
-    xmlns:u="https://irihi.tech/ursa"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Members.Components.MembersGrid"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
+    xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:vm="clr-namespace:Jamaa.Desktop.Members.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Panel>
         <DataGrid
             Background="Transparent"
@@ -20,8 +20,8 @@
             GridLinesVisibility="Horizontal"
             ItemsSource="{Binding Members}"
             Name="MembersDataGrid"
-            SelectionMode="Single"
-            SelectedItem="{Binding Selection.SelectedItem, Mode=TwoWay}">
+            SelectedItem="{Binding Selection.SelectedItem, Mode=TwoWay}"
+            SelectionMode="Single">
             <Interaction.Behaviors>
                 <behaviors:DataGridEnterBehavior Command="{Binding ShowMemberProfileCommand}" />
             </Interaction.Behaviors>
@@ -60,8 +60,7 @@
                                     CommandParameter="{Binding}"
                                     Header="End Registration"
                                     IsEnabled="{Binding Registration.EndDate, Converter={x:Static ObjectConverters.IsNull}}"
-                                    IsVisible="{Binding Registration.EndDate, Converter={x:Static ObjectConverters.IsNull}}"
-                                    />
+                                    IsVisible="{Binding Registration.EndDate, Converter={x:Static ObjectConverters.IsNull}}" />
                             </ContextMenu>
                         </Setter.Value>
                     </Setter>
@@ -90,10 +89,10 @@
                                         </EventTriggerBehavior>
                                     </Interaction.Behaviors>
                                     <ContentPresenter
-                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                         Content="{TemplateBinding Content}"
-                                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                                 </Panel>
                             </Border>
                         </ControlTemplate>
@@ -101,53 +100,73 @@
                 </Style>
             </DataGrid.Styles>
             <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Full Name" Width="*" SortMemberPath="FullName" CanUserSort="True">
+                <DataGridTemplateColumn
+                    CanUserSort="True"
+                    Header="Full Name"
+                    SortMemberPath="FullName"
+                    Width="*">
                     <DataTemplate x:DataType="vm:MemberViewModel">
                         <StackPanel Orientation="Horizontal" Spacing="16">
                             <u:Avatar
-                                Width="48"
                                 Height="48"
-                                Source="{Binding PictureData, Converter={StaticResource ByteArrayToBitmapConverter}}" />
-                            <TextBlock VerticalAlignment="Center" Text="{Binding FullName}" />
+                                Source="{Binding PictureData, Converter={StaticResource ByteArrayToBitmapConverter}}"
+                                Width="48" />
+                            <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" />
                         </StackPanel>
                     </DataTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Membership" Width="150" SortMemberPath="Registration.MembershipType" CanUserSort="True">
+                <DataGridTemplateColumn
+                    CanUserSort="True"
+                    Header="Membership"
+                    SortMemberPath="Registration.MembershipType"
+                    Width="150">
                     <DataTemplate x:DataType="vm:MemberViewModel">
                         <ComboBox
                             HorizontalAlignment="Stretch"
-                            VerticalAlignment="Center"
                             ItemsSource="{Binding $parent[components:MembersGrid].DataContext.MembershipTypes}"
-                            SelectedItem="{Binding Registration.MembershipType}" />
+                            SelectedItem="{Binding Registration.MembershipType}"
+                            VerticalAlignment="Center" />
                     </DataTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Joined" Width="150" SortMemberPath="Registration.StartDate" CanUserSort="True">
+                <DataGridTemplateColumn
+                    CanUserSort="True"
+                    Header="Joined"
+                    SortMemberPath="Registration.StartDate"
+                    Width="150">
                     <DataTemplate x:DataType="vm:MemberViewModel">
                         <CalendarDatePicker
+                            CustomDateFormatString="MMM/yyyy"
                             HorizontalAlignment="Stretch"
-                            VerticalAlignment="Center"
                             SelectedDate="{Binding Registration.StartDate}"
                             SelectedDateFormat="Custom"
-                            CustomDateFormatString="MMM/yyyy" />
+                            VerticalAlignment="Center" />
                     </DataTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Left" Width="150" SortMemberPath="Registration.EndDate" CanUserSort="True">
+                <DataGridTemplateColumn
+                    CanUserSort="True"
+                    Header="Left"
+                    SortMemberPath="Registration.EndDate"
+                    Width="150">
                     <DataTemplate x:DataType="vm:MemberViewModel">
                         <CalendarDatePicker
+                            CustomDateFormatString="MMM/yyyy"
                             HorizontalAlignment="Stretch"
-                            VerticalAlignment="Center"
                             SelectedDate="{Binding Registration.EndDate}"
                             SelectedDateFormat="Custom"
-                            CustomDateFormatString="MMM/yyyy" />
+                            VerticalAlignment="Center" />
                     </DataTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Status" Width="120" SortMemberPath="Registration.Status" CanUserSort="True">
+                <DataGridTemplateColumn
+                    CanUserSort="True"
+                    Header="Status"
+                    SortMemberPath="Registration.Status"
+                    Width="120">
                     <DataTemplate x:DataType="vm:MemberViewModel">
                         <ComboBox
                             HorizontalAlignment="Stretch"
-                            VerticalAlignment="Center"
                             ItemsSource="{Binding $parent[components:MembersGrid].DataContext.RegistrationStatuses}"
-                            SelectedItem="{Binding Registration.Status}" />
+                            SelectedItem="{Binding Registration.Status}"
+                            VerticalAlignment="Center" />
                     </DataTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>

@@ -15,5 +15,3 @@ public class AccountingPeriodData
 
     public FiscalYearData? FiscalYear { get; set; }
 }
-
-

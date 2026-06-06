@@ -11,7 +11,6 @@ public class ByteArrayToBitmapConverter : IValueConverter
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is byte[] bytes && bytes.Length > 0)
-        {
             try
             {
                 using var stream = new MemoryStream(bytes);
@@ -21,7 +20,6 @@ public class ByteArrayToBitmapConverter : IValueConverter
             {
                 return null;
             }
-        }
 
         return null;
     }

@@ -1,7 +1,5 @@
-namespace Jamaa.Application.Organisation.Events
+namespace Jamaa.Application.Organisation.Events;
+
+public class FeeUpdated
 {
-    public class FeeUpdated
-    {
-        
-    }
 }

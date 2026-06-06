@@ -17,7 +17,7 @@ public record MemberUpdated(
     MembershipType MembershipType,
     RegistrationStatus Status,
     OrganisationId OrganisationId,
-    byte[]? Avatar = null) : ILibotaEvent
+    byte[]? Avatar = null) : IJamaaEvent
 {
     public string EntityId => OrganisationId.Value;
 }

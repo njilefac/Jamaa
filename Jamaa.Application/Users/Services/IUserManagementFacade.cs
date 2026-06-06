@@ -1,9 +1,8 @@
 using Domain.Users;
 
-namespace Jamaa.Application.Users.Services
+namespace Jamaa.Application.Users.Services;
+
+public interface IUserManagementFacade
 {
-    public interface IUserManagementFacade
-    {
-        Task<User> CreateUser(string username, string password, string email, string? firstName, string? lastName);
-    }
+    Task<User> CreateUser(string username, string password, string email, string? firstName, string? lastName);
 }

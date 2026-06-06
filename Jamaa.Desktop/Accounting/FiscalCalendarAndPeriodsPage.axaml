@@ -17,6 +17,10 @@
         <converters:BoolToObjectConverter
             FalseValue="True"
             TrueValue="False"
+            x:Key="InvertBoolConverter" />
+        <converters:BoolToObjectConverter
+            FalseValue="True"
+            TrueValue="False"
             x:Key="InvertBoolToEnabledConverter" />
     </UserControl.Resources>
 
@@ -205,7 +209,7 @@
 
                             <Border Classes="fiscal-summary-card">
                                 <Grid ColumnDefinitions="2*,*" ColumnSpacing="18">
-                                    <StackPanel Spacing="14">
+                                    <StackPanel IsEnabled="{Binding SelectedFiscalYear.IsLocked, Converter={StaticResource InvertBoolToEnabledConverter}}" Spacing="14">
                                         <StackPanel Spacing="4">
                                             <TextBlock Classes="page.box.header" Text="Fiscal year editor" />
                                             <TextBlock
@@ -246,12 +250,13 @@
                                                 Grid.Row="2"
                                                 Text="Locked" />
                                             <ToggleSwitch
+                                                Classes="coa-account-state-toggle"
                                                 Grid.Column="1"
                                                 Grid.Row="2"
-                                                IsChecked="{Binding DraftIsLocked, Mode=TwoWay}"
+                                                IsChecked="{Binding DraftIsLocked, Converter={StaticResource InvertBoolConverter}, Mode=TwoWay}"
                                                 IsEnabled="{Binding CanToggleFiscalYearLock}"
-                                                OffContent="Unlocked"
-                                                OnContent="Locked"
+                                                OffContent="Locked"
+                                                OnContent="Unlocked"
                                                 VerticalAlignment="Center" />
                                         </Grid>
 
@@ -293,7 +298,7 @@
 
                             <Border Classes="fiscal-summary-card">
                                 <Grid ColumnDefinitions="2*,*" ColumnSpacing="18">
-                                    <StackPanel Spacing="12">
+                                    <StackPanel IsEnabled="{Binding SelectedFiscalYear.IsLocked, Converter={StaticResource InvertBoolToEnabledConverter}}" Spacing="12">
                                         <StackPanel Spacing="4">
                                             <TextBlock Classes="page.box.header" Text="Accounting periods" />
                                             <TextBlock
@@ -301,6 +306,56 @@
                                                 Text="Generated from the selected fiscal year. Periods are contiguous and cover the whole year without gaps."
                                                 TextWrapping="Wrap" />
                                         </StackPanel>
+
+                                        <WrapPanel ItemSpacing="10">
+                                            <Button Command="{Binding BeginAddPeriodCommand}" Content="Add period" />
+                                            <Button Command="{Binding DeleteSelectedPeriodCommand}" Content="Delete selected period" />
+                                        </WrapPanel>
+
+                                        <Border
+                                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                            CornerRadius="10"
+                                            IsVisible="{Binding IsAddingPeriod}"
+                                            Padding="12">
+                                            <StackPanel Spacing="10">
+                                                <TextBlock Classes="page.box.header" Text="New accounting period" />
+                                                <TextBlock
+                                                    FontSize="12"
+                                                    Opacity="0.7"
+                                                    Text="The new period must fill an uncovered gap in the fiscal year. Start and end dates must not overlap existing periods."
+                                                    TextWrapping="Wrap" />
+                                                <Grid
+                                                    Classes="page form"
+                                                    ColumnDefinitions="Auto,*"
+                                                    RowDefinitions="Auto,Auto">
+                                                    <TextBlock
+                                                        Classes="form label"
+                                                        Grid.Column="0"
+                                                        Grid.Row="0"
+                                                        Text="Start date" />
+                                                    <CalendarDatePicker
+                                                        Classes="form field"
+                                                        Grid.Column="1"
+                                                        Grid.Row="0"
+                                                        SelectedDate="{Binding DraftNewPeriodStartDate, Mode=TwoWay}" />
+
+                                                    <TextBlock
+                                                        Classes="form label"
+                                                        Grid.Column="0"
+                                                        Grid.Row="1"
+                                                        Text="End date" />
+                                                    <CalendarDatePicker
+                                                        Classes="form field"
+                                                        Grid.Column="1"
+                                                        Grid.Row="1"
+                                                        SelectedDate="{Binding DraftNewPeriodEndDate, Mode=TwoWay}" />
+                                                </Grid>
+                                                <WrapPanel ItemSpacing="8">
+                                                    <Button Command="{Binding ConfirmAddPeriodCommand}" Content="Add period" />
+                                                    <Button Command="{Binding CancelAddPeriodCommand}" Content="Cancel" />
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Border>
 
                                         <ListBox
                                             Classes="periods-list"
@@ -377,10 +432,11 @@
                                             <TextBlock Text="{Binding SelectedPeriodDurationDisplay}" />
                                             <TextBlock Text="{Binding SelectedPeriodStatusDisplay}" />
                                             <ToggleSwitch
-                                                IsChecked="{Binding SelectedPeriodIsLocked, Mode=TwoWay}"
+                                                Classes="coa-account-state-toggle"
+                                                IsChecked="{Binding SelectedPeriodIsLocked, Converter={StaticResource InvertBoolConverter}, Mode=TwoWay}"
                                                 IsEnabled="{Binding CanToggleSelectedPeriodLock}"
-                                                OffContent="Unlocked"
-                                                OnContent="Locked"
+                                                OffContent="Locked"
+                                                OnContent="Unlocked"
                                                 VerticalAlignment="Center" />
                                             <TextBlock
                                                 FontSize="12"

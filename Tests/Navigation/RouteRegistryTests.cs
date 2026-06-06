@@ -1,6 +1,6 @@
-using Shouldly;
 using Jamaa.Desktop.Services.Navigation.Models;
 using Jamaa.Desktop.Services.Navigation.Services;
+using Shouldly;
 using Xunit;
 
 namespace UnitTests.Navigation;
@@ -14,7 +14,7 @@ public class RouteRegistryTests
         var registry = new RouteRegistry();
         var nestedRoute = new RouteMap("/parent/child", typeof(object));
         var parentRoute = new RouteMap("/parent", typeof(object), Nested: [nestedRoute]);
-        
+
         registry.Register(parentRoute);
 
         // Act
@@ -49,7 +49,7 @@ public class RouteRegistryTests
         var grandchild = new RouteMap("/a/b/c", typeof(object));
         var child = new RouteMap("/a/b", typeof(object), Nested: [grandchild]);
         var parent = new RouteMap("/a", typeof(object), Nested: [child]);
-        
+
         registry.Register(parent);
 
         // Act
@@ -65,10 +65,10 @@ public class RouteRegistryTests
     {
         // Arrange — Verifies a route registered both at top level and nested can be resolved at top level
         var registry = new RouteRegistry();
-        var parent = new RouteMap("/parent", typeof(object), 
+        var parent = new RouteMap("/parent", typeof(object),
             Nested: [new RouteMap("/parent/child", typeof(object))]);
         var topLevelChild = new RouteMap("/parent/child", typeof(object));
-        
+
         registry.Register(parent);
         registry.Register(topLevelChild);
 

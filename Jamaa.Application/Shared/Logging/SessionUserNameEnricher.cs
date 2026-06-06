@@ -5,9 +5,8 @@ namespace Jamaa.Application.Shared.Logging;
 
 public class SessionUserNameEnricher : ILogEventEnricher
 {
-    private LogEventProperty? _cachedProperty;
-
     private const string PropertyName = "UserName";
+    private LogEventProperty? _cachedProperty;
 
     public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {

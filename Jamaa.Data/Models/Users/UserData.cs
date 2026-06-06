@@ -7,12 +7,12 @@ namespace Jamaa.Data.Models.Users;
 public class UserData
 {
     public Guid Id { get; set; }
-    public string UserName { get; set; }
-    public string Password { get; set; }
-    public string Email { get; set; }
-    public string FirstName { get; set; }
-    public string MiddleName { get; set; }
-    public string LastName { get; set; }
+    public required string UserName { get; set; }
+    public required string Password { get; set; }
+    public required string Email { get; set; }
+    public required string FirstName { get; set; }
+    public required string MiddleName { get; set; }
+    public required string LastName { get; set; }
     public Gender Gender { get; set; }
     public bool IsActive { get; set; }
     public bool IsSuperUser { get; set; }
@@ -45,12 +45,12 @@ public class UserData
         return new UserData
         {
             Id = user.Account.Id,
-            UserName = user.Account.Credentials.UserName,
-            Password = user.Account.Credentials.Password,
+            UserName = user.Account.Credentials.UserName ?? string.Empty,
+            Password = user.Account.Credentials.Password ?? string.Empty,
             Email = user.Account.Email,
-            FirstName = user.FirstName,
-            MiddleName = user.MiddleName,
-            LastName = user.LastName,
+            FirstName = user.FirstName ?? string.Empty,
+            MiddleName = user.MiddleName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
             IsActive = user.Account.IsActive ?? false,
             IsSuperUser = user.Account.IsSuperUser ?? false,
             DashboardLayout = user.DashboardLayout

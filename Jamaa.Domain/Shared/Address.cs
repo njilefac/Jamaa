@@ -2,7 +2,7 @@ using System;
 
 namespace Domain.Shared;
 
-public class Address
+public sealed record Address
 {
     public Address(Guid id, string city, string street, string houseNumber, string postalCode, string country)
     {
@@ -25,5 +25,5 @@ public class Address
     public string HouseNumber { get; }
     public string PostalCode { get; }
     public string Country { get; }
-    public static Address None { get; } = new Address();
+    public static Address None { get; } = new();
 }

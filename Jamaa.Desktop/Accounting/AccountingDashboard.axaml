@@ -141,11 +141,6 @@
             <TabItem Header="Reports">
                 <ContentControl Content="{Binding ReportsContent}" />
             </TabItem>
-
-
-            <TabItem Header="Configuration">
-                <ContentControl Content="{Binding ConfigurationContent}" />
-            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

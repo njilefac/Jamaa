@@ -4,13 +4,13 @@ using Domain.Shared.Values;
 
 namespace Domain.Organisation.Requests;
 
-public class MemberRegistrationRequest
+public sealed record MemberRegistrationRequest
 {
-    public string FirstName { get; set; }
-    public string? MiddleName { get; set; }
-    public string LastName { get; set; }
-    public Gender Gender { get; set; }
-    public DateTime RegistrationBegin { get; set; }
-    public MembershipType MembershipType { get; set; }
-    public OrganisationId OrganisationId { get; set; }
+    public required string FirstName { get; init; }
+    public string? MiddleName { get; init; }
+    public required string LastName { get; init; }
+    public Gender Gender { get; init; }
+    public DateTime RegistrationBegin { get; init; }
+    public MembershipType MembershipType { get; init; }
+    public required OrganisationId OrganisationId { get; init; }
 }

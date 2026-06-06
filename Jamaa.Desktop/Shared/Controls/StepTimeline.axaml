@@ -1,0 +1,239 @@
+<UserControl
+    x:Class="Jamaa.Desktop.Shared.Controls.StepTimeline"
+    x:CompileBindings="True"
+    x:Name="Root"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="clr-namespace:Jamaa.Desktop.Shared.Controls"
+    xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
+    xmlns:icons="using:FluentIcons.Avalonia.Fluent"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:StepStateConverter x:Key="StepStateConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <ListBox
+            Classes="timeline-steps"
+            HorizontalAlignment="Center"
+            IsVisible="{Binding IsHorizontal, ElementName=Root}"
+            ItemsSource="{Binding ItemsSource, ElementName=Root}"
+            SelectedIndex="{Binding SelectedIndex, ElementName=Root, Mode=TwoWay}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="0" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="controls:IStepTimelineStep">
+                    <Grid
+                        ClipToBounds="False"
+                        RowDefinitions="56,Auto"
+                        RowSpacing="8"
+                        Width="200">
+                        <!--
+                            Horizontal geometry (all values derived from item width=200):
+                            Circle  : 56px, centered → left=72, right=128
+                            Text    : 152px, centered → left=24, right=176
+                            The connector lives in the circle row, so gaps are measured from circle edges.
+                            With a constant gap of 6px:
+                            Connector start   = circle_right + 6 = 128 + 6 = 134
+                            Next circle left  = 200 + 72 = 272
+                            Connector end     = next_circle_left - 6 = 272 - 6 = 266  →  Width = 132
+                        -->
+                        <Grid
+                            ClipToBounds="False"
+                            Grid.Row="0"
+                            Height="56">
+                            <Border
+                                Classes="step-bubble"
+                                CornerRadius="28"
+                                Height="56"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Width="56">
+                                <Border.Tag>
+                                    <MultiBinding Converter="{StaticResource StepStateConverter}">
+                                        <Binding Path="IsCompleted" />
+                                        <Binding Path="$parent[ListBoxItem].IsSelected" />
+                                        <Binding Path="IsEnabled" />
+                                    </MultiBinding>
+                                </Border.Tag>
+                                <Grid>
+                                    <TextBlock
+                                        Classes="step-number"
+                                        FontSize="14"
+                                        HorizontalAlignment="Center"
+                                        Text="{Binding StepNumber}"
+                                        VerticalAlignment="Center" />
+                                    <icons:SymbolIcon
+                                        Classes="step-check"
+                                        HorizontalAlignment="Center"
+                                        Symbol="Checkmark"
+                                        VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                            <Border
+                                Classes="step-connector"
+                                Height="3"
+                                HorizontalAlignment="Left"
+                                IsVisible="{Binding HasConnector}"
+                                Margin="134,0,0,0"
+                                VerticalAlignment="Center"
+                                Width="132">
+                                <Border.Tag>
+                                    <MultiBinding Converter="{StaticResource StepStateConverter}">
+                                        <Binding Path="IsCompleted" />
+                                        <Binding Path="$parent[ListBoxItem].IsSelected" />
+                                        <Binding Path="IsEnabled" />
+                                    </MultiBinding>
+                                </Border.Tag>
+                            </Border>
+                        </Grid>
+
+                        <Grid
+                            Grid.Row="1"
+                            HorizontalAlignment="Center"
+                            RowDefinitions="34,Auto"
+                            RowSpacing="8"
+                            Width="152">
+                            <TextBlock
+                                Classes="step-title"
+                                FontSize="13"
+                                HorizontalAlignment="Center"
+                                IsVisible="{Binding ShowStepTitle, ElementName=Root}"
+                                Text="{Binding Title}"
+                                TextAlignment="Center"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                Classes="step-description"
+                                FontSize="11"
+                                Grid.Row="1"
+                                HorizontalAlignment="Center"
+                                IsVisible="{Binding ShowStepDescription, ElementName=Root}"
+                                Text="{Binding Description}"
+                                TextAlignment="Center"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <ListBox
+            Classes="timeline-steps"
+            HorizontalAlignment="Left"
+            IsVisible="{Binding IsVertical, ElementName=Root}"
+            ItemsSource="{Binding ItemsSource, ElementName=Root}"
+            SelectedIndex="{Binding SelectedIndex, ElementName=Root, Mode=TwoWay}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" Spacing="0" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="controls:IStepTimelineStep">
+                    <Grid
+                        ColumnDefinitions="56,Auto"
+                        ColumnSpacing="12"
+                        RowDefinitions="56,44"
+                        Width="360">
+                        <Border
+                            Classes="step-bubble"
+                            CornerRadius="28"
+                            Grid.Column="0"
+                            Grid.Row="0"
+                            Height="56"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Width="56">
+                            <Border.Tag>
+                                <MultiBinding Converter="{StaticResource StepStateConverter}">
+                                    <Binding Path="IsCompleted" />
+                                    <Binding Path="$parent[ListBoxItem].IsSelected" />
+                                    <Binding Path="IsEnabled" />
+                                </MultiBinding>
+                            </Border.Tag>
+                            <Grid>
+                                <TextBlock
+                                    Classes="step-number"
+                                    FontSize="14"
+                                    HorizontalAlignment="Center"
+                                    Text="{Binding StepNumber}"
+                                    VerticalAlignment="Center" />
+                                <icons:SymbolIcon
+                                    Classes="step-check"
+                                    HorizontalAlignment="Center"
+                                    Symbol="Checkmark"
+                                    VerticalAlignment="Center" />
+                            </Grid>
+                        </Border>
+
+                        <Border
+                            Classes="step-connector"
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            Height="28"
+                            HorizontalAlignment="Center"
+                            IsVisible="{Binding HasConnector}"
+                            Margin="0,8,0,8"
+                            VerticalAlignment="Center"
+                            Width="3">
+                            <Border.Tag>
+                                <MultiBinding Converter="{StaticResource StepStateConverter}">
+                                    <Binding Path="IsCompleted" />
+                                    <Binding Path="$parent[ListBoxItem].IsSelected" />
+                                    <Binding Path="IsEnabled" />
+                                </MultiBinding>
+                            </Border.Tag>
+                        </Border>
+
+                        <Grid
+                            Grid.Column="1"
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            HorizontalAlignment="Left"
+                            Margin="0,8,0,0"
+                            RowDefinitions="34,Auto"
+                            RowSpacing="8"
+                            Width="280">
+                            <TextBlock
+                                Classes="step-title"
+                                FontSize="13"
+                                IsVisible="{Binding ShowStepTitle, ElementName=Root}"
+                                Text="{Binding Title}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                Classes="step-description"
+                                FontSize="11"
+                                Grid.Row="1"
+                                IsVisible="{Binding ShowStepDescription, ElementName=Root}"
+                                Text="{Binding Description}"
+                                TextWrapping="Wrap" />
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

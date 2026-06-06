@@ -15,9 +15,6 @@ public class DatabaseEventListener(IDataChangeNotifier dataChangeNotifier) : IOb
 
     public void OnNext(DiagnosticListener value)
     {
-        if (value.Name.Equals("Microsoft.EntityFrameworkCore"))
-        {
-            value.Subscribe(dataChangeNotifier);
-        }
+        if (value.Name.Equals("Microsoft.EntityFrameworkCore")) value.Subscribe(dataChangeNotifier);
     }
 }

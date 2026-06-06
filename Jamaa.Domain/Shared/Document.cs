@@ -2,7 +2,7 @@
 
 namespace Domain.Shared;
 
-public class Document
+public sealed record Document
 {
     public Document(Guid id, string name)
     {

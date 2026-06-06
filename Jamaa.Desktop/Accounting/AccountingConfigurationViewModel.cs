@@ -12,18 +12,23 @@ using Jamaa.Desktop.Shared;
 namespace Jamaa.Desktop.Accounting;
 
 /// <summary>
-/// Integration: Hosts the Accounting Configuration sub-module and manages breadcrumb navigation within the configuration hierarchy.
+///     Integration: Hosts the Accounting Configuration sub-module and manages breadcrumb navigation within the
+///     configuration hierarchy.
 /// </summary>
 public partial class AccountingConfigurationViewModel : ObservableObject, IApplicationModule, INavigationHost
 {
-    private readonly IRouteResolver _routeResolver;
-    private readonly IRelayCommand _openFiscalCalendarAndPeriodsCommand;
-    private readonly IRelayCommand _openCurrencyAndDateFormatsCommand;
-    private readonly IRelayCommand _openChartOfAccountsCommand;
-    private readonly IRelayCommand _openTaxGroupsAndAuthoritiesCommand;
-    private readonly IRelayCommand _openAutomationRulesCommand;
-    private readonly IRelayCommand _openUserRolesAndApprovalsCommand;
     private readonly IRelayCommand _goToConfigurationFromBreadcrumbCommand;
+    private readonly IRelayCommand _openAutomationRulesCommand;
+    private readonly IRelayCommand _openChartOfAccountsCommand;
+    private readonly IRelayCommand _openCurrencyAndDateFormatsCommand;
+    private readonly IRelayCommand _openFiscalCalendarAndPeriodsCommand;
+    private readonly IRelayCommand _openTaxGroupsAndAuthoritiesCommand;
+    private readonly IRelayCommand _openUserRolesAndApprovalsCommand;
+    private readonly IRouteResolver _routeResolver;
+
+    [ObservableProperty] private object? _activeContent;
+    [ObservableProperty] private bool _isConfigurationCardsVisible;
+    [ObservableProperty] private bool _isSubPageVisible;
 
     public AccountingConfigurationViewModel(IRouteResolver routeResolver)
     {
@@ -39,26 +44,64 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
         ShowConfigurationCards();
     }
 
+    public IReadOnlyList<AccountingConfigurationCardViewModel> ConfigurationCards { get; }
+    public ObservableCollection<BreadcrumbItemModel> Breadcrumbs { get; } = [];
+
     public Guid Id => Guid.Parse("f6a7b8c9-d1e2-4f3a-b4c5-d6e7f8a9b0c1");
     public string Title => "Accounting Configuration";
     public object? HeaderContent => null;
 
-    public IReadOnlyList<AccountingConfigurationCardViewModel> ConfigurationCards { get; }
-    public ObservableCollection<BreadcrumbItemModel> Breadcrumbs { get; } = [];
+    public void NavigateTo<TViewModel>(object? parameter = null)
+    {
+    }
 
-    [ObservableProperty] private object? _activeContent;
-    [ObservableProperty] private bool _isConfigurationCardsVisible;
-    [ObservableProperty] private bool _isSubPageVisible;
+    public void NavigateTo(string route, object? parameter = null)
+    {
+        if (route == Routes.AccountingConfiguration)
+        {
+            ShowConfigurationCards();
+            return;
+        }
 
-    private IReadOnlyList<AccountingConfigurationCardViewModel> CreateConfigurationCards() =>
-    [
-        new("Fiscal Calendar & Periods", _openFiscalCalendarAndPeriodsCommand),
-        new("Currency & Date Formats", _openCurrencyAndDateFormatsCommand),
-        new("COA Structure & Mappings", _openChartOfAccountsCommand),
-        new("Tax Groups & Authorities", _openTaxGroupsAndAuthoritiesCommand),
-        new("Automation Rules", _openAutomationRulesCommand),
-        new("User Roles & Approvals", _openUserRolesAndApprovalsCommand)
-    ];
+        var resolvedContent = _routeResolver.Resolve(route, parameter) ?? throw new InvalidOperationException();
+
+        ActiveContent = resolvedContent;
+        IsConfigurationCardsVisible = false;
+        IsSubPageVisible = true;
+        UpdateBreadcrumbs(route);
+    }
+
+    public bool CanGoBack()
+    {
+        return IsSubPageVisible;
+    }
+
+    public void GoBack()
+    {
+        ShowConfigurationCards();
+    }
+
+    public bool CanGoForward()
+    {
+        return false;
+    }
+
+    public void GoForward()
+    {
+    }
+
+    private IReadOnlyList<AccountingConfigurationCardViewModel> CreateConfigurationCards()
+    {
+        return
+        [
+            new("Fiscal Calendar & Periods", _openFiscalCalendarAndPeriodsCommand),
+            new("Currency & Date Formats", _openCurrencyAndDateFormatsCommand),
+            new("COA Structure & Mappings", _openChartOfAccountsCommand),
+            new("Tax Groups & Authorities", _openTaxGroupsAndAuthoritiesCommand),
+            new("Automation Rules", _openAutomationRulesCommand),
+            new("User Roles & Approvals", _openUserRolesAndApprovalsCommand)
+        ];
+    }
 
     private void OpenFiscalCalendarAndPeriods()
     {
@@ -98,15 +141,14 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
     private void UpdateBreadcrumbs(string route)
     {
         Breadcrumbs.Clear();
-        
+
         if (route == Routes.AccountingConfiguration)
-        {
             // No breadcrumbs shown on main configuration page
             return;
-        }
-        
+
         // For sub-pages: Configuration > [Sub-page title]
-        Breadcrumbs.Add(new BreadcrumbItemModel("Configuration", Routes.AccountingConfiguration, true, _goToConfigurationFromBreadcrumbCommand));
+        Breadcrumbs.Add(new BreadcrumbItemModel("Configuration", Routes.AccountingConfiguration, true,
+            _goToConfigurationFromBreadcrumbCommand));
         Breadcrumbs.Add(new BreadcrumbItemModel(ResolveBreadcrumbTitle(route), route));
     }
 
@@ -120,6 +162,8 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
             Routes.TaxGroupsAndAuthorities => "Tax Groups & Authorities",
             Routes.AutomationRules => "Automation Rules",
             Routes.UserRolesAndApprovals => "User Roles & Approvals",
+            Routes.AccountingSetupWizard => "Accounting Setup Wizard",
+            Routes.AccountLedger => "Account Ledger",
             _ => ResolveFromViewModel(route)
         };
     }
@@ -141,44 +185,5 @@ public partial class AccountingConfigurationViewModel : ObservableObject, IAppli
     private void GoToConfigurationFromBreadcrumb()
     {
         ShowConfigurationCards();
-    }
-
-    public void NavigateTo<TViewModel>(object? parameter = null)
-    {
-    }
-
-    public void NavigateTo(string route, object? parameter = null)
-    {
-        if (route == Routes.AccountingConfiguration)
-        {
-            ShowConfigurationCards();
-            return;
-        }
-
-        var resolvedContent = _routeResolver.Resolve(route, parameter) ?? throw new InvalidOperationException();
-
-        ActiveContent = resolvedContent;
-        IsConfigurationCardsVisible = false;
-        IsSubPageVisible = true;
-        UpdateBreadcrumbs(route);
-    }
-
-    public bool CanGoBack()
-    {
-        return IsSubPageVisible;
-    }
-
-    public void GoBack()
-    {
-        ShowConfigurationCards();
-    }
-
-    public bool CanGoForward()
-    {
-        return false;
-    }
-
-    public void GoForward()
-    {
     }
 }

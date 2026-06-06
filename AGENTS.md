@@ -216,6 +216,13 @@ public partial class MembersViewModel : ObservableObject
 - Private field naming: `_fieldName`
 - UI dispatch: `Dispatcher.UIThread.InvokeAsync()` for off-thread updates
 - Commands sent to application layer; listen to events for updates
+- Enforce strict MVVM boundaries:
+  - ViewModels expose state, validation, and commands only
+  - Do not instantiate controls or compose templates in ViewModels
+  - Do not add ViewModel methods that configure/attach `IDataTemplate` columns (e.g., `ConfigureActionCellTemplates`)
+  - Do not assign style classes, brushes, or other visual resources in ViewModels
+  - Keep control templates/classes/visual states in `.axaml` shared styles/themes (or minimal view code-behind when required by framework limits)
+  - Prefer `DataTemplate`/selector/behavior (or view-local helper) for UI template composition
 
 ### Dependency Injection & Service Registration
 
@@ -234,6 +241,7 @@ Uses Castle DynamicProxy to wrap interfaces with authorization checks.
 ## Naming & Coding Conventions
 
 - **C# 14 features**: Primary constructors, file-scoped namespaces, collection expressions are expected
+- **Prefer records for immutable data shapes**: Use `record`/`record struct` for value-like, immutable carriers (commands, events, DTOs, query results, passive domain state) when identity and mutation are not required. Use `class` when the type has lifecycle/identity semantics, encapsulated mutable state, framework proxy/materialization constraints, or behavior-heavy responsibilities.
 - **PascalCase**: Classes, methods, public properties
 - **camelCase with `_` prefix**: Private fields (`_member`, not `member`)
 - **`nameof` over strings**: Always `nameof(MyMethod)`, never `"MyMethod"`
@@ -253,6 +261,50 @@ Uses Castle DynamicProxy to wrap interfaces with authorization checks.
 3. **Data** → Create EF models, repositories, migrations in `Jamaa.Data/`
 4. **Desktop** → Create views (`.axaml`) + viewmodels (`.cs`) in `Jamaa.Desktop/{Feature}/`
 5. **Tests** → Mirror the feature path in `Tests/` with BDD (`.feature`) or unit tests
+
+---
+
+## End-to-End: Adding a New Event Type
+
+When adding a new event (e.g., `AccountOpeningBalanceSet`), you must ensure it flows through the entire system. Missing one step will result in the UI not updating.
+
+### Step 1: Define Command & Event
+- **Location**: `Jamaa.Application/{Feature}/Commands/` and `Events/` (or `Jamaa.Domain`)
+- **Action**: Define immutable records for the intent (Command) and the fact (Event).
+
+### Step 2: Handle Command in Aggregate
+- **Location**: `Jamaa.Application/{Feature}/Aggregates/`
+- **Action**:
+  - Add `ReceiveAsync<TCommand>(handler)` to constructor.
+  - Implement handler: validate, create event, call `PersistEvent(@event)`.
+  - Add `Apply(@event)` method to update internal actor state.
+
+### Step 3: Tag the Event for Projections (CRITICAL)
+- **Location**: `Jamaa.Application/Shared/JamaaEventTagger.cs`
+- **Action**: Add the event to the `ToJournal` switch statement. 
+- **Why**: Projections filter events by tags (e.g., `OrganisationEvent`, `FinanceChanged`). If not tagged, the projection will never see the event.
+
+### Step 4: Update Read Model (Persistence)
+- **Location**: `Jamaa.Data/Configuration/JamaaDbContext.cs` and `Jamaa.Data/Models/`
+- **Action**:
+  - Add or update the POCO model in `Jamaa.Data/Models/`.
+  - Add a `DbSet<TModel>` to `JamaaDbContext`.
+  - Configure the mapping in `OnModelCreating` (or via `IEntityTypeConfiguration`).
+  - Generate a migration: `dotnet ef migrations add MyNewChange`.
+
+### Step 5: Implement Projection Handler
+- **Location**: `Jamaa.Application/Shared/JamaaEventProjection.cs`
+- **Action**:
+  - Implement `Task Handle(TEvent @event, JamaaDbContext dbContext)`.
+  - Register it in `RegisterEventHandlers()`: `ReceiveAsync<TEvent>(e => Handle(e, dbContext))`.
+- **Note**: This is where the event is transformed into a database row update.
+
+### Step 6: Expose via Query & UI
+- **Location**: `Jamaa.Data/Queries/` and `Jamaa.Desktop/{Feature}/`
+- **Action**:
+  - Create/Update a query handler to read the new data from `JamaaDbContext`.
+  - Update the ViewModel to execute the query and expose the result as an `[ObservableProperty]`.
+  - Update the View (`.axaml`) to bind to the new property.
 
 ---
 
@@ -313,6 +365,8 @@ Located in `Tests/` as `.feature` files:
 |---------|---------------|-----|
 | Method mixes orchestration + logic | Hard to test; violates SRP | Split: integration calls operation |
 | Direct DB access in ViewModel | Breaks MVVM; hard to test | Use command/query through app layer |
+| ViewModel creates/styles UI controls or templates | Breaks MVVM separation; mixes presentation with behavior | Move control/template/class/resource definitions to view markup/shared styles |
+| ViewModel exposes `Configure*Template*` methods for UI composition | Leaks presentation composition into VM API | Move template selection/composition to `.axaml`, selector/behavior, or view code-behind |
 | Synchronous I/O (`.Result`, `.Wait()`) | Deadlocks; UI freeze | Always `await` |
 | Shared mutable state across actors | Race conditions | Actors own state; pass data by value |
 | Actor processing multiple message types without order guarantee | Event order matters | Use single queue per aggregate; batch if needed |
@@ -346,8 +400,11 @@ When assigned a task:
 - [ ] Identify which layer(s) the work touches (Domain? Application? Desktop?)
 - [ ] If adding application logic: **Create operations first, then integration**
 - [ ] If adding UI: Create view + viewmodel pair; use existing styles
+- [ ] Enforce strict MVVM: no control/template/style composition in ViewModels
 - [ ] If modifying commands: Update aggregate handlers + tests
 - [ ] If adding a domain event: Add handler in aggregate `Apply()` method
+- [ ] **Crucial**: Tag new events in `JamaaEventTagger.cs` for projection
+- [ ] **Crucial**: Implement handler in `JamaaEventProjection.cs` for read model updates
 - [ ] Register new services in `ApplicationServicesRegistration`
 - [ ] Mirror test structure in `Tests/` directory
 - [ ] Use `var`, `nameof()`, async/await consistently

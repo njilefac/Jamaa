@@ -1,5 +1,5 @@
 using Castle.DynamicProxy;
-using Jamaa.Application.Finances;
+using Jamaa.Application.Accounting;
 using Jamaa.Application.Organisation;
 using Jamaa.Application.Security.Authorization;
 using Jamaa.Application.Setup;
@@ -11,17 +11,16 @@ namespace Jamaa.Application.Configuration;
 
 public static class ApplicationServicesRegistration
 {
-        
     public static ServiceCollection RegisterApplicationServices(this ServiceCollection services)
     {
         services.AddSingleton(new ProxyGenerator());
-            
+
         services.AddProxiedScoped<IUserManagementFacade, UserManagementFacade>();
 
         services.AddProxiedScoped<ISetupService, SetupService>();
 
-        services.AddProxiedSingleton<IOrganisationManagementFacade, OrganisationManagementFacade>();
-        services.AddProxiedSingleton<IFinanceManagementFacade, FinanceManagementFacade>();
+        services.AddProxiedSingleton<IOrganisationFacade, OrganisationFacade>();
+        services.AddProxiedSingleton<IAccountingFacade, AccountingFacade>();
 
         services.AddScoped<IQueryProcessor, QueryProcessor>();
 
@@ -29,6 +28,7 @@ public static class ApplicationServicesRegistration
 
         return services;
     }
+
     extension(IServiceCollection services)
     {
         private void AddProxiedScoped<TInterface, TImplementation>

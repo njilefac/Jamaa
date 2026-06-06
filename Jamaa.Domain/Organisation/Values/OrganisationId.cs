@@ -8,7 +8,7 @@ public record OrganisationId(string Value)
     {
         return new OrganisationId(guid.ToString());
     }
-        
+
     public static OrganisationId With(string value)
     {
         return new OrganisationId(value);

@@ -9,15 +9,28 @@
     xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid RowDefinitions="Auto, *">
-        <StackPanel
-            Grid.Row="0"
-            HorizontalAlignment="Left"
-            Margin="8"
-            Orientation="Horizontal"
-            Width="{Binding $parent[UserControl].Bounds.Width, Converter={StaticResource HalfWidthConverter}}">
-            <Button Command="{Binding ResetLayoutCommand}" Content="Reset Layout" />
-        </StackPanel>
+    <Grid Classes="dashboard page" RowDefinitions="Auto,*">
+        <Border Classes="dashboard page header" Grid.Row="0">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+                <StackPanel>
+                    <TextBlock Classes="dashboard page title" Text="Association Dashboard" />
+                    <TextBlock
+                        Classes="dashboard page subtitle"
+                        Text="Keep track of membership, finances, alerts, and activity from a single workspace tailored to your organisation."
+                        Width="{Binding $parent[UserControl].Bounds.Width, Converter={StaticResource HalfWidthConverter}}" />
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
+                    <Button
+                        Classes="dashboard header action"
+                        Command="{Binding ResetLayoutCommand}"
+                        Content="Reset Layout" />
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <ItemsControl
             Classes="dashboard grid"

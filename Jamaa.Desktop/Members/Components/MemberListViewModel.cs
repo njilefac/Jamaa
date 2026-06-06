@@ -1,65 +1,69 @@
-using Avalonia.Threading;
 using System;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Domain.Organisation.Values;
+using Avalonia.Controls.Selection;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Domain.Organisation.Requests;
+using Domain.Organisation.Values;
 using DynamicData;
 using DynamicData.Binding;
-using JetBrains.Annotations;
-using Avalonia.Controls.Selection;
 using Jamaa.Application.Organisation;
 using Jamaa.Data.Models.Members;
-using Jamaa.Desktop.Members.ViewModels;
 using Jamaa.Desktop.Members.Messages;
+using Jamaa.Desktop.Members.Pages;
 using Jamaa.Desktop.Members.Values;
+using Jamaa.Desktop.Members.ViewModels;
 using Jamaa.Desktop.Services.Interactions;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Notifications;
+using JetBrains.Annotations;
 
 namespace Jamaa.Desktop.Members.Components;
 
 [UsedImplicitly]
 public partial class MemberListViewModel : ObservableValidator, IRouteableViewModel, IDisposable
 {
-    public MembershipType[] MembershipTypes => Enum.GetValues<MembershipType>();
-    public RegistrationStatus[] RegistrationStatuses => Enum.GetValues<RegistrationStatus>();
+    private readonly INotificationService _notificationService;
 
-    public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
-    public MemberEndRegistrationViewModel MemberEndRegistrationViewModel { get; }
-    public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration {get;} = new();
-    public Interaction<MemberEndRegistrationViewModel, DialogResponse<RegistrationStatus>> ConfirmEndRegistration { get; } = new();
-    public Interaction<Unit, Unit> FocusSearch { get; } = new();
-    public SelectionModel<MemberViewModel> Selection { get; }
-    public string Title => "Members";
+    private readonly IOrganisationFacade _organisationFacade;
+    private readonly IDisposable? _subscription;
+    [ObservableProperty] private object? _activeContent;
+
+    [ObservableProperty] private MemberListDisplayMode _displayMode = MemberListDisplayMode.List;
+
+    [ObservableProperty] private bool _isOperationInFlight;
+
+    private MemberViewModel? _lastSelectedMember;
+    [ObservableProperty] private ObservableCollectionExtended<MemberViewModel> _members = [];
+
+    [ObservableProperty] private string? _searchTerm;
 
 
-    public MemberListViewModel(IOrganisationManagementFacade organisationManagementFacade,
+    public MemberListViewModel(IOrganisationFacade organisationFacade,
         MemberRegistrationViewModel memberRegistrationViewModel,
         MemberEndRegistrationViewModel memberEndRegistrationViewModel,
-        Pages.MemberProfileViewModel memberProfileViewModel, 
+        MemberProfileViewModel memberProfileViewModel,
         IRouteResolver routeResolver,
         INotificationService notificationService)
     {
         var syncContext = SynchronizationContext.Current;
         MemberRegistrationViewModel = memberRegistrationViewModel;
         MemberEndRegistrationViewModel = memberEndRegistrationViewModel;
-        _organisationManagementFacade = organisationManagementFacade;
+        _organisationFacade = organisationFacade;
         _notificationService = notificationService;
 
         var membersSourceList = new SourceCache<MemberViewModel, string>(m => m.Id);
-            
+
         var filter = this.WhenValueChanged(x => x.SearchTerm)
             .Throttle(TimeSpan.FromMilliseconds(250))
             .Select(BuildFilter);
-        
+
         membersSourceList
             .Connect()
             .Filter(filter)
@@ -69,27 +73,50 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             .Subscribe(_ => EnsureSelection());
 
         _subscription = new CompositeDisposable(
-            _organisationManagementFacade.CurrentMembers
+            _organisationFacade.CurrentMembers
                 .Subscribe(m => membersSourceList.AddOrUpdate(MapToViewModel(m))),
-            _organisationManagementFacade.MemberUpdated
+            _organisationFacade.MemberUpdated
                 .Subscribe(m =>
                 {
                     var existing = membersSourceList.Lookup(m.Id);
                     if (existing.HasValue)
-                    {
                         existing.Value.UpdateFrom(m);
-                    }
                     else
-                    {
                         membersSourceList.AddOrUpdate(MapToViewModel(m));
-                    }
                 }),
-            _organisationManagementFacade.MemberDeleted
+            _organisationFacade.MemberDeleted
                 .Subscribe(m => membersSourceList.Remove(m.Id))
         );
 
-        Selection = new() { Source = Members, SingleSelect = true };
+        Selection = new SelectionModel<MemberViewModel> { Source = Members, SingleSelect = true };
     }
+
+    public MembershipType[] MembershipTypes => Enum.GetValues<MembershipType>();
+    public RegistrationStatus[] RegistrationStatuses => Enum.GetValues<RegistrationStatus>();
+
+    public MemberRegistrationViewModel MemberRegistrationViewModel { get; }
+    public MemberEndRegistrationViewModel MemberEndRegistrationViewModel { get; }
+
+    public Interaction<MemberRegistrationViewModel, DialogResponse<MemberRegistrationRequest>> AddMemberRegistration
+    {
+        get;
+    } = new();
+
+    public Interaction<MemberEndRegistrationViewModel, DialogResponse<RegistrationStatus>> ConfirmEndRegistration
+    {
+        get;
+    } = new();
+
+    public Interaction<Unit, Unit> FocusSearch { get; } = new();
+    public SelectionModel<MemberViewModel> Selection { get; }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _subscription?.Dispose();
+    }
+
+    public string Title => "Members";
 
     private static Func<MemberViewModel, bool> BuildFilter(string? term)
     {
@@ -104,10 +131,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     private async Task RegisterMember()
     {
         // INTEGRATION: Registers a member and waits for event confirmation
-        if (IsOperationInFlight)
-        {
-            return;
-        }
+        if (IsOperationInFlight) return;
 
         MemberRegistrationViewModel.Reset();
         var request = await AddMemberRegistration.Handle(MemberRegistrationViewModel);
@@ -115,14 +139,14 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         {
             var subject = $"{request.Result.FirstName} {request.Result.LastName}";
             await _notificationService.TrackOperationAsync(
-                sendCommand: () => _organisationManagementFacade.RegisterMember(request.Result),
-                confirmationObservable: _organisationManagementFacade.CurrentMembers,
-                matcherPredicate: m => m.FirstName == request.Result.FirstName && m.LastName == request.Result.LastName,
-                timeout: TimeSpan.FromSeconds(10),
-                operationName: "Member",
-                successAction: "Registered",
-                subject: subject,
-                inFlightChanged: SetOperationInFlight);
+                () => _organisationFacade.RegisterMember(request.Result),
+                _organisationFacade.CurrentMembers,
+                m => m.FirstName == request.Result.FirstName && m.LastName == request.Result.LastName,
+                TimeSpan.FromSeconds(10),
+                "Member",
+                "Registered",
+                subject,
+                SetOperationInFlight);
         }
     }
 
@@ -130,15 +154,12 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
     private void ShowMemberProfile(object? parameter)
     {
         if (parameter is MemberViewModel member)
-        {
             // Note: MemberProfileNavigationArgs might still need MemberData 
             // but let's see if we can use MemberViewModel or map it back
-            WeakReferenceMessenger.Default.Send(new MemberDetailsRequested(new MemberProfileNavigationArgs(MapToData(member))));
-        }
+            WeakReferenceMessenger.Default.Send(
+                new MemberDetailsRequested(new MemberProfileNavigationArgs(MapToData(member))));
         else if (parameter is MemberProfileNavigationArgs args)
-        {
             WeakReferenceMessenger.Default.Send(new MemberDetailsRequested(args));
-        }
     }
 
     private static bool MemberMatches(MemberViewModel member, string? searchTerm)
@@ -147,25 +168,19 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             return true;
         return member.FirstName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase) ||
                member.LastName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase) ||
-               !string.IsNullOrWhiteSpace(member.MiddleName) &&
-               member.MiddleName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase);
+               (!string.IsNullOrWhiteSpace(member.MiddleName) &&
+                member.MiddleName.Contains(searchTerm, StringComparison.InvariantCultureIgnoreCase));
     }
 
     [RelayCommand]
     private async Task EndRegistration(MemberViewModel member)
     {
         // INTEGRATION: Ends member registration and waits for event confirmation
-        if (IsOperationInFlight || member.Registration is { EndDate: not null })
-        {
-            return;
-        }
+        if (IsOperationInFlight || member.Registration is { EndDate: not null }) return;
 
         MemberEndRegistrationViewModel.Reset(member);
         var response = await ConfirmEndRegistration.Handle(MemberEndRegistrationViewModel);
-        if (!response.Confirmed)
-        {
-            return;
-        }
+        if (!response.Confirmed) return;
 
         var request = new MemberUpdateRequest
         {
@@ -184,14 +199,14 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
 
         var subject = $"{member.FirstName} {member.LastName}";
         await _notificationService.TrackOperationAsync(
-            sendCommand: () => _organisationManagementFacade.UpdateMember(request),
-            confirmationObservable: _organisationManagementFacade.MemberUpdated,
-            matcherPredicate: m => m.Id == member.Id,
-            timeout: TimeSpan.FromSeconds(10),
-            operationName: "Member",
-            successAction: "Registration ended for",
-            subject: subject,
-            inFlightChanged: SetOperationInFlight);
+            () => _organisationFacade.UpdateMember(request),
+            _organisationFacade.MemberUpdated,
+            m => m.Id == member.Id,
+            TimeSpan.FromSeconds(10),
+            "Member",
+            "Registration ended for",
+            subject,
+            SetOperationInFlight);
     }
 
     [RelayCommand]
@@ -208,21 +223,12 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
 
     private void EnsureSelection()
     {
-        if (Selection.SelectedItem == null && Members.Count > 0)
-        {
-            Selection.SelectedIndex = 0;
-        }
+        if (Selection.SelectedItem == null && Members.Count > 0) Selection.SelectedIndex = 0;
     }
 
     private void SetOperationInFlight(bool isInFlight)
     {
         IsOperationInFlight = isInFlight;
-    }
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-        _subscription?.Dispose();
     }
 
     private static MemberViewModel MapToViewModel(MemberData member)
@@ -249,7 +255,7 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
 
     public static MemberData MapToData(MemberViewModel member)
     {
-        return new MemberData
+        var memberData = new MemberData
         {
             Id = member.Id,
             FirstName = member.FirstName,
@@ -257,44 +263,40 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
             LastName = member.LastName,
             Gender = member.Gender,
             OrganisationId = member.OrganisationId,
+            Organisation = null!, // To be loaded from DB or assigned by caller
             PictureData = member.PictureData,
-            Registration = member.Registration == null
-                ? new RegistrationData
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    MemberId = member.Id,
-                    StartDate = DateTime.Now,
-                    MembershipType = MembershipType.Regular,
-                    Status = RegistrationStatus.Probation
-                }
-                : new RegistrationData
-                {
-                    Id = member.Registration.Id,
-                    StartDate = member.Registration.StartDate,
-                    EndDate = member.Registration.EndDate,
-                    MembershipType = member.Registration.MembershipType,
-                    Status = member.Registration.Status,
-                    MemberId = member.Id
-                }
+            Registration = null! // Assigned below
         };
-    }
-    
-    [ObservableProperty] private string? _searchTerm;
-    [ObservableProperty] private object? _activeContent;
-    [ObservableProperty] private ObservableCollectionExtended<MemberViewModel> _members = [];
-    [ObservableProperty]
-    private MemberListDisplayMode _displayMode = MemberListDisplayMode.List;
-    [ObservableProperty]
-    private bool _isOperationInFlight;
 
-    private MemberViewModel? _lastSelectedMember;
+        memberData.Registration = member.Registration == null
+            ? new RegistrationData
+            {
+                Id = Guid.NewGuid().ToString(),
+                MemberId = member.Id,
+                StartDate = DateTime.Now,
+                MembershipType = MembershipType.Regular,
+                Status = RegistrationStatus.Probation,
+                Member = memberData,
+                Organisation = null! // To be loaded from DB or assigned by caller
+            }
+            : new RegistrationData
+            {
+                Id = member.Registration.Id,
+                StartDate = member.Registration.StartDate,
+                EndDate = member.Registration.EndDate,
+                MembershipType = member.Registration.MembershipType,
+                Status = member.Registration.Status,
+                MemberId = member.Id,
+                Member = memberData,
+                Organisation = null! // To be loaded from DB or assigned by caller
+            };
+
+        return memberData;
+    }
 
     partial void OnDisplayModeChanging(MemberListDisplayMode value)
     {
-        if (Selection.SelectedItem != null)
-        {
-            _lastSelectedMember = Selection.SelectedItem;
-        }
+        if (Selection.SelectedItem != null) _lastSelectedMember = Selection.SelectedItem;
     }
 
     partial void OnDisplayModeChanged(MemberListDisplayMode value)
@@ -302,17 +304,14 @@ public partial class MemberListViewModel : ObservableValidator, IRouteableViewMo
         // Use Post to ensure this runs after UI controls are detached/attached
         Dispatcher.UIThread.Post(() =>
         {
-            if (_lastSelectedMember != null)
-            {
-                Selection.SelectedItem = _lastSelectedMember;
-            }
+            if (_lastSelectedMember != null) Selection.SelectedItem = _lastSelectedMember;
 
             EnsureSelection();
         });
     }
-    
-    private static bool CanShowMemberProfile(object? parameter) => true;
-    private readonly IOrganisationManagementFacade _organisationManagementFacade;
-    private readonly INotificationService _notificationService;
-    private readonly IDisposable? _subscription;
+
+    private static bool CanShowMemberProfile(object? parameter)
+    {
+        return true;
+    }
 }

@@ -23,11 +23,13 @@
 
     <controls:NavigationView
         Header="{Binding}"
+        IsSettingsVisible="True"
         Margin="0"
         MenuItemsSource="{Binding MenuItems}"
         Padding="0"
         PaneDisplayMode="Auto"
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+        SelectionChanged="OnNavigationSelectionChanged"
         VerticalAlignment="Stretch">
         <controls:NavigationView.Content>
             <Border Background="{DynamicResource AppLayerBackground}">

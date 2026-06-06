@@ -14,7 +14,7 @@ public record MemberRegistered(
     DateTime? BirthDate,
     DateTime RegistrationBegin,
     MembershipType MembershipType,
-    OrganisationId OrganisationId) : ILibotaEvent
+    OrganisationId OrganisationId) : IJamaaEvent
 
 {
     public string EntityId => OrganisationId.Value;

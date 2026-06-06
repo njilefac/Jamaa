@@ -1,0 +1,50 @@
+<UserControl
+    d:DesignHeight="600"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Accounting.Wizard.FiscalCalendarAndCurrencyStepView"
+    x:DataType="wizard:FiscalCalendarAndCurrencyStepViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:wizard="clr-namespace:Jamaa.Desktop.Accounting.Wizard"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid ColumnDefinitions="*, 20, *">
+        <!--  Fiscal Calendar  -->
+        <Border
+            Classes="card"
+            Grid.Column="0"
+            Padding="15">
+            <DockPanel>
+                <TextBlock
+                    Classes="h3"
+                    DockPanel.Dock="Top"
+                    Margin="0,0,0,10"
+                    Text="Fiscal Calendar" />
+                <accounting:FiscalCalendarAndPeriodsPage DataContext="{Binding FiscalCalendarViewModel}" />
+            </DockPanel>
+        </Border>
+
+        <GridSplitter
+            Background="Transparent"
+            Grid.Column="1"
+            Width="20" />
+
+        <!--  Currency and Date Formats  -->
+        <Border
+            Classes="card"
+            Grid.Column="2"
+            Padding="15">
+            <DockPanel>
+                <TextBlock
+                    Classes="h3"
+                    DockPanel.Dock="Top"
+                    Margin="0,0,0,10"
+                    Text="Currency &amp; Formats" />
+                <accounting:AccountingCurrencyAndDateFormatsPage DataContext="{Binding CurrencyViewModel}" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

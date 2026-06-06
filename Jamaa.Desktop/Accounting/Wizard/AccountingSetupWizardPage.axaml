@@ -1,0 +1,66 @@
+<UserControl
+    d:DesignHeight="600"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Jamaa.Desktop.Accounting.Wizard.AccountingSetupWizardPage"
+    x:DataType="wizard:AccountingSetupWizardViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sharedControls="clr-namespace:Jamaa.Desktop.Shared.Controls"
+    xmlns:wizard="clr-namespace:Jamaa.Desktop.Accounting.Wizard"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="20" RowDefinitions="Auto, *, Auto">
+        <!--  Header & Stepper  -->
+        <StackPanel
+            Grid.Row="0"
+            Margin="0,0,0,20"
+            Spacing="10">
+            <TextBlock
+                Classes="h2"
+                HorizontalAlignment="Center"
+                Text="Accounting Setup Wizard" />
+            <sharedControls:StepTimeline
+                HorizontalAlignment="Center"
+                ItemsSource="{Binding Steps}"
+                Orientation="Horizontal"
+                SelectedIndex="{Binding CurrentStepIndex}"
+                ShowStepDescription="True"
+                ShowStepTitle="True" />
+        </StackPanel>
+
+        <!--  Content Area  -->
+        <ContentControl Content="{Binding CurrentStepContent}" Grid.Row="1">
+            <ContentControl.DataTemplates>
+                <DataTemplate DataType="{x:Type wizard:FiscalCalendarAndCurrencyStepViewModel}">
+                    <wizard:FiscalCalendarAndCurrencyStepView DataContext="{Binding}" />
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type accounting:ChartOfAccountsViewModel}">
+                    <accounting:ChartOfAccountsPage DataContext="{Binding}" />
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type wizard:FinalReviewStepViewModel}">
+                    <wizard:FinalReviewStepView DataContext="{Binding}" />
+                </DataTemplate>
+            </ContentControl.DataTemplates>
+        </ContentControl>
+
+        <!--  Navigation Buttons  -->
+        <StackPanel
+            Grid.Row="2"
+            HorizontalAlignment="Right"
+            Margin="0,20,0,0"
+            Orientation="Horizontal"
+            Spacing="10">
+            <Button
+                Classes="secondary"
+                Command="{Binding BackCommand}"
+                Content="Back" />
+            <Button
+                Classes="primary"
+                Command="{Binding NextCommand}"
+                Content="Next" />
+        </StackPanel>
+    </Grid>
+</UserControl>

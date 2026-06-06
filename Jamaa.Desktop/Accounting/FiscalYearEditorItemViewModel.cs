@@ -9,8 +9,16 @@ namespace Jamaa.Desktop.Accounting;
 
 public partial class FiscalYearEditorItemViewModel : ObservableObject
 {
-    private readonly SourceList<AccountingPeriodItemViewModel> _periodsSource = new();
     private readonly ReadOnlyObservableCollection<AccountingPeriodItemViewModel> _periods;
+    private readonly SourceList<AccountingPeriodItemViewModel> _periodsSource = new();
+
+    [ObservableProperty] private DateTime _endDate;
+
+    [ObservableProperty] private bool _isLocked;
+
+    [ObservableProperty] private string _name = string.Empty;
+
+    [ObservableProperty] private DateTime _startDate;
 
     public FiscalYearEditorItemViewModel(Guid id, DateTime startDate, DateTime endDate, bool isLocked)
     {
@@ -26,18 +34,6 @@ public partial class FiscalYearEditorItemViewModel : ObservableObject
     }
 
     public Guid Id { get; }
-
-    [ObservableProperty]
-    private string _name = string.Empty;
-
-    [ObservableProperty]
-    private DateTime _startDate;
-
-    [ObservableProperty]
-    private DateTime _endDate;
-
-    [ObservableProperty]
-    private bool _isLocked;
 
     public ReadOnlyObservableCollection<AccountingPeriodItemViewModel> Periods => _periods;
 
@@ -65,17 +61,17 @@ public partial class FiscalYearEditorItemViewModel : ObservableObject
         Name = BuildName(StartDate, EndDate);
     }
 
-    partial void OnStartDateChanged(DateTime _)
+    partial void OnStartDateChanged(DateTime value)
     {
         RaiseDerivedStateChanged();
     }
 
-    partial void OnEndDateChanged(DateTime _)
+    partial void OnEndDateChanged(DateTime value)
     {
         RaiseDerivedStateChanged();
     }
 
-    partial void OnIsLockedChanged(bool _)
+    partial void OnIsLockedChanged(bool value)
     {
         RaiseDerivedStateChanged();
     }
@@ -95,5 +91,3 @@ public partial class FiscalYearEditorItemViewModel : ObservableObject
             : $"FY {startDate:yyyy}/{endDate:yy}";
     }
 }
-
-
