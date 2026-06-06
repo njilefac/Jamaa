@@ -23,7 +23,7 @@ public class AccountingSetupWizardViewModelTests
     [Fact]
     public void Next_WhenAlreadyOnLastStep_DoesNotThrow()
     {
-        var viewModel = CreateViewModel();
+        using var viewModel = CreateViewModel();
         viewModel.CurrentStepIndex = viewModel.Steps.Count - 1;
 
         var nextMethod = typeof(AccountingSetupWizardViewModel)
@@ -72,7 +72,7 @@ public class AccountingSetupWizardViewModelTests
             ]
         };
 
-        var viewModel = CreateViewModel(settings, fiscalCalendar, new ChartOfAccountsData { OrganisationId = OrgId }, false);
+        using var viewModel = CreateViewModel(settings, fiscalCalendar, new ChartOfAccountsData { OrganisationId = OrgId }, false);
 
         await RefreshStepStateAsync(viewModel);
 
@@ -136,7 +136,7 @@ public class AccountingSetupWizardViewModelTests
             ]
         };
 
-        var viewModel = CreateViewModel(settings, fiscalCalendar, chartOfAccounts, true);
+        using var viewModel = CreateViewModel(settings, fiscalCalendar, chartOfAccounts, true);
 
         await RefreshStepStateAsync(viewModel);
 

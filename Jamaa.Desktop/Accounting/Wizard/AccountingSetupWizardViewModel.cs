@@ -17,7 +17,7 @@ using Jamaa.Desktop.Shared.Controls;
 
 namespace Jamaa.Desktop.Accounting.Wizard;
 
-public partial class AccountingSetupWizardViewModel : ObservableObject, IApplicationModule, IRouteableViewModel
+public partial class AccountingSetupWizardViewModel : ObservableObject, IApplicationModule, IRouteableViewModel, IDisposable
 {
     private readonly IAccountingFacade _accountingFacade;
     private readonly IServiceProvider _serviceProvider;
@@ -44,7 +44,6 @@ public partial class AccountingSetupWizardViewModel : ObservableObject, IApplica
         _organisationId = ResolveOrganisationId(userSessionService);
         InitializeSteps();
         SubscribeToAccountingChanges();
-        _ = RefreshStepStateAsync();
     }
 
     public ObservableCollection<WizardStepViewModel> Steps { get; } = [];
@@ -52,6 +51,16 @@ public partial class AccountingSetupWizardViewModel : ObservableObject, IApplica
     public Guid Id => Guid.Parse("a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d");
     public string Title => "Accounting Setup Wizard";
     public object? HeaderContent => null;
+
+    public Task InitializeAsync()
+    {
+        return RefreshStepStateAsync();
+    }
+
+    public void Dispose()
+    {
+        _subscriptions.Dispose();
+    }
 
     private void InitializeSteps()
     {
@@ -212,11 +221,6 @@ public partial class AccountingSetupWizardViewModel : ObservableObject, IApplica
     private void HandleAccountingChange(Unit unit)
     {
         _ = RefreshStepStateAsync();
-    }
-
-    public void Dispose()
-    {
-        _subscriptions.Dispose();
     }
 
     private sealed record WizardCompletionState(
