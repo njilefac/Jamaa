@@ -217,6 +217,10 @@
                                     Watermark="Optional account description" />
                             </StackPanel>
 
+                            <CheckBox
+                                Content="Contra account"
+                                IsChecked="{Binding IsContraAccount}" />
+
                             <StackPanel Spacing="4">
                                 <TextBlock Classes="form label" Text="Parent Account" />
                                 <TextBlock

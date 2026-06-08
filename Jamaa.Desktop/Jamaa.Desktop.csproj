@@ -24,6 +24,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Content Include="Assets\Icons\jamaa.icns" CopyToPublishDirectory="Always" />
+        <Content Remove="Logs\**" />
     </ItemGroup>
 
     <Target Name="CopyIconToBundle" AfterTargets="BundleApp">
@@ -36,6 +37,7 @@
         <AvaloniaResource Include="Assets\Icons\**" />
         <AvaloniaResource Include="Assets\Styles\**" />
         <AvaloniaResource Include="Assets\splash.png" />
+        <AvaloniaResource Remove="Logs\**" />
     </ItemGroup>
     <PropertyGroup>
         <GenerateResourceDesignerFiles>true</GenerateResourceDesignerFiles>
@@ -368,6 +370,7 @@
         <Compile Update="Accounting\JournalEntryListItemViewModel.cs">
           <DependentUpon>JournalEntriesPage.axaml</DependentUpon>
         </Compile>
+        <Compile Remove="Logs\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -377,5 +380,18 @@
         <EmbeddedResource Update="Assets\Resources\Messages.fr-fr.resx">
             <DependentUpon>Messages.resx</DependentUpon>
         </EmbeddedResource>
+        <EmbeddedResource Remove="Logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AvaloniaXaml Remove="Logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Remove="Logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Logs\**" />
     </ItemGroup>
 </Project>

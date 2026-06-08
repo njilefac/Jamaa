@@ -105,7 +105,8 @@ public class ChartOfAccountsViewModelTests
             Code = "1000",
             Name = "Cash",
             Description = "Main cash account",
-            Type = AccountType.Asset
+            Type = AccountType.Asset,
+            IsContraAccount = true
         };
 
         viewModel.SelectedAccount = account;
@@ -114,6 +115,7 @@ public class ChartOfAccountsViewModelTests
         viewModel.AccountName.ShouldBe("Cash");
         viewModel.AccountDescription.ShouldBe("Main cash account");
         viewModel.SelectedAccountType.ShouldBe(AccountType.Asset);
+        viewModel.IsContraAccount.ShouldBeTrue();
         viewModel.ActionButtonText.ShouldBe("Save Changes");
         viewModel.FormTitle.ShouldBe("Edit Account");
         viewModel.IsEditMode.ShouldBeTrue();
@@ -128,32 +130,34 @@ public class ChartOfAccountsViewModelTests
         _accountFacade.AccountUpdated.Returns(updatedSubject);
 
         _accountFacade.UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", "Updated description", AccountType.Asset,
-                null)
+                null, true)
             .Returns(_ =>
             {
                 updatedSubject.OnNext(new AccountData
                 {
                     Id = "acc-1", OrganisationId = "org-1", Code = "1000", Name = "Cash Updated",
-                    Description = "Updated description", Type = AccountType.Asset
+                    Description = "Updated description", Type = AccountType.Asset, IsContraAccount = true
                 });
                 return Task.CompletedTask;
             });
 
         var viewModel = CreateViewModel();
-        var account = new AccountItemViewModel { Id = "acc-1", Code = "1000", Name = "Cash", Type = AccountType.Asset };
+        var account = new AccountItemViewModel
+            { Id = "acc-1", Code = "1000", Name = "Cash", Type = AccountType.Asset, IsContraAccount = true };
 
         viewModel.SelectedAccount = account;
         viewModel.AccountCode = "1000";
         viewModel.AccountName = "Cash Updated";
         viewModel.AccountDescription = "Updated description";
         viewModel.SelectedAccountType = AccountType.Asset;
+        viewModel.IsContraAccount = true;
 
         // Act
         await viewModel.AddAccountCommand.ExecuteAsync(null);
 
         // Assert – facade was called
         await _accountFacade.Received(1).UpdateAccount("org-1", "acc-1", "1000", "Cash Updated", "Updated description",
-            AccountType.Asset, null);
+            AccountType.Asset, null, true);
         // Assert – success notification was shown
         _notificationService.Received(1).Show(
             Arg.Any<string>(),
@@ -173,13 +177,13 @@ public class ChartOfAccountsViewModelTests
         _accountFacade.AccountUpdated.Returns(Observable.Empty<AccountData>());
         _accountFacade.AccountDeleted.Returns(Observable.Empty<AccountData>());
 
-        _accountFacade.CreateAccount("org-1", "1100", "Bank", "Primary bank account", AccountType.Asset, null)
+        _accountFacade.CreateAccount("org-1", "1100", "Bank", "Primary bank account", AccountType.Asset, null, true)
             .Returns(_ =>
             {
                 createdSubject.OnNext(new AccountData
                 {
                     Id = "new-1", OrganisationId = "org-1", Code = "1100", Name = "Bank",
-                    Description = "Primary bank account", Type = AccountType.Asset
+                    Description = "Primary bank account", Type = AccountType.Asset, IsContraAccount = true
                 });
                 return Task.CompletedTask;
             });
@@ -189,13 +193,14 @@ public class ChartOfAccountsViewModelTests
         viewModel.AccountCode = "1100";
         viewModel.AccountName = "Bank";
         viewModel.AccountDescription = "Primary bank account";
+        viewModel.IsContraAccount = true;
 
         // Act
         await viewModel.AddAccountCommand.ExecuteAsync(null);
 
         // Assert – facade was called
         await _accountFacade.Received(1)
-            .CreateAccount("org-1", "1100", "Bank", "Primary bank account", AccountType.Asset, null);
+            .CreateAccount("org-1", "1100", "Bank", "Primary bank account", AccountType.Asset, null, true);
         // Assert – success notification was shown
         _notificationService.Received(1).Show(
             Arg.Any<string>(),

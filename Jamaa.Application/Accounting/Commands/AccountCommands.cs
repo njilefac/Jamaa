@@ -10,7 +10,8 @@ public record CreateAccount(
     string Name,
     AccountType Type,
     AccountId? ParentId,
-    string Description = "");
+    string Description = "",
+    bool IsContraAccount = false);
 
 public record UpdateAccount(
     OrganisationId OrganisationId,
@@ -19,7 +20,8 @@ public record UpdateAccount(
     string Name,
     AccountType Type,
     AccountId? ParentId,
-    string Description = "");
+    string Description = "",
+    bool IsContraAccount = false);
 
 public record DeleteAccount(
     OrganisationId OrganisationId,

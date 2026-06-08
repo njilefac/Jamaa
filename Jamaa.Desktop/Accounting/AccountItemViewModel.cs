@@ -25,6 +25,10 @@ public partial class AccountItemViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ToggleActiveToolTip))]
     private bool _isActive = true;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ContraAccountDisplay))]
+    private bool _isContraAccount;
+
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(DisplayLabel))]
     private string _name = string.Empty;
 
@@ -59,6 +63,7 @@ public partial class AccountItemViewModel : ObservableObject
 
     public string DisplayLabel => $"{Code} - {Name}";
     public string TypeDisplay => Type.ToString();
+    public string ContraAccountDisplay => IsContraAccount ? "Yes" : "No";
 
     public string TreeName => new string(' ', Depth * 2) + Name;
 

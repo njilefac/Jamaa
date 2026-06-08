@@ -43,7 +43,8 @@ internal static class QueryProcessorDomainMapper
             account.Type,
             account.Description,
             string.IsNullOrWhiteSpace(account.ParentId) ? null : AccountId.With(account.ParentId),
-            account.IsActive);
+            account.IsActive,
+            account.IsContraAccount);
     }
 
     internal static AccountingPeriod ToDomainModel(this AccountingPeriodData period)

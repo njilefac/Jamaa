@@ -75,6 +75,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
     [ObservableProperty] private AccountItemViewModel? _selectedParentAccount;
 
+    [ObservableProperty] private bool _isContraAccount;
+
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
     private string _statusMessage = string.Empty;
 
@@ -175,18 +177,19 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
         var viewModels = accountList.Select(a =>
         {
-            var vm = new AccountItemViewModel
-            {
-                Id = a.Id,
-                Code = a.Code,
-                Name = a.Name,
-                Description = a.Description,
-                Type = a.Type,
-                IsActive = a.IsActive,
-                CurrencySymbol = _currencySymbol,
-                DecimalPrecision = _decimalPrecision,
-                ThousandSeparator = _thousandSeparator,
-                FiscalYearId = _fiscalYearId,
+                var vm = new AccountItemViewModel
+                {
+                    Id = a.Id,
+                    Code = a.Code,
+                    Name = a.Name,
+                    Description = a.Description,
+                    Type = a.Type,
+                    IsActive = a.IsActive,
+                    IsContraAccount = a.IsContraAccount,
+                    CurrencySymbol = _currencySymbol,
+                    DecimalPrecision = _decimalPrecision,
+                    ThousandSeparator = _thousandSeparator,
+                    FiscalYearId = _fiscalYearId,
                 AccountingPeriodId = _accountingPeriodId
             };
             AssignItemCommands(vm);
@@ -273,6 +276,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             AccountName = value.Name;
             AccountDescription = value.Description;
             SelectedAccountType = value.Type;
+            IsContraAccount = value.IsContraAccount;
 
             RefreshFilteredParentAccounts();
 
@@ -289,6 +293,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             AccountName = string.Empty;
             AccountDescription = string.Empty;
             SelectedAccountType = null;
+            IsContraAccount = false;
             RefreshFilteredParentAccounts();
             SelectedParentAccount = null;
         }
@@ -686,8 +691,15 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             var accountId = SelectedAccount.Id;
             var subject = AccountName;
             var isConfirmed = await _notificationService.TrackOperationAsync(
-                () => _accountingFacade.UpdateAccount(orgId, accountId, AccountCode, AccountName, AccountDescription,
-                    SelectedAccountType ?? AccountType.Asset, SelectedParentAccount?.Id),
+                () => _accountingFacade.UpdateAccount(
+                    orgId,
+                    accountId,
+                    AccountCode,
+                    AccountName,
+                    AccountDescription,
+                    SelectedAccountType ?? AccountType.Asset,
+                    SelectedParentAccount?.Id,
+                    IsContraAccount),
                 _accountingFacade.AccountUpdated,
                 a => a.Id == accountId,
                 TimeSpan.FromSeconds(10),
@@ -708,9 +720,21 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
             var accountType = SelectedAccountType ?? AccountType.Asset;
             var confirmationSource = AccountCreationConfirmationSource.None;
             var isConfirmed = await _notificationService.TrackOperationAsync(
-                () => _accountingFacade.CreateAccount(orgId, code, AccountName, AccountDescription, accountType,
-                    parentAccountId),
-                BuildAccountCreationConfirmationObservable(orgId, code, name, accountType, parentAccountId)
+                () => _accountingFacade.CreateAccount(
+                    orgId,
+                    code,
+                    AccountName,
+                    AccountDescription,
+                    accountType,
+                    parentAccountId,
+                    IsContraAccount),
+                BuildAccountCreationConfirmationObservable(
+                    orgId,
+                    code,
+                    name,
+                    accountType,
+                    parentAccountId,
+                    IsContraAccount)
                     .Do(source => confirmationSource = source)
                     .Select(_ => true),
                 TimeSpan.FromSeconds(10),
@@ -732,7 +756,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         string code,
         string name,
         AccountType type,
-        string? parentAccountId)
+        string? parentAccountId,
+        bool isContraAccount)
     {
         var createdEvents = _accountingFacade.AccountCreated
             .Where(account =>
@@ -740,13 +765,14 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                 string.Equals(account.Code, code, StringComparison.Ordinal) &&
                 string.Equals(account.Name, name, StringComparison.Ordinal) &&
                 account.Type == type &&
-                string.Equals(account.ParentId, parentAccountId, StringComparison.Ordinal))
+                string.Equals(account.ParentId, parentAccountId, StringComparison.Ordinal) &&
+                account.IsContraAccount == isContraAccount)
             .Select(_ => AccountCreationConfirmationSource.EventStream);
 
         var readModelPresenceChecks = Observable.Interval(TimeSpan.FromMilliseconds(250))
             .StartWith(0L)
             .SelectMany(_ => Observable.FromAsync(() =>
-                HasCreatedAccountAppearedAsync(organisationId, code, name, type, parentAccountId)))
+                HasCreatedAccountAppearedAsync(organisationId, code, name, type, parentAccountId, isContraAccount)))
             .Where(isPresent => isPresent)
             .Select(_ => AccountCreationConfirmationSource.ReadModel);
 
@@ -773,7 +799,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         string code,
         string name,
         AccountType type,
-        string? parentAccountId)
+        string? parentAccountId,
+        bool isContraAccount)
     {
         try
         {
@@ -783,7 +810,8 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
                 string.Equals(account.Code, code, StringComparison.Ordinal) &&
                 string.Equals(account.Name, name, StringComparison.Ordinal) &&
                 account.Type == type &&
-                string.Equals(account.ParentId, parentAccountId, StringComparison.Ordinal));
+                string.Equals(account.ParentId, parentAccountId, StringComparison.Ordinal) &&
+                account.IsContraAccount == isContraAccount);
         }
         catch
         {
@@ -831,6 +859,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         AccountName = string.Empty;
         AccountDescription = string.Empty;
         SelectedAccountType = null;
+        IsContraAccount = false;
         SelectedParentAccount = null;
         ResetValidationState();
     }

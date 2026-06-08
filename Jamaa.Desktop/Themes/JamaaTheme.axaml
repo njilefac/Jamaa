@@ -33,8 +33,8 @@
             <SolidColorBrush Color="#E2E8F0" x:Key="AppDividerColor" />
 
             <!--  Text  -->
-            <SolidColorBrush Color="#0F172A" x:Key="AppTextPrimary" />
-            <SolidColorBrush Color="#475569" x:Key="AppTextSecondary" />
+            <SolidColorBrush Color="#000000" x:Key="AppTextPrimary" />
+            <SolidColorBrush Color="#334155" x:Key="AppTextSecondary" />
             <SolidColorBrush Color="#94A3B8" x:Key="AppTextDisabled" />
 
             <!--  Dashboard Semantic Colors  -->
@@ -97,8 +97,8 @@
 
             <!--  Text  -->
             <SolidColorBrush Color="#FFFFFF" x:Key="AppTextPrimary" />
-            <SolidColorBrush Color="#D2D0CE" x:Key="AppTextSecondary" />
-            <SolidColorBrush Color="#484644" x:Key="AppTextDisabled" />
+            <SolidColorBrush Color="#F1F5F9" x:Key="AppTextSecondary" />
+            <SolidColorBrush Color="#64748B" x:Key="AppTextDisabled" />
 
             <!--  Dashboard Semantic Colors  -->
             <SolidColorBrush Color="#1E3A8A" x:Key="DashboardAccentSurfaceBrush" />

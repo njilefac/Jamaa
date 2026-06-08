@@ -85,7 +85,8 @@ public class AccountAggregate : ReceivePersistentActor
             name,
             command.Type,
             command.ParentId,
-            description), Apply);
+            description,
+            command.IsContraAccount), Apply);
 
         DeferAsync(true, _ => TrySaveSnapshot());
     }
@@ -119,7 +120,8 @@ public class AccountAggregate : ReceivePersistentActor
             name,
             command.Type,
             command.ParentId,
-            description), Apply);
+            description,
+            command.IsContraAccount), Apply);
 
         DeferAsync(true, _ => TrySaveSnapshot());
     }
@@ -218,7 +220,8 @@ public class AccountAggregate : ReceivePersistentActor
             Name = @event.Name,
             Description = @event.Description,
             Type = @event.Type,
-            ParentId = @event.ParentId?.Value
+            ParentId = @event.ParentId?.Value,
+            IsContraAccount = @event.IsContraAccount
         };
     }
 
@@ -231,6 +234,7 @@ public class AccountAggregate : ReceivePersistentActor
         account.Description = @event.Description;
         account.Type = @event.Type;
         account.ParentId = @event.ParentId?.Value;
+        account.IsContraAccount = @event.IsContraAccount;
     }
 
     private void Apply(AccountDeleted @event)
@@ -356,7 +360,8 @@ public class AccountAggregate : ReceivePersistentActor
                 Description = persistedAccount.Description,
                 Type = persistedAccount.Type,
                 ParentId = persistedAccount.ParentId?.Value,
-                IsActive = persistedAccount.IsActive
+                IsActive = persistedAccount.IsActive,
+                IsContraAccount = persistedAccount.IsContraAccount
             };
         }
 
@@ -398,6 +403,7 @@ public class AccountAggregate : ReceivePersistentActor
         public AccountType Type { get; set; }
         public string? ParentId { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool IsContraAccount { get; set; }
 
         public AccountState Clone()
         {
@@ -409,7 +415,8 @@ public class AccountAggregate : ReceivePersistentActor
                 Description = Description,
                 Type = Type,
                 ParentId = ParentId,
-                IsActive = IsActive
+                IsActive = IsActive,
+                IsContraAccount = IsContraAccount
             };
         }
     }

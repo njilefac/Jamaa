@@ -18,7 +18,8 @@ internal static class AccountingReadModelMapper
             Description = account.Description,
             Type = account.Type,
             ParentId = account.ParentId,
-            IsActive = account.IsActive
+            IsActive = account.IsActive,
+            IsContraAccount = account.IsContraAccount
         };
     }
 
@@ -44,7 +45,8 @@ internal static class AccountingReadModelMapper
             Description = account.Description,
             Type = account.Type,
             ParentId = account.ParentId?.Value,
-            IsActive = account.IsActive
+            IsActive = account.IsActive,
+            IsContraAccount = account.IsContraAccount
         };
     }
 

@@ -1,82 +1,81 @@
-  name: Build and Test
-  
-  on:
-    push:
-    pull_request:
-  
-  jobs:
-    build:
-      
-      permissions:
-        checks: write
-        pull-requests: write
-        contents: read
-      runs-on: ubuntu-latest
-      
-      steps:
-      - uses: actions/checkout@v6
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
-      - name: Restore dependencies
-        run: dotnet restore Jamaa.sln
-      - name: Build
-        run: dotnet build Jamaa.sln --no-restore
-      - name: Test
-        run: dotnet test Jamaa.sln --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
-      - name: Test Report
-        uses: dorny/test-reporter@v2
-        if: always()
-        with:
-          name: .NET Test Results
-          path: "**/TestResults/*.trx"
-          reporter: dotnet-trx
-      - name: Job Summary
-        if: always()
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          import glob
-          import os
-          import xml.etree.ElementTree as ET
+name: Build and Test
 
-          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
-          files = glob.glob("**/TestResults/*.trx", recursive=True)
+on:
+  push:
+  pull_request:
 
-          lines = [
-              "## .NET Test Summary",
-              "",
-              f"- TRX files found: {len(files)}",
-          ]
+jobs:
+  build:
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: read
+    runs-on: ubuntu-latest
 
-          if files:
-              total = passed = failed = skipped = 0
-              for file_path in files:
-                  try:
-                      root = ET.parse(file_path).getroot()
-                  except ET.ParseError:
-                      continue
+    steps:
+    - uses: actions/checkout@v6
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.0.x
+    - name: Restore dependencies
+      run: dotnet restore Jamaa.sln
+    - name: Build
+      run: dotnet build Jamaa.sln --no-restore
+    - name: Test
+      run: dotnet test Jamaa.sln --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+    - name: Test Report
+      uses: dorny/test-reporter@v3
+      if: always()
+      with:
+        name: .NET Test Results
+        path: "**/TestResults/*.trx"
+        reporter: dotnet-trx
+    - name: Job Summary
+      if: always()
+      shell: bash
+      run: |
+        python3 - <<'PY'
+        import glob
+        import os
+        import xml.etree.ElementTree as ET
 
-                  for result in root.findall(".//{*}UnitTestResult"):
-                      total += 1
-                      outcome = (result.attrib.get("outcome") or "").lower()
-                      if outcome == "passed":
-                          passed += 1
-                      elif outcome == "failed":
-                          failed += 1
-                      elif outcome in ("notexecuted", "skipped"):
-                          skipped += 1
+        summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+        files = glob.glob("**/TestResults/*.trx", recursive=True)
 
-              lines.extend([
-                  f"- Total: {total}",
-                  f"- Passed: {passed}",
-                  f"- Failed: {failed}",
-                  f"- Skipped: {skipped}",
-              ])
-          else:
-              lines.append("- No TRX files found. Check test logger output path.")
+        lines = [
+            "## .NET Test Summary",
+            "",
+            f"- TRX files found: {len(files)}",
+        ]
 
-          with open(summary_path, "a", encoding="utf-8") as f:
-              f.write("\n".join(lines) + "\n")
-          PY
+        if files:
+            total = passed = failed = skipped = 0
+            for file_path in files:
+                try:
+                    root = ET.parse(file_path).getroot()
+                except ET.ParseError:
+                    continue
+
+                for result in root.findall(".//{*}UnitTestResult"):
+                    total += 1
+                    outcome = (result.attrib.get("outcome") or "").lower()
+                    if outcome == "passed":
+                        passed += 1
+                    elif outcome == "failed":
+                        failed += 1
+                    elif outcome in ("notexecuted", "skipped"):
+                        skipped += 1
+
+            lines.extend([
+                f"- Total: {total}",
+                f"- Passed: {passed}",
+                f"- Failed: {failed}",
+                f"- Skipped: {skipped}",
+            ])
+        else:
+            lines.append("- No TRX files found. Check test logger output path.")
+
+        with open(summary_path, "a", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+        PY

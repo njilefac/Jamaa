@@ -111,7 +111,7 @@ public class AccountingFacade : IAccountingFacade
 
     // Integration: dispatches account creation intent.
     public Task CreateAccount(string organisationId, string code, string name, string description, AccountType type,
-        string? parentAccountId)
+        string? parentAccountId, bool isContraAccount = false)
     {
         var command = new CreateAccount(
             OrganisationId.With(organisationId),
@@ -120,7 +120,8 @@ public class AccountingFacade : IAccountingFacade
             name,
             type,
             string.IsNullOrWhiteSpace(parentAccountId) ? null : AccountId.With(parentAccountId),
-            description);
+            description,
+            isContraAccount);
 
         _commandProcessor.Tell(command);
         return Task.CompletedTask;
@@ -128,7 +129,7 @@ public class AccountingFacade : IAccountingFacade
 
     // Integration: dispatches account update intent.
     public Task UpdateAccount(string organisationId, string accountId, string code, string name, string description,
-        AccountType type, string? parentAccountId)
+        AccountType type, string? parentAccountId, bool isContraAccount = false)
     {
         var command = new UpdateAccount(
             OrganisationId.With(organisationId),
@@ -137,7 +138,8 @@ public class AccountingFacade : IAccountingFacade
             name,
             type,
             string.IsNullOrWhiteSpace(parentAccountId) ? null : AccountId.With(parentAccountId),
-            description);
+            description,
+            isContraAccount);
 
         _commandProcessor.Tell(command);
         return Task.CompletedTask;

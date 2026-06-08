@@ -11,7 +11,8 @@ public record AccountCreated(
     string Name,
     AccountType Type,
     AccountId? ParentId,
-    string Description = "") : IJamaaEvent
+    string Description = "",
+    bool IsContraAccount = false) : IJamaaEvent
 {
     public string EntityId => AccountId.Value;
 }
@@ -23,7 +24,8 @@ public record AccountUpdated(
     string Name,
     AccountType Type,
     AccountId? ParentId,
-    string Description = "") : IJamaaEvent
+    string Description = "",
+    bool IsContraAccount = false) : IJamaaEvent
 {
     public string EntityId => AccountId.Value;
 }

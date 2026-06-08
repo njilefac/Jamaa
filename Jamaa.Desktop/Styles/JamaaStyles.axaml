@@ -657,13 +657,15 @@
         </Setter>
     </Style>
     <Style Selector="controls|NavigationViewItem /template/ controls|IconSourceElement">
-        <Setter Property="Width" Value="48" />
-        <Setter Property="Height" Value="48" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="RenderTransform" Value="scale(1.15)" />
     </Style>
 
     <Style Selector="controls|NavigationViewItem /template/ Viewbox#IconBox">
-        <Setter Property="Width" Value="48" />
-        <Setter Property="Height" Value="48" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="RenderTransform" Value="scale(1.15)" />
     </Style>
 
     <Style Selector="controls|NavigationViewItem /template/ controls|IconSourceElement Image">
@@ -671,7 +673,22 @@
     </Style>
 
     <Style Selector="controls|NavigationView">
-        <Setter Property="CompactPaneLength" Value="72" />
+        <Setter Property="CompactPaneLength" Value="80" />
+    </Style>
+
+    <Style Selector="controls|NavigationViewItem">
+        <Setter Property="MinHeight" Value="60" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style Selector="controls|NavigationViewItem:pointerover /template/ ContentPresenter#PART_LayoutRoot">
+        <Setter Property="Foreground" Value="{DynamicResource JamaaAccentBrush}" />
+    </Style>
+
+    <Style Selector="controls|NavigationViewItem:selected /template/ ContentPresenter#PART_LayoutRoot">
+        <Setter Property="Foreground" Value="{DynamicResource JamaaAccentBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
     <Style Selector="controls|NavigationView /template/ ContentControl#HeaderContent">

@@ -31,10 +31,10 @@ public interface IAccountingFacade
     Task DeleteFiscalYear(string organisationId, string fiscalYearId);
 
     Task CreateAccount(string organisationId, string code, string name, string description, AccountType type,
-        string? parentAccountId);
+        string? parentAccountId, bool isContraAccount = false);
 
     Task UpdateAccount(string organisationId, string accountId, string code, string name, string description,
-        AccountType type, string? parentAccountId);
+        AccountType type, string? parentAccountId, bool isContraAccount = false);
 
     Task DeleteAccount(string organisationId, string accountId);
     Task DeactivateAccount(string organisationId, string accountId);

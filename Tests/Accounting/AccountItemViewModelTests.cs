@@ -52,4 +52,12 @@ public class AccountItemViewModelTests
         var decimalSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
         viewModel.OpeningBalanceText.ShouldBe($"1'234{decimalSeparator}560");
     }
+
+    [Fact]
+    public void ContraAccountDisplay_ReflectsContraState()
+    {
+        var viewModel = new AccountItemViewModel { IsContraAccount = true };
+
+        viewModel.ContraAccountDisplay.ShouldBe("Yes");
+    }
 }

@@ -134,7 +134,8 @@ public class OrganisationProjection : ReceivePersistentActor
             Name = @event.Name,
             Description = @event.Description,
             Type = @event.Type,
-            ParentId = @event.ParentId?.Value
+            ParentId = @event.ParentId?.Value,
+            IsContraAccount = @event.IsContraAccount
         });
 
         await SaveChangesWithSqliteRetryAsync(dbContext);
@@ -151,6 +152,7 @@ public class OrganisationProjection : ReceivePersistentActor
         account.Description = @event.Description;
         account.Type = @event.Type;
         account.ParentId = @event.ParentId?.Value;
+        account.IsContraAccount = @event.IsContraAccount;
 
         await SaveChangesWithSqliteRetryAsync(dbContext);
     }

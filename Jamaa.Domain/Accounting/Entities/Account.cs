@@ -18,6 +18,7 @@ public sealed record Account
         string description = "",
         AccountId? parentId = null,
         bool isActive = true,
+        bool isContraAccount = false,
         IEnumerable<Account>? subAccounts = null)
     {
         Id = id;
@@ -28,6 +29,7 @@ public sealed record Account
         Description = description;
         ParentId = parentId;
         IsActive = isActive;
+        IsContraAccount = isContraAccount;
         _subAccounts = subAccounts?.ToList() ?? [];
     }
 
@@ -39,5 +41,6 @@ public sealed record Account
     public AccountType Type { get; }
     public AccountId? ParentId { get; }
     public bool IsActive { get; }
+    public bool IsContraAccount { get; }
     public IReadOnlyList<Account> SubAccounts => _subAccounts.AsReadOnly();
 }

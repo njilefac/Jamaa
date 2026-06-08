@@ -58,6 +58,8 @@ public partial class ChartOfAccountsPage : UserControl
                     options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                 new TextColumn<AccountItemViewModel, string>("Type", account => account.TypeDisplay,
                     options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
+                new TextColumn<AccountItemViewModel, string>("Contra", account => account.ContraAccountDisplay,
+                    options: new TextColumnOptions<AccountItemViewModel> { CanUserSortColumn = true }),
                 new TemplateColumn<AccountItemViewModel>("Opening Balance", openingBalanceCellTemplate),
                 new TemplateColumn<AccountItemViewModel>(string.Empty, saveOpeningBalanceCellTemplate),
                 new TemplateColumn<AccountItemViewModel>(string.Empty, editCellTemplate),

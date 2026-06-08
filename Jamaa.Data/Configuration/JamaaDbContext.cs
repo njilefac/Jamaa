@@ -145,6 +145,9 @@ public class JamaaDbContext(IOptions<DatabaseOptions> options, IDataChangeNotifi
             .Property(account => account.IsActive)
             .HasDefaultValue(true);
         modelBuilder.Entity<AccountData>()
+            .Property(account => account.IsContraAccount)
+            .HasDefaultValue(false);
+        modelBuilder.Entity<AccountData>()
             .HasIndex(account => new { account.OrganisationId, account.Code })
             .IsUnique();
 

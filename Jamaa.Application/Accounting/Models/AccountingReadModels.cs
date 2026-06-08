@@ -12,6 +12,7 @@ public class AccountData
     public AccountType Type { get; set; }
     public string? ParentId { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsContraAccount { get; set; }
 
     public AccountData? Parent { get; set; }
 }
