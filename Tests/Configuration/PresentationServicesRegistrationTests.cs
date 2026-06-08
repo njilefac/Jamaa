@@ -1,15 +1,14 @@
-using Microsoft.Extensions.DependencyInjection;
+using Domain.Users;
+using Jamaa.Application.Setup;
+using Jamaa.Application.Users.Services;
+using Jamaa.Desktop;
 using Jamaa.Desktop.Configuration.Extensions;
 using Jamaa.Desktop.Dashboard;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using Shouldly;
 using Xunit;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Jamaa.Application.Users.Services;
-using Jamaa.Application.Setup;
-using NSubstitute;
-using Microsoft.Extensions.Logging;
-using Domain.Users;
-using Jamaa.Desktop.Services.Notifications;
 
 namespace UnitTests.Configuration;
 
@@ -20,13 +19,13 @@ public class PresentationServicesRegistrationTests
     {
         // Arrange
         var services = new ServiceCollection();
-        
+
         // Mock dependencies for other services registered in RegisterPresentationServices
         services.AddSingleton(Substitute.For<ISetupService>());
-        services.AddSingleton(Substitute.For<ILogger<Jamaa.Desktop.Program>>());
+        services.AddSingleton(Substitute.For<ILogger<Program>>());
         services.AddSingleton(Substitute.For<ILogger<UserSessionService>>());
         services.AddSingleton(Substitute.For<IUserRepository>());
-        
+
         // Register presentation services
         services.RegisterPresentationServices();
 

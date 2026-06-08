@@ -9,9 +9,13 @@ namespace Jamaa.Data.Repositories.Organisations;
 
 public class OrganisationQueryHandler(JamaaDbContext dbContext) : IOrganisationQueryHandler
 {
-    public Task<List<OrganisationData>> HandleQuery(GetAllOrganisations query) =>
-        dbContext.Organisations.ToListAsync();
+    public Task<List<OrganisationData>> HandleQuery(GetAllOrganisations query)
+    {
+        return dbContext.Organisations.ToListAsync();
+    }
 
-    public Task<OrganisationData?> HandleQuery(GetOrganisationByName query) =>
-        dbContext.Organisations.SingleOrDefaultAsync(x => x.Name == query.Name);
+    public Task<OrganisationData?> HandleQuery(GetOrganisationByName query)
+    {
+        return dbContext.Organisations.SingleOrDefaultAsync(x => x.Name == query.Name);
+    }
 }

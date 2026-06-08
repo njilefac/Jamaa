@@ -9,48 +9,60 @@ using Jamaa.Desktop.Assets.Resources;
 namespace Jamaa.Desktop.Dashboard;
 
 // Tell the JSON serializer how to handle the different widget types
-    [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-    [JsonDerivedType(typeof(EmptyCellViewModel), "empty")]
-    [JsonDerivedType(typeof(ReportingAndAnalyticsWidgetViewModel), "reportingandanalytics")]
-    [JsonDerivedType(typeof(BookkeepingWidgetViewModel), "bookkeeping")]
-    [JsonDerivedType(typeof(RecentActivityFeedWidgetViewModel), "recentactivity")]
-    [JsonDerivedType(typeof(CalendarScheduleWidgetViewModel), "calendarschedule")]
-    [JsonDerivedType(typeof(AlertsAndNotificationsWidgetViewModel), "alerts")]
-    [JsonDerivedType(typeof(QuickActionsWidgetViewModel), "quickactions")]
-    [JsonDerivedType(typeof(MembershipStatsWidgetViewModel), "membershipstats")]
-    public abstract partial class WidgetViewModelBase : ObservableObject
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(EmptyCellViewModel), "empty")]
+[JsonDerivedType(typeof(ReportingAndAnalyticsWidgetViewModel), "reportingandanalytics")]
+[JsonDerivedType(typeof(BookkeepingWidgetViewModel), "bookkeeping")]
+[JsonDerivedType(typeof(RecentActivityFeedWidgetViewModel), "recentactivity")]
+[JsonDerivedType(typeof(CalendarScheduleWidgetViewModel), "calendarschedule")]
+[JsonDerivedType(typeof(AlertsAndNotificationsWidgetViewModel), "alerts")]
+[JsonDerivedType(typeof(QuickActionsWidgetViewModel), "quickactions")]
+[JsonDerivedType(typeof(MembershipStatsWidgetViewModel), "membershipstats")]
+public abstract partial class WidgetViewModelBase : ObservableObject
+{
+    // Bento Box Configuration
+    [property: JsonIgnore] [ObservableProperty]
+    private BoxSize _allowedBoxSize = BoxSize.Small;
+
+    [ObservableProperty] private int _column;
+
+    [property: JsonIgnore] [ObservableProperty]
+    private bool _isDraggingOver;
+
+    [property: JsonIgnore] [ObservableProperty]
+    private bool _isRemovable = true;
+
+    [property: JsonIgnore] [ObservableProperty]
+    private bool _isValidDrop;
+
+    // Grid Coordinates
+    [ObservableProperty] private int _row;
+
+    [property: JsonIgnore] [ObservableProperty]
+    private string _title = string.Empty;
+
+    [JsonIgnore] public string Id { get; init; } = Guid.NewGuid().ToString();
+
+    // Ignore these during JSON serialization to prevent circular references
+    [JsonIgnore] public DashboardViewModel? ParentViewModel { get; set; }
+
+    [JsonIgnore] public IRelayCommand<WidgetViewModelBase>? RemoveCommand { get; set; }
+
+    [JsonIgnore]
+    public IEnumerable<WidgetViewModelBase> CompatibleWidgets =>
+        ParentViewModel?.GetCompatibleWidgets(AllowedBoxSize) ?? Enumerable.Empty<WidgetViewModelBase>();
+
+    [JsonIgnore] public bool HasCompatibleWidgets => CompatibleWidgets.Any();
+
+    [JsonIgnore]
+    public string FlyoutTitle => HasCompatibleWidgets
+        ? Messages.dashboard_available_widgets
+        : Messages.dashboard_no_widgets_available;
+
+    public void NotifyCompatibilityChanged()
     {
-        [JsonIgnore] public string Id { get; init; } = Guid.NewGuid().ToString();
-        
-        [property: JsonIgnore] [ObservableProperty] private string _title = string.Empty;
-
-        // Grid Coordinates
-        [ObservableProperty] private int _row;
-        [ObservableProperty] private int _column;
-
-        // Bento Box Configuration
-        [property: JsonIgnore] [ObservableProperty] private BoxSize _allowedBoxSize = BoxSize.Small;
-        [property: JsonIgnore] [ObservableProperty] private bool _isRemovable = true;
-        [property: JsonIgnore] [ObservableProperty] private bool _isDraggingOver;
-        [property: JsonIgnore] [ObservableProperty] private bool _isValidDrop;
-
-        // Ignore these during JSON serialization to prevent circular references
-        [JsonIgnore] public DashboardViewModel? ParentViewModel { get; set; }
-
-        [JsonIgnore] public IRelayCommand<WidgetViewModelBase>? RemoveCommand { get; set; }
-        [JsonIgnore] public IEnumerable<WidgetViewModelBase> CompatibleWidgets => ParentViewModel?.GetCompatibleWidgets(AllowedBoxSize) ?? Enumerable.Empty<WidgetViewModelBase>();
-
-        [JsonIgnore] public bool HasCompatibleWidgets => CompatibleWidgets.Any();
-
-        [JsonIgnore]
-        public string FlyoutTitle => HasCompatibleWidgets
-            ? Messages.dashboard_available_widgets
-            : Messages.dashboard_no_widgets_available;
-
-        public void NotifyCompatibilityChanged()
-        {
-            OnPropertyChanged(nameof(CompatibleWidgets));
-            OnPropertyChanged(nameof(HasCompatibleWidgets));
-            OnPropertyChanged(nameof(FlyoutTitle));
-        }
+        OnPropertyChanged(nameof(CompatibleWidgets));
+        OnPropertyChanged(nameof(HasCompatibleWidgets));
+        OnPropertyChanged(nameof(FlyoutTitle));
     }
+}

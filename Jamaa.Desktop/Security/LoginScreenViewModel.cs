@@ -10,12 +10,12 @@ using Domain.Security.Values;
 using Jamaa.Application.Setup;
 using Jamaa.Application.Users;
 using Jamaa.Application.Users.Services;
-using JetBrains.Annotations;
 using Jamaa.Data.Models.Organisation;
 using Jamaa.Desktop.Assets.Resources;
 using Jamaa.Desktop.Security.Events;
 using Jamaa.Desktop.Services.Notifications;
 using Jamaa.Desktop.Shared;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 namespace Jamaa.Desktop.Security;
@@ -23,6 +23,26 @@ namespace Jamaa.Desktop.Security;
 [UsedImplicitly]
 public partial class LoginScreenViewModel : ValidatableFormViewModel
 {
+    private readonly INotificationService _notificationService;
+
+    private readonly IUserSessionService? _userSessionService;
+
+    [ObservableProperty] private OrganisationData? _currentOrganisation;
+
+    [ObservableProperty] private IList<OrganisationData>? _organisations;
+
+    [ObservableProperty]
+    [Required(ErrorMessageResourceName = "login_error_password", ErrorMessageResourceType = typeof(Messages))]
+    [MinLength(8, ErrorMessageResourceName = "login_error_password", ErrorMessageResourceType = typeof(Messages))]
+    [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
+    private string? _password;
+
+    [ObservableProperty]
+    [Required(ErrorMessageResourceName = "login_error_username", ErrorMessageResourceType = typeof(Messages))]
+    [MinLength(3, ErrorMessageResourceName = "login_error_username", ErrorMessageResourceType = typeof(Messages))]
+    [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
+    private string? _userName;
+
     public LoginScreenViewModel(
         ISetupService setupService,
         IUserSessionService userSessionService,
@@ -31,7 +51,7 @@ public partial class LoginScreenViewModel : ValidatableFormViewModel
     {
         _userSessionService = userSessionService;
         _notificationService = notificationService;
-        
+
         _userSessionService?.UserSessions.Subscribe(session =>
         {
             if (session is not { IsAuthenticated: true })
@@ -39,7 +59,7 @@ public partial class LoginScreenViewModel : ValidatableFormViewModel
                 WeakReferenceMessenger.Default.Send(new AuthenticationFailed());
                 return;
             }
-            
+
             WeakReferenceMessenger.Default.Send(new UserAuthenticated(session));
             UserName = string.Empty;
             Password = string.Empty;
@@ -52,35 +72,6 @@ public partial class LoginScreenViewModel : ValidatableFormViewModel
         });
     }
 
-    [ObservableProperty]
-    [Required(ErrorMessageResourceName = "login_error_username",ErrorMessageResourceType = typeof(Messages))]
-    [MinLength(3, ErrorMessageResourceName = "login_error_username",ErrorMessageResourceType = typeof(Messages))]
-    [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
-    private string? _userName;
-
-    [ObservableProperty] 
-    [Required(ErrorMessageResourceName = "login_error_password",ErrorMessageResourceType = typeof(Messages))]
-    [MinLength(8, ErrorMessageResourceName = "login_error_password",ErrorMessageResourceType = typeof(Messages))]
-    [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
-    private string? _password;
-
-    [ObservableProperty] private IList<OrganisationData>? _organisations;
-
-    [ObservableProperty] private OrganisationData? _currentOrganisation;
-
-    [RelayCommand(CanExecute = nameof(CanLogin))]
-    private async Task<UserSession?> Login()
-    {
-        var credentials = new Credentials(UserName, Password);
-        var response = await _userSessionService?.Authenticate(credentials, CurrentOrganisation)!;
-        if (response is null or { IsAuthenticated: false })
-        {
-            _notificationService.Show(Messages.login_authentication_failed_title, Messages.login_authentication_failed_message, NotificationType.Error);
-        }
-        ResetValidationState();
-        return response;
-    }
-
     public bool CanLogin
     {
         get
@@ -91,6 +82,15 @@ public partial class LoginScreenViewModel : ValidatableFormViewModel
         }
     }
 
-    private readonly IUserSessionService? _userSessionService;
-    private readonly INotificationService _notificationService;
+    [RelayCommand(CanExecute = nameof(CanLogin))]
+    private async Task<UserSession?> Login()
+    {
+        var credentials = new Credentials(UserName, Password);
+        var response = await _userSessionService?.Authenticate(credentials, CurrentOrganisation)!;
+        if (response is null or { IsAuthenticated: false })
+            _notificationService.Show(Messages.login_authentication_failed_title,
+                Messages.login_authentication_failed_message, NotificationType.Error);
+        ResetValidationState();
+        return response;
+    }
 }

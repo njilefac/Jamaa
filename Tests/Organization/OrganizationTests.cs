@@ -6,45 +6,48 @@ using Domain.Shared.Values;
 using Shouldly;
 using Xunit;
 
-namespace UnitTests.Organization
+namespace UnitTests.Organization;
+
+public class OrganizationTests
 {
-    public class OrganizationTests
+    [Fact]
+    public void ShouldCreateOrganization()
     {
-        [Fact]
-        public void ShouldCreateOrganization()
-        {
-            //Arrange
-            var name = "Test Organization";
-            var description = "this is a test organization";
+        //Arrange
+        var name = "Test Organization";
+        var description = "this is a test organization";
 
-            // Act
-            var result = new Organisation(name, description);
+        // Act
+        var result = new Organisation(name, description);
 
-            // Assert
-            result.Name.ShouldBe(name);
-            result.Description.ShouldBe(description);
-        }
+        // Assert
+        result.Name.ShouldBe(name);
+        result.Description.ShouldBe(description);
+        result.FiscalCalendar.ShouldNotBeNull();
+        result.FiscalCalendar.OrganisationId.Value.ShouldBe(result.Id);
+        result.ChartOfAccounts.ShouldNotBeNull();
+        result.ChartOfAccounts.OrganisationId.Value.ShouldBe(result.Id);
+    }
 
-        [Fact]
-        public void ShouldRegisterNewMember()
-        {
-            // Arrange
-            string firstName = "test first name";
-            string middleName = "test middle name";
-            string lastName = "test last name";
-            var member = new Member(firstName, middleName, lastName, Gender.Female, DateTime.Today);
+    [Fact]
+    public void ShouldRegisterNewMember()
+    {
+        // Arrange
+        var firstName = "test first name";
+        var middleName = "test middle name";
+        var lastName = "test last name";
+        var member = new Member(firstName, middleName, lastName, Gender.Female, DateTime.Today);
 
-            var organization = new Organisation("Unity Club", "Test organization");
+        var organization = new Organisation("Unity Club", "Test organization");
 
-            // Act
-            var registration = organization.Register(member, MembershipType.Regular, DateTime.Today);
+        // Act
+        var registration = organization.Register(member, MembershipType.Regular, DateTime.Today);
 
-            // Assert
-            registration.ShouldNotBeNull();
-            registration.Member.ShouldBe(member);
-            registration.Status.ShouldBe(RegistrationStatus.Probation);
-            registration.Begin.ShouldBe(DateTime.Today);
-            registration.End.ShouldBeNull();
-        }
+        // Assert
+        registration.ShouldNotBeNull();
+        registration.Member.ShouldBe(member);
+        registration.Status.ShouldBe(RegistrationStatus.Probation);
+        registration.Begin.ShouldBe(DateTime.Today);
+        registration.End.ShouldBeNull();
     }
 }

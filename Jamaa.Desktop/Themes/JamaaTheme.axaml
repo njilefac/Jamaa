@@ -18,29 +18,54 @@
             <Color x:Key="SystemAccentColorDark2">#1E40AF</Color>
             <Color x:Key="SystemAccentColorDark3">#1E3A8A</Color>
 
-            <SolidColorBrush x:Key="JamaaPrimaryBrush" Color="{StaticResource JamaaPrimaryColor}" />
-            <SolidColorBrush x:Key="JamaaAccentBrush" Color="{StaticResource JamaaAccentColor}" />
+            <SolidColorBrush Color="{StaticResource JamaaPrimaryColor}" x:Key="JamaaPrimaryBrush" />
+            <SolidColorBrush Color="{StaticResource JamaaAccentColor}" x:Key="JamaaAccentBrush" />
 
             <!--  Backgrounds  -->
-            <SolidColorBrush x:Key="AppBackgroundColor" Color="#F1F5F9" />
-            <SolidColorBrush x:Key="AppSurfaceColor" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="AppHeaderBackground" Color="#F8FAFC" />
-            <SolidColorBrush x:Key="AppCardBackground" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="AppLayerBackground" Color="#E2E8F0" />
+            <SolidColorBrush Color="#F1F5F9" x:Key="AppBackgroundColor" />
+            <SolidColorBrush Color="#FFFFFF" x:Key="AppSurfaceColor" />
+            <SolidColorBrush Color="#F8FAFC" x:Key="AppHeaderBackground" />
+            <SolidColorBrush Color="#FFFFFF" x:Key="AppCardBackground" />
+            <SolidColorBrush Color="#E2E8F0" x:Key="AppLayerBackground" />
 
             <!--  Borders & Dividers  -->
-            <SolidColorBrush x:Key="AppBorderColor" Color="#CBD5E1" />
-            <SolidColorBrush x:Key="AppDividerColor" Color="#E2E8F0" />
+            <SolidColorBrush Color="#CBD5E1" x:Key="AppBorderColor" />
+            <SolidColorBrush Color="#E2E8F0" x:Key="AppDividerColor" />
 
             <!--  Text  -->
-            <SolidColorBrush x:Key="AppTextPrimary" Color="#0F172A" />
-            <SolidColorBrush x:Key="AppTextSecondary" Color="#475569" />
-            <SolidColorBrush x:Key="AppTextDisabled" Color="#94A3B8" />
+            <SolidColorBrush Color="#000000" x:Key="AppTextPrimary" />
+            <SolidColorBrush Color="#334155" x:Key="AppTextSecondary" />
+            <SolidColorBrush Color="#94A3B8" x:Key="AppTextDisabled" />
+
+            <!--  Dashboard Semantic Colors  -->
+            <SolidColorBrush Color="#DBEAFE" x:Key="DashboardAccentSurfaceBrush" />
+            <SolidColorBrush Color="#1D4ED8" x:Key="DashboardAccentForegroundBrush" />
+            <SolidColorBrush Color="#DBEAFE" x:Key="DashboardHeaderActionBackgroundBrush" />
+            <SolidColorBrush Color="#1E3A8A" x:Key="DashboardHeaderActionForegroundBrush" />
+            <SolidColorBrush Color="#BFDBFE" x:Key="DashboardHeaderActionHoverBackgroundBrush" />
+            <SolidColorBrush Color="#DCFCE7" x:Key="DashboardSuccessSurfaceBrush" />
+            <SolidColorBrush Color="#15803D" x:Key="DashboardSuccessForegroundBrush" />
+            <SolidColorBrush Color="#FEF3C7" x:Key="DashboardWarningSurfaceBrush" />
+            <SolidColorBrush Color="#B45309" x:Key="DashboardWarningForegroundBrush" />
+            <SolidColorBrush Color="#FEE2E2" x:Key="DashboardDangerSurfaceBrush" />
+            <SolidColorBrush Color="#B91C1C" x:Key="DashboardDangerForegroundBrush" />
+            <SolidColorBrush Color="#E0F2FE" x:Key="DashboardInfoSurfaceBrush" />
+            <SolidColorBrush Color="#1D4ED8" x:Key="DashboardInfoForegroundBrush" />
 
             <!--  Validation  -->
-            <SolidColorBrush x:Key="ValidationErrorBackground" Color="#FEF2F2" />
-            <SolidColorBrush x:Key="ValidationErrorBrush" Color="#EF4444" />
-            <SolidColorBrush x:Key="ValidationErrorForeground" Color="#991B1B" />
+            <SolidColorBrush Color="#FEF2F2" x:Key="ValidationErrorBackground" />
+            <SolidColorBrush Color="#EF4444" x:Key="ValidationErrorBrush" />
+            <SolidColorBrush Color="#991B1B" x:Key="ValidationErrorForeground" />
+
+            <!--  Wizard Steps  -->
+            <SolidColorBrush Color="#DCFCE7" x:Key="WizardStepCompletedBrush" />
+            <SolidColorBrush Color="#15803D" x:Key="WizardStepCompletedForegroundBrush" />
+            <SolidColorBrush Color="#DBEAFE" x:Key="WizardStepActiveBrush" />
+            <SolidColorBrush Color="#1D4ED8" x:Key="WizardStepActiveForegroundBrush" />
+            <SolidColorBrush Color="#F1F5F9" x:Key="WizardStepUncompletedBrush" />
+            <SolidColorBrush Color="#475569" x:Key="WizardStepUncompletedForegroundBrush" />
+            <SolidColorBrush Color="#F8FAFC" x:Key="WizardStepDisabledBrush" />
+            <SolidColorBrush Color="#94A3B8" x:Key="WizardStepDisabledForegroundBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <Color x:Key="JamaaPrimaryColor">#479EF5</Color>
@@ -56,29 +81,54 @@
             <Color x:Key="SystemAccentColorDark2">#1572BC</Color>
             <Color x:Key="SystemAccentColorDark3">#005C9F</Color>
 
-            <SolidColorBrush x:Key="JamaaPrimaryBrush" Color="{StaticResource JamaaPrimaryColor}" />
-            <SolidColorBrush x:Key="JamaaAccentBrush" Color="{StaticResource JamaaAccentColor}" />
+            <SolidColorBrush Color="{StaticResource JamaaPrimaryColor}" x:Key="JamaaPrimaryBrush" />
+            <SolidColorBrush Color="{StaticResource JamaaAccentColor}" x:Key="JamaaAccentBrush" />
 
             <!--  Backgrounds  -->
-            <SolidColorBrush x:Key="AppBackgroundColor" Color="#202020" />
-            <SolidColorBrush x:Key="AppSurfaceColor" Color="#2B2B2B" />
-            <SolidColorBrush x:Key="AppHeaderBackground" Color="#252525" />
-            <SolidColorBrush x:Key="AppCardBackground" Color="#2C2C2C" />
-            <SolidColorBrush x:Key="AppLayerBackground" Color="#1C1C1C" />
+            <SolidColorBrush Color="#202020" x:Key="AppBackgroundColor" />
+            <SolidColorBrush Color="#2B2B2B" x:Key="AppSurfaceColor" />
+            <SolidColorBrush Color="#252525" x:Key="AppHeaderBackground" />
+            <SolidColorBrush Color="#2C2C2C" x:Key="AppCardBackground" />
+            <SolidColorBrush Color="#1C1C1C" x:Key="AppLayerBackground" />
 
             <!--  Borders & Dividers  -->
-            <SolidColorBrush x:Key="AppBorderColor" Color="#3E3E3E" />
-            <SolidColorBrush x:Key="AppDividerColor" Color="#323232" />
+            <SolidColorBrush Color="#3E3E3E" x:Key="AppBorderColor" />
+            <SolidColorBrush Color="#323232" x:Key="AppDividerColor" />
 
             <!--  Text  -->
-            <SolidColorBrush x:Key="AppTextPrimary" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="AppTextSecondary" Color="#D2D0CE" />
-            <SolidColorBrush x:Key="AppTextDisabled" Color="#484644" />
+            <SolidColorBrush Color="#FFFFFF" x:Key="AppTextPrimary" />
+            <SolidColorBrush Color="#F1F5F9" x:Key="AppTextSecondary" />
+            <SolidColorBrush Color="#64748B" x:Key="AppTextDisabled" />
+
+            <!--  Dashboard Semantic Colors  -->
+            <SolidColorBrush Color="#1E3A8A" x:Key="DashboardAccentSurfaceBrush" />
+            <SolidColorBrush Color="#BFDBFE" x:Key="DashboardAccentForegroundBrush" />
+            <SolidColorBrush Color="#1E3A8A" x:Key="DashboardHeaderActionBackgroundBrush" />
+            <SolidColorBrush Color="#EFF6FF" x:Key="DashboardHeaderActionForegroundBrush" />
+            <SolidColorBrush Color="#1572BC" x:Key="DashboardHeaderActionHoverBackgroundBrush" />
+            <SolidColorBrush Color="#14532D" x:Key="DashboardSuccessSurfaceBrush" />
+            <SolidColorBrush Color="#BBF7D0" x:Key="DashboardSuccessForegroundBrush" />
+            <SolidColorBrush Color="#78350F" x:Key="DashboardWarningSurfaceBrush" />
+            <SolidColorBrush Color="#FDE68A" x:Key="DashboardWarningForegroundBrush" />
+            <SolidColorBrush Color="#7F1D1D" x:Key="DashboardDangerSurfaceBrush" />
+            <SolidColorBrush Color="#FECACA" x:Key="DashboardDangerForegroundBrush" />
+            <SolidColorBrush Color="#0C4A6E" x:Key="DashboardInfoSurfaceBrush" />
+            <SolidColorBrush Color="#BAE6FD" x:Key="DashboardInfoForegroundBrush" />
 
             <!--  Validation  -->
-            <SolidColorBrush x:Key="ValidationErrorBackground" Color="#442726" />
-            <SolidColorBrush x:Key="ValidationErrorBrush" Color="#F1707B" />
-            <SolidColorBrush x:Key="ValidationErrorForeground" Color="#FFFFFF" />
+            <SolidColorBrush Color="#442726" x:Key="ValidationErrorBackground" />
+            <SolidColorBrush Color="#F1707B" x:Key="ValidationErrorBrush" />
+            <SolidColorBrush Color="#FFFFFF" x:Key="ValidationErrorForeground" />
+
+            <!--  Wizard Steps  -->
+            <SolidColorBrush Color="#14532D" x:Key="WizardStepCompletedBrush" />
+            <SolidColorBrush Color="#BBF7D0" x:Key="WizardStepCompletedForegroundBrush" />
+            <SolidColorBrush Color="#1E3A8A" x:Key="WizardStepActiveBrush" />
+            <SolidColorBrush Color="#BFDBFE" x:Key="WizardStepActiveForegroundBrush" />
+            <SolidColorBrush Color="#2B2B2B" x:Key="WizardStepUncompletedBrush" />
+            <SolidColorBrush Color="#D2D0CE" x:Key="WizardStepUncompletedForegroundBrush" />
+            <SolidColorBrush Color="#252525" x:Key="WizardStepDisabledBrush" />
+            <SolidColorBrush Color="#484644" x:Key="WizardStepDisabledForegroundBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

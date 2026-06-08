@@ -1,20 +1,19 @@
 using System;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Jamaa.Desktop.Services;
 
 namespace Jamaa.Desktop.Shared;
 
 public partial class SplashViewModel : ObservableObject, IDisposable
 {
-    [ObservableProperty]
-    private string _status = "Initializing...";
-
-    [ObservableProperty]
-    private double _progress;
+    private readonly IDisposable _progressSubscription;
 
     private readonly IDisposable _statusSubscription;
-    private readonly IDisposable _progressSubscription;
+
+    [ObservableProperty] private double _progress;
+
+    [ObservableProperty] private string _status = "Initializing...";
 
     public SplashViewModel()
     {

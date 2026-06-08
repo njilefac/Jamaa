@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Domain.Finances.Queries;
+using Domain.Accounting.Queries;
 using Domain.Organisation.Values;
 using Domain.Shared.Values;
 using Jamaa.Data.Configuration;
 using Jamaa.Data.Models.Finances;
 using Jamaa.Data.Queries.Finances;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Shouldly;
@@ -48,7 +49,7 @@ public class FiscalCalendarQueryHandlerIntegrationTests
                     organisationId,
                     fiscalYearId,
                     new DateTime(2027, 1, 1),
-                    monthCount: 6));
+                    6));
 
                 await setupContext.SaveChangesAsync();
             }
@@ -75,7 +76,7 @@ public class FiscalCalendarQueryHandlerIntegrationTests
                     organisationId,
                     fiscalYearId,
                     new DateTime(2027, 1, 1),
-                    monthCount: 12));
+                    12));
                 await writerContext.SaveChangesAsync();
             }
 
@@ -98,10 +99,8 @@ public class FiscalCalendarQueryHandlerIntegrationTests
         }
         finally
         {
-            if (File.Exists(databasePath))
-            {
-                File.Delete(databasePath);
-            }
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(databasePath)) File.Delete(databasePath);
         }
     }
 
@@ -135,6 +134,3 @@ public class FiscalCalendarQueryHandlerIntegrationTests
         return periods;
     }
 }
-
-
-

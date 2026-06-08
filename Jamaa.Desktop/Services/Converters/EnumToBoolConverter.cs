@@ -16,10 +16,7 @@ public class EnumToBoolConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is true && parameter != null)
-        {
-            return parameter;
-        }
+        if (value is true && parameter != null) return parameter;
 
         return null;
     }

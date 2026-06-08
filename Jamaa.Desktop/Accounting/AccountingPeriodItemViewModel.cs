@@ -3,8 +3,15 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Jamaa.Desktop.Accounting;
 
-public partial class AccountingPeriodItemViewModel(string id, int sequenceNumber, DateTime startDate, DateTime endDate, bool isLocked) : ObservableObject
+public partial class AccountingPeriodItemViewModel(
+    string id,
+    int sequenceNumber,
+    DateTime startDate,
+    DateTime endDate,
+    bool isLocked) : ObservableObject
 {
+    [ObservableProperty] private bool _isLocked = isLocked;
+
     public string Id { get; } = id;
 
     public int SequenceNumber { get; } = sequenceNumber;
@@ -12,9 +19,6 @@ public partial class AccountingPeriodItemViewModel(string id, int sequenceNumber
     public DateTime StartDate { get; } = startDate.Date;
 
     public DateTime EndDate { get; } = endDate.Date;
-
-    [ObservableProperty]
-    private bool _isLocked = isLocked;
 
     public string Name => $"Period {SequenceNumber:00}";
 
@@ -36,4 +40,3 @@ public partial class AccountingPeriodItemViewModel(string id, int sequenceNumber
         OnPropertyChanged(nameof(StatusLabel));
     }
 }
-

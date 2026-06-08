@@ -14,5 +14,3 @@ public class FiscalYearData
 
     public IList<AccountingPeriodData> Periods { get; set; } = new List<AccountingPeriodData>();
 }
-
-

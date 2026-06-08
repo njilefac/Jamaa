@@ -5,9 +5,14 @@ namespace Jamaa.Desktop.Dashboard;
 
 public partial class MembershipStatsWidgetViewModel : WidgetViewModelBase
 {
-    [property: JsonIgnore] [ObservableProperty] private int _totalMembers;
-    [property: JsonIgnore] [ObservableProperty] private int _newMembersThisMonth;
-    [property: JsonIgnore] [ObservableProperty] private int _activeMembers;
+    [property: JsonIgnore] [ObservableProperty]
+    private int _activeMembers;
+
+    [property: JsonIgnore] [ObservableProperty]
+    private int _newMembersThisMonth;
+
+    [property: JsonIgnore] [ObservableProperty]
+    private int _totalMembers;
 
     public MembershipStatsWidgetViewModel()
     {

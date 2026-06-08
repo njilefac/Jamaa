@@ -1,88 +1,279 @@
 <UserControl
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Accounting.ChartOfAccountsPage"
     x:DataType="vm:ChartOfAccountsViewModel"
     xmlns="https://github.com/avaloniaui"
+    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
+    xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     xmlns:vm="clr-namespace:Jamaa.Desktop.Accounting"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel Margin="20" Spacing="20">
-        <TextBlock Classes="h1" Text="{Binding PageTitle}" />
+    <UserControl.Resources>
+        <converters:BoolToObjectConverter
+            FalseValue="Transparent"
+            TrueValue="{StaticResource SystemAccentColorLight3}"
+            x:Key="EditModeBackgroundConverter" />
+        <converters:BoolToObjectConverter
+            FalseValue="True"
+            TrueValue="False"
+            x:Key="InvertBoolToEnabledConverter" />
 
-        <Grid ColumnDefinitions="*, 300">
-            <StackPanel
-                Grid.Column="0"
-                Margin="0,0,20,0"
-                Spacing="10">
-                <TextBlock Classes="h2" Text="Accounts" />
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountEditCellTemplate">
+            <Button
+                Classes="Small"
+                Command="{Binding EditCommand}"
+                Content="✏ Edit" />
+        </DataTemplate>
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountActiveStateCellTemplate">
+            <Border Classes="coa-account-state-cell">
+                <ToggleSwitch
+                    Classes="coa-account-state-toggle"
+                    Command="{Binding ToggleActiveCommand}"
+                    IsChecked="{Binding IsActive, Mode=OneWay}"
+                    OffContent="{Binding ToggleStateLabel}"
+                    OnContent="{Binding ToggleStateLabel}"
+                    ToolTip.Tip="{Binding ToggleActiveToolTip}" />
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountLedgerCellTemplate">
+            <Button
+                Classes="Small"
+                Command="{Binding ViewLedgerCommand}"
+                Content="📒 View Ledger" />
+        </DataTemplate>
+
+        <converters:DecimalToFormattedStringConverter x:Key="DecimalToFormattedStringConverter" />
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="OpeningBalanceCellTemplate">
+            <Panel>
+                    <TextBox
+                        HorizontalAlignment="Stretch"
+                        IsReadOnly="{Binding IsOpeningBalanceLocked}"
+                        IsVisible="{Binding IsLeafAccount}"
+                        Watermark="0.00">
+                    <Interaction.Behaviors>
+                        <behaviors:RefreshOnLostFocusBehavior />
+                    </Interaction.Behaviors>
+                    <TextBox.Text>
+                        <Binding
+                            Mode="TwoWay"
+                            Path="OpeningBalanceText"
+                            UpdateSourceTrigger="PropertyChanged" />
+                    </TextBox.Text>
+                    <TextBox.InnerLeftContent>
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            Text="{Binding CurrencySymbol}"
+                            VerticalAlignment="Center" />
+                    </TextBox.InnerLeftContent>
+                </TextBox>
+
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    IsVisible="{Binding !IsLeafAccount}"
+                    Orientation="Horizontal"
+                    Spacing="4"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource AppTextSecondary}"
+                        Text="{Binding CurrencySymbol}"
+                        VerticalAlignment="Center" />
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource AppTextSecondary}">
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource DecimalToFormattedStringConverter}">
+                                <Binding Path="OpeningBalance" />
+                                <Binding Path="DecimalPrecision" />
+                                <Binding Path="ThousandSeparator" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </Panel>
+        </DataTemplate>
+
+        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="SaveOpeningBalanceCellTemplate">
+            <Button
+                Classes="Small"
+                Command="{Binding SaveOpeningBalanceCommand}"
+                Content="Save"
+                IsEnabled="{Binding CanSaveOpeningBalance}"
+                IsVisible="{Binding CanEditOpeningBalance}" />
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Margin="20" RowDefinitions="Auto,*">
+
+        <TextBlock
+            Classes="h1"
+            Grid.Row="0"
+            Margin="0,0,0,16"
+            Text="{Binding PageTitle}" />
+
+        <Grid ColumnDefinitions="*,320" Grid.Row="1">
+
+            <!--  Left: account tree with toolbar  -->
+            <DockPanel Grid.Column="0" Margin="0,0,16,0">
+
+                <Grid
+                    ColumnDefinitions="*,Auto"
+                    DockPanel.Dock="Top"
+                    Margin="0,0,0,10">
+                    <TextBlock
+                        Classes="h2"
+                        Text="Accounts"
+                        VerticalAlignment="Center" />
+                    <Button
+                        Classes="Primary"
+                        Command="{Binding ResetFormCommand}"
+                        Content="+ New Account"
+                        Grid.Column="1"
+                        IsEnabled="{Binding IsOperationInFlight, Converter={StaticResource InvertBoolToEnabledConverter}}"
+                        ToolTip.Tip="Create a new account" />
+                </Grid>
+
                 <Border
-                    BorderBrush="{DynamicResource SemiGrey1}"
+                    BorderBrush="{DynamicResource AppBorderColor}"
                     BorderThickness="1"
-                    CornerRadius="4">
-                    <TreeView Height="400" ItemsSource="{Binding Accounts}">
-                        <TreeView.ItemTemplate>
-                            <TreeDataTemplate ItemsSource="{Binding SubAccounts}">
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <TextBlock
-                                        FontWeight="Bold"
-                                        Text="{Binding Code}"
-                                        Width="50" />
-                                    <TextBlock Text="{Binding Name}" />
-                                    <TextBlock
-                                        Foreground="{DynamicResource SemiGrey5}"
-                                        Margin="20,0,0,0"
-                                        Text="{Binding Type}" />
-                                </StackPanel>
-                            </TreeDataTemplate>
-                        </TreeView.ItemTemplate>
-                    </TreeView>
+                    ClipToBounds="True"
+                    CornerRadius="8">
+                    <TreeDataGrid IsEnabled="{Binding IsOperationInFlight, Converter={StaticResource InvertBoolToEnabledConverter}}" x:Name="AccountsTreeDataGrid" />
                 </Border>
-            </StackPanel>
+            </DockPanel>
 
-            <StackPanel Grid.Column="1" Spacing="20">
-                <Border Classes="Card" Padding="15">
-                    <StackPanel Spacing="15">
-                        <TextBlock Classes="h2" Text="Quick Add" />
+            <!--  Right: context-aware form  -->
+            <Border
+                BorderBrush="{DynamicResource AppBorderColor}"
+                BorderThickness="1"
+                ClipToBounds="True"
+                CornerRadius="8"
+                Grid.Column="1">
+                <Grid RowDefinitions="Auto,Auto,*">
 
-                        <StackPanel Spacing="5">
-                            <TextBlock Classes="form-label" Text="Account Type" />
-                            <ComboBox
-                                HorizontalAlignment="Stretch"
-                                ItemsSource="{Binding AccountTypes}"
-                                SelectedItem="{Binding SelectedAccountType}" />
+                    <!--  Form header  -->
+                    <Grid
+                        Background="{Binding IsEditMode, Converter={StaticResource EditModeBackgroundConverter}}"
+                        ColumnDefinitions="*,Auto"
+                        Grid.Row="0"
+                        Margin="16,14,16,14">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock Classes="h2" Text="{Binding FormTitle}" />
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{DynamicResource AppTextSecondary}"
+                                IsVisible="{Binding IsEditMode}"
+                                Text="{Binding SelectedAccount.Name}"
+                                TextTrimming="CharacterEllipsis" />
                         </StackPanel>
 
-                        <StackPanel Spacing="5">
-                            <TextBlock Classes="form-label" Text="Parent Account" />
-                            <ComboBox
-                                HorizontalAlignment="Stretch"
-                                ItemsSource="{Binding Accounts}"
-                                SelectedItem="{Binding SelectedParentAccount}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </StackPanel>
+                    </Grid>
 
-                        <StackPanel Spacing="5">
-                            <TextBlock Classes="form-label" Text="Account Code" />
-                            <TextBox Text="{Binding AccountCode}" Watermark="Enter code..." />
-                        </StackPanel>
+                    <Border
+                        Background="{DynamicResource AppDividerColor}"
+                        Grid.Row="1"
+                        Height="1" />
 
-                        <Button
-                            Classes="Primary"
-                            Command="{Binding AddAccountCommand}"
-                            Content="Add Account"
-                            HorizontalAlignment="Right" />
-                    </StackPanel>
-                </Border>
-            </StackPanel>
+                    <!--  Form fields  -->
+                    <ScrollViewer Grid.Row="2">
+                        <StackPanel
+                            IsEnabled="{Binding IsOperationInFlight, Converter={StaticResource InvertBoolToEnabledConverter}}"
+                            Margin="16"
+                            Spacing="14">
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Classes="form label" Text="Account Type *" />
+                                <ComboBox
+                                    HorizontalAlignment="Stretch"
+                                    ItemsSource="{Binding AccountTypes}"
+                                    SelectedItem="{Binding SelectedAccountType}" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Classes="form label" Text="Account Code *" />
+                                <TextBox Text="{Binding AccountCode}" Watermark="e.g. 1001" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Classes="form label" Text="Account Name *" />
+                                <TextBox Text="{Binding AccountName}" Watermark="e.g. Cash and Bank" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Classes="form label" Text="Description" />
+                                <TextBox
+                                    AcceptsReturn="True"
+                                    MinHeight="64"
+                                    Text="{Binding AccountDescription}"
+                                    TextWrapping="Wrap"
+                                    Watermark="Optional account description" />
+                            </StackPanel>
+
+                            <CheckBox
+                                Content="Contra account"
+                                IsChecked="{Binding IsContraAccount}" />
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Classes="form label" Text="Parent Account" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource AppTextSecondary}"
+                                    Text="Optional - groups this under another account" />
+                                <ComboBox
+                                    HorizontalAlignment="Stretch"
+                                    ItemsSource="{Binding FilteredParentAccounts}"
+                                    SelectedItem="{Binding SelectedParentAccount}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:AccountItemViewModel">
+                                            <TextBlock Text="{Binding Name}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Margin="0,6,0,0" Spacing="8">
+                                <Button
+                                    Classes="Primary"
+                                    Command="{Binding AddAccountCommand}"
+                                    Content="{Binding ActionButtonText}"
+                                    HorizontalAlignment="Stretch" />
+                                <Button
+                                    BorderBrush="{DynamicResource ValidationErrorBrush}"
+                                    Command="{Binding DeleteAccountCommand}"
+                                    Content="Delete Account"
+                                    Foreground="{DynamicResource ValidationErrorBrush}"
+                                    HorizontalAlignment="Stretch"
+                                    IsVisible="{Binding SelectedAccount, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                    ToolTip.Tip="{Binding DeleteAccountTooltip}" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource AppTextSecondary}"
+                                    IsVisible="{Binding HasStatusMessage}"
+                                    Text="{Binding StatusMessage}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <shared:OperationStatusBanner
+                        Grid.Row="2"
+                        HorizontalAlignment="Stretch"
+                        IsActive="{Binding IsOperationInFlight}"
+                        Margin="16,0,16,16"
+                        Message="Waiting for account confirmation..."
+                        VerticalAlignment="Bottom" />
+                </Grid>
+            </Border>
+
         </Grid>
-    </StackPanel>
+    </Grid>
 </UserControl>

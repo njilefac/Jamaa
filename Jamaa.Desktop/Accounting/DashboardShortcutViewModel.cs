@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace Jamaa.Desktop.Accounting;
 
 /// <summary>
-/// Operation: Represents an actionable shortcut button on the GL Dashboard.
+///     Operation: Represents an actionable shortcut button on the GL Dashboard.
 /// </summary>
 public sealed class DashboardShortcutViewModel : ObservableObject
 {

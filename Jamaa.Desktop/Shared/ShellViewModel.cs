@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Jamaa.Application.Setup;
@@ -13,7 +14,6 @@ using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Setup;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
-using Avalonia.Threading;
 
 namespace Jamaa.Desktop.Shared;
 
@@ -25,11 +25,15 @@ public partial class ShellViewModel : ObservableObject,
     IRecipient<AuthenticationFailed>,
     IRecipient<UserLoggedOut>, IDisposable
 {
-    private readonly ISetupService _setupService;
-    private readonly IRouteResolver _routeResolver;
-    private readonly ILogger<ShellViewModel> _logger;
-    private readonly Dictionary<string, object?> _viewModelCache = new();
     private const string ApplicationName = "Jamaa Desktop";
+    private readonly ILogger<ShellViewModel> _logger;
+    private readonly IRouteResolver _routeResolver;
+    private readonly ISetupService _setupService;
+    private readonly Dictionary<string, object?> _viewModelCache = new();
+    [ObservableProperty] private object? _activeContent;
+
+    [ObservableProperty] private string? _applicationTitle = ApplicationName;
+    [ObservableProperty] private ObservableObject _mainMenu;
 
     public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService,
         IRouteResolver routeResolver, DashboardViewModel dashboardViewModel, ILogger<ShellViewModel> logger)
@@ -51,6 +55,37 @@ public partial class ShellViewModel : ObservableObject,
         });
     }
 
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+    }
+
+    public void Receive(AuthenticationFailed message)
+    {
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Login); });
+    }
+
+    public void Receive(OrganisationCreated message)
+    {
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.CreateSuperUser); });
+    }
+
+    public void Receive(SuperUserCreated message)
+    {
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Home); });
+    }
+
+    public void Receive(UserAuthenticated message)
+    {
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Home); });
+    }
+
+    public void Receive(UserLoggedOut message)
+    {
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Login); });
+    }
+
     private async Task InitializeAsync()
     {
         try
@@ -64,60 +99,19 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    [ObservableProperty] private string? _applicationTitle = ApplicationName;
-    [ObservableProperty] private ObservableObject _mainMenu;
-    [ObservableProperty] private object? _activeContent;
+    private object? GetViewModelForRoute(string path)
+    {
+        if (_viewModelCache.TryGetValue(path, out var cachedVm)) return cachedVm;
 
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-        WeakReferenceMessenger.Default.UnregisterAll(this);
-    }
-
-    public void Receive(AuthenticationFailed message)
-    {
-        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Login); });
-    }
-
-    public void Receive(UserLoggedOut message)
-    {
-        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Login); });
-    }
-
-    public void Receive(UserAuthenticated message)
-    {
-        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Home); });
-    }
-
-    public void Receive(OrganisationCreated message)
-    {
-        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.CreateSuperUser); });
-    }
-
-    public void Receive(SuperUserCreated message)
-    {
-        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Home); });
-    }
-    
-    private object? GetViewModelForRoute(string path )
-    {
-        if(_viewModelCache.TryGetValue(path, out var cachedVm))
-        {
-            return cachedVm;
-        }
-        
         var vm = _routeResolver.Resolve(path);
         _viewModelCache[path] = vm;
         return vm;
     }
-    
+
     private async Task<string> DetermineInitialRoute()
     {
         var existingOrganisations = await _setupService.ListOrganisations();
-        if (!existingOrganisations.Any())
-        {
-            return Routes.CreateOrganisation;
-        }
+        if (!existingOrganisations.Any()) return Routes.CreateOrganisation;
 
         var superUser = await _setupService.GetSuperUser();
         return superUser == null ? Routes.CreateSuperUser : Routes.Login;

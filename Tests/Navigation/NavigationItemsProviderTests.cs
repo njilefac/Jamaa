@@ -34,6 +34,17 @@ public class NavigationItemsProviderTests
         // Assert
         accountingItem.SubItems.ShouldBeNull();
     }
+
+    [Fact]
+    public void GetNavigationItems_ShouldNotIncludeSettingsRoute()
+    {
+        // Arrange
+        var provider = new NavigationItemsProvider();
+
+        // Act
+        var items = provider.GetNavigationItems().ToList();
+
+        // Assert
+        items.Any(x => x.TargetRoute == Routes.Settings).ShouldBeFalse();
+    }
 }
-
-

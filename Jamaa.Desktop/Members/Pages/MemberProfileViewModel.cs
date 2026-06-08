@@ -6,28 +6,74 @@ using Domain.Organisation.Requests;
 using Domain.Organisation.Values;
 using Domain.Shared.Values;
 using Jamaa.Application.Organisation;
-using JetBrains.Annotations;
 using Jamaa.Data.Models.Members;
 using Jamaa.Desktop.Members.Messages;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Notifications;
+using JetBrains.Annotations;
 
 namespace Jamaa.Desktop.Members.Pages;
 
 [UsedImplicitly]
-public partial class MemberProfileViewModel: ObservableObject, IRouteableViewModel
+public partial class MemberProfileViewModel : ObservableObject, IRouteableViewModel
 {
-    private readonly IOrganisationManagementFacade _organisationManagementFacade;
     private readonly INotificationService _notificationService;
+    private readonly IOrganisationFacade _organisationFacade;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private DateTime _birthDate;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _firstName = string.Empty;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private Gender _gender;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private bool _isOperationInFlight;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _lastName = string.Empty;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private MembershipType _membershipType;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string? _middleName;
+
     private MemberData? _originalMember;
 
-    public MemberProfileViewModel(IOrganisationManagementFacade organisationManagementFacade, INotificationService notificationService)
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteAvatarCommand))]
+    private byte[]? _picture;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private RegistrationData? _registration;
+
+    // Expose registration fields as top-level observable properties so Save CanExecute updates when they change
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private DateTime _registrationStartDate;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private RegistrationStatus _registrationStatus;
+
+    [ObservableProperty] private int _selectedTabIndex;
+
+    public MemberProfileViewModel(IOrganisationFacade organisationFacade,
+        INotificationService notificationService)
     {
-        _organisationManagementFacade = organisationManagementFacade;
+        _organisationFacade = organisationFacade;
         _notificationService = notificationService;
     }
 
     public Func<Task<byte[]?>>? AvatarPicker { get; set; }
+
+    public static Gender[] GenderOptions => Enum.GetValues<Gender>();
+    public static RegistrationStatus[] RegistrationStatusOptions => Enum.GetValues<RegistrationStatus>();
+    public static MembershipType[] MembershipTypeOptions => Enum.GetValues<MembershipType>();
+
+    public string Title => "Member Profile";
 
     public void Initialize(MemberProfileNavigationArgs args)
     {
@@ -50,11 +96,11 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
             MembershipType = member.Registration.MembershipType,
             Status = member.Registration.Status,
             MemberId = member.Registration.MemberId,
-            Organisation = member.Registration.Organisation
+            Organisation = member.Registration.Organisation,
+            Member = member
         };
 
         if (args.TargetTab != null)
-        {
             SelectedTabIndex = args.TargetTab switch
             {
                 "General" => 0,
@@ -63,61 +109,12 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
                 "Groups" => 3,
                 _ => 0
             };
-        }
     }
 
-    [ObservableProperty]
-    private int _selectedTabIndex;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _firstName  = string.Empty;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string? _middleName;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private string _lastName = string.Empty;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private Gender _gender;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private DateTime _birthDate;
-
-    // Expose registration fields as top-level observable properties so Save CanExecute updates when they change
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private DateTime _registrationStartDate;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private RegistrationStatus _registrationStatus;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private MembershipType _membershipType;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    private RegistrationData? _registration;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
-    [NotifyCanExecuteChangedFor(nameof(DeleteAvatarCommand))]
-    private byte[]? _picture;
-
-    public static Gender[] GenderOptions => Enum.GetValues<Gender>();
-    public static RegistrationStatus[] RegistrationStatusOptions => Enum.GetValues<RegistrationStatus>();
-    public static MembershipType[] MembershipTypeOptions => Enum.GetValues<MembershipType>();
-    
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task Save()
     {
+        // INTEGRATION: Saves member and waits for event confirmation
         if (_originalMember == null || Registration == null) return;
 
         var request = new MemberUpdateRequest
@@ -134,25 +131,35 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
             Avatar = Picture
         };
 
-        await _organisationManagementFacade.UpdateMember(request);
-        
-        _notificationService.Show("Success", $"Member {request.FirstName} {request.LastName} updated successfully.", NotificationType.Success);
-        
-        // Update original to disable save button again
-        _originalMember.FirstName = FirstName;
-        _originalMember.MiddleName = MiddleName;
-        _originalMember.LastName = LastName;
-        _originalMember.Gender = Gender;
-        _originalMember.PictureData = Picture;
-        _originalMember.Registration.StartDate = RegistrationStartDate;
-        _originalMember.Registration.MembershipType = MembershipType;
-        _originalMember.Registration.Status = RegistrationStatus;
-        SaveCommand.NotifyCanExecuteChanged();
+        var subject = $"{request.FirstName} {request.LastName}";
+        var isConfirmed = await _notificationService.TrackOperationAsync(
+            () => _organisationFacade.UpdateMember(request),
+            _organisationFacade.MemberUpdated,
+            m => m.Id == _originalMember.Id,
+            TimeSpan.FromSeconds(10),
+            "Member",
+            "Saved",
+            subject,
+            SetOperationInFlight);
+
+        if (isConfirmed)
+        {
+            // Update original to disable save button again (only after event confirmed)
+            _originalMember.FirstName = FirstName;
+            _originalMember.MiddleName = MiddleName;
+            _originalMember.LastName = LastName;
+            _originalMember.Gender = Gender;
+            _originalMember.PictureData = Picture;
+            _originalMember.Registration.StartDate = RegistrationStartDate;
+            _originalMember.Registration.MembershipType = MembershipType;
+            _originalMember.Registration.Status = RegistrationStatus;
+            SaveCommand.NotifyCanExecuteChanged();
+        }
     }
 
     private bool CanSave()
     {
-        if (_originalMember == null) return false;
+        if (_originalMember == null || IsOperationInFlight) return false;
 
         var changed = FirstName != _originalMember.FirstName ||
                       MiddleName != _originalMember.MiddleName ||
@@ -169,16 +176,19 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
         return changed;
     }
 
+    private void SetOperationInFlight(bool isInFlight)
+    {
+        IsOperationInFlight = isInFlight;
+        SaveCommand.NotifyCanExecuteChanged();
+    }
+
     [RelayCommand]
     private async Task ChangeAvatar()
     {
         if (AvatarPicker != null)
         {
             var newAvatar = await AvatarPicker();
-            if (newAvatar != null)
-            {
-                Picture = newAvatar;
-            }
+            if (newAvatar != null) Picture = newAvatar;
         }
     }
 
@@ -188,7 +198,8 @@ public partial class MemberProfileViewModel: ObservableObject, IRouteableViewMod
         Picture = null;
     }
 
-    private bool CanDeleteAvatar() => Picture != null;
-
-    public string Title => $"Member Profile";
+    private bool CanDeleteAvatar()
+    {
+        return Picture != null;
+    }
 }

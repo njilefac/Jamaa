@@ -11,21 +11,17 @@ public class Interaction<TInput, TOutput>
 
     public async Task<TOutput> Handle(TInput input)
     {
-        if (_handlers.Count == 0)
-        {
-            throw new InvalidOperationException("No handlers for this interaction.");
-        }
+        if (_handlers.Count == 0) throw new InvalidOperationException("No handlers for this interaction.");
 
         var interactionContext = new InteractionContext<TInput, TOutput>(input);
         // Execute handlers in LIFO order without removing them, until one produces an output
         var snapshot = _handlers.ToArray(); // top-first order
         for (var i = 0; i < snapshot.Length && !interactionContext.IsHandled; i++)
-        {
             await snapshot[i].Invoke(interactionContext);
-        }
 
-        return interactionContext.IsHandled ? interactionContext.Output :
-               throw new InvalidOperationException("No handler produced an output for this interaction.");
+        return interactionContext.IsHandled
+            ? interactionContext.Output
+            : throw new InvalidOperationException("No handler produced an output for this interaction.");
     }
 
     public IDisposable RegisterHandler(Func<InteractionContext<TInput, TOutput>, Task> asyncHandler)
@@ -33,10 +29,7 @@ public class Interaction<TInput, TOutput>
         // Adapt Task to ValueTask to keep a single storage type
         Func<InteractionContext<TInput, TOutput>, ValueTask> wrapper = ctx => new ValueTask(asyncHandler(ctx));
 
-        if (_handlers.Contains(wrapper))
-        {
-            return Disposable.Empty;
-        }
+        if (_handlers.Contains(wrapper)) return Disposable.Empty;
 
         _handlers.Push(wrapper);
         return new HandlerSubscription(this, wrapper);
@@ -44,10 +37,7 @@ public class Interaction<TInput, TOutput>
 
     private void RemoveHandler(Func<InteractionContext<TInput, TOutput>, ValueTask> handler)
     {
-        if (_handlers.Count == 0)
-        {
-            return;
-        }
+        if (_handlers.Count == 0) return;
 
         var buffer = new Stack<Func<InteractionContext<TInput, TOutput>, ValueTask>>();
         var removed = false;
@@ -64,10 +54,7 @@ public class Interaction<TInput, TOutput>
         }
 
         // Restore remaining handlers preserving original order
-        while (buffer.Count > 0)
-        {
-            _handlers.Push(buffer.Pop());
-        }
+        while (buffer.Count > 0) _handlers.Push(buffer.Pop());
     }
 
     private sealed class HandlerSubscription(
@@ -75,9 +62,9 @@ public class Interaction<TInput, TOutput>
         Func<InteractionContext<TInput, TOutput>, ValueTask> handler)
         : IDisposable
     {
-        private Interaction<TInput, TOutput>? _owner = owner;
-        private Func<InteractionContext<TInput, TOutput>, ValueTask>? _handler = handler;
         private bool _disposed;
+        private Func<InteractionContext<TInput, TOutput>, ValueTask>? _handler = handler;
+        private Interaction<TInput, TOutput>? _owner = owner;
 
         public void Dispose()
         {
@@ -87,10 +74,7 @@ public class Interaction<TInput, TOutput>
             var handler = _handler;
             _owner = null;
             _handler = null;
-            if (owner != null && handler != null)
-            {
-                owner.RemoveHandler(handler);
-            }
+            if (owner != null && handler != null) owner.RemoveHandler(handler);
         }
     }
 }

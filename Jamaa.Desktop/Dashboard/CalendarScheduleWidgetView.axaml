@@ -10,11 +10,12 @@
     xmlns:fluent="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Panel Margin="16">
+    <Border Classes="dashboard widget panel" Margin="16">
         <fluent:IconSourceElement
+            Foreground="{DynamicResource SystemAccentColor}"
             HorizontalAlignment="Stretch"
             IconSource="{StaticResource Icons.Calendar}"
-            Opacity="0.8"
+            Opacity="0.85"
             VerticalAlignment="Stretch" />
-    </Panel>
+    </Border>
 </UserControl>

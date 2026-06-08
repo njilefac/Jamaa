@@ -10,26 +10,76 @@
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid RowDefinitions="Auto, *">
+    <Grid RowDefinitions="Auto,*">
         <husk:Card Margin="10">
-            <TextBlock Classes="page.box.header" Text="Journal Entries" />
+            <StackPanel>
+                <TextBlock Classes="page.box.header" Text="Journal Entries" />
+                <DockPanel LastChildFill="False" Margin="0,6,0,0">
+                    <TextBlock
+                        DockPanel.Dock="Left"
+                        Opacity="0.75"
+                        Text="Filter: {Binding ActiveFilterLabel}" />
+                    <Button
+                        Command="{Binding ShowAllEntriesCommand}"
+                        Content="Clear filter / Show all"
+                        DockPanel.Dock="Right"
+                        IsVisible="{Binding ExpenseAccountsOnly}" />
+                </DockPanel>
+            </StackPanel>
         </husk:Card>
 
         <husk:Card Grid.Row="1" Margin="10">
-            <StackPanel
-                HorizontalAlignment="Center"
-                Spacing="20"
-                VerticalAlignment="Center">
-                <TextBlock
-                    FontSize="24"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Center"
-                    Text="Journal Entries" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Opacity="0.5"
-                    Text="Journal entry creation and review will be available here in a later iteration." />
-            </StackPanel>
+            <Grid ColumnDefinitions="120,130,220,140,120" RowDefinitions="Auto,*">
+                <Border
+                    BorderBrush="#33000000"
+                    BorderThickness="0,0,0,1"
+                    Grid.ColumnSpan="5"
+                    Padding="10,8">
+                    <Grid ColumnDefinitions="120,130,220,140,120">
+                        <TextBlock FontWeight="SemiBold" Text="Date" />
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Grid.Column="1"
+                            Text="Reference" />
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Grid.Column="2"
+                            Text="Account" />
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Grid.Column="3"
+                            Text="Category" />
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Grid.Column="4"
+                            Text="Amount" />
+                    </Grid>
+                </Border>
+
+                <ScrollViewer
+                    Grid.Column="0"
+                    Grid.ColumnSpan="5"
+                    Grid.Row="1">
+                    <ItemsControl ItemsSource="{Binding VisibleEntries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type accounting:JournalEntryListItemViewModel}">
+                                <Border
+                                    BorderBrush="#22000000"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="10,8">
+                                    <Grid ColumnDefinitions="120,130,220,140,120">
+                                        <TextBlock Text="{Binding Date}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Reference}" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Account}" />
+                                        <TextBlock Grid.Column="3" Text="{Binding AccountCategory}" />
+                                        <TextBlock Grid.Column="4" Text="{Binding Amount, StringFormat={}{0:N2}}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </husk:Card>
     </Grid>
 </UserControl>

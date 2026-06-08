@@ -18,6 +18,18 @@ public partial class MemberRegistrationViewModel : ValidatableFormViewModel, IRe
 {
     private readonly IUserSessionService _userSessionService;
 
+    [ObservableProperty] private DateTime _dateOfBirth;
+
+    [ObservableProperty] [Required] private string? _firstName;
+
+    [ObservableProperty] [Required] private string? _lastName;
+
+    [ObservableProperty] private MembershipType _membershipType;
+    [ObservableProperty] private string? _middleName;
+    [ObservableProperty] private DateTime _registrationBegin;
+
+    [ObservableProperty] private Gender _selectedGender;
+
     public MemberRegistrationViewModel(IUserSessionService userSessionService)
     {
         _userSessionService = userSessionService;
@@ -26,6 +38,9 @@ public partial class MemberRegistrationViewModel : ValidatableFormViewModel, IRe
         MembershipType = MembershipType.Regular;
         RegistrationBegin = DateTime.Today;
     }
+
+    public List<Gender> GenderOptions { get; }
+    public MemberRegistrationRequest Result => GetRegistrationRequest();
 
     private MemberRegistrationRequest GetRegistrationRequest()
     {
@@ -44,22 +59,6 @@ public partial class MemberRegistrationViewModel : ValidatableFormViewModel, IRe
 
         return request;
     }
-    
-    public List<Gender> GenderOptions { get; }
-    [ObservableProperty]
-    [Required]
-    private string? _firstName;
-    [ObservableProperty] private string? _middleName;
-    [ObservableProperty]
-    [Required]
-    private string? _lastName;
-    [ObservableProperty] 
-    private Gender _selectedGender;
-
-    [ObservableProperty] private DateTime _dateOfBirth;
-    [ObservableProperty] private DateTime _registrationBegin;
-    [ObservableProperty] private MembershipType _membershipType;
-    public MemberRegistrationRequest Result => GetRegistrationRequest();
 
     public void Reset()
     {

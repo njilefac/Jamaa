@@ -1,32 +1,29 @@
 <UserControl
-    x:Class="Jamaa.Desktop.Security.LoginScreen"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:u="https://irihi.tech/ursa"
     HorizontalContentAlignment="Center"
     VerticalContentAlignment="Center"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d"
-    >
+    x:Class="Jamaa.Desktop.Security.LoginScreen"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <u:Form>
         <TextBlock
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
             Classes="page title"
+            HorizontalAlignment="Center"
             Text="User Authentication"
-            />
+            VerticalAlignment="Center" />
 
         <u:FormItem IsRequired="True" Label="Organisation">
             <ComboBox
                 Classes="form field"
                 IsVisible="{Binding Items.Count}"
                 ItemsSource="{Binding Organisations}"
-                SelectedItem="{Binding CurrentOrganisation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                >
+                SelectedItem="{Binding CurrentOrganisation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Name}" />
@@ -50,10 +47,9 @@
         </u:FormItem>
 
         <Button
-            HorizontalAlignment="Right"
             Command="{Binding LoginCommand}"
             Content="Login"
-            IsDefault="True"
-            />
+            HorizontalAlignment="Right"
+            IsDefault="True" />
     </u:Form>
 </UserControl>

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Jamaa.Application.Organisation;
 using Jamaa.Desktop.Members.Components;
 using Jamaa.Desktop.Members.Messages;
@@ -25,12 +25,14 @@ public partial class MembersOverviewViewModel : ObservableValidator,
     IDisposable,
     IApplicationModule
 {
-    private readonly IRouteResolver _routeResolver;
     private readonly LinkedList<IRouteableViewModel?> _navigationHistory = [];
-    public ObservableCollection<BreadcrumbItemModel> Breadcrumbs { get; } = [];
+    private readonly IRouteResolver _routeResolver;
+
+    [ObservableProperty] private IRouteableViewModel? _activeContent;
+    [ObservableProperty] private MembersSummary _membersSummary;
 
     public MembersOverviewViewModel(
-        IOrganisationManagementFacade organisationManagementFacade,
+        IOrganisationFacade organisationFacade,
         MembersSummary membersSummary,
         IRouteResolver routeResolver)
     {
@@ -39,77 +41,27 @@ public partial class MembersOverviewViewModel : ObservableValidator,
         MembersSummary = membersSummary;
 
         WeakReferenceMessenger.Default.RegisterAll(this);
-
-        
     }
 
-    private void AddToNavigationHistory(IRouteableViewModel state)
-    {
-        _navigationHistory.AddLast(state);
-        var breadCrumbClick = new RelayCommand(() => NavigateTo(state));
-        Breadcrumbs.Add(new BreadcrumbItemModel(state.Title, string.Empty, ClickCommand: breadCrumbClick));
-        Breadcrumbs[^1] = Breadcrumbs[^1] with { IsActive = false };
-        // activate all except the last
-        for (var i = 0; i < Breadcrumbs.Count - 1; i++)
-        {
-            Breadcrumbs[i] = Breadcrumbs[i] with { IsActive = true };
-        }
-    }
+    public ObservableCollection<BreadcrumbItemModel> Breadcrumbs { get; } = [];
 
-
-    private void NavigateTo(IRouteableViewModel state)
-    {
-        if (ActiveContent == state) return;
-
-        ActiveContent = state;
-        while (_navigationHistory.Last?.Value != state && _navigationHistory.Count > 1)
-        {
-            _navigationHistory.RemoveLast();
-            Breadcrumbs.RemoveAt(Breadcrumbs.Count - 1);
-        }
-        
-        Breadcrumbs[^1] = Breadcrumbs[^1] with { IsActive = false };
-        for (var i = 0; i < Breadcrumbs.Count - 1; i++)
-        {
-            Breadcrumbs[i] = Breadcrumbs[i] with { IsActive = true };
-        }
-    }
-
-    public void Receive(NavigateBackRequested message)
-    {
-        GoBack();
-    }
-
-    public void Receive(MemberDetailsRequested message)
-    {
-        var viewModel = _routeResolver.Resolve(Routes.MemberProfile, message.Args.Member) as MemberProfileViewModel;
-        if (viewModel != null)
-        {
-            viewModel.Initialize(message.Args);
-            ActiveContent = viewModel;
-            AddToNavigationHistory(ActiveContent);
-        }
-    }
+    public Guid Id => Guid.Parse("d1c8b9e7-5c3a-4f8e-9b2a-1f2e3d4c5b6a");
+    public string Title => "Members";
+    public object HeaderContent => MembersSummary;
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
         WeakReferenceMessenger.Default.UnregisterAll(this);
         MembersSummary.Dispose();
-        
-        foreach (var viewModel in _navigationHistory.OfType<IDisposable>())
-        {
-            viewModel.Dispose();
-        }
+
+        foreach (var viewModel in _navigationHistory.OfType<IDisposable>()) viewModel.Dispose();
     }
 
     public void NavigateTo<TViewModel>(object? parameter = null)
     {
         var matchingModel = _navigationHistory.OfType<TViewModel>().SingleOrDefault();
-        if (matchingModel != null)
-        {
-            ActiveContent = matchingModel as IRouteableViewModel;
-        }
+        if (matchingModel != null) ActiveContent = matchingModel as IRouteableViewModel;
     }
 
     public void NavigateTo(string route, object? parameter = null)
@@ -132,10 +84,7 @@ public partial class MembersOverviewViewModel : ObservableValidator,
 
     public void GoBack()
     {
-        if (!CanGoBack())
-        {
-            return;
-        }
+        if (!CanGoBack()) return;
 
         var currentIndex = _navigationHistory.ToList().IndexOf(ActiveContent);
         ActiveContent = _navigationHistory.ToList()[currentIndex - 1];
@@ -151,19 +100,51 @@ public partial class MembersOverviewViewModel : ObservableValidator,
 
     public void GoForward()
     {
-        if (!CanGoForward())
-        {
-            return;
-        }
+        if (!CanGoForward()) return;
 
         var currentIndex = _navigationHistory.ToList().IndexOf(ActiveContent);
         ActiveContent = _navigationHistory.ToList()[currentIndex + 1];
     }
 
-    public Guid Id => Guid.Parse("d1c8b9e7-5c3a-4f8e-9b2a-1f2e3d4c5b6a");
-    public string Title  => "Members";
-    public object HeaderContent => MembersSummary;
-    
-    [ObservableProperty] private IRouteableViewModel? _activeContent;
-    [ObservableProperty] private MembersSummary _membersSummary;
+    public void Receive(MemberDetailsRequested message)
+    {
+        var viewModel = _routeResolver.Resolve(Routes.MemberProfile, message.Args.Member) as MemberProfileViewModel;
+        if (viewModel != null)
+        {
+            viewModel.Initialize(message.Args);
+            ActiveContent = viewModel;
+            AddToNavigationHistory(ActiveContent);
+        }
+    }
+
+    public void Receive(NavigateBackRequested message)
+    {
+        GoBack();
+    }
+
+    private void AddToNavigationHistory(IRouteableViewModel state)
+    {
+        _navigationHistory.AddLast(state);
+        var breadCrumbClick = new RelayCommand(() => NavigateTo(state));
+        Breadcrumbs.Add(new BreadcrumbItemModel(state.Title, string.Empty, ClickCommand: breadCrumbClick));
+        Breadcrumbs[^1] = Breadcrumbs[^1] with { IsActive = false };
+        // activate all except the last
+        for (var i = 0; i < Breadcrumbs.Count - 1; i++) Breadcrumbs[i] = Breadcrumbs[i] with { IsActive = true };
+    }
+
+
+    private void NavigateTo(IRouteableViewModel state)
+    {
+        if (ActiveContent == state) return;
+
+        ActiveContent = state;
+        while (_navigationHistory.Last?.Value != state && _navigationHistory.Count > 1)
+        {
+            _navigationHistory.RemoveLast();
+            Breadcrumbs.RemoveAt(Breadcrumbs.Count - 1);
+        }
+
+        Breadcrumbs[^1] = Breadcrumbs[^1] with { IsActive = false };
+        for (var i = 0; i < Breadcrumbs.Count - 1; i++) Breadcrumbs[i] = Breadcrumbs[i] with { IsActive = true };
+    }
 }

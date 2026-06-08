@@ -1,65 +1,873 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Domain.Finances.Values;
+using CommunityToolkit.Mvvm.Messaging;
+using Domain.Accounting.Service;
+using Domain.Accounting.Values;
+using Jamaa.Application.Accounting;
+using Jamaa.Application.Accounting.Models;
+using Jamaa.Application.Users.Services;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
+using Jamaa.Desktop.Services.Navigation.Values;
+using Jamaa.Desktop.Services.Notifications;
 using Jamaa.Desktop.Shared;
 
 namespace Jamaa.Desktop.Accounting;
 
-public partial class ChartOfAccountsViewModel : ObservableObject, IApplicationModule, IRouteableViewModel
+public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IApplicationModule, IRouteableViewModel
 {
+    private static readonly AccountItemViewModel NoParentOption = new();
+    private readonly List<AccountData> _allAccountData = [];
+    private readonly IAccountingFacade _accountingFacade;
+    private readonly INotificationService _notificationService;
+    private readonly IUserSessionService _userSessionService;
+    private string _currencySymbol = string.Empty;
+    private int _decimalPrecision = 2;
+    private string _thousandSeparator = ",";
+    private string _fiscalYearId = string.Empty;
+    private string _accountingPeriodId = string.Empty;
+    private bool _isSelectedPeriodLocked = true;
+
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required(ErrorMessage = "Account code is required")]
+    [RegularExpression(@"^\d+$", ErrorMessage = "Code must be numeric")]
+    [CustomValidation(typeof(ChartOfAccountsViewModel), nameof(ValidateAccountCode))]
+    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
+    private string _accountCode = string.Empty;
+
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [MaxLength(500, ErrorMessage = "Description must be 500 characters or fewer")]
+    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
+    private string _accountDescription = string.Empty;
+
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required(ErrorMessage = "Account name is required")]
+    [NotifyPropertyChangedFor(nameof(AccountCode))]
+    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
+    private string _accountName = string.Empty;
+
+    [ObservableProperty] private ObservableCollection<AccountItemViewModel> _accounts = [];
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteAccountCommand))]
+    private bool _isOperationInFlight;
+
+    [ObservableProperty] private string _pageTitle = "Chart of Accounts";
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteAccountCommand))]
+    [NotifyPropertyChangedFor(nameof(DeleteAccountTooltip))]
+    private AccountItemViewModel? _selectedAccount;
+
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
+    private AccountType? _selectedAccountType;
+
+    [ObservableProperty] private AccountItemViewModel? _selectedParentAccount;
+
+    [ObservableProperty] private bool _isContraAccount;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
+    private string _statusMessage = string.Empty;
+
+    public ChartOfAccountsViewModel(
+        IAccountingFacade accountingFacade,
+        IUserSessionService userSessionService,
+        INotificationService notificationService)
+    {
+        _accountingFacade = accountingFacade;
+        _userSessionService = userSessionService;
+        _notificationService = notificationService;
+
+        LoadAccounts();
+        if (SynchronizationContext.Current is { } syncContext)
+            SetupReactiveUpdates(syncContext);
+        else
+            SetupReactiveUpdates(null);
+
+        // Re-evaluate AddAccountCommand whenever validation errors change
+        ErrorsChanged += (_, _) => AddAccountCommand.NotifyCanExecuteChanged();
+    }
+
+    public ObservableCollection<AccountItemViewModel> FilteredParentAccounts { get; } = [];
+
+    public string ActionButtonText => SelectedAccount == null ? "Add Account" : "Save Changes";
+    public string FormTitle => SelectedAccount == null ? "Add New Account" : "Edit Account";
+    public bool IsEditMode => SelectedAccount != null;
+    public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
+
+    public string DeleteAccountTooltip => SelectedAccountHasChildren
+        ? "This account cannot be deleted because it has child accounts."
+        : "Permanently delete this account";
+
+    public AccountType[] AccountTypes { get; } = Enum.GetValues<AccountType>();
+
+    // Operation: determines whether the selected account has child accounts and cannot be deleted.
+    private bool SelectedAccountHasChildren => SelectedAccount?.SubAccounts.Count > 0;
+
     public Guid Id => Guid.Parse("e2d9f6b1-8e4a-4d9c-8f3b-2a3c4d5e6f7a");
     public string Title => "Chart of Accounts";
     public object? HeaderContent => null;
 
-    [ObservableProperty]
-    private string _pageTitle = "Chart of Accounts";
-
-    [ObservableProperty]
-    private ObservableCollection<AccountItemViewModel> _accounts = [];
-
-    [ObservableProperty]
-    private AccountType? _selectedAccountType;
-
-    [ObservableProperty]
-    private AccountItemViewModel? _selectedParentAccount;
-
-    [ObservableProperty]
-    private string _accountCode = string.Empty;
-
-    public AccountType[] AccountTypes { get; } = Enum.GetValues<AccountType>();
-
-    public ChartOfAccountsViewModel()
+    // Operation: marshals observable notifications onto the UI synchronization context only when one exists.
+    private static IObservable<T> ObserveOnIfAvailable<T>(IObservable<T> source, SynchronizationContext? syncContext)
     {
-        LoadPreviewData();
+        return syncContext is null ? source : source.ObserveOn(syncContext);
     }
 
-    private void LoadPreviewData()
+    private void SetupReactiveUpdates(SynchronizationContext? syncContext)
     {
-        var asset = new AccountItemViewModel { Name = "Assets", Code = "1000", Type = AccountType.Asset };
-        asset.SubAccounts.Add(new AccountItemViewModel { Name = "Cash", Code = "1010", Type = AccountType.Asset, Parent = asset });
-        asset.SubAccounts.Add(new AccountItemViewModel { Name = "Bank", Code = "1020", Type = AccountType.Asset, Parent = asset });
+        ObserveOnIfAvailable(
+                _accountingFacade.AccountCreated
+                    .Merge(_accountingFacade.AccountUpdated)
+                    .Merge(_accountingFacade.AccountDeleted)
+                    .Merge(_accountingFacade.AccountDeactivated)
+                    .Merge(_accountingFacade.AccountReactivated)
+                    .Throttle(TimeSpan.FromMilliseconds(100)),
+                syncContext)
+            .Subscribe(_ => LoadAccounts());
 
-        var liability = new AccountItemViewModel { Name = "Liabilities", Code = "2000", Type = AccountType.Liability };
-        liability.SubAccounts.Add(new AccountItemViewModel { Name = "Accounts Payable", Code = "2010", Type = AccountType.Liability, Parent = liability });
+        ObserveOnIfAvailable(_accountingFacade.AccountOpeningBalanceSet, syncContext)
+            .Subscribe(OnAccountOpeningBalanceSet);
+    }
 
-        var equity = new AccountItemViewModel { Name = "Owner's Equity", Code = "3000", Type = AccountType.OwnersEquity };
+    private async void LoadAccounts()
+    {
+        var session = _userSessionService.CurrentUserSession;
+        if (session?.Organisation?.Id == null) return;
+        var organisationId = session.Organisation.Id;
 
-        Accounts.Add(asset);
-        Accounts.Add(liability);
-        Accounts.Add(equity);
+        var settings = await _accountingFacade.GetAccountingSettings(organisationId);
+        if (settings != null)
+        {
+            _decimalPrecision = settings.DecimalPrecision;
+            _thousandSeparator = settings.ThousandSeparator;
+            _currencySymbol = settings.AvailableCurrencies
+                .FirstOrDefault(currency => currency.CurrencyCode == settings.BaseCurrency)?
+                .CurrencySymbol ?? string.Empty;
+        }
+
+        SelectOpeningBalancePeriod(await _accountingFacade.GetFiscalCalendar(organisationId));
+
+        var chartOfAccounts = await _accountingFacade.GetChartOfAccounts(organisationId);
+        var accounts = chartOfAccounts.Accounts;
+        _allAccountData.Clear();
+        _allAccountData.AddRange(accounts);
+
+        Accounts.Clear();
+        var rootAccounts = await BuildAccountTree(accounts, organisationId);
+        foreach (var root in rootAccounts) Accounts.Add(root);
+
+        RefreshFilteredParentAccounts();
+    }
+
+    private async Task<List<AccountItemViewModel>> BuildAccountTree(IEnumerable<AccountData> accounts, string organisationId)
+    {
+        var accountList = accounts.ToList();
+
+        var viewModels = accountList.Select(a =>
+        {
+                var vm = new AccountItemViewModel
+                {
+                    Id = a.Id,
+                    Code = a.Code,
+                    Name = a.Name,
+                    Description = a.Description,
+                    Type = a.Type,
+                    IsActive = a.IsActive,
+                    IsContraAccount = a.IsContraAccount,
+                    CurrencySymbol = _currencySymbol,
+                    DecimalPrecision = _decimalPrecision,
+                    ThousandSeparator = _thousandSeparator,
+                    FiscalYearId = _fiscalYearId,
+                AccountingPeriodId = _accountingPeriodId
+            };
+            AssignItemCommands(vm);
+            return vm;
+        }).ToList();
+
+        var lookup = viewModels.ToDictionary(a => a.Id);
+        var roots = new List<AccountItemViewModel>();
+
+        foreach (var accountData in accountList)
+        {
+            var vm = lookup[accountData.Id];
+            if (accountData.ParentId != null && lookup.TryGetValue(accountData.ParentId, out var parentVm))
+            {
+                vm.Parent = parentVm;
+                parentVm.SubAccounts.Add(vm);
+            }
+            else
+            {
+                roots.Add(vm);
+            }
+        }
+
+        foreach (var vm in viewModels)
+        {
+            vm.IsLeafAccount = vm.SubAccounts.Count == 0;
+
+            if (vm.IsLeafAccount)
+            {
+                var openingBalance = 0m;
+                if (!string.IsNullOrWhiteSpace(_fiscalYearId) && !string.IsNullOrWhiteSpace(_accountingPeriodId))
+                {
+                    openingBalance = await _accountingFacade.GetAccountOpeningBalance(
+                        organisationId,
+                        vm.Id,
+                        _fiscalYearId,
+                        _accountingPeriodId);
+                }
+
+                vm.OpeningBalance = openingBalance;
+                vm.IsOpeningBalanceLocked = openingBalance != 0m || _isSelectedPeriodLocked;
+            }
+            else
+            {
+                vm.IsOpeningBalanceLocked = true;
+            }
+
+            vm.SaveOpeningBalanceCommand?.NotifyCanExecuteChanged();
+        }
+
+        RecomputeParentOpeningBalances(roots);
+        return roots;
+    }
+
+    private void SelectOpeningBalancePeriod(FiscalCalendarData fiscalCalendar)
+    {
+        var migrationYear = fiscalCalendar.FiscalYears
+            .OrderBy(fiscalYear => fiscalYear.StartDate)
+            .FirstOrDefault(fiscalYear => !fiscalYear.IsLocked);
+
+        var migrationPeriod = migrationYear?.Periods
+            .OrderBy(period => period.SequenceNumber)
+            .ThenBy(period => period.StartDate)
+            .FirstOrDefault(period => !period.IsLocked);
+
+        if (migrationPeriod is null)
+        {
+            _fiscalYearId = string.Empty;
+            _accountingPeriodId = string.Empty;
+            _isSelectedPeriodLocked = true;
+            return;
+        }
+
+        _fiscalYearId = migrationPeriod.FiscalYearId;
+        _accountingPeriodId = migrationPeriod.Id;
+        _isSelectedPeriodLocked = migrationPeriod.IsLocked;
+    }
+
+    partial void OnSelectedAccountChanged(AccountItemViewModel? value)
+    {
+        if (value != null)
+        {
+            AccountCode = value.Code;
+            AccountName = value.Name;
+            AccountDescription = value.Description;
+            SelectedAccountType = value.Type;
+            IsContraAccount = value.IsContraAccount;
+
+            RefreshFilteredParentAccounts();
+
+            // Map parent to the reference in our collection for Avalonia selection to work
+            if (value.Parent != null)
+                SelectedParentAccount = FilteredParentAccounts
+                    .FirstOrDefault(a => a.Id == value.Parent.Id);
+            else
+                SelectedParentAccount = null;
+        }
+        else
+        {
+            AccountCode = string.Empty;
+            AccountName = string.Empty;
+            AccountDescription = string.Empty;
+            SelectedAccountType = null;
+            IsContraAccount = false;
+            RefreshFilteredParentAccounts();
+            SelectedParentAccount = null;
+        }
+
+        OnPropertyChanged(nameof(ActionButtonText));
+        OnPropertyChanged(nameof(FormTitle));
+        OnPropertyChanged(nameof(IsEditMode));
+    }
+
+    public static ValidationResult? ValidateAccountCode(string code, ValidationContext context)
+    {
+        var vm = (ChartOfAccountsViewModel)context.ObjectInstance;
+        if (vm.SelectedAccountType == null)
+            return ValidationResult.Success;
+
+        if (!AccountCodeSuggester.IsCodeInRange(vm.SelectedAccountType.Value, code, vm.AccountName))
+        {
+            var (min, max) = AccountCodeSuggester.GetCodeRange(vm.SelectedAccountType.Value, vm.AccountName);
+            return new ValidationResult($"Code for {vm.SelectedAccountType.Value} must be between {min} and {max}");
+        }
+
+        if (vm.HasAccountCodeCollision(code))
+            return new ValidationResult("Account code already exists.");
+
+        return ValidationResult.Success;
+    }
+
+    partial void OnSelectedAccountTypeChanged(AccountType? value)
+    {
+        _ = value;
+        RefreshFilteredParentAccounts();
+        SuggestAccountCode();
+        ValidateProperty(AccountCode, nameof(AccountCode));
+    }
+
+    partial void OnSelectedParentAccountChanged(AccountItemViewModel? value)
+    {
+        if (ReferenceEquals(value, NoParentOption))
+        {
+            SelectedParentAccount = null;
+            return;
+        }
+
+        _ = value;
+        SuggestAccountCode();
+        ValidateProperty(AccountCode, nameof(AccountCode));
+    }
+
+    private void SuggestAccountCode()
+    {
+        if (IsEditMode || SelectedAccountType == null) return;
+
+        var nextCode = AccountCodeSuggester.SuggestNextCode(
+            SelectedAccountType.Value,
+            AccountName,
+            SelectedParentAccount?.Id,
+            _allAccountData.Select(account =>
+                new AccountCodeSuggester.AccountCodeContext(account.Id, account.Code, account.Type, account.ParentId)));
+        AccountCode = nextCode.ToString();
+    }
+
+    partial void OnAccountNameChanged(string value)
+    {
+        _ = value;
+        if (SelectedAccountType == AccountType.Expense)
+        {
+            SuggestAccountCode();
+            ValidateProperty(AccountCode, nameof(AccountCode));
+        }
+    }
+
+    private void RefreshFilteredParentAccounts()
+    {
+        var previousSelection = SelectedParentAccount;
+        FilteredParentAccounts.Clear();
+        FilteredParentAccounts.Add(NoParentOption);
+        var allAccounts = GetAllAccounts(Accounts);
+        foreach (var account in allAccounts)
+            if (CanBeParent(account))
+                FilteredParentAccounts.Add(account);
+
+        // Try to restore selection if it's still valid in the new filtered list
+        if (previousSelection != null)
+            SelectedParentAccount = FilteredParentAccounts.FirstOrDefault(a => a.Id == previousSelection.Id);
+    }
+
+    private IEnumerable<AccountItemViewModel> GetAllAccounts(IEnumerable<AccountItemViewModel> roots)
+    {
+        foreach (var root in roots)
+        {
+            yield return root;
+            foreach (var child in GetAllAccounts(root.SubAccounts)) yield return child;
+        }
+    }
+
+    private bool CanBeParent(AccountItemViewModel potentialParent)
+    {
+        // 1. Must be of the selected type
+        if (SelectedAccountType.HasValue && potentialParent.Type != SelectedAccountType.Value)
+            return false;
+
+        // 2. Must be active
+        if (!potentialParent.IsActive)
+            return false;
+
+        // 3. Cannot be itself
+        if (SelectedAccount != null && potentialParent.Id == SelectedAccount.Id)
+            return false;
+
+        // 4. No cycles
+        if (SelectedAccount != null && IsDescendantOf(potentialParent, SelectedAccount))
+            return false;
+
+        return true;
+    }
+
+    private bool IsDescendantOf(AccountItemViewModel node, AccountItemViewModel potentialAncestor)
+    {
+        var current = node.Parent;
+        while (current != null)
+        {
+            if (current.Id == potentialAncestor.Id)
+                return true;
+            current = current.Parent;
+        }
+
+        return false;
+    }
+
+    private bool HasAccountCodeCollision(string code)
+    {
+        var normalizedCode = code.Trim();
+        if (normalizedCode.Length == 0) return false;
+
+        var currentAccountId = SelectedAccount?.Id;
+        return _allAccountData.Any(account =>
+            string.Equals(account.Code, normalizedCode, StringComparison.Ordinal) &&
+            !string.Equals(account.Id, currentAccountId, StringComparison.Ordinal));
+    }
+
+    // Operation: wires the row-level action commands to the parent ViewModel operations for one item.
+    private void AssignItemCommands(AccountItemViewModel item)
+    {
+        item.EditCommand = new RelayCommand(() => SelectAccountForEdit(item));
+        item.ToggleActiveCommand = new AsyncRelayCommand(() => ToggleAccountActiveAsync(item));
+        item.ViewLedgerCommand = new RelayCommand(() => NavigateToAccountLedger(item));
+        item.SaveOpeningBalanceCommand = new AsyncRelayCommand(() => SaveOpeningBalanceAsync(item));
+    }
+
+    // Operation: selects the given account for editing in the side form.
+    private void SelectAccountForEdit(AccountItemViewModel item)
+    {
+        SelectedAccount = item;
+    }
+
+    // Integration: toggles one account between active and inactive states.
+    private async Task ToggleAccountActiveAsync(AccountItemViewModel item)
+    {
+        var session = _userSessionService.CurrentUserSession;
+        if (session?.Organisation?.Id == null) return;
+
+        var orgId = session.Organisation.Id;
+        var accountId = item.Id;
+        var subject = item.Name;
+
+        if (item.IsActive)
+            await _notificationService.TrackOperationAsync(
+                () => _accountingFacade.DeactivateAccount(orgId, accountId),
+                BuildAccountStateChangeConfirmationObservable(
+                    orgId,
+                    accountId,
+                    false,
+                    _accountingFacade.AccountDeactivated),
+                TimeSpan.FromSeconds(10),
+                "Account",
+                "Deactivated",
+                subject,
+                SetOperationInFlight);
+        else
+            await _notificationService.TrackOperationAsync(
+                () => _accountingFacade.ReactivateAccount(orgId, accountId),
+                BuildAccountStateChangeConfirmationObservable(
+                    orgId,
+                    accountId,
+                    true,
+                    _accountingFacade.AccountReactivated),
+                TimeSpan.FromSeconds(10),
+                "Account",
+                "Reactivated",
+                subject,
+                SetOperationInFlight);
+    }
+
+    // Operation: confirms account state changes from either event notifications or eventual read-model state.
+    private IObservable<bool> BuildAccountStateChangeConfirmationObservable(
+        string organisationId,
+        string accountId,
+        bool isActiveTarget,
+        IObservable<AccountData> eventStream)
+    {
+        var matchingEvents = eventStream
+            .Where(account =>
+                account.OrganisationId == organisationId &&
+                account.Id == accountId &&
+                account.IsActive == isActiveTarget)
+            .Select(_ => true);
+
+        var readModelStateChecks = Observable.Interval(TimeSpan.FromMilliseconds(250))
+            .StartWith(0L)
+            .SelectMany(_ =>
+                Observable.FromAsync(() => HasAccountReachedStateAsync(organisationId, accountId, isActiveTarget)))
+            .Where(hasReachedTargetState => hasReachedTargetState)
+            .Select(_ => true);
+
+        return matchingEvents
+            .Merge(readModelStateChecks)
+            .Take(1);
+    }
+
+    // Operation: checks whether one account currently matches the requested active state in the read model.
+    private async Task<bool> HasAccountReachedStateAsync(string organisationId, string accountId, bool isActiveTarget)
+    {
+        try
+        {
+            var chartOfAccounts = await _accountingFacade.GetChartOfAccounts(organisationId);
+            var account = chartOfAccounts.Accounts.FirstOrDefault(current => current.Id == accountId);
+            return account is not null && account.IsActive == isActiveTarget;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    // Operation: navigates to journal entries with account context for the given account.
+    private void NavigateToAccountLedger(AccountItemViewModel item)
+    {
+        var navigationRequest = JournalEntriesNavigationRequest.ForAccount(item.Id, item.Code, item.Name);
+        WeakReferenceMessenger.Default.Send(new ModuleSelected(Routes.AccountingTransactions, navigationRequest));
+    }
+
+    private void OnAccountOpeningBalanceSet(AccountingPeriodBalanceData balance)
+    {
+        if (!string.Equals(balance.FiscalYearId, _fiscalYearId, StringComparison.Ordinal) ||
+            !string.Equals(balance.AccountingPeriodId, _accountingPeriodId, StringComparison.Ordinal))
+            return;
+
+        var account = FlattenAccounts(Accounts).FirstOrDefault(current => current.Id == balance.AccountId);
+        if (account is null) return;
+
+        account.OpeningBalance = balance.OpeningBalance;
+        account.IsOpeningBalanceLocked = balance.OpeningBalance != 0m || _isSelectedPeriodLocked;
+        account.IsSavingOpeningBalance = false;
+        account.ForceFormatOpeningBalance();
+        account.SaveOpeningBalanceCommand?.NotifyCanExecuteChanged();
+        RecomputeParentOpeningBalances();
+    }
+
+    private async Task SaveOpeningBalanceAsync(AccountItemViewModel item)
+    {
+        if (!item.CanSaveOpeningBalance) return;
+
+        var session = _userSessionService.CurrentUserSession;
+        if (session?.Organisation?.Id == null) return;
+
+        var organisationId = session.Organisation.Id;
+        var subject = $"Opening balance for account - {item.Name}";
+
+        var isConfirmed = await _notificationService.TrackOperationAsync(
+            () => _accountingFacade.SetAccountOpeningBalance(
+                organisationId,
+                item.Id,
+                _fiscalYearId,
+                _accountingPeriodId,
+                item.OpeningBalance),
+            BuildSaveOpeningBalanceConfirmationObservable(organisationId, item),
+            TimeSpan.FromSeconds(10),
+            "Opening Balance",
+            "Saved",
+            subject,
+            inFlight =>
+            {
+                item.IsSavingOpeningBalance = inFlight;
+                item.SaveOpeningBalanceCommand?.NotifyCanExecuteChanged();
+            });
+
+        if (!isConfirmed) return;
+
+        item.IsOpeningBalanceLocked = true;
+        item.IsSavingOpeningBalance = false;
+        item.ForceFormatOpeningBalance();
+        item.SaveOpeningBalanceCommand?.NotifyCanExecuteChanged();
+        RecomputeParentOpeningBalances();
+    }
+
+    private IObservable<bool> BuildSaveOpeningBalanceConfirmationObservable(string organisationId, AccountItemViewModel item)
+    {
+        var matchingEvents = _accountingFacade.AccountOpeningBalanceSet
+            .Where(balance =>
+                balance.AccountId == item.Id &&
+                balance.FiscalYearId == _fiscalYearId &&
+                balance.AccountingPeriodId == _accountingPeriodId)
+            .Select(_ => true);
+
+        var readModelPolling = Observable.Interval(TimeSpan.FromMilliseconds(250))
+            .StartWith(0L)
+            .SelectMany(_ => Observable.FromAsync(() =>
+                HasOpeningBalanceAppearedAsync(organisationId, item)))
+            .Where(isPresent => isPresent)
+            .Take(1);
+
+        return matchingEvents.Merge(readModelPolling).Take(1);
+    }
+
+    private async Task<bool> HasOpeningBalanceAppearedAsync(string organisationId, AccountItemViewModel item)
+    {
+        var openingBalance = await _accountingFacade.GetAccountOpeningBalance(
+            organisationId,
+            item.Id,
+            _fiscalYearId,
+            _accountingPeriodId);
+
+        return openingBalance == item.OpeningBalance;
+    }
+
+    private void RecomputeParentOpeningBalances()
+    {
+        RecomputeParentOpeningBalances(Accounts);
+    }
+
+    private static void RecomputeParentOpeningBalances(IEnumerable<AccountItemViewModel> roots)
+    {
+        foreach (var root in roots)
+            ComputeParentOpeningBalance(root);
+    }
+
+    private static decimal ComputeParentOpeningBalance(AccountItemViewModel node)
+    {
+        if (node.IsLeafAccount) return node.OpeningBalance;
+
+        var total = node.SubAccounts.Sum(ComputeParentOpeningBalance);
+        node.OpeningBalance = total;
+        return total;
+    }
+
+    private static IEnumerable<AccountItemViewModel> FlattenAccounts(IEnumerable<AccountItemViewModel> roots)
+    {
+        foreach (var root in roots)
+        {
+            yield return root;
+
+            foreach (var child in FlattenAccounts(root.SubAccounts))
+                yield return child;
+        }
+    }
+
+    private bool CanAddAccount()
+    {
+        return !IsOperationInFlight &&
+               !string.IsNullOrWhiteSpace(AccountCode) &&
+               !string.IsNullOrWhiteSpace(AccountName) &&
+               SelectedAccountType.HasValue &&
+               !GetErrors(nameof(AccountCode)).Cast<object>().Any() &&
+               !GetErrors(nameof(AccountName)).Cast<object>().Any() &&
+               !GetErrors(nameof(AccountDescription)).Cast<object>().Any();
+    }
+
+    private bool CanDeleteAccount()
+    {
+        return !IsOperationInFlight &&
+               SelectedAccount != null &&
+               !SelectedAccountHasChildren;
+    }
+
+    private void SetOperationInFlight(bool isInFlight)
+    {
+        IsOperationInFlight = isInFlight;
+        AddAccountCommand.NotifyCanExecuteChanged();
+        DeleteAccountCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAddAccount))]
+    private async Task AddAccount()
+    {
+        // INTEGRATION: Validates, sends command, waits for event confirmation
+        if (!ValidateAndShow()) return;
+
+        var session = _userSessionService.CurrentUserSession;
+        if (session?.Organisation?.Id == null) return;
+
+        var orgId = session.Organisation.Id;
+
+        if (SelectedAccount != null)
+        {
+            var accountId = SelectedAccount.Id;
+            var subject = AccountName;
+            var isConfirmed = await _notificationService.TrackOperationAsync(
+                () => _accountingFacade.UpdateAccount(
+                    orgId,
+                    accountId,
+                    AccountCode,
+                    AccountName,
+                    AccountDescription,
+                    SelectedAccountType ?? AccountType.Asset,
+                    SelectedParentAccount?.Id,
+                    IsContraAccount),
+                _accountingFacade.AccountUpdated,
+                a => a.Id == accountId,
+                TimeSpan.FromSeconds(10),
+                "Account",
+                "Saved",
+                subject,
+                SetOperationInFlight);
+
+            if (isConfirmed)
+                ResetForm();
+        }
+        else
+        {
+            var code = AccountCode.Trim();
+            var name = AccountName.Trim();
+            var subject = AccountName;
+            var parentAccountId = SelectedParentAccount?.Id;
+            var accountType = SelectedAccountType ?? AccountType.Asset;
+            var confirmationSource = AccountCreationConfirmationSource.None;
+            var isConfirmed = await _notificationService.TrackOperationAsync(
+                () => _accountingFacade.CreateAccount(
+                    orgId,
+                    code,
+                    AccountName,
+                    AccountDescription,
+                    accountType,
+                    parentAccountId,
+                    IsContraAccount),
+                BuildAccountCreationConfirmationObservable(
+                    orgId,
+                    code,
+                    name,
+                    accountType,
+                    parentAccountId,
+                    IsContraAccount)
+                    .Do(source => confirmationSource = source)
+                    .Select(_ => true),
+                TimeSpan.FromSeconds(10),
+                "Account",
+                "Created",
+                subject,
+                SetOperationInFlight);
+
+            UpdateCreateConfirmationStatus(confirmationSource, subject);
+
+            if (isConfirmed)
+                ResetForm();
+        }
+    }
+
+    // Operation: confirms account creation from either change notifications or eventual read-model visibility.
+    private IObservable<AccountCreationConfirmationSource> BuildAccountCreationConfirmationObservable(
+        string organisationId,
+        string code,
+        string name,
+        AccountType type,
+        string? parentAccountId,
+        bool isContraAccount)
+    {
+        var createdEvents = _accountingFacade.AccountCreated
+            .Where(account =>
+                account.OrganisationId == organisationId &&
+                string.Equals(account.Code, code, StringComparison.Ordinal) &&
+                string.Equals(account.Name, name, StringComparison.Ordinal) &&
+                account.Type == type &&
+                string.Equals(account.ParentId, parentAccountId, StringComparison.Ordinal) &&
+                account.IsContraAccount == isContraAccount)
+            .Select(_ => AccountCreationConfirmationSource.EventStream);
+
+        var readModelPresenceChecks = Observable.Interval(TimeSpan.FromMilliseconds(250))
+            .StartWith(0L)
+            .SelectMany(_ => Observable.FromAsync(() =>
+                HasCreatedAccountAppearedAsync(organisationId, code, name, type, parentAccountId, isContraAccount)))
+            .Where(isPresent => isPresent)
+            .Select(_ => AccountCreationConfirmationSource.ReadModel);
+
+        return createdEvents
+            .Merge(readModelPresenceChecks)
+            .Take(1);
+    }
+
+    // Operation: publishes a small troubleshooting status message after account creation confirmation.
+    private void UpdateCreateConfirmationStatus(AccountCreationConfirmationSource source, string subject)
+    {
+        var accountLabel = string.IsNullOrWhiteSpace(subject) ? "account" : subject;
+        StatusMessage = source switch
+        {
+            AccountCreationConfirmationSource.EventStream => $"Created {accountLabel}: confirmed from event stream.",
+            AccountCreationConfirmationSource.ReadModel => $"Created {accountLabel}: confirmed from read model.",
+            _ => string.Empty
+        };
+    }
+
+    // Operation: checks if the new account is already queryable from the materialized read model.
+    private async Task<bool> HasCreatedAccountAppearedAsync(
+        string organisationId,
+        string code,
+        string name,
+        AccountType type,
+        string? parentAccountId,
+        bool isContraAccount)
+    {
+        try
+        {
+            var chartOfAccounts = await _accountingFacade.GetChartOfAccounts(organisationId);
+            return chartOfAccounts.Accounts.Any(account =>
+                account.OrganisationId == organisationId &&
+                string.Equals(account.Code, code, StringComparison.Ordinal) &&
+                string.Equals(account.Name, name, StringComparison.Ordinal) &&
+                account.Type == type &&
+                string.Equals(account.ParentId, parentAccountId, StringComparison.Ordinal) &&
+                account.IsContraAccount == isContraAccount);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanDeleteAccount))]
+    private async Task DeleteAccount()
+    {
+        // INTEGRATION: Sends delete command, waits for event confirmation
+        if (SelectedAccount == null || SelectedAccountHasChildren) return;
+
+        var session = _userSessionService.CurrentUserSession;
+        if (session?.Organisation?.Id == null) return;
+
+        var orgId = session.Organisation.Id;
+        var accountId = SelectedAccount.Id;
+        var subject = SelectedAccount.Name;
+
+        var isConfirmed = await _notificationService.TrackOperationAsync(
+            () => _accountingFacade.DeleteAccount(orgId, accountId),
+            _accountingFacade.AccountDeleted,
+            account => account.Id == accountId,
+            TimeSpan.FromSeconds(10),
+            "Account",
+            "Deleted",
+            subject,
+            SetOperationInFlight);
+
+        if (isConfirmed)
+        {
+            LoadAccounts();
+            ResetForm();
+        }
     }
 
     [RelayCommand]
-    private void AddAccount()
+    public void ResetForm()
     {
-        PerformAddAccount();
+        if (IsOperationInFlight) return;
+
+        SelectedAccount = null;
+        AccountCode = string.Empty;
+        AccountName = string.Empty;
+        AccountDescription = string.Empty;
+        SelectedAccountType = null;
+        IsContraAccount = false;
+        SelectedParentAccount = null;
+        ResetValidationState();
     }
 
-    private void PerformAddAccount()
+    private enum AccountCreationConfirmationSource
     {
-        // Operation placeholder: command dispatch will be added when account management is wired up.
+        None,
+        EventStream,
+        ReadModel
     }
 }

@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
@@ -17,7 +18,7 @@ public class App : Avalonia.Application
     public override void OnFrameworkInitializationCompleted()
     {
         BindingPlugins.DataValidators.RemoveAt(0);
-        
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var splashViewModel = new SplashViewModel();

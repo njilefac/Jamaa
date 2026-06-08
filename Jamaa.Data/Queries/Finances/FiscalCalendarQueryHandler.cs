@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Domain.Finances.Queries;
+using Domain.Accounting.Queries;
 using Jamaa.Data.Configuration;
 using Jamaa.Data.Models.Finances;
 using Microsoft.EntityFrameworkCore;
@@ -20,16 +20,11 @@ public class FiscalCalendarQueryHandler(JamaaDbContext dbContext) : IFiscalCalen
             .ToListAsync();
 
         foreach (var fiscalYear in fiscalYears)
-        {
             fiscalYear.Periods = fiscalYear.Periods
                 .OrderBy(period => period.SequenceNumber)
                 .ThenBy(period => period.StartDate)
                 .ToList();
-        }
 
         return fiscalYears;
     }
 }
-
-
-

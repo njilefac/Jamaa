@@ -6,23 +6,24 @@ namespace Jamaa.Desktop.Members.ViewModels;
 
 public partial class MemberViewModel : ObservableObject
 {
-    [ObservableProperty] private string _id;
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FullName))]
-    private string _lastName;
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FullName))]
-    private string? _middleName;
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FullName))]
-    private string _firstName;
-    [ObservableProperty] private Gender _gender;
-    [ObservableProperty] private string _organisationId;
-    [ObservableProperty] private RegistrationViewModel? _registration;
-    [ObservableProperty] private byte[]? _pictureData;
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FullName))]
+    private string _firstName = string.Empty;
 
-    public string FullName => string.IsNullOrWhiteSpace(MiddleName) 
-        ? $"{FirstName} {LastName}" 
+    [ObservableProperty] private Gender _gender;
+    [ObservableProperty] private string _id = string.Empty;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FullName))]
+    private string _lastName = string.Empty;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(FullName))]
+    private string? _middleName;
+
+    [ObservableProperty] private string _organisationId = string.Empty;
+    [ObservableProperty] private byte[]? _pictureData;
+    [ObservableProperty] private RegistrationViewModel? _registration;
+
+    public string FullName => string.IsNullOrWhiteSpace(MiddleName)
+        ? $"{FirstName} {LastName}"
         : $"{FirstName} {MiddleName} {LastName}";
 
     public void UpdateFrom(MemberData member)
@@ -33,27 +34,17 @@ public partial class MemberViewModel : ObservableObject
         Gender = member.Gender;
         OrganisationId = member.OrganisationId;
         PictureData = member.PictureData;
-        if (member.Registration == null)
-        {
-            Registration = null;
-        }
+        var registration = member.Registration;
+        if (Registration == null || Registration.Id != registration.Id)
+            Registration = new RegistrationViewModel
+            {
+                Id = registration.Id,
+                StartDate = registration.StartDate,
+                EndDate = registration.EndDate,
+                MembershipType = registration.MembershipType,
+                Status = registration.Status
+            };
         else
-        {
-            if (Registration == null || Registration.Id != member.Registration.Id)
-            {
-                Registration = new RegistrationViewModel
-                {
-                    Id = member.Registration.Id,
-                    StartDate = member.Registration.StartDate,
-                    EndDate = member.Registration.EndDate,
-                    MembershipType = member.Registration.MembershipType,
-                    Status = member.Registration.Status
-                };
-            }
-            else
-            {
-                Registration.UpdateFrom(member.Registration);
-            }
-        }
+            Registration.UpdateFrom(registration);
     }
 }

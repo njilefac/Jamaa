@@ -5,7 +5,8 @@ namespace Domain.Shared;
 
 public abstract class Person
 {
-    protected Person(string? firstName, string? middleName, string? lastName, Gender gender = Gender.Unknown, string? title = null, DateTime? dateOfBirth = null)
+    protected Person(string? firstName, string? middleName, string? lastName, Gender gender = Gender.Unknown,
+        string? title = null, DateTime? dateOfBirth = null)
     {
         FirstName = firstName;
         MiddleName = middleName;

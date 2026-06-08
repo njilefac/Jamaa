@@ -1,0 +1,158 @@
+name: Package App
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'bundle/**'
+      - '.github/workflows/package-app.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  package-macos:
+    name: Package macOS
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build DMG
+        shell: pwsh
+        run: ./bundle/package-macos.ps1
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: bundle/Jamaa-Installer.dmg
+          if-no-files-found: error
+
+  package-windows:
+    name: Package Windows
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install NSIS
+        shell: pwsh
+        run: choco install nsis -y --no-progress
+
+      - name: Build installer
+        shell: pwsh
+        run: ./bundle/package-windows.ps1
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: bundle/Jamaa-Installer.exe
+          if-no-files-found: error
+
+  package-linux:
+    name: Package Linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install packaging tools
+        run: sudo apt-get update && sudo apt-get install -y dpkg-dev
+
+      - name: Build package
+        run: chmod +x ./bundle/package-linux.sh && ./bundle/package-linux.sh
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-package
+          path: bundle/jamaa_1.0.0_amd64.deb
+          if-no-files-found: error
+
+  publish-pages:
+    name: Publish GitHub Pages
+    needs:
+      - package-macos
+      - package-windows
+      - package-linux
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dmg
+          path: site/downloads/macos
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: site/downloads/windows
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-package
+          path: site/downloads/linux
+
+      - name: Create Pages index
+        shell: bash
+        run: |
+          mkdir -p site
+          cat > site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>Jamaa Downloads</title>
+            <style>
+              body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.5; }
+              ul { padding-left: 1.25rem; }
+            </style>
+          </head>
+          <body>
+            <h1>Jamaa Downloads</h1>
+            <ul>
+              <li><a href="downloads/macos/Jamaa-Installer.dmg">macOS DMG</a></li>
+              <li><a href="downloads/windows/Jamaa-Installer.exe">Windows installer</a></li>
+              <li><a href="downloads/linux/jamaa_1.0.0_amd64.deb">Linux package</a></li>
+            </ul>
+          </body>
+          </html>
+          HTML
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

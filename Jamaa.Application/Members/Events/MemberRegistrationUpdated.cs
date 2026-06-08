@@ -3,7 +3,7 @@ using Jamaa.Application.Shared;
 
 namespace Jamaa.Application.Members.Events;
 
-public record MemberRegistrationUpdated(MemberId Id) : ILibotaEvent
+public record MemberRegistrationUpdated(MemberId Id) : IJamaaEvent
 {
     public string EntityId => Id.Value;
 }
