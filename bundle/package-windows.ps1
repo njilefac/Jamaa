@@ -17,7 +17,7 @@ foreach ($path in @($publishDir, $stagingDir, $outputFile)) {
     }
 }
 
-dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=false -o $publishDir
+dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -p:TrimMode=partial -o $publishDir
 
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed"
@@ -26,7 +26,28 @@ if ($LASTEXITCODE -ne 0) {
 New-Item -ItemType Directory -Path $stagingDir | Out-Null
 Copy-Item -Path "$publishDir/*" -Destination $stagingDir -Recurse
 
-& makensis `
+# Check if makensis is available
+$makensis = Get-Command makensis -ErrorAction SilentlyContinue
+if (-not $makensis) {
+    Write-Host "makensis (NSIS) not found in PATH. Attempting to install via Chocolatey..." -ForegroundColor Yellow
+    $choco = Get-Command choco -ErrorAction SilentlyContinue
+    if ($choco) {
+        & choco install nsis -y
+        if ($LASTEXITCODE -eq 0) {
+            # Refresh PATH for the current process
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+            $makensis = Get-Command makensis -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+if (-not $makensis) {
+    Write-Warning "makensis (NSIS) not found in PATH and could not be installed. Skipping installer creation."
+    Write-Host "Binaries are available in: $publishDir" -ForegroundColor Cyan
+    exit 0
+}
+
+& $makensis.Source `
     "/DAPP_NAME=Jamaa" `
     "/DAPP_VERSION=1.0.0" `
     "/DINPUT_DIR=$stagingDir" `

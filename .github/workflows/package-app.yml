@@ -48,10 +48,6 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Install NSIS
-        shell: pwsh
-        run: choco install nsis -y --no-progress
-
       - name: Build installer
         shell: pwsh
         run: ./bundle/package-windows.ps1
