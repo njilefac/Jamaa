@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - develop
     paths:
       - 'bundle/**'
       - '.github/workflows/package-app.yml'
