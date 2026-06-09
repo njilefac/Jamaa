@@ -1,3 +1,5 @@
+SetCompressor /SOLID zlib
+
 !include "MUI2.nsh"
 
 !ifndef APP_NAME
@@ -26,7 +28,6 @@ UninstallIcon "${ICON_FILE}"
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
-SetCompressor /SOLID zlib
 Section "Install"
     SetOutPath "$INSTDIR"
     File /r "${INPUT_DIR}\*"
