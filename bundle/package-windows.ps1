@@ -18,7 +18,7 @@ foreach ($path in @($publishDir, $stagingDir, $outputFile)) {
 }
 
 Write-Host "🚀 Publishing .NET project..." -ForegroundColor Cyan
-dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=true -o $publishDir
+dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=false -o $publishDir
 
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed"
