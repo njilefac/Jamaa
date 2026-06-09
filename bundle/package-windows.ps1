@@ -40,14 +40,19 @@ if (-not $makensis) {
             # Refresh PATH for the current process
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
             $makensis = Get-Command makensis -ErrorAction SilentlyContinue
+            if (-not $makensis) {
+                # Fallback to common NSIS installation path
+                $nsisPath = "C:\Program Files (x86)\NSIS\makensis.exe"
+                if (Test-Path $nsisPath) {
+                    $makensis = Get-Command $nsisPath
+                }
+            }
         }
     }
 }
 
 if (-not $makensis) {
-    Write-Warning "makensis (NSIS) not found in PATH and could not be installed. Skipping installer creation."
-    Write-Host "Binaries are available in: $publishDir" -ForegroundColor Cyan
-    exit 0
+    throw "makensis (NSIS) not found in PATH and could not be installed. Installer creation failed."
 }
 
 & $makensis.Source /V4 `
