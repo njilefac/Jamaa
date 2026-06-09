@@ -1,6 +1,6 @@
 # AGENTS.md — Jamaa Development Guide for AI Assistants
 
-This guide helps AI coding agents understand the Jamaa codebase architecture, conventions, and workflows. Last updated: April 2026.
+This guide helps AI coding agents understand the Jamaa codebase architecture, conventions, and workflows. Last updated: June 2026.
 
 ---
 
@@ -10,6 +10,7 @@ This guide helps AI coding agents understand the Jamaa codebase architecture, co
 - **Architecture**: Clean Architecture + Domain-Driven Design (DDD)
 - **Build Target**: macOS first (packaged via PowerShell scripts in `/bundle`), cross-platform UI
 - **Key Pattern**: Integration/Operation split (IOSP) for all methods; Command-Query separation via actors
+- **Workflow Tooling**: Elsa 3.7 is used in two shapes: standalone via `Jamaa.Elsa.Server` + `Jamaa.Elsa.Studio`, and embedded inside the desktop app via `Jamaa.Desktop/Services/Hosting/`
 
 ---
 
@@ -41,7 +42,14 @@ Jamaa.Domain (Pure Business Logic)
     ├─ Domain Events
     ├─ Repository interfaces (no EF references)
     └─ NO external dependencies
+
+Workflow tooling (solution-adjacent)
+    ├─ Jamaa.Elsa.Server (standalone ASP.NET Core Elsa host)
+    ├─ Jamaa.Elsa.Studio (Blazor WASM workflow designer)
+    └─ Jamaa.Desktop/Services/Hosting (embedded Elsa + Studio host on loopback)
 ```
+
+`Jamaa.WorkflowStudio/` exists in the repository but is not part of `Jamaa.sln`; treat it as inactive unless a task explicitly targets it.
 
 ### Why This Matters
 
@@ -50,6 +58,8 @@ Jamaa.Domain (Pure Business Logic)
 **Application orchestrates via actors**: Commands don't execute directly; they're sent to Akka actors (Aggregates) that apply them and emit domain events. This decouples command handling from storage.
 
 **Desktop consumes via MVVM**: ViewModels dispatch commands and listen to events. UI changes flow through ViewModels, never directly from Application layer.
+
+**Workflow authoring has two active hosts**: the standalone `Jamaa.Elsa.Server` + `Jamaa.Elsa.Studio` pair, and the desktop's embedded loopback host in `Jamaa.Desktop/Services/Hosting/`. When changing workflow APIs, auth, tenancy headers, or static asset hosting, compare `Jamaa.Elsa.Server/Program.cs`, `Jamaa.Elsa.Studio/Program.cs`, and `Jamaa.Desktop/Services/Hosting/ElsaWebApplicationBuilder.cs` together.
 
 ---
 
@@ -236,6 +246,19 @@ services.AddProxiedScoped<IUserManagementFacade, UserManagementFacade>();
 
 Uses Castle DynamicProxy to wrap interfaces with authorization checks.
 
+### Embedded Elsa Host
+
+**Location**: `Jamaa.Desktop/Services/Hosting/`
+
+The desktop app starts an in-process workflow host during `InitializationService.InitializeAsync()`:
+
+- `EmbeddedWebServer` starts before other background services complete startup and exposes `Started`, `BaseAddress`, and `Port`
+- `ElsaWebApplicationBuilder` hosts Elsa APIs and the Studio WASM assets on `127.0.0.1` using a dynamic port
+- Elsa persistence uses sibling SQLite files (`elsa-management.db`, `elsa-runtime.db`) next to the main Jamaa SQLite database
+- Tenancy for embedded workflows is routed via the `x-tenant` header in `ElsaWebApplicationBuilder`
+
+When changing embedded workflow behavior, inspect `EmbeddedWebServer.cs`, `ElsaWebApplicationBuilder.cs`, `ElsaDatabaseInitializer.cs`, and `InitializationService.cs` together.
+
 ---
 
 ## Naming & Coding Conventions
@@ -312,6 +335,9 @@ When adding a new event (e.g., `AccountOpeningBalanceSet`), you must ensure it f
 
 ### Local Development
 ```bash
+# Restore local tools (required before running EF commands)
+dotnet tool restore
+
 # Build
 dotnet build
 
@@ -320,7 +346,12 @@ dotnet test
 
 # Run desktop app
 dotnet run --project Jamaa.Desktop/Jamaa.Desktop.csproj
+
+# Run standalone Elsa host + Studio
+dotnet run --project Jamaa.Elsa.Server --urls https://localhost:5001
 ```
+
+Desktop startup already launches the embedded Elsa host via `Jamaa.Desktop/Services/InitializationService.cs`; use `Jamaa.Elsa.Server` only when working on the standalone workflow host or Studio shell directly.
 
 ### Packaging (macOS)
 ```powershell
@@ -345,15 +376,17 @@ Produces:
 
 ### Unit Tests
 Located in `Tests/` mirroring the project structure:
+- The runnable automated suite is `Tests/UnitTests.csproj`
 - Test **Operations** directly with focused inputs
 - Mock dependencies; verify behavior
+- Prefer the existing xUnit + Shouldly + NSubstitute style already used in `Tests/Finances/` and `Tests/Services/`
 - Fast, isolated, deterministic
 
 ### BDD (Gherkin)
 Located in `Tests/` as `.feature` files:
-- High-level functional requirements
-- Example: "Given an organisation exists, When a member registers, Then the member is listed"
-- Implements step definitions in C# using SpecFlow
+- `Registration.feature` is currently a requirements artifact in the repo
+- Automated coverage is primarily xUnit-based today; no active SpecFlow test project is present in `Jamaa.sln`
+- `IntegrationTests/` exists under `Tests/` but is excluded from compilation in `Tests/UnitTests.csproj` unless you intentionally re-include it
 
 **Exception translation**: Operations detect errors; integrations translate them at workflow boundaries if needed.
 
@@ -379,8 +412,11 @@ Located in `Tests/` as `.feature` files:
 - **Avalonia UI**: Cross-platform; Skia renderer
 - **Akka.NET**: Actor model, distributed (currently single-node SQLite backend)
 - **Entity Framework Core**: ORM for read models, domain persistence
+- **Elsa Workflows / Elsa Studio**: Workflow engine + designer used both as standalone projects and inside the desktop embedded host
 - **CommunityToolkit.Mvvm**: ObservableProperty, RelayCommand generators
 - **Castle DynamicProxy**: Runtime interception for auth/logging
+- **Serilog**: Shared structured logging across desktop startup, Akka, and the embedded workflow host
+- **Syncfusion**: License-backed UI components; see `Syncfusion` settings in desktop app settings before assuming components can initialize cleanly
 
 ---
 
@@ -401,12 +437,14 @@ When assigned a task:
 - [ ] If adding application logic: **Create operations first, then integration**
 - [ ] If adding UI: Create view + viewmodel pair; use existing styles
 - [ ] Enforce strict MVVM: no control/template/style composition in ViewModels
+- [ ] If touching workflows: inspect both standalone and embedded hosts (`Jamaa.Elsa.Server`, `Jamaa.Elsa.Studio`, `Jamaa.Desktop/Services/Hosting/`)
 - [ ] If modifying commands: Update aggregate handlers + tests
 - [ ] If adding a domain event: Add handler in aggregate `Apply()` method
 - [ ] **Crucial**: Tag new events in `JamaaEventTagger.cs` for projection
 - [ ] **Crucial**: Implement handler in `JamaaEventProjection.cs` for read model updates
 - [ ] Register new services in `ApplicationServicesRegistration`
 - [ ] Mirror test structure in `Tests/` directory
+- [ ] Verify with the existing xUnit suite in `Tests/UnitTests.csproj`; do not assume `IntegrationTests/` is compiled
 - [ ] Use `var`, `nameof()`, async/await consistently
 - [ ] Ask: "Is this method Integration or Operation?" before writing
 
@@ -415,6 +453,7 @@ When assigned a task:
 ## References
 
 - **Existing guidelines**: See `.junie/guidelines.md` for JetBrains-specific notes
+- **Workflow setup**: See `ELSA_SETUP.md` and `ELSA_EMBEDDED_INTEGRATION.md` for standalone vs embedded Elsa details
 - **Product idea**: `Product Idea.md` documents business requirements
 - **Project structure**: See `Jamaa.sln` and workspace folders
 
