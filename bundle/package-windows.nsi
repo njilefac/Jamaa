@@ -1,8 +1,12 @@
 !include "MUI2.nsh"
 
-!define APP_NAME "Jamaa"
+!ifndef APP_NAME
+    !define APP_NAME "Jamaa"
+!endif
 !define COMPANY_NAME "Nubia Systems"
-!define APP_VERSION "1.0.0"
+!ifndef APP_VERSION
+    !define APP_VERSION "1.0.0"
+!endif
 
 Name "${APP_NAME}"
 OutFile "${OUTPUT_FILE}"
