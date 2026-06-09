@@ -17,15 +17,18 @@ foreach ($path in @($publishDir, $stagingDir, $outputFile)) {
     }
 }
 
+Write-Host "🚀 Publishing .NET project..." -ForegroundColor Cyan
 dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=true -o $publishDir
 
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed"
 }
 
+Write-Host "📦 Creating staging directory and copying binaries..." -ForegroundColor Cyan
 New-Item -ItemType Directory -Path $stagingDir | Out-Null
 Copy-Item -Path "$publishDir/*" -Destination $stagingDir -Recurse
 
+Write-Host "🏗️ Starting NSIS packaging..." -ForegroundColor Yellow
 # Check if makensis is available
 $makensis = Get-Command makensis -ErrorAction SilentlyContinue
 if (-not $makensis) {
@@ -47,7 +50,7 @@ if (-not $makensis) {
     exit 0
 }
 
-& $makensis.Source `
+& $makensis.Source /V4 `
     "/DAPP_NAME=Jamaa" `
     "/DAPP_VERSION=1.0.0" `
     "/DINPUT_DIR=$stagingDir" `
@@ -59,4 +62,5 @@ if ($LASTEXITCODE -ne 0) {
     throw "NSIS packaging failed"
 }
 
+Write-Host "✅ Success! Installer created at: $outputFile" -ForegroundColor Green
 Remove-Item -Recurse -Force $stagingDir
