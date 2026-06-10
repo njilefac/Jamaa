@@ -46,6 +46,7 @@ public static partial class InitializationService
     private static readonly BehaviorSubject<double> ProgressSubject = new(0);
     public static IObservable<string> Status => StatusSubject.AsObservable();
     public static IObservable<double> Progress => ProgressSubject.AsObservable();
+    public static ServiceProvider? ServiceProvider => _serviceProvider;
 
     public static async Task<Shell> InitializeAsync(IClassicDesktopStyleApplicationLifetime lifeTime)
     {

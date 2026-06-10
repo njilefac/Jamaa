@@ -18,6 +18,7 @@
             Padding="10">
             <StackPanel Classes="splash-status-container">
                 <TextBlock Classes="splash-status-text" Text="{Binding Status}" />
+                <TextBlock Classes="splash-version-text" Text="{Binding Version}" />
                 <ProgressBar Classes="splash-progress-bar" Value="{Binding Progress}" />
             </StackPanel>
         </Border>

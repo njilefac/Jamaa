@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jamaa.Application.Users.Services;
 using Jamaa.Desktop.Dashboard;
+using Jamaa.Desktop.Services;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Services;
 using Jamaa.Desktop.Services.Hosting;
