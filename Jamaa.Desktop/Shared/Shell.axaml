@@ -25,6 +25,19 @@
                 HorizontalContentAlignment="Stretch"
                 VerticalContentAlignment="Stretch" />
         </Panel>
-        <Panel Grid.Row="2" />
+        <Border
+            Background="{DynamicResource AppHeaderBackground}"
+            BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Grid.Row="2"
+            Padding="10,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock
+                    Classes="shell-version-text"
+                    Grid.Column="1"
+                    Text="{Binding Version}"
+                    VerticalAlignment="Center" />
+            </Grid>
+        </Border>
     </Grid>
 </husk:AppWindow>

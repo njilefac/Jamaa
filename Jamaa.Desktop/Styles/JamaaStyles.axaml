@@ -742,6 +742,12 @@
         <Setter Property="Opacity" Value="0.9" />
     </Style>
 
+    <Style Selector="TextBlock.shell-version-text">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}" />
+        <Setter Property="Opacity" Value="0.8" />
+    </Style>
+
     <Style Selector="Button.dashboard.quick-action">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="1" />

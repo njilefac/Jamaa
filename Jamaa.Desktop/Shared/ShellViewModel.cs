@@ -9,6 +9,7 @@ using Jamaa.Application.Setup;
 using Jamaa.Application.Users.Services;
 using Jamaa.Desktop.Dashboard;
 using Jamaa.Desktop.Security.Events;
+using Jamaa.Desktop.Services;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Setup;
@@ -34,10 +35,12 @@ public partial class ShellViewModel : ObservableObject,
 
     [ObservableProperty] private string? _applicationTitle = ApplicationName;
     [ObservableProperty] private ObservableObject _mainMenu;
+    [ObservableProperty] private string _version;
 
     public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService,
         IRouteResolver routeResolver, DashboardViewModel dashboardViewModel, ILogger<ShellViewModel> logger)
     {
+        _version = VersionService.GetVersion();
         _setupService = setupService;
         _routeResolver = routeResolver;
         _logger = logger;
