@@ -34,6 +34,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetSparkleUpdater;
+using NetSparkleUpdater.Enums;
+using NetSparkleUpdater.SignatureVerifiers;
 using NetSparkleUpdater.UI.Avalonia;
 using Syncfusion.Licensing;
 using Serilog;
@@ -234,10 +236,11 @@ public static partial class InitializationService
 
         try
         {
-            var sparkle = new SparkleUpdater(settings.UpdateUrl, null!)
+            var sparkle = new SparkleUpdater(settings.UpdateUrl, new DSAChecker(SecurityMode.UseIfPossible))
             {
-                UIFactory = new UIFactory(),
-                RelaunchAfterUpdate = true
+                UIFactory = new UIFactory {},
+                RelaunchAfterUpdate = true,
+                
             };
             sparkle.StartLoop(true, true, TimeSpan.FromHours(settings.UpdateIntervalHours));
             logger.LogInformation("Update check initiated with interval of {Interval} hours.", settings.UpdateIntervalHours);
