@@ -238,9 +238,9 @@ jobs:
           export PATH="$PATH:$HOME/.dotnet/tools"
           
           # Fixed CLI syntax: Using '-a site/' and '--output-file-name cast' instead of unknown argument.
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/jamaa/downloads/ -e exe -r -f true
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/jamaa/downloads/ -e dmg -r -f true --reparse-existing
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/jamaa/downloads/ -e deb -r -f true --reparse-existing
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/jamaa/downloads/ -e exe -r -f true --os windows
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/jamaa/downloads/ -e dmg -r -f true --reparse-existing --os macos
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/jamaa/downloads/ -e deb -r -f true --reparse-existing --os linux
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
