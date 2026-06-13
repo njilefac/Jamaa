@@ -1,3 +1,7 @@
+param (
+    [string]$Version = "1.0.0"
+)
+
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
@@ -18,7 +22,7 @@ foreach ($path in @($publishDir, $stagingDir, $outputFile)) {
 }
 
 Write-Host "🚀 Publishing .NET project..." -ForegroundColor Cyan
-dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=false -o $publishDir
+dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=false -o $publishDir -p:Version=$Version
 
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed"
@@ -57,7 +61,7 @@ if (-not $makensis) {
 
 & $makensis.Source /V4 `
     "/DAPP_NAME=Jamaa" `
-    "/DAPP_VERSION=1.0.0" `
+    "/DAPP_VERSION=$Version" `
     "/DINPUT_DIR=$stagingDir" `
     "/DOUTPUT_FILE=$outputFile" `
     "/DICON_FILE=$iconPath" `

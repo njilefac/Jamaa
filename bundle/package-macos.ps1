@@ -1,3 +1,7 @@
+param (
+    [string]$Version = "1.0.0"
+)
+
 # --- Static Configuration ---
 $solutionRoot = Get-Location
 $scriptRoot   = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -22,7 +26,7 @@ if (Test-Path $dmgName) { Remove-Item -Force $dmgName }
 
 # 2. Build Project
 Write-Host "🚀 Publishing .NET project..." -ForegroundColor Cyan
-dotnet publish $projectPath -c Release -r $runtime --self-contained true -p:PublishReadyToRun=false -o $publishDir
+dotnet publish $projectPath -c Release -r $runtime --self-contained true -p:PublishReadyToRun=false -o $publishDir -p:Version=$Version
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Dotnet publish failed. Verify the project path: $projectPath"
@@ -71,7 +75,7 @@ $plistContent = @"
     <key>CFBundlePackageType</key>        
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>$Version</string>
     <key>LSMinimumSystemVersion</key>
     <string>10.12</string>
     <key>NSHighResolutionCapable</key>
