@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-dmg
-          path: bundle/Jamaa-Installer.dmg
+          path: bundle/Jamaa-Installer-${{ needs.prepare.outputs.version }}.dmg
           if-no-files-found: error
 
   package-windows:
@@ -69,7 +69,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: bundle/Jamaa-Installer.exe
+          path: bundle/Jamaa-Installer-${{ needs.prepare.outputs.version }}.exe
           if-no-files-found: error
 
   package-linux:
@@ -199,13 +199,13 @@ jobs:
               <p>Get the latest version of Jamaa for your platform:</p>
               <ul class="downloads">
                 <li>
-                  <a href="downloads/macos/Jamaa-Installer.dmg" class="download-link">
+                  <a href="downloads/macos/Jamaa-Installer-${{ needs.prepare.outputs.version }}.dmg" class="download-link">
                     Download for macOS
                     <span class="platform">DMG Package</span>
                   </a>
                 </li>
                 <li>
-                  <a href="downloads/windows/Jamaa-Installer.exe" class="download-link">
+                  <a href="downloads/windows/Jamaa-Installer-${{ needs.prepare.outputs.version }}.exe" class="download-link">
                     Download for Windows
                     <span class="platform">Windows Installer</span>
                   </a>
@@ -221,6 +221,23 @@ jobs:
           </body>
           </html>
           HTML
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install NetSparkle AppCast Generator
+        run: dotnet tool install --global NetSparkleUpdater.Tools.AppCastGenerator
+
+      - name: Generate AppCast
+        shell: bash
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          # Generate appcast for all platforms. -f true extracts version from filename.
+          netsparkle-generate-appcast --appcast-output-path site/cast.xml -n Jamaa -b site/downloads -u https://njilefac.github.io/jamaa/downloads/ -e exe -r -f true
+          netsparkle-generate-appcast --appcast-output-path site/cast.xml -n Jamaa -b site/downloads -u https://njilefac.github.io/jamaa/downloads/ -e dmg -r -f true --reparse-existing
+          netsparkle-generate-appcast --appcast-output-path site/cast.xml -n Jamaa -b site/downloads -u https://njilefac.github.io/jamaa/downloads/ -e deb -r -f true --reparse-existing
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

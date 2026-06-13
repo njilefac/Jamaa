@@ -15,7 +15,7 @@ $iconPath     = "$solutionRoot/Jamaa.Desktop/Assets/Icons/jamaa.icns"
 # Output Paths
 $publishDir   = "$solutionRoot/publish"
 $appPath      = "$solutionRoot/$bundleName.app"
-$dmgName      = "$scriptRoot/$bundleName-Installer.dmg"
+$dmgName      = "$scriptRoot/$bundleName-Installer-$Version.dmg"
 
 Write-Host "🏗️  Starting build for $bundleName ($runtime)..." -ForegroundColor Yellow
 

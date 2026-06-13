@@ -8,7 +8,7 @@ Set-StrictMode -Version Latest
 $solutionRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $projectPath = Join-Path $solutionRoot 'Jamaa.Desktop/Jamaa.Desktop.csproj'
 $publishDir = Join-Path $solutionRoot 'publish/windows'
-$outputFile = Join-Path $PSScriptRoot 'Jamaa-Installer.exe'
+$outputFile = Join-Path $PSScriptRoot "Jamaa-Installer-$Version.exe"
 $stagingDir = Join-Path $solutionRoot 'bundle/windows-staging'
 $installerScript = Join-Path $PSScriptRoot 'package-windows.nsi'
 $iconPath = Join-Path $solutionRoot 'Jamaa.Desktop/Assets/Icons/jamaa.ico'
