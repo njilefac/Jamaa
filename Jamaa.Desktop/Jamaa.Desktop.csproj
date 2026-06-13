@@ -82,6 +82,7 @@
         <PackageReference Include="Elsa.WorkflowContexts" Version="3.7.0" />
         <PackageReference Include="Elsa.Workflows.Api" Version="3.7.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.8" />
+        <PackageReference Include="NetSparkleUpdater.UI.Avalonia" Version="3.1.0" />
         <PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
         <PackageReference Include="Akka.Persistence.Hosting" Version="1.5.65" />
         <PackageReference Include="Akka.Persistence.Sql.Hosting" Version="1.5.62" />

@@ -33,6 +33,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NetSparkleUpdater;
+using NetSparkleUpdater.UI.Avalonia;
 using Syncfusion.Licensing;
 using Serilog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -81,7 +83,9 @@ public static partial class InitializationService
         SetApplicationCulture();
 
         await UpdateStatus("Finalizing initialization...", 100);
-        return CreateAndConfigureMainWindow(_serviceProvider);
+        var mainWindow = CreateAndConfigureMainWindow(_serviceProvider);
+        mainWindow.Opened += (s, e) => CheckForUpdates(_serviceProvider!);
+        return mainWindow;
     }
 
     public static async Task ShutdownAsync()
@@ -215,6 +219,33 @@ public static partial class InitializationService
 
         SyncfusionLicenseProvider.RegisterLicense(settings.LicenseKey);
         logger.LogInformation("Syncfusion license initialized.");
+    }
+
+    private static void CheckForUpdates(IServiceProvider serviceProvider)
+    {
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        var settings = serviceProvider.GetRequiredService<IOptions<UpdaterSettings>>().Value;
+
+        if (string.IsNullOrWhiteSpace(settings.UpdateUrl))
+        {
+            logger.LogWarning("Update URL is not configured.");
+            return;
+        }
+
+        try
+        {
+            var sparkle = new SparkleUpdater(settings.UpdateUrl, null!)
+            {
+                UIFactory = new UIFactory(),
+                RelaunchAfterUpdate = true
+            };
+            sparkle.StartLoop(true, true, TimeSpan.FromHours(settings.UpdateIntervalHours));
+            logger.LogInformation("Update check initiated with interval of {Interval} hours.", settings.UpdateIntervalHours);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to initiate update check.");
+        }
     }
 
     private static void SetupDiagnostics(IServiceProvider serviceProvider)
