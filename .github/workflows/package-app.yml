@@ -240,11 +240,11 @@ jobs:
         run: |
           export PATH="$PATH:$HOME/.dotnet/tools"
           
-          # Use -v/--version for the app version and --file-extract-version to help with detection.
+          # Use --file-version and --file-extract-version to ensure the version matches the release tag.
           # We use --reparse-existing for subsequent OSs to merge them into the same cast file.
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e exe -r -v ${{ needs.prepare.outputs.version }} --file-version ${{ needs.prepare.outputs.version }} --os windows
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e dmg -r --reparse-existing -v ${{ needs.prepare.outputs.version }} --file-version ${{ needs.prepare.outputs.version }} --os macos
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e deb -r --reparse-existing -v ${{ needs.prepare.outputs.version }} --file-version ${{ needs.prepare.outputs.version }} --os linux
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e exe -r -f true --file-version ${{ needs.prepare.outputs.version }} --os windows
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e dmg -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os macos
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e deb -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os linux
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
