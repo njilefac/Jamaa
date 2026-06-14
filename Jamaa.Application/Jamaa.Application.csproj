@@ -8,24 +8,24 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="OpenTelemetry.Api" Version="1.15.3"/>
-        <PackageReference Include="Akka.Hosting" Version="1.5.65"/>
-        <PackageReference Include="Akka.Logger.Serilog" Version="1.5.63"/>
-        <PackageReference Include="Akka.Persistence.Query" Version="1.5.65"/>
-        <PackageReference Include="Akka.Persistence.Sql" Version="1.5.62"/>
-        <PackageReference Include="Akka.Persistence.Sqlite" Version="1.5.39"/>
-        <PackageReference Include="Akka.Remote.Hosting" Version="1.5.65"/>
-        <PackageReference Include="AutoMapper" Version="16.1.1"/>
-        <PackageReference Include="EntityFrameworkCore.Triggers" Version="1.2.3"/>
-        <PackageReference Include="FluentEmail.Liquid" Version="3.0.2"/>
-        <PackageReference Include="itext" Version="9.6.0"/>
-        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.6"/>
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.6"/>
-        <PackageReference Include="QuestPDF.Barcodes" Version="2024.10.3"/>
-        <PackageReference Include="RestSharp" Version="114.0.0"/>
-        <PackageReference Include="Rhino.Licensing.X" Version="2.0.0.1"/>
-        <PackageReference Include="System.Reactive" Version="6.1.0"/>
+        <PackageReference Include="OpenTelemetry.Api" />
+        <PackageReference Include="Akka.Hosting" />
+        <PackageReference Include="Akka.Logger.Serilog" />
+        <PackageReference Include="Akka.Persistence.Query" />
+        <PackageReference Include="Akka.Persistence.Sql" />
+        <PackageReference Include="Akka.Persistence.Sqlite" />
+        <PackageReference Include="Akka.Remote.Hosting" />
+        <PackageReference Include="AutoMapper" />
+        <PackageReference Include="EntityFrameworkCore.Triggers" />
+        <PackageReference Include="FluentEmail.Liquid" />
+        <PackageReference Include="itext" />
+        <PackageReference Include="JetBrains.Annotations" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
+        <PackageReference Include="QuestPDF.Barcodes" />
+        <PackageReference Include="RestSharp" />
+        <PackageReference Include="Rhino.Licensing.X" />
+        <PackageReference Include="System.Reactive" />
     </ItemGroup>
 
     <ItemGroup>

@@ -42,7 +42,7 @@ jobs:
         run: ./bundle/package-macos.ps1 -Version ${{ needs.prepare.outputs.version }}
 
       - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-dmg
           path: bundle/Jamaa-Installer-${{ needs.prepare.outputs.version }}.dmg
@@ -69,7 +69,7 @@ jobs:
         run: ./bundle/package-windows.ps1 -Version ${{ needs.prepare.outputs.version }}
 
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: windows-installer
           path: bundle/Jamaa-Installer-${{ needs.prepare.outputs.version }}.exe
@@ -95,7 +95,7 @@ jobs:
         run: chmod +x ./bundle/package-linux.sh && ./bundle/package-linux.sh ${{ needs.prepare.outputs.version }}
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-package
           path: bundle/jamaa_${{ needs.prepare.outputs.version }}_amd64.deb

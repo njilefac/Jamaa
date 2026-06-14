@@ -51,7 +51,7 @@ public static class ServiceCollectionExtensions
         {
             services.AddSingleton<IHostApplicationLifetime>(new AvaloniaApplicationLifeTime(applicationLifetime));
 
-            services.AddAkka("Libota-Akka", builder =>
+            services.AddAkka("Jamaa-Akka", builder =>
             {
                 builder.WithActors((system, registry, resolver) =>
                 {
