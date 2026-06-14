@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Strip git commit hash from AssemblyInformationalVersion -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+</Project>

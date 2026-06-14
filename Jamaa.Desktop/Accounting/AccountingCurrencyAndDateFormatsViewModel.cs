@@ -586,8 +586,9 @@ public partial class AccountingCurrencyAndDateFormatsViewModel : ObservableObjec
         RefreshSaveState();
     }
 
-    partial void OnStatusMessageChanged(string _)
+    partial void OnStatusMessageChanged(string value)
     {
+        _ = value;
         OnPropertyChanged(nameof(HasStatusMessage));
     }
 

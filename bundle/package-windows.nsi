@@ -1,8 +1,14 @@
+SetCompressor /SOLID zlib
+
 !include "MUI2.nsh"
 
-!define APP_NAME "Jamaa"
+!ifndef APP_NAME
+    !define APP_NAME "Jamaa"
+!endif
 !define COMPANY_NAME "Nubia Systems"
-!define APP_VERSION "1.0.0"
+!ifndef APP_VERSION
+    !define APP_VERSION "1.0.0"
+!endif
 
 Name "${APP_NAME}"
 OutFile "${OUTPUT_FILE}"
@@ -16,6 +22,8 @@ UninstallIcon "${ICON_FILE}"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
+!define MUI_INSTFILESPAGE_NOAUTOCLOSE
+!define MUI_FINISHPAGE_NOAUTOCLOSE
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES

@@ -1,3 +1,7 @@
+param (
+    [string]$Version = "1.0.0"
+)
+
 # --- Static Configuration ---
 $solutionRoot = Get-Location
 $scriptRoot   = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -11,7 +15,7 @@ $iconPath     = "$solutionRoot/Jamaa.Desktop/Assets/Icons/jamaa.icns"
 # Output Paths
 $publishDir   = "$solutionRoot/publish"
 $appPath      = "$solutionRoot/$bundleName.app"
-$dmgName      = "$scriptRoot/$bundleName-Installer.dmg"
+$dmgName      = "$scriptRoot/$bundleName-Installer-$Version.dmg"
 
 Write-Host "🏗️  Starting build for $bundleName ($runtime)..." -ForegroundColor Yellow
 
@@ -22,7 +26,7 @@ if (Test-Path $dmgName) { Remove-Item -Force $dmgName }
 
 # 2. Build Project
 Write-Host "🚀 Publishing .NET project..." -ForegroundColor Cyan
-dotnet publish $projectPath -c Release -r $runtime --self-contained true -p:PublishReadyToRun=false -o $publishDir
+dotnet publish $projectPath -c Release -r $runtime --self-contained true -p:PublishReadyToRun=false -o $publishDir -p:Version=$Version
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Dotnet publish failed. Verify the project path: $projectPath"
@@ -36,7 +40,14 @@ $resFolder = New-Item -ItemType Directory -Path "$appPath/Contents/Resources" -F
 
 # 4. Move Files
 Write-Host "📦 Moving binaries to bundle..." -ForegroundColor Cyan
+# Copy all files from publishDir to Contents/MacOS
 Copy-Item -Path "$publishDir/*" -Destination "$macosFolder" -Recurse
+
+# 4.1 Refine Bundle Structure (Move web resources to Resources)
+if (Test-Path "$macosFolder/wwwroot") {
+    Write-Host "🌐 Moving wwwroot to Contents/Resources..." -ForegroundColor Cyan
+    Move-Item -Path "$macosFolder/wwwroot" -Destination "$resFolder/wwwroot" -Force
+}
 
 # 5. Handle Icon
 $iconEntry = ""
@@ -64,7 +75,7 @@ $plistContent = @"
     <key>CFBundlePackageType</key>        
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>$Version</string>
     <key>LSMinimumSystemVersion</key>
     <string>10.12</string>
     <key>NSHighResolutionCapable</key>
@@ -86,6 +97,9 @@ if ($IsMacOS) {
 
     # Clear quarantine flags and ad-hoc sign
     xattr -rd com.apple.quarantine "$appPath" 2>$null
+    
+    # Use --deep with caution, sometimes it helps to sign nested binaries first
+    # But for ad-hoc, --force --deep usually works if the bundle is well-structured.
     codesign --force --deep --sign - "$appPath"
 
     # 8. Create DMG
@@ -98,12 +112,31 @@ if ($IsMacOS) {
     # Create the Applications symlink
     ln -s /Applications "$dmgStage/Applications"
     
-    # Generate DMG
-    hdiutil create -volname "$bundleName" -srcfolder $dmgStage -ov -format UDZO $dmgName
+    # Generate DMG with retry logic to handle "Resource busy"
+    $maxRetries = 3
+    $retryCount = 0
+    $success = $false
+    
+    while (-not $success -and $retryCount -lt $maxRetries) {
+        if ($retryCount -gt 0) {
+            Write-Host "Retry $($retryCount) of $maxRetries..." -ForegroundColor Yellow
+            Start-Sleep -Seconds 2
+        }
+        
+        # Ensure any previous failed mounts are detached
+        hdiutil detach "/Volumes/$bundleName" -force 2>$null
+        
+        hdiutil create -volname "$bundleName" -srcfolder $dmgStage -ov -format UDZO $dmgName
+        if ($LASTEXITCODE -eq 0) {
+            $success = $true
+        } else {
+            $retryCount++
+        }
+    }
     
     Remove-Item -Recurse -Force $dmgStage
 
-    if ($LASTEXITCODE -eq 0) {
+    if ($success) {
         if (Test-Path $appPath) { Remove-Item -Recurse -Force $appPath }
         Write-Host "`n✅ Success! DMG created: $dmgName" -ForegroundColor Green
         Write-Host "🧹 Removed temporary app bundle: $appPath" -ForegroundColor DarkGray

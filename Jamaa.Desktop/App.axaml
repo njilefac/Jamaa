@@ -1,5 +1,5 @@
 <Application
-    Name="Libota Desktop"
+    Name="Jamaa Desktop"
     RequestedThemeVariant="Default"
     x:Class="Jamaa.Desktop.App"
     xmlns="https://github.com/avaloniaui"

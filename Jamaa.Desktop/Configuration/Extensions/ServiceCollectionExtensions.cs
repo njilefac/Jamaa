@@ -51,7 +51,7 @@ public static class ServiceCollectionExtensions
         {
             services.AddSingleton<IHostApplicationLifetime>(new AvaloniaApplicationLifeTime(applicationLifetime));
 
-            services.AddAkka("Libota-Akka", builder =>
+            services.AddAkka("Jamaa-Akka", builder =>
             {
                 builder.WithActors((system, registry, resolver) =>
                 {
@@ -128,8 +128,9 @@ public static class ServiceCollectionExtensions
             });
 
             services.Configure<SyncfusionSettings>(configuration.GetSection(SyncfusionSettings.SectionName));
+            services.Configure<UpdaterSettings>(configuration.GetSection(UpdaterSettings.SectionName));
             services.AddSingleton(new SqliteDatabaseConnection(sqliteConnectionString));
-            services.AddSingleton<IConfigurationRoot>(configuration);
+            services.AddSingleton(configuration);
             services.AddSingleton<IConfiguration>(configuration);
 
             services

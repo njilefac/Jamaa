@@ -1,20 +1,32 @@
 name: Package App
 
 on:
+  release:
+    types: [created]
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'bundle/**'
-      - '.github/workflows/package-app.yml'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 permissions:
   contents: read
 
 jobs:
+  prepare:
+    name: Prepare version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - id: get_version
+        run: |
+          VERSION="${{ github.event.release.tag_name || '1.0.0' }}"
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
   package-macos:
     name: Package macOS
+    needs: prepare
     runs-on: macos-latest
 
     steps:
@@ -27,17 +39,18 @@ jobs:
 
       - name: Build DMG
         shell: pwsh
-        run: ./bundle/package-macos.ps1
+        run: ./bundle/package-macos.ps1 -Version ${{ needs.prepare.outputs.version }}
 
       - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-dmg
-          path: bundle/Jamaa-Installer.dmg
+          path: bundle/Jamaa-Installer-${{ needs.prepare.outputs.version }}.dmg
           if-no-files-found: error
 
   package-windows:
     name: Package Windows
+    needs: prepare
     runs-on: windows-latest
 
     steps:
@@ -49,22 +62,22 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Install NSIS
-        shell: pwsh
-        run: choco install nsis -y --no-progress
+        run: choco install nsis -y
 
       - name: Build installer
         shell: pwsh
-        run: ./bundle/package-windows.ps1
+        run: ./bundle/package-windows.ps1 -Version ${{ needs.prepare.outputs.version }}
 
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: windows-installer
-          path: bundle/Jamaa-Installer.exe
+          path: bundle/Jamaa-Installer-${{ needs.prepare.outputs.version }}.exe
           if-no-files-found: error
 
   package-linux:
     name: Package Linux
+    needs: prepare
     runs-on: ubuntu-latest
 
     steps:
@@ -79,18 +92,19 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y dpkg-dev
 
       - name: Build package
-        run: chmod +x ./bundle/package-linux.sh && ./bundle/package-linux.sh
+        run: chmod +x ./bundle/package-linux.sh && ./bundle/package-linux.sh ${{ needs.prepare.outputs.version }}
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-package
-          path: bundle/jamaa_1.0.0_amd64.deb
+          path: bundle/jamaa_${{ needs.prepare.outputs.version }}_amd64.deb
           if-no-files-found: error
 
   publish-pages:
     name: Publish GitHub Pages
     needs:
+      - prepare
       - package-macos
       - package-windows
       - package-linux
@@ -103,23 +117,25 @@ jobs:
       id-token: write
 
     steps:
+      # 💡 Note: Artifacts are placed into a single flat directory structure (site/downloads)
+      # This allows NetSparkle's --binaries (-b) scan to cleanly process all extension types.
       - name: Download macOS artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-dmg
-          path: site/downloads/macos
+          path: site/downloads
 
       - name: Download Windows artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-installer
-          path: site/downloads/windows
+          path: site/downloads
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-package
-          path: site/downloads/linux
+          path: site/downloads
 
       - name: Create Pages index
         shell: bash
@@ -131,28 +147,110 @@ jobs:
           <head>
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <title>Jamaa Downloads</title>
+            <title>Jamaa - Group Management Made Simple</title>
             <style>
-              body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.5; }
-              ul { padding-left: 1.25rem; }
+              body { 
+                font-family: system-ui, -apple-system, sans-serif; 
+                margin: 0; 
+                line-height: 1.6; 
+                color: #333;
+                background-color: #f4f7f9;
+              }
+              .container {
+                max-width: 800px;
+                margin: 4rem auto;
+                padding: 2rem;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+              }
+              h1 { color: #2c3e50; margin-top: 0; }
+              h2 { color: #34495e; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
+              .description { font-size: 1.1rem; color: #555; }
+              .downloads { 
+                display: flex; 
+                flex-wrap: wrap; 
+                gap: 1rem; 
+                margin-top: 2rem;
+                list-style: none;
+                padding: 0;
+              }
+              .download-link {
+                display: inline-block;
+                padding: 0.75rem 1.5rem;
+                background-color: #3498db;
+                color: white;
+                text-decoration: none;
+                border-radius: 4px;
+                font-weight: bold;
+                transition: background-color 0.2s;
+              }
+              .download-link:hover {
+                background-color: #2980b9;
+              }
+              .platform { font-size: 0.9rem; display: block; font-weight: normal; margin-top: 0.2rem; }
             </style>
           </head>
           <body>
-            <h1>Jamaa Downloads</h1>
-            <ul>
-              <li><a href="downloads/macos/Jamaa-Installer.dmg">macOS DMG</a></li>
-              <li><a href="downloads/windows/Jamaa-Installer.exe">Windows installer</a></li>
-              <li><a href="downloads/linux/jamaa_1.0.0_amd64.deb">Linux package</a></li>
-            </ul>
+            <div class="container">
+              <h1>Jamaa</h1>
+              <p class="description">
+                Jamaa is a cross-platform application designed to simplify the daily management of small associations and groups. 
+                Derived from the Swahili word for "community," Jamaa empowers leadership to organize activities, manage members, 
+                and handle financial bookkeeping with ease, while keeping all members informed and connected.
+              </p>
+          
+              <h2>Downloads</h2>
+              <p>Get the latest version of Jamaa for your platform:</p>
+              <ul class="downloads">
+                <li>
+                  <a href="downloads/Jamaa-Installer-${{ needs.prepare.outputs.version }}.dmg" class="download-link">
+                    Download for macOS
+                    <span class="platform">DMG Package</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="downloads/Jamaa-Installer-${{ needs.prepare.outputs.version }}.exe" class="download-link">
+                    Download for Windows
+                    <span class="platform">Windows Installer</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="downloads/jamaa_${{ needs.prepare.outputs.version }}_amd64.deb" class="download-link">
+                    Download for Linux
+                    <span class="platform">Debian/Ubuntu Package (.deb)</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
           </body>
           </html>
           HTML
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install NetSparkle AppCast Generator
+        run: dotnet tool install --global NetSparkleUpdater.Tools.AppCastGenerator
+
+      - name: Generate AppCast
+        shell: bash
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          
+          # Use --file-version and --file-extract-version to ensure the version matches the release tag.
+          # We use --reparse-existing for subsequent OSs to merge them into the same cast file.
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e exe -r -f true --file-version ${{ needs.prepare.outputs.version }} --os windows
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e dmg -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os macos
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e deb -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os linux
+
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
