@@ -1,0 +1,63 @@
+<husk:AppWindow
+    Background="{DynamicResource AppBackgroundColor}"
+    Height="220"
+    Icon="avares://Jamaa/Assets/Icons/jamaa.png"
+    Title="Downloading Update"
+    Width="500"
+    WindowStartupLocation="CenterScreen"
+    x:Class="Jamaa.Desktop.Services.Updater.Views.DownloadProgressWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="25" RowDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Row="0" Spacing="5">
+            <TextBlock
+                Classes="h2"
+                Text="Downloading Jamaa Update..."
+                x:Name="InstructionText" />
+            <TextBlock
+                FontSize="12"
+                Foreground="{DynamicResource AppTextSecondary}"
+                x:Name="FileNameText" />
+        </StackPanel>
+
+        <StackPanel
+            Grid.Row="1"
+            Spacing="8"
+            VerticalAlignment="Center">
+            <ProgressBar
+                CornerRadius="6"
+                Foreground="{DynamicResource SystemAccentColor}"
+                Height="12"
+                Maximum="100"
+                Minimum="0"
+                x:Name="ProgressBar" />
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock
+                    FontSize="12"
+                    Foreground="{DynamicResource AppTextSecondary}"
+                    x:Name="DownloadSpeedText" />
+                <TextBlock
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource AppTextSecondary}"
+                    Grid.Column="1"
+                    x:Name="ProgressText" />
+            </Grid>
+        </StackPanel>
+
+        <StackPanel
+            Grid.Row="2"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="10">
+            <Button
+                Content="Install Now"
+                IsVisible="False"
+                Theme="{DynamicResource SolidButton}"
+                x:Name="InstallButton" />
+            <Button Content="Cancel" x:Name="CancelButton" />
+        </StackPanel>
+    </Grid>
+</husk:AppWindow>
