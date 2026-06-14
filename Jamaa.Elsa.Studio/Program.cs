@@ -9,7 +9,6 @@ using Elsa.Studio.Dashboard.Extensions;
 using Elsa.Studio.Extensions;
 using Elsa.Studio.Localization.BlazorWasm.Extensions;
 using Elsa.Studio.Localization.Models;
-using Elsa.Studio.Models;
 using Elsa.Studio.Options;
 using Elsa.Studio.Shell;
 using Elsa.Studio.Shell.Extensions;
