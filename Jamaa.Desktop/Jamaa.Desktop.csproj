@@ -92,7 +92,10 @@
         <PackageReference Include="DynamicData" />
         <PackageReference Include="FluentAvalonia.BreadcrumbBar" />
         <PackageReference Include="FluentAvaloniaUI" />
+        <PackageReference Include="FluentIcons.Avalonia" />
         <PackageReference Include="FluentIcons.Avalonia.Fluent" />
+        <PackageReference Include="FluentIcons.Common" />
+        <PackageReference Include="FluentIcons.Resources.Avalonia" />
         <PackageReference Include="FluentValidation" />
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
         <PackageReference Include="Huskui.Avalonia" />
@@ -123,6 +126,7 @@
         <PackageReference Include="Serilog.Sinks.Console" />
         <PackageReference Include="Serilog.Sinks.File" />
         <PackageReference Include="System.Reactive" />
+        <PackageReference Include="System.Security.Cryptography.Xml" NoWarn="NU1510" />
         <PackageReference Remove="Microsoft.Maui.Controls" />
         <PackageReference Remove="Microsoft.Maui.Controls.Compatibility" />
         <PackageReference Include="Tmds.DBus.Protocol" />

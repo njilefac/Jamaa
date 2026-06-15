@@ -78,10 +78,10 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
         _releaseNotesBorder = _releaseNotesScrollViewer?.Parent as Border;
     }
 
-    public SparkleUpdater Updater { get; set; }
-    public List<AppCastItem> Updates { get; set; }
+    public SparkleUpdater Updater { get; set; } = default!;
+    public List<AppCastItem> Updates { get; set; } = [];
     public UpdateAvailableResult Result { get; private set; }
-    public AppCastItem? CurrentItem => Updates is { Count: > 0 } ? Updates[0] : null;
+    public AppCastItem CurrentItem => Updates is { Count: > 0 } ? Updates[0] : null!;
 
     public event UserRespondedToUpdate? UserResponded;
 
