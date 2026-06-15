@@ -1,0 +1,67 @@
+<husk:AppWindow
+    Background="{DynamicResource AppBackgroundColor}"
+    Height="500"
+    Icon="avares://Jamaa/Assets/Icons/jamaa.png"
+    Title="Update Available"
+    Width="600"
+    WindowStartupLocation="CenterScreen"
+    x:Class="Jamaa.Desktop.Services.Updater.Views.UpdateAvailableWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+        <!--  Header  -->
+        <StackPanel Grid.Row="0" Spacing="10">
+            <TextBlock Classes="h1" Text="Software Update" />
+            <TextBlock
+                Classes="h2"
+                Foreground="{DynamicResource SystemAccentColor}"
+                x:Name="VersionText" />
+            <TextBlock Foreground="{DynamicResource AppTextSecondary}" x:Name="CurrentVersionText" />
+            <TextBlock Foreground="{DynamicResource AppTextSecondary}" Text="A new version of Jamaa is available and ready to be installed." />
+        </StackPanel>
+
+        <!--  Release Notes  -->
+        <Border
+            Background="{DynamicResource AppCardBackground}"
+            BorderBrush="{DynamicResource AppBorderColor}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Grid.Row="1"
+            Margin="0,20">
+            <Grid RowDefinitions="Auto,*">
+                <Border
+                    Background="{DynamicResource AppHeaderBackground}"
+                    CornerRadius="8,8,0,0"
+                    Grid.Row="0"
+                    Padding="10,5">
+                    <TextBlock FontWeight="SemiBold" Text="Release Notes" />
+                </Border>
+                <ScrollViewer Grid.Row="1" Padding="10">
+                    <TextBlock TextWrapping="Wrap" x:Name="ReleaseNotes" />
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!--  Buttons  -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Grid.Row="2">
+            <Button
+                Content="Skip This Version"
+                Grid.Column="0"
+                x:Name="SkipButton" />
+
+            <StackPanel
+                Grid.Column="2"
+                Orientation="Horizontal"
+                Spacing="10">
+                <Button Content="Remind Me Later" x:Name="RemindLaterButton" />
+                <Button
+                    Content="Install Update"
+                    Theme="{DynamicResource SolidButton}"
+                    x:Name="InstallButton" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</husk:AppWindow>

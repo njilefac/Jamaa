@@ -77,7 +77,10 @@
     <PackageVersion Include="FluentAvalonia.BreadcrumbBar" Version="2.0.2" />
     <PackageVersion Include="FluentAvaloniaUI" Version="2.5.1" />
     <PackageVersion Include="FluentEmail.Liquid" Version="3.0.2" />
+    <PackageVersion Include="FluentIcons.Avalonia" Version="2.0.321" />
     <PackageVersion Include="FluentIcons.Avalonia.Fluent" Version="2.0.321" />
+    <PackageVersion Include="FluentIcons.Common" Version="2.0.321" />
+    <PackageVersion Include="FluentIcons.Resources.Avalonia" Version="2.0.321" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageVersion Include="Hangfire.SQLite" Version="1.4.2" />
@@ -107,6 +110,8 @@
     <PackageVersion Include="OpenTelemetry.Api" Version="1.15.3" />
     <PackageVersion Include="ProgressReporting" Version="2.2.0" />
     <PackageVersion Include="QuestPDF.Barcodes" Version="2024.10.3" />
+    <PackageVersion Include="Rebus.Microsoft.Extensions.Logging" Version="5.2.0" />
+    <PackageVersion Include="Rebus.ServiceProvider" Version="10.7.2" />
     <PackageVersion Include="RestSharp" Version="114.0.0" />
     <PackageVersion Include="Rhino.Licensing.X" Version="2.0.0.1" />
     <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.2" />
@@ -135,6 +140,7 @@
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Syncfusion.Licensing" Version="33.2.10" />
     <PackageVersion Include="System.Data.SqlClient" Version="4.9.1" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.6" />
     <PackageVersion Include="System.Reactive" Version="6.1.0" />
     <PackageVersion Include="Tmds.DBus.Protocol" Version="0.92.0" />
     <PackageVersion Include="Xaml.Behaviors.Avalonia" Version="11.3.9.5" />

@@ -36,7 +36,7 @@ using Microsoft.Extensions.Options;
 using NetSparkleUpdater;
 using NetSparkleUpdater.Enums;
 using NetSparkleUpdater.SignatureVerifiers;
-using NetSparkleUpdater.UI.Avalonia;
+using Jamaa.Desktop.Services.Updater;
 using Syncfusion.Licensing;
 using Serilog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -46,6 +46,8 @@ namespace Jamaa.Desktop.Services;
 public static partial class InitializationService
 {
     private static ServiceProvider? _serviceProvider;
+    private static SparkleUpdater? _sparkle;
+    private static IClassicDesktopStyleApplicationLifetime? _lifeTime;
     private static readonly BehaviorSubject<string> StatusSubject = new("Initializing application...");
     private static readonly BehaviorSubject<double> ProgressSubject = new(0);
     public static IObservable<string> Status => StatusSubject.AsObservable();
@@ -54,6 +56,7 @@ public static partial class InitializationService
 
     public static async Task<Shell> InitializeAsync(IClassicDesktopStyleApplicationLifetime lifeTime)
     {
+        _lifeTime = lifeTime;
         await UpdateStatus("Setting up logging...", 5);
         SetupLogging();
 
@@ -96,6 +99,9 @@ public static partial class InitializationService
         if (serviceProvider == null) return;
 
         _serviceProvider = null;
+
+        _sparkle?.StopLoop();
+        _sparkle = null;
 
         await SaveDashboardLayoutAsync(serviceProvider);
         await StopBackgroundServicesAsync(serviceProvider);
@@ -236,13 +242,18 @@ public static partial class InitializationService
 
         try
         {
-            var sparkle = new SparkleUpdater(settings.UpdateUrl, new DSAChecker(SecurityMode.UseIfPossible))
+            _sparkle = new SparkleUpdater(settings.UpdateUrl, new DSAChecker(SecurityMode.UseIfPossible))
             {
-                UIFactory = new UIFactory {},
+                UIFactory = new JamaaUIFactory(),
                 RelaunchAfterUpdate = true,
-                
             };
-            sparkle.StartLoop(true, true, TimeSpan.FromHours(settings.UpdateIntervalHours));
+            
+            _sparkle.CloseApplication += () =>
+            {
+                _lifeTime?.Shutdown();
+            };
+
+            _sparkle.StartLoop(true, true, TimeSpan.FromHours(settings.UpdateIntervalHours));
             logger.LogInformation("Update check initiated with interval of {Interval} hours.", settings.UpdateIntervalHours);
         }
         catch (Exception ex)
