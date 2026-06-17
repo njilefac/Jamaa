@@ -40,9 +40,9 @@
         <PackageReference Include="Elsa.Activities.Http" />
         <PackageReference Include="Elsa.Activities.Temporal.Common" />
         <PackageReference Include="Elsa.Activities.Temporal.Hangfire" />
-        <PackageReference Include="Elsa.Activities.Temporal.Quartz" />
         <PackageReference Include="Elsa.Activities.Webhooks" />
         <PackageReference Include="Elsa.Agents.Persistence.EntityFrameworkCore.Sqlite" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.SemanticKernel.Core" />
         <PackageReference Include="Elsa.CSharp" />
         <PackageReference Include="Elsa.Email" />
@@ -107,6 +107,8 @@
         <PackageReference Include="Microsoft.Data.Sqlite" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
         <PackageReference Include="Mvvm.CommonInteractions.Avalonia" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
+        <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" />
         <PackageReference Include="Syncfusion.Licensing" />
         <PackageReference Include="Scrutor" />
         <PackageReference Include="Semi.Avalonia" />
