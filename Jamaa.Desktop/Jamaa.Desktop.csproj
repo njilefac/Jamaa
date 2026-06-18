@@ -78,8 +78,6 @@
         <PackageReference Include="Akka.Persistence.Hosting" />
         <PackageReference Include="Akka.Persistence.Sql.Hosting" />
         <PackageReference Include="Akka.Persistence.Sqlite" />
-        <PackageReference Include="Avalonia.Controls.TreeDataGrid" />
-        <PackageReference Include="Semi.Avalonia.TreeDataGrid" />
         <PackageReference Include="Avalonia.Labs.Notifications" />
         <PackageReference Include="Avalonia.Labs.Panels" />
         <PackageReference Include="Avalonia.Labs.Qr" />
@@ -90,10 +88,8 @@
         <PackageReference Include="CalendarControl.Avalonia" />
         <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="DynamicData" />
-        <PackageReference Include="FluentAvalonia.BreadcrumbBar" />
         <PackageReference Include="FluentAvaloniaUI" />
         <PackageReference Include="FluentIcons.Avalonia" />
-        <PackageReference Include="FluentIcons.Avalonia.Fluent" />
         <PackageReference Include="FluentIcons.Common" />
         <PackageReference Include="FluentIcons.Resources.Avalonia" />
         <PackageReference Include="FluentValidation" />
@@ -105,7 +101,13 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" />
         <PackageReference Include="Microsoft.Data.Sqlite" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
         <PackageReference Include="Mvvm.CommonInteractions.Avalonia" />
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
         <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" />

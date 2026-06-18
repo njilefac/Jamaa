@@ -4,7 +4,6 @@
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
-    xmlns:icons="using:FluentIcons.Avalonia.Fluent"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     xmlns:sharedControls="clr-namespace:Jamaa.Desktop.Shared.Controls"
     xmlns:u="https://irihi.tech/ursa"
@@ -104,10 +103,10 @@
         <Setter Property="Foreground" Value="{DynamicResource WizardStepDisabledForegroundBrush}" />
     </Style>
 
-    <Style Selector="sharedControls|StepTimeline icons|SymbolIcon.step-check">
+    <Style Selector="sharedControls|StepTimeline TextBlock.step-check">
         <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="sharedControls|StepTimeline Border.step-bubble[Tag=Completed] icons|SymbolIcon.step-check">
+    <Style Selector="sharedControls|StepTimeline Border.step-bubble[Tag=Completed] TextBlock.step-check">
         <Setter Property="IsVisible" Value="True" />
         <Setter Property="Foreground" Value="{DynamicResource WizardStepCompletedForegroundBrush}" />
     </Style>
@@ -656,42 +655,42 @@
             </DataTemplate>
         </Setter>
     </Style>
-    <Style Selector="controls|NavigationViewItem /template/ controls|IconSourceElement">
+    <Style Selector="controls|FANavigationViewItem /template/ controls|FAIconSourceElement">
         <Setter Property="Width" Value="32" />
         <Setter Property="Height" Value="32" />
         <Setter Property="RenderTransform" Value="scale(1.15)" />
     </Style>
 
-    <Style Selector="controls|NavigationViewItem /template/ Viewbox#IconBox">
+    <Style Selector="controls|FANavigationViewItem /template/ Viewbox#IconBox">
         <Setter Property="Width" Value="32" />
         <Setter Property="Height" Value="32" />
         <Setter Property="RenderTransform" Value="scale(1.15)" />
     </Style>
 
-    <Style Selector="controls|NavigationViewItem /template/ controls|IconSourceElement Image">
+    <Style Selector="controls|FANavigationViewItem /template/ controls|FAIconSourceElement Image">
         <Setter Property="Stretch" Value="Uniform" />
     </Style>
 
-    <Style Selector="controls|NavigationView">
+    <Style Selector="controls|FANavigationView">
         <Setter Property="CompactPaneLength" Value="80" />
     </Style>
 
-    <Style Selector="controls|NavigationViewItem">
+    <Style Selector="controls|FANavigationViewItem">
         <Setter Property="MinHeight" Value="60" />
         <Setter Property="Foreground" Value="{DynamicResource AppTextPrimary}" />
         <Setter Property="FontSize" Value="15" />
     </Style>
 
-    <Style Selector="controls|NavigationViewItem:pointerover /template/ ContentPresenter#PART_LayoutRoot">
+    <Style Selector="controls|FANavigationViewItem:pointerover /template/ ContentPresenter#PART_LayoutRoot">
         <Setter Property="Foreground" Value="{DynamicResource JamaaAccentBrush}" />
     </Style>
 
-    <Style Selector="controls|NavigationViewItem:selected /template/ ContentPresenter#PART_LayoutRoot">
+    <Style Selector="controls|FANavigationViewItem:selected /template/ ContentPresenter#PART_LayoutRoot">
         <Setter Property="Foreground" Value="{DynamicResource JamaaAccentBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
-    <Style Selector="controls|NavigationView /template/ ContentControl#HeaderContent">
+    <Style Selector="controls|FANavigationView /template/ ContentControl#HeaderContent">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />

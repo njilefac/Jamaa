@@ -1,7 +1,9 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using System.Threading.Tasks;
 using Jamaa.Desktop.Services;
 using Jamaa.Desktop.Shared;
 
@@ -25,16 +27,36 @@ public class App : Avalonia.Application
             desktop.Exit += (_, _) =>
             {
                 // Trigger shutdown but don't wait for it to complete on the UI thread
-                _ = InitializationService.ShutdownAsync();
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await InitializationService.ShutdownAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                });
             };
 
-            Dispatcher.UIThread.InvokeAsync(async () =>
+            _ = Task.Run(async () =>
             {
-                var mainWindow = await InitializationService.InitializeAsync(desktop);
-                desktop.MainWindow = mainWindow;
-                mainWindow.Show();
-                splashWindow.Close();
-                splashViewModel.Dispose();
+                try
+                {
+                    var mainWindow = await InitializationService.InitializeAsync(desktop);
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        desktop.MainWindow = mainWindow;
+                        mainWindow.Show();
+                        splashWindow.Close();
+                        splashViewModel.Dispose();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                }
             });
         }
 

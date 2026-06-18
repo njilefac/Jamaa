@@ -100,6 +100,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     }
 
     public ObservableCollection<AccountItemViewModel> FilteredParentAccounts { get; } = [];
+    public IEnumerable<AccountItemViewModel> AllAccounts => GetAllAccounts(Accounts);
 
     public string ActionButtonText => SelectedAccount == null ? "Add Account" : "Save Changes";
     public string FormTitle => SelectedAccount == null ? "Add New Account" : "Edit Account";
@@ -169,6 +170,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         foreach (var root in rootAccounts) Accounts.Add(root);
 
         RefreshFilteredParentAccounts();
+        OnPropertyChanged(nameof(AllAccounts));
     }
 
     private async Task<List<AccountItemViewModel>> BuildAccountTree(IEnumerable<AccountData> accounts, string organisationId)

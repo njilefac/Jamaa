@@ -8,27 +8,26 @@
     x:Class="Jamaa.Desktop.Members.Pages.MembersOverviewPage"
     x:DataType="pages:MembersOverviewViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia.BreadcrumbBar"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Jamaa.Desktop.Services.Navigation.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="clr-namespace:Jamaa.Desktop.Members.Pages"
+    xmlns:u="https://irihi.tech/ursa"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Grid ColumnDefinitions="*" RowDefinitions="Auto,*">
-        <controls:BreadcrumbBar Grid.Column="0" ItemsSource="{Binding Breadcrumbs}">
-            <controls:BreadcrumbBar.ItemTemplate>
-                <DataTemplate x:DataType="local:BreadcrumbItemModel">
-                    <Button
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Command="{Binding ClickCommand}"
-                        Content="{Binding Title}"
-                        IsEnabled="{Binding IsActive}"
-                        Padding="0" />
-                </DataTemplate>
-            </controls:BreadcrumbBar.ItemTemplate>
-        </controls:BreadcrumbBar>
+        <u:Breadcrumb
+            Grid.Column="0"
+            CommandBinding="{Binding ClickCommand}"
+            DisplayMemberBinding="{Binding Title}"
+            ItemsSource="{Binding Breadcrumbs}"
+            Margin="0,0,0,8">
+            <u:Breadcrumb.Styles>
+                <Style Selector="u|BreadcrumbItem" x:DataType="local:BreadcrumbItemModel">
+                    <Setter Property="IsReadOnly" Value="{Binding IsReadOnly}" />
+                </Style>
+            </u:Breadcrumb.Styles>
+        </u:Breadcrumb>
         <ContentControl
             Content="{Binding ActiveContent}"
             Grid.Column="0"

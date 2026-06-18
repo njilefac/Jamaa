@@ -5,10 +5,9 @@
     x:Class="Jamaa.Desktop.Accounting.ChartOfAccountsPage"
     x:DataType="vm:ChartOfAccountsViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
-    xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     xmlns:vm="clr-namespace:Jamaa.Desktop.Accounting"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -23,92 +22,7 @@
             TrueValue="False"
             x:Key="InvertBoolToEnabledConverter" />
 
-        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountEditCellTemplate">
-            <Button
-                Classes="Small"
-                Command="{Binding EditCommand}"
-                Content="✏ Edit" />
-        </DataTemplate>
-
-        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountActiveStateCellTemplate">
-            <Border Classes="coa-account-state-cell">
-                <ToggleSwitch
-                    Classes="coa-account-state-toggle"
-                    Command="{Binding ToggleActiveCommand}"
-                    IsChecked="{Binding IsActive, Mode=OneWay}"
-                    OffContent="{Binding ToggleStateLabel}"
-                    OnContent="{Binding ToggleStateLabel}"
-                    ToolTip.Tip="{Binding ToggleActiveToolTip}" />
-            </Border>
-        </DataTemplate>
-
-        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="AccountLedgerCellTemplate">
-            <Button
-                Classes="Small"
-                Command="{Binding ViewLedgerCommand}"
-                Content="📒 View Ledger" />
-        </DataTemplate>
-
         <converters:DecimalToFormattedStringConverter x:Key="DecimalToFormattedStringConverter" />
-
-        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="OpeningBalanceCellTemplate">
-            <Panel>
-                    <TextBox
-                        HorizontalAlignment="Stretch"
-                        IsReadOnly="{Binding IsOpeningBalanceLocked}"
-                        IsVisible="{Binding IsLeafAccount}"
-                        Watermark="0.00">
-                    <Interaction.Behaviors>
-                        <behaviors:RefreshOnLostFocusBehavior />
-                    </Interaction.Behaviors>
-                    <TextBox.Text>
-                        <Binding
-                            Mode="TwoWay"
-                            Path="OpeningBalanceText"
-                            UpdateSourceTrigger="PropertyChanged" />
-                    </TextBox.Text>
-                    <TextBox.InnerLeftContent>
-                        <TextBlock
-                            Margin="8,0,0,0"
-                            Text="{Binding CurrencySymbol}"
-                            VerticalAlignment="Center" />
-                    </TextBox.InnerLeftContent>
-                </TextBox>
-
-                <StackPanel
-                    HorizontalAlignment="Right"
-                    IsVisible="{Binding !IsLeafAccount}"
-                    Orientation="Horizontal"
-                    Spacing="4"
-                    VerticalAlignment="Center">
-                    <TextBlock
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource AppTextSecondary}"
-                        Text="{Binding CurrencySymbol}"
-                        VerticalAlignment="Center" />
-                    <TextBlock
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource AppTextSecondary}">
-                        <TextBlock.Text>
-                            <MultiBinding Converter="{StaticResource DecimalToFormattedStringConverter}">
-                                <Binding Path="OpeningBalance" />
-                                <Binding Path="DecimalPrecision" />
-                                <Binding Path="ThousandSeparator" />
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </StackPanel>
-            </Panel>
-        </DataTemplate>
-
-        <DataTemplate x:DataType="vm:AccountItemViewModel" x:Key="SaveOpeningBalanceCellTemplate">
-            <Button
-                Classes="Small"
-                Command="{Binding SaveOpeningBalanceCommand}"
-                Content="Save"
-                IsEnabled="{Binding CanSaveOpeningBalance}"
-                IsVisible="{Binding CanEditOpeningBalance}" />
-        </DataTemplate>
     </UserControl.Resources>
 
     <Grid Margin="20" RowDefinitions="Auto,*">
@@ -146,7 +60,83 @@
                     BorderThickness="1"
                     ClipToBounds="True"
                     CornerRadius="8">
-                    <TreeDataGrid IsEnabled="{Binding IsOperationInFlight, Converter={StaticResource InvertBoolToEnabledConverter}}" x:Name="AccountsTreeDataGrid" />
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding AllAccounts}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:AccountItemViewModel">
+                                    <Border
+                                        BorderBrush="{DynamicResource AppBorderColor}"
+                                        BorderThickness="0,0,0,1"
+                                        Padding="12,10">
+                                        <Grid ColumnDefinitions="90,*,2*,120,90,120,90,90,90" RowDefinitions="Auto,Auto" RowSpacing="6">
+                                            <TextBlock
+                                                Classes="form label"
+                                                Grid.Column="0"
+                                                Text="{Binding Code}" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                Text="{Binding TreeName}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                Foreground="{DynamicResource AppTextSecondary}"
+                                                Text="{Binding Description}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <TextBlock
+                                                Grid.Column="3"
+                                                Text="{Binding TypeDisplay}" />
+                                            <TextBlock
+                                                Grid.Column="4"
+                                                Text="{Binding ContraAccountDisplay}" />
+
+                                            <TextBox
+                                                Grid.Column="5"
+                                                HorizontalAlignment="Stretch"
+                                                IsReadOnly="{Binding IsOpeningBalanceLocked}"
+                                                IsVisible="{Binding IsLeafAccount}"
+                                                Watermark="0.00">
+                                                <TextBox.Text>
+                                                    <Binding
+                                                        Mode="TwoWay"
+                                                        Path="OpeningBalanceText"
+                                                        UpdateSourceTrigger="PropertyChanged" />
+                                                </TextBox.Text>
+                                                <TextBox.InnerLeftContent>
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        Text="{Binding CurrencySymbol}"
+                                                        VerticalAlignment="Center" />
+                                                </TextBox.InnerLeftContent>
+                                            </TextBox>
+                                            <TextBlock
+                                                Grid.Column="5"
+                                                HorizontalAlignment="Right"
+                                                IsVisible="{Binding !IsLeafAccount}"
+                                                Text="{Binding OpeningBalanceText}" />
+                                            <Button
+                                                Classes="Small"
+                                                Command="{Binding SaveOpeningBalanceCommand}"
+                                                Content="Save"
+                                                Grid.Column="6"
+                                                IsEnabled="{Binding CanSaveOpeningBalance}"
+                                                IsVisible="{Binding CanEditOpeningBalance}" />
+                                            <Button
+                                                Classes="Small"
+                                                Command="{Binding EditCommand}"
+                                                Content="Edit"
+                                                Grid.Column="7" />
+                                            <Button
+                                                Classes="Small"
+                                                Command="{Binding ToggleActiveCommand}"
+                                                Content="{Binding ToggleStateLabel}"
+                                                Grid.Column="8"
+                                                ToolTip.Tip="{Binding ToggleActiveToolTip}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </Border>
             </DockPanel>
 

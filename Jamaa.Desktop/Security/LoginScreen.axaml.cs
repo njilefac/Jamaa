@@ -13,5 +13,7 @@ public partial class LoginScreen : UserControl
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+        var nameField = this.FindControl<TextBox>("UserNameField");
+        nameField!.AttachedToVisualTree += (target, _) => (target as TextBox)!.Focus();
     }
 }

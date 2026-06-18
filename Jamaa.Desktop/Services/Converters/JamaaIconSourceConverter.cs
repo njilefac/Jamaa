@@ -11,8 +11,8 @@ public class JamaaIconSourceConverter : IValueConverter
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is string iconKey && !string.IsNullOrWhiteSpace(iconKey) &&
-            targetType.IsAssignableTo(typeof(IconSource)))
-            return Get<IconSource>(iconKey);
+            targetType.IsAssignableTo(typeof(FAIconSource)))
+            return Get<FAIconSource>(iconKey);
 
         return new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
     }
