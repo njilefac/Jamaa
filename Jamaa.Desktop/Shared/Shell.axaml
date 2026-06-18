@@ -12,32 +12,35 @@
     x:Class="Jamaa.Desktop.Shared.Shell"
     x:DataType="shared:ShellViewModel"
     xmlns="https://github.com/avaloniaui"
+    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid ColumnDefinitions="*" RowDefinitions="Auto,*,35">
-        <shared:MainMenu Content="{Binding MainMenu}" Grid.Row="0" />
-        <Panel Grid.Row="1">
-            <ContentControl
-                Content="{Binding ActiveContent}"
-                HorizontalContentAlignment="Stretch"
-                VerticalContentAlignment="Stretch" />
-        </Panel>
-        <Border
-            Background="{DynamicResource AppHeaderBackground}"
-            BorderBrush="{DynamicResource ControlElevationBorderBrush}"
-            BorderThickness="0,1,0,0"
-            Grid.Row="2"
-            Padding="10,0">
-            <Grid ColumnDefinitions="*,Auto">
-                <TextBlock
-                    Classes="shell-version-text"
-                    Grid.Column="1"
-                    Text="{Binding Version}"
-                    VerticalAlignment="Center" />
-            </Grid>
-        </Border>
-    </Grid>
+    <controls:FADialogHost>
+        <Grid ColumnDefinitions="*" RowDefinitions="Auto,*,35">
+            <shared:MainMenu Content="{Binding MainMenu}" Grid.Row="0" />
+            <Panel Grid.Row="1">
+                <ContentControl
+                    Content="{Binding ActiveContent}"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch" />
+            </Panel>
+            <Border
+                Background="{DynamicResource AppHeaderBackground}"
+                BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                BorderThickness="0,1,0,0"
+                Grid.Row="2"
+                Padding="10,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock
+                        Classes="shell-version-text"
+                        Grid.Column="1"
+                        Text="{Binding Version}"
+                        VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+        </Grid>
+    </controls:FADialogHost>
 </husk:AppWindow>

@@ -22,39 +22,41 @@
         <converters:JamaaIconSourceConverter x:Key="IconSourceConverter" />
     </UserControl.Resources>
 
-    <controls:FANavigationView
-        Header="{Binding}"
-        IsSettingsVisible="True"
-        Margin="0"
-        MenuItemsSource="{Binding MenuItems}"
-        Padding="0"
-        PaneDisplayMode="Auto"
-        SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-        SelectionChanged="OnNavigationSelectionChanged"
-        VerticalAlignment="Stretch">
-        <controls:FANavigationView.Content>
-            <Border Background="{DynamicResource AppLayerBackground}">
-                <ContentControl Content="{Binding ActiveModule}" />
-            </Border>
-        </controls:FANavigationView.Content>
+    <controls:FADialogHost>
+        <controls:FANavigationView
+            Header="{Binding}"
+            IsSettingsVisible="True"
+            Margin="0"
+            MenuItemsSource="{Binding MenuItems}"
+            Padding="0"
+            PaneDisplayMode="Auto"
+            SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+            SelectionChanged="OnNavigationSelectionChanged"
+            VerticalAlignment="Stretch">
+            <controls:FANavigationView.Content>
+                <Border Background="{DynamicResource AppLayerBackground}">
+                    <ContentControl Content="{Binding ActiveModule}" />
+                </Border>
+            </controls:FANavigationView.Content>
 
-        <controls:FANavigationView.MenuItemTemplate>
-            <DataTemplate x:DataType="models:NavigationItemModel">
-                <controls:FANavigationViewItem
-                    Content="{Binding Title}"
-                    IconSource="{Binding Icon, Converter={StaticResource IconSourceConverter}}"
-                    MenuItemsSource="{Binding SubItems}"
-                    SelectsOnInvoked="{Binding SubItems, Converter={x:Static ObjectConverters.IsNull}}"
-                    Tag="{Binding TargetRoute}" />
-            </DataTemplate>
-        </controls:FANavigationView.MenuItemTemplate>
-        <controls:FANavigationView.HeaderTemplate>
-            <DataTemplate>
-                <shared:ModulePageHeader
-                    Classes="module header"
-                    DataContext="{Binding ActiveModule}"
-                    Title="{Binding ActiveModule.Title}" />
-            </DataTemplate>
-        </controls:FANavigationView.HeaderTemplate>
-    </controls:FANavigationView>
+            <controls:FANavigationView.MenuItemTemplate>
+                <DataTemplate x:DataType="models:NavigationItemModel">
+                    <controls:FANavigationViewItem
+                        Content="{Binding Title}"
+                        IconSource="{Binding Icon, Converter={StaticResource IconSourceConverter}}"
+                        MenuItemsSource="{Binding SubItems}"
+                        SelectsOnInvoked="{Binding SubItems, Converter={x:Static ObjectConverters.IsNull}}"
+                        Tag="{Binding TargetRoute}" />
+                </DataTemplate>
+            </controls:FANavigationView.MenuItemTemplate>
+            <controls:FANavigationView.HeaderTemplate>
+                <DataTemplate>
+                    <shared:ModulePageHeader
+                        Classes="module header"
+                        DataContext="{Binding ActiveModule}"
+                        Title="{Binding ActiveModule.Title}" />
+                </DataTemplate>
+            </controls:FANavigationView.HeaderTemplate>
+        </controls:FANavigationView>
+    </controls:FADialogHost>
 </UserControl>
