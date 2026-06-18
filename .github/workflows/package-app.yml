@@ -187,40 +187,37 @@ jobs:
           EOF_HTML
 
           # Process releases and inject into HTML
-          # Use single quotes for JQ_QUERY to avoid shell interpolation.
-          # To use double quotes inside the query without escaping, 
-          # we can use jq'\''s string interpolation or concatenation.
-          JQ_QUERY="
-            . as \$releases |
-            to_entries[] | . as \$entry | .value as \$rel |
-            (\$rel.published_at | split(\"T\")[0]) as \$date |
-            (\$rel.body | if . == null then \"No release notes provided.\" else . end | sub(\"\r\n\"; \"\n\"; \"g\") | split(\"\n\") | .[0:3] | join(\"\n\") | if length > 200 then .[0:200] + \"...\" else . end) as \$summary |
-            \"<div class='release-card'>
-              <div class='release-header'>
+          # Use single quotes for the shell variable to avoid shell interpolation.
+          # Platform metadata is passed as a JSON string to avoid quoting hell.
+          PLATFORMS_JSON='[{"name":"macOS","ext":".dmg"},{"name":"Windows","ext":".exe"},{"name":"Linux","ext":".deb"}]'
+          
+          JQ_QUERY='
+            . as $releases |
+            to_entries[] | . as $entry | .value as $rel |
+            ($rel.published_at | split("T")[0]) as $date |
+            ($rel.body | if . == null then "No release notes provided." else . end | sub("\r\n"; "\n"; "g") | split("\n") | .[0:3] | join("\n") | if length > 200 then .[0:200] + "..." else . end) as $summary |
+            "<div class=\"release-card\">
+              <div class=\"release-header\">
                 <div>
-                  <span class='version-tag'>\" + \$rel.tag_name + \"</span>
-                  \" + (if \$entry.key == 0 then \"<span class='latest-badge'>Latest</span>\" else \"\" end) + \"
-                  <span class='release-date'>\" + \$date + \"</span>
+                  <span class=\"version-tag\">" + $rel.tag_name + "</span>
+                  " + (if $entry.key == 0 then "<span class=\"latest-badge\">Latest</span>" else "" end) + "
+                  <span class=\"release-date\">" + $date + "</span>
                 </div>
-                <a href='\" + \$rel.html_url + \"' class='full-notes-link' target='_blank'>Full Release Notes &rarr;</a>
+                <a href=\"" + $rel.html_url + "\" class=\"full-notes-link\" target=\"_blank\">Full Release Notes &rarr;</a>
               </div>
-              <div class='release-notes-summary'>\" + (\$summary | @html) + \"</div>
-              <div class='download-grid'>\" +
-                ([
-                  {name: 'macOS', ext: '.dmg'},
-                  {name: 'Windows', ext: '.exe'},
-                  {name: 'Linux', ext: '.deb'}
-                ] | map(. as \$p | 
-                  (\$rel.assets[] | select(.name | endswith(\$p.ext))) as \$asset |
-                  \"<a href='\" + \$asset.browser_download_url + \"' class='download-btn'>
-                    <b>\" + \$p.name + \"</b>
-                    <span>\" + \$p.ext + \"</span>
-                  </a>\"
-                ) | join(\"\")) +
-              \"</div>
-            </div>\"
-          "
-          jq -r "$JQ_QUERY" <<< "$RELEASES_JSON" >> site/index.html
+              <div class=\"release-notes-summary\">" + ($summary | @html) + "</div>
+              <div class=\"download-grid\">" +
+                ($platforms | map(. as $p | 
+                  ($rel.assets[] | select(.name | endswith($p.ext))) as $asset |
+                  "<a href=\"" + $asset.browser_download_url + "\" class=\"download-btn\">
+                    <b>" + $p.name + "</b>
+                    <span>" + $p.ext + "</span>
+                  </a>"
+                ) | join("")) +
+              "</div>
+            </div>"
+          '
+          jq -r --argjson platforms "$PLATFORMS_JSON" "$JQ_QUERY" <<< "$RELEASES_JSON" >> site/index.html
 
           # Close HTML
           cat >> site/index.html <<'EOF_FOOTER'
