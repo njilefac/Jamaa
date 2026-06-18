@@ -49,7 +49,7 @@ public static partial class InitializationService
     private static ServiceProvider? _serviceProvider;
     private static SparkleUpdater? _sparkle;
     private static IClassicDesktopStyleApplicationLifetime? _lifeTime;
-    private static readonly BehaviorSubject<string> StatusSubject = new("Initializing application...");
+    private static readonly BehaviorSubject<string> StatusSubject = new("Getting Jamaa ready...");
     private static readonly BehaviorSubject<double> ProgressSubject = new(0);
     public static IObservable<string> Status => StatusSubject.AsObservable();
     public static IObservable<double> Progress => ProgressSubject.AsObservable();
@@ -59,37 +59,35 @@ public static partial class InitializationService
     {
         _lifeTime = lifeTime;
         TraceStartup("InitializeAsync:start");
-        await UpdateStatus("Setting up logging...", 5);
+        await UpdateStatus("Preparing your workspace...", 20);
         TraceStartup("SetupLogging");
         SetupLogging();
 
-        await UpdateStatus("Building configuration...", 15);
         TraceStartup("BuildConfiguration");
         var configuration = BuildConfiguration();
 
-        await UpdateStatus("Creating service provider...", 30);
         TraceStartup("CreateServiceProvider");
         _serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
         TraceStartup("StartEmbeddedWebServerAsync");
         var embeddedWebServerTask = StartEmbeddedWebServerAsync(_serviceProvider);
 
-        await UpdateStatus("Verifying licenses...", 40);
+        await UpdateStatus("Loading features...", 45);
         TraceStartup("InitializeSyncfusionLicense");
         InitializeSyncfusionLicense(_serviceProvider);
 
-        await UpdateStatus("Registering routes...", 45);
         TraceStartup("RegisterRoutes");
         RegisterRoutes(_serviceProvider.GetRequiredService<IRouteRegistry>());
 
-        await UpdateStatus("Starting actor system...", 55);
+        await UpdateStatus("Starting services...", 70);
         TraceStartup("StartActorServicesAsync");
         await StartActorServicesAsync(_serviceProvider);
 
-        await UpdateStatus("Finalizing initialization...", 100);
+        await UpdateStatus("Almost ready...", 90);
         TraceStartup("SetApplicationCulture");
         SetApplicationCulture();
 
+        await UpdateStatus("Opening Jamaa...", 100);
         TraceStartup("CreateAndConfigureMainWindow");
         var mainWindow = await Dispatcher.UIThread.InvokeAsync(() => CreateAndConfigureMainWindow(_serviceProvider));
         _ = RunDeferredStartupAsync(_serviceProvider, embeddedWebServerTask);
@@ -240,15 +238,15 @@ public static partial class InitializationService
 
     private static async Task RunDeferredStartupAsync(IServiceProvider serviceProvider, Task embeddedWebServerTask)
     {
-        await UpdateStatus("Updating database...", 60);
+        await UpdateStatus("Final checks...", 60);
         TraceStartup("UpdateDatabaseSafely");
         UpdateDatabaseSafely(serviceProvider);
 
-        await UpdateStatus("Starting background services...", 75);
+        await UpdateStatus("Starting background tasks...", 75);
         TraceStartup("ObserveBackgroundServicesAsync");
         _ = ObserveBackgroundServicesAsync(embeddedWebServerTask);
 
-        await UpdateStatus("Setting up diagnostics...", 90);
+        await UpdateStatus("Finishing setup...", 90);
         TraceStartup("SetupDiagnostics");
         SetupDiagnostics(serviceProvider);
     }
