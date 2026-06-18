@@ -267,13 +267,13 @@
     </Style>
 
     <Style Selector="husk|Card.memberlist.member-card:pointerover">
-        <Setter Property="BorderBrush" Value="{StaticResource AccentButtonBorderBrushPointerOver}" />
-        <Setter Property="Background" Value="{StaticResource ControlStrokeColorOnAccentDefault}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark1}" />
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight3}" />
         <Setter Property="BorderThickness" Value="3" />
     </Style>
     <Style Selector="husk|Card.member-card:focus">
         <Setter Property="BorderThickness" Value="4" />
-        <Setter Property="Background" Value="{StaticResource AccentButtonBackgroundPressed}" />
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColorDark2}" />
     </Style>
     <Style Selector="husk|Divider.member-card">
         <Setter Property="Margin" Value="8" />
@@ -703,7 +703,6 @@
     <Style Selector="husk|AppWindow.splash-window">
         <Setter Property="Height" Value="400" />
         <Setter Property="Icon" Value="avares://Jamaa/Assets/Icons/jamaa.png" />
-        <Setter Property="SystemDecorations" Value="None" />
         <Setter Property="Title" Value="Jamaa" />
         <Setter Property="Width" Value="600" />
         <Setter Property="WindowStartupLocation" Value="CenterScreen" />

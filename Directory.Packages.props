@@ -12,14 +12,14 @@
     <PackageVersion Include="Akka.Persistence.Sqlite" Version="1.5.39" />
     <PackageVersion Include="Akka.Remote.Hosting" Version="1.5.69" />
     <PackageVersion Include="AutoMapper" Version="16.1.1" />
-    <PackageVersion Include="Avalonia" Version="11.3.13" />
+    <PackageVersion Include="Avalonia" Version="12.0.4" />
     <PackageVersion Include="Avalonia.Controls.TreeDataGrid" Version="11.1.1" />
-    <PackageVersion Include="Avalonia.Desktop" Version="11.3.13" />
-    <PackageVersion Include="Avalonia.Labs.Notifications" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Labs.Panels" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Labs.Qr" Version="11.3.1" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.0.4" />
+    <PackageVersion Include="Avalonia.Labs.Notifications" Version="12.0.2" />
+    <PackageVersion Include="Avalonia.Labs.Panels" Version="12.0.2" />
+    <PackageVersion Include="Avalonia.Labs.Qr" Version="12.0.2" />
     <PackageVersion Include="Avalonia.MonoMac" Version="0.6.1" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.13" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.0.4" />
     <PackageVersion Include="CalendarControl.Avalonia" Version="11.2.5" />
     <PackageVersion Include="Castle.Core" Version="5.2.1" />
     <PackageVersion Include="ChangeTracking" Version="2.2.17" />
@@ -76,16 +76,16 @@
     <PackageVersion Include="FluentAvalonia.BreadcrumbBar" Version="2.0.2" />
     <PackageVersion Include="FluentAvaloniaUI" Version="2.5.1" />
     <PackageVersion Include="FluentEmail.Liquid" Version="3.0.2" />
-    <PackageVersion Include="FluentIcons.Avalonia" Version="2.0.321" />
-    <PackageVersion Include="FluentIcons.Avalonia.Fluent" Version="2.0.321" />
-    <PackageVersion Include="FluentIcons.Common" Version="2.0.321" />
-    <PackageVersion Include="FluentIcons.Resources.Avalonia" Version="2.0.321" />
+    <PackageVersion Include="FluentIcons.Avalonia" Version="2.1.330" />
+    <PackageVersion Include="FluentIcons.Avalonia.Fluent" Version="2.0.330" />
+    <PackageVersion Include="FluentIcons.Common" Version="2.1.330" />
+    <PackageVersion Include="FluentIcons.Resources.Avalonia" Version="2.0.330" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageVersion Include="Hangfire.SQLite" Version="1.4.2" />
-    <PackageVersion Include="Huskui.Avalonia" Version="0.10.3" />
-    <PackageVersion Include="Irihi.Ursa" Version="1.15.0" />
-    <PackageVersion Include="Irihi.Ursa.Themes.Semi" Version="1.15.0" />
+    <PackageVersion Include="Huskui.Avalonia" Version="1.3.0" />
+    <PackageVersion Include="Irihi.Ursa" Version="2.0.1" />
+    <PackageVersion Include="Irihi.Ursa.Themes.Semi" Version="2.0.1" />
     <PackageVersion Include="JetBrains.Annotations" Version="2026.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.5" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.5" />
@@ -118,8 +118,8 @@
     <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.11" />
     <PackageVersion Include="SQLitePCLRaw.provider.e_sqlite3" Version="3.0.3" />
     <PackageVersion Include="Scrutor" Version="7.0.0" />
-    <PackageVersion Include="Semi.Avalonia" Version="11.3.7.3" />
-    <PackageVersion Include="Semi.Avalonia.DataGrid" Version="11.3.7.3" />
+    <PackageVersion Include="Semi.Avalonia" Version="12.0.3" />
+    <PackageVersion Include="Semi.Avalonia.DataGrid" Version="12.0.0" />
     <PackageVersion Include="Semi.Avalonia.TreeDataGrid" Version="11.1.1.1" />
     <PackageVersion Include="Serilog" Version="4.3.1" />
     <PackageVersion Include="Serilog.Enrichers.AssemblyName" Version="2.0.0" />

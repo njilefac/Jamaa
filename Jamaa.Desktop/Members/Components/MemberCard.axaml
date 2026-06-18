@@ -6,6 +6,7 @@
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Members.Components.MemberCard"
     x:DataType="vm:MemberViewModel"
+    x:CompileBindings="False"
     xmlns="https://github.com/avaloniaui"
     xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"

@@ -3,6 +3,7 @@
     d:DesignWidth="1200"
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Accounting.AccountingDashboard"
+    x:DataType="accounting:AccountingDashboardViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
     xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia.BreadcrumbBar"
