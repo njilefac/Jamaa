@@ -5,7 +5,6 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:controls="clr-namespace:Jamaa.Desktop.Shared.Controls"
     xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
-    xmlns:icons="using:FluentIcons.Avalonia.Fluent"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <UserControl.Resources>
@@ -68,10 +67,10 @@
                                         HorizontalAlignment="Center"
                                         Text="{Binding StepNumber}"
                                         VerticalAlignment="Center" />
-                                    <icons:SymbolIcon
+                                    <TextBlock
                                         Classes="step-check"
                                         HorizontalAlignment="Center"
-                                        Symbol="Checkmark"
+                                        Text="✓"
                                         VerticalAlignment="Center" />
                                 </Grid>
                             </Border>
@@ -164,10 +163,10 @@
                                     HorizontalAlignment="Center"
                                     Text="{Binding StepNumber}"
                                     VerticalAlignment="Center" />
-                                <icons:SymbolIcon
+                                <TextBlock
                                     Classes="step-check"
                                     HorizontalAlignment="Center"
-                                    Symbol="Checkmark"
+                                    Text="✓"
                                     VerticalAlignment="Center" />
                             </Grid>
                         </Border>
@@ -220,7 +219,6 @@
         </ListBox>
     </Grid>
 </UserControl>
-
 
 
 

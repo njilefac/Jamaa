@@ -8,6 +8,7 @@
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Shared.MainWindow"
     x:DataType="shared:MainWindowViewModel"
+    x:CompileBindings="False"
     xmlns="https://github.com/avaloniaui"
     xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
@@ -21,7 +22,7 @@
         <converters:JamaaIconSourceConverter x:Key="IconSourceConverter" />
     </UserControl.Resources>
 
-    <controls:NavigationView
+    <controls:FANavigationView
         Header="{Binding}"
         IsSettingsVisible="True"
         Margin="0"
@@ -31,29 +32,29 @@
         SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
         SelectionChanged="OnNavigationSelectionChanged"
         VerticalAlignment="Stretch">
-        <controls:NavigationView.Content>
+        <controls:FANavigationView.Content>
             <Border Background="{DynamicResource AppLayerBackground}">
                 <ContentControl Content="{Binding ActiveModule}" />
             </Border>
-        </controls:NavigationView.Content>
+        </controls:FANavigationView.Content>
 
-        <controls:NavigationView.MenuItemTemplate>
+        <controls:FANavigationView.MenuItemTemplate>
             <DataTemplate x:DataType="models:NavigationItemModel">
-                <controls:NavigationViewItem
+                <controls:FANavigationViewItem
                     Content="{Binding Title}"
                     IconSource="{Binding Icon, Converter={StaticResource IconSourceConverter}}"
                     MenuItemsSource="{Binding SubItems}"
                     SelectsOnInvoked="{Binding SubItems, Converter={x:Static ObjectConverters.IsNull}}"
                     Tag="{Binding TargetRoute}" />
             </DataTemplate>
-        </controls:NavigationView.MenuItemTemplate>
-        <controls:NavigationView.HeaderTemplate>
+        </controls:FANavigationView.MenuItemTemplate>
+        <controls:FANavigationView.HeaderTemplate>
             <DataTemplate>
                 <shared:ModulePageHeader
                     Classes="module header"
                     DataContext="{Binding ActiveModule}"
                     Title="{Binding ActiveModule.Title}" />
             </DataTemplate>
-        </controls:NavigationView.HeaderTemplate>
-    </controls:NavigationView>
+        </controls:FANavigationView.HeaderTemplate>
+    </controls:FANavigationView>
 </UserControl>

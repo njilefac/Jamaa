@@ -7,7 +7,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Jamaa.Application.Setup;
 using Jamaa.Application.Users.Services;
-using Jamaa.Desktop.Dashboard;
 using Jamaa.Desktop.Security.Events;
 using Jamaa.Desktop.Services;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
@@ -38,7 +37,7 @@ public partial class ShellViewModel : ObservableObject,
     [ObservableProperty] private string _version;
 
     public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService,
-        IRouteResolver routeResolver, DashboardViewModel dashboardViewModel, ILogger<ShellViewModel> logger)
+        IRouteResolver routeResolver, ILogger<ShellViewModel> logger)
     {
         _version = VersionService.GetVersion();
         _setupService = setupService;
@@ -47,6 +46,8 @@ public partial class ShellViewModel : ObservableObject,
         _mainMenu = new MainMenuViewModel(userSessionService);
 
         WeakReferenceMessenger.Default.RegisterAll(this);
+
+        Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Login); });
 
         _ = InitializeAsync();
 

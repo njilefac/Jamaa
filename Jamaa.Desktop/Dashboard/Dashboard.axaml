@@ -4,6 +4,7 @@
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Dashboard.Dashboard"
     x:DataType="dashboard:DashboardViewModel"
+    x:CompileBindings="False"
     xmlns="https://github.com/avaloniaui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"

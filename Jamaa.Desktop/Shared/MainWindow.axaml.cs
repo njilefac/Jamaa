@@ -16,7 +16,7 @@ public partial class MainWindow : UserControl
         AvaloniaXamlLoader.Load(this);
     }
 
-    private void OnNavigationSelectionChanged(object? sender, NavigationViewSelectionChangedEventArgs args)
+    private void OnNavigationSelectionChanged(object? sender, FANavigationViewSelectionChangedEventArgs args)
     {
         if (!args.IsSettingsSelected) return;
 
