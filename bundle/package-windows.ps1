@@ -5,7 +5,7 @@ param (
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$solutionRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$solutionRoot = "$PSScriptRoot/.."
 $projectPath = Join-Path $solutionRoot 'Jamaa.Desktop/Jamaa.Desktop.csproj'
 $publishDir = Join-Path $solutionRoot 'publish/windows'
 $outputFile = Join-Path $PSScriptRoot "Jamaa-Installer-$Version.exe"

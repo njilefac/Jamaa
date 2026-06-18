@@ -101,6 +101,55 @@ jobs:
           path: bundle/jamaa_${{ needs.prepare.outputs.version }}_amd64.deb
           if-no-files-found: error
 
+  publish-release:
+    name: Publish GitHub Release
+    needs:
+      - prepare
+      - package-macos
+      - package-windows
+      - package-linux
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: macos-dmg
+          path: artifacts
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: windows-installer
+          path: artifacts
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: linux-package
+          path: artifacts
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+        with:
+          files: |
+            artifacts/*.dmg
+            artifacts/*.exe
+            artifacts/*.deb
+          tag_name: ${{ github.event.release.tag_name || format('v{0}', needs.prepare.outputs.version) }}
+          make_latest: ${{ github.event_name == 'release' }}
+          generate_release_notes: ${{ github.event_name == 'workflow_dispatch' }}
+          append_body: true
+          body: |
+            ### Downloads
+            - [macOS (DMG)](${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.event.release.tag_name || format('v{0}', needs.prepare.outputs.version) }}/Jamaa-Installer-${{ needs.prepare.outputs.version }}.dmg)
+            - [Windows (EXE)](${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.event.release.tag_name || format('v{0}', needs.prepare.outputs.version) }}/Jamaa-Installer-${{ needs.prepare.outputs.version }}.exe)
+            - [Linux (DEB)](${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.event.release.tag_name || format('v{0}', needs.prepare.outputs.version) }}/jamaa_${{ needs.prepare.outputs.version }}_amd64.deb)
+
   publish-pages:
     name: Publish GitHub Pages
     needs:
@@ -252,9 +301,9 @@ jobs:
 
           # Use --file-version and --file-extract-version to ensure the version matches the release tag.
           # We use --reparse-existing for subsequent OSs to merge them into the same cast file.
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e exe -r -f true --file-version ${{ needs.prepare.outputs.version }} --os windows -p release-notes
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e dmg -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os macos -p release-notes
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u https://njilefac.github.io/Jamaa/downloads/ -e deb -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os linux -p release-notes
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e exe -r -f true --file-version ${{ needs.prepare.outputs.version }} --os windows -p release-notes
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e dmg -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os macos -p release-notes
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e deb -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os linux -p release-notes
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

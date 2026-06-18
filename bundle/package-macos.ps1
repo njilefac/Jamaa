@@ -3,8 +3,8 @@ param (
 )
 
 # --- Static Configuration ---
-$solutionRoot = Get-Location
-$scriptRoot   = Split-Path -Parent $MyInvocation.MyCommand.Path
+$solutionRoot = "$PSScriptRoot/.."
+$scriptRoot   = $PSScriptRoot
 $projectPath  = "$solutionRoot/Jamaa.Desktop/Jamaa.Desktop.csproj"
 $projectName  = "Jamaa.Desktop"  # The binary name produced by the project
 $bundleName   = "Jamaa"
