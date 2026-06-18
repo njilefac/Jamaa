@@ -44,6 +44,7 @@ public partial class MemberProfileViewModel : ObservableObject, IRouteableViewMo
     private MemberData? _originalMember;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPicture))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteAvatarCommand))]
     private byte[]? _picture;
@@ -74,6 +75,8 @@ public partial class MemberProfileViewModel : ObservableObject, IRouteableViewMo
     public static MembershipType[] MembershipTypeOptions => Enum.GetValues<MembershipType>();
 
     public string Title => "Member Profile";
+
+    public bool HasPicture => Picture != null;
 
     public void Initialize(MemberProfileNavigationArgs args)
     {
