@@ -151,7 +151,7 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/releases?per_page=5")
           
           # Start generating HTML
-          cat > site/index.html <<'EOF'
+          cat > site/index.html <<'EOF_HTML'
           <!doctype html>
           <html lang="en">
           <head>
@@ -184,7 +184,7 @@ jobs:
               <p class="description">Jamaa is a cross-platform application designed to simplify the daily management of small associations and groups.</p>
               <h2>Releases</h2>
               <div class="releases-container">
-EOF
+          EOF_HTML
 
           # Process releases and inject into HTML
           JQ_QUERY='
@@ -204,28 +204,28 @@ EOF
               <div class=\"release-notes-summary\">" + ($summary | @html) + "</div>
               <div class=\"download-grid\">" +
                 ([
-                  {name: "macOS", ext: ".dmg"},
-                  {name: "Windows", ext: ".exe"},
-                  {name: "Linux", ext: ".deb"}
+                  {name: \"macOS\", ext: \".dmg\"},
+                  {name: \"Windows\", ext: \".exe\"},
+                  {name: \"Linux\", ext: \".deb\"}
                 ] | map(. as $p | 
                   ($rel.assets[] | select(.name | endswith($p.ext))) as $asset |
                   "<a href=\"\($asset.browser_download_url)\" class=\"download-btn\">
                     <b>\($p.name)</b>
                     <span>\($p.ext)</span>
                   </a>"
-                ) | join("")) +
+                ) | join(\"\")) +
               "</div>
             </div>"
           '
           jq -r "$JQ_QUERY" <<< "$RELEASES_JSON" >> site/index.html
 
           # Close HTML
-          cat >> site/index.html <<'EOF'
+          cat >> site/index.html <<'EOF_FOOTER'
               </div>
             </div>
           </body>
           </html>
-EOF
+          EOF_FOOTER
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
