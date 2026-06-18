@@ -5,9 +5,6 @@ on:
     types: [created]
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 permissions:
   contents: read
 
@@ -30,10 +27,10 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
@@ -42,7 +39,7 @@ jobs:
         run: ./bundle/package-macos.ps1 -Version ${{ needs.prepare.outputs.version }}
 
       - name: Upload macOS artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v4
         with:
           name: macos-dmg
           path: bundle/Jamaa-Installer-${{ needs.prepare.outputs.version }}.dmg
@@ -54,10 +51,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
@@ -69,7 +66,7 @@ jobs:
         run: ./bundle/package-windows.ps1 -Version ${{ needs.prepare.outputs.version }}
 
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v4
         with:
           name: windows-installer
           path: bundle/Jamaa-Installer-${{ needs.prepare.outputs.version }}.exe
@@ -81,10 +78,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
@@ -95,7 +92,7 @@ jobs:
         run: chmod +x ./bundle/package-linux.sh && ./bundle/package-linux.sh ${{ needs.prepare.outputs.version }}
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v4
         with:
           name: linux-package
           path: bundle/jamaa_${{ needs.prepare.outputs.version }}_amd64.deb
@@ -115,19 +112,19 @@ jobs:
 
     steps:
       - name: Download macOS artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: macos-dmg
           path: artifacts
 
       - name: Download Windows artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: windows-installer
           path: artifacts
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: linux-package
           path: artifacts
@@ -144,6 +141,7 @@ jobs:
           make_latest: ${{ github.event_name == 'release' }}
           generate_release_notes: ${{ github.event_name == 'workflow_dispatch' }}
           append_body: true
+          fail_on_unmatched_files: true
           body: |
             ### Downloads
             - [macOS (DMG)](${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.event.release.tag_name || format('v{0}', needs.prepare.outputs.version) }}/Jamaa-Installer-${{ needs.prepare.outputs.version }}.dmg)
@@ -157,6 +155,7 @@ jobs:
       - package-macos
       - package-windows
       - package-linux
+      - publish-release
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -170,19 +169,19 @@ jobs:
       # 💡 Note: Artifacts are placed into a single flat directory structure (site/downloads)
       # This allows NetSparkle's --binaries (-b) scan to cleanly process all extension types.
       - name: Download macOS artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: macos-dmg
           path: site/downloads
 
       - name: Download Windows artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: windows-installer
           path: site/downloads
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: linux-package
           path: site/downloads
@@ -256,12 +255,14 @@ jobs:
               </div>
               <div class=\"release-notes-summary\">" + ($summary | @html) + "</div>
               <div class=\"download-grid\">" +
-                ($platforms | map(. as $p | 
-                  ($rel.assets[] | select(.name | endswith($p.ext))) as $asset |
-                  "<a href=\"" + $asset.browser_download_url + "\" class=\"download-btn\">
-                    <b>" + $p.name + "</b>
-                    <span>" + $p.ext + "</span>
-                  </a>"
+                ([$platforms[] | . as $p | 
+                  ([$rel.assets[] | select(.name | endswith($p.ext))] | first) as $asset |
+                  if $asset then
+                    "<a href=\"" + $asset.browser_download_url + "\" class=\"download-btn\">
+                      <b>" + $p.name + "</b>
+                      <span>" + $p.ext + "</span>
+                    </a>"
+                  else "" end
                 ) | join("")) +
               "</div>
             </div>"
@@ -277,7 +278,7 @@ jobs:
           EOF_FOOTER
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
@@ -306,10 +307,10 @@ jobs:
           netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e deb -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os linux -p release-notes
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5
+        uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
