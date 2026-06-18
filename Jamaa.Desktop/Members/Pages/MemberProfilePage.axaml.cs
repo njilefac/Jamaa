@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using Avalonia.Controls.Primitives;
 
 namespace Jamaa.Desktop.Members.Pages;
 
@@ -40,6 +41,12 @@ public partial class MemberProfilePage : UserControl
 
                 return null;
             };
+    }
+
+    private void OnAvatarPreviewTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (sender is Control control && DataContext is MemberProfileViewModel { HasPicture: true })
+            FlyoutBase.ShowAttachedFlyout(control);
     }
 
     private void InitializeComponent()

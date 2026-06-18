@@ -42,6 +42,9 @@
         <u-semi:UrsaSemiTheme />
         <husk:HuskuiTheme Corner="Normal" />
         <semi:SemiTheme />
+        <Style Selector=":is(Control)">
+            <Setter Property="TextElement.FontFamily" Value="Inter, Segoe UI, Noto Sans, Arial" />
+        </Style>
         <StyleInclude Source="avares://Semi.Avalonia.DataGrid/Index.axaml" />
         <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
         <StyleInclude Source="avares://Jamaa/Styles/JamaaStyles.axaml" />

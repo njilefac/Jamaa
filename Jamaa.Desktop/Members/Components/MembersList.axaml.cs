@@ -1,14 +1,14 @@
 using System;
+using System.ComponentModel;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Layout;
-using Avalonia.VisualTree;
 using Domain.Organisation.Requests;
 using Domain.Organisation.Values;
+using FluentAvalonia.UI.Controls;
 using Jamaa.Desktop.Services.Interactions;
 
 namespace Jamaa.Desktop.Members.Components;
@@ -42,7 +42,7 @@ public partial class MembersList : UserControl, IDisposable
         _disposables.Clear();
         _disposables.Add(vm.AddMemberRegistration.RegisterHandler(async interaction =>
         {
-            var owner = this.FindAncestorOfType<Window>();
+            var owner = TopLevel.GetTopLevel(this);
             var confirmed = await ShowDialogAsync(
                 owner,
                 "Register New Member",
@@ -62,7 +62,7 @@ public partial class MembersList : UserControl, IDisposable
 
         _disposables.Add(vm.ConfirmEndRegistration.RegisterHandler(async interaction =>
         {
-            var owner = this.FindAncestorOfType<Window>();
+            var owner = TopLevel.GetTopLevel(this);
             var confirmed = await ShowDialogAsync(
                 owner,
                 "End Registration",
@@ -86,73 +86,55 @@ public partial class MembersList : UserControl, IDisposable
     }
 
     private static async Task<bool> ShowDialogAsync(
-        Window? owner,
+        TopLevel? owner,
         string title,
         Control content,
         string primaryButtonText,
         string secondaryButtonText)
     {
-        var dialog = new Window
+        var dialog = new FAContentDialog
         {
             Title = title,
-            Width = 720,
-            Height = 600,
-            CanResize = false,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner
+            Content = content,
+            PrimaryButtonText = primaryButtonText,
+            SecondaryButtonText = secondaryButtonText,
+            DefaultButton = FAContentDialogButton.Primary
         };
 
-        var result = false;
-        var completion = new TaskCompletionSource<bool>();
-
-        var primaryButton = new Button
+        if (content.DataContext is MemberRegistrationViewModel registrationVm)
         {
-            Content = primaryButtonText,
-            IsDefault = true
-        };
-        primaryButton.Click += (_, _) =>
-        {
-            result = true;
-            completion.TrySetResult(true);
-            dialog.Close();
-        };
+            void UpdatePrimaryButtonState()
+            {
+                dialog.IsPrimaryButtonEnabled = registrationVm.CanRegister;
+            }
 
-        var secondaryButton = new Button
-        {
-            Content = secondaryButtonText,
-            IsCancel = true
-        };
-        secondaryButton.Click += (_, _) =>
-        {
-            result = false;
-            completion.TrySetResult(false);
-            dialog.Close();
-        };
+            PropertyChangedEventHandler propertyChangedHandler = (_, args) =>
+            {
+                if (string.IsNullOrEmpty(args.PropertyName) || args.PropertyName == nameof(MemberRegistrationViewModel.CanRegister))
+                    UpdatePrimaryButtonState();
+            };
 
-        dialog.Closed += (_, _) => completion.TrySetResult(result);
+            EventHandler<DataErrorsChangedEventArgs> errorsChangedHandler = (_, _) => UpdatePrimaryButtonState();
+            registrationVm.PropertyChanged += propertyChangedHandler;
+            registrationVm.ErrorsChanged += errorsChangedHandler;
 
-        var buttonRow = new StackPanel
-        {
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
-        };
-        buttonRow.Children.Add(secondaryButton);
-        buttonRow.Children.Add(primaryButton);
+            dialog.Closed += (_, _) =>
+            {
+                registrationVm.PropertyChanged -= propertyChangedHandler;
+                registrationVm.ErrorsChanged -= errorsChangedHandler;
+            };
 
-        var layout = new StackPanel
-        {
-            Margin = new Thickness(20),
-            Spacing = 16
-        };
-        layout.Children.Add(content);
-        layout.Children.Add(buttonRow);
-
-        dialog.Content = layout;
+            UpdatePrimaryButtonState();
+            dialog.PrimaryButtonClick += (_, args) =>
+            {
+                if (!registrationVm.ValidateForSubmit())
+                    args.Cancel = true;
+            };
+        }
 
         if (owner is null)
-            dialog.Show();
-        else
-            await dialog.ShowDialog(owner);
+            return await dialog.ShowAsync() == FAContentDialogResult.Primary;
 
-        return await completion.Task;
+        return await dialog.ShowAsync(owner) == FAContentDialogResult.Primary;
     }
 }

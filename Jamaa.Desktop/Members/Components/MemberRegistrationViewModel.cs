@@ -20,9 +20,17 @@ public partial class MemberRegistrationViewModel : ValidatableFormViewModel, IRe
 
     [ObservableProperty] private DateTime _dateOfBirth;
 
-    [ObservableProperty] [Required] private string? _firstName;
+    [ObservableProperty]
+    [Required(ErrorMessage = "First name is required.")]
+    [MinLength(2, ErrorMessage = "First name must be at least 2 characters.")]
+    [NotifyPropertyChangedFor(nameof(CanRegister))]
+    private string? _firstName;
 
-    [ObservableProperty] [Required] private string? _lastName;
+    [ObservableProperty]
+    [Required(ErrorMessage = "Last name is required.")]
+    [MinLength(2, ErrorMessage = "Last name must be at least 2 characters.")]
+    [NotifyPropertyChangedFor(nameof(CanRegister))]
+    private string? _lastName;
 
     [ObservableProperty] private MembershipType _membershipType;
     [ObservableProperty] private string? _middleName;
@@ -37,10 +45,33 @@ public partial class MemberRegistrationViewModel : ValidatableFormViewModel, IRe
         SelectedGender = Gender.Unknown;
         MembershipType = MembershipType.Regular;
         RegistrationBegin = DateTime.Today;
+        ErrorsChanged += (_, _) => OnPropertyChanged(nameof(CanRegister));
+        ValidateProperty(FirstName, nameof(FirstName));
+        ValidateProperty(LastName, nameof(LastName));
     }
 
     public List<Gender> GenderOptions { get; }
     public MemberRegistrationRequest Result => GetRegistrationRequest();
+
+    public bool CanRegister
+    {
+        get => !HasErrors;
+    }
+
+    partial void OnFirstNameChanged(string? value)
+    {
+        ValidateProperty(value, nameof(FirstName));
+    }
+
+    partial void OnLastNameChanged(string? value)
+    {
+        ValidateProperty(value, nameof(LastName));
+    }
+
+    public bool ValidateForSubmit()
+    {
+        return ValidateAndShow();
+    }
 
     private MemberRegistrationRequest GetRegistrationRequest()
     {
@@ -68,6 +99,6 @@ public partial class MemberRegistrationViewModel : ValidatableFormViewModel, IRe
         SelectedGender = Gender.Unknown;
         MembershipType = MembershipType.Regular;
         RegistrationBegin = DateTime.Today;
-        ClearErrors();
+        ResetValidationState();
     }
 }

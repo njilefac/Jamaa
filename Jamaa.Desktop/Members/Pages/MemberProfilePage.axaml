@@ -17,6 +17,22 @@
             FalseValue="True"
             TrueValue="False"
             x:Key="InvertBoolToEnabledConverter" />
+        <Flyout x:Key="AvatarPreviewFlyout">
+            <Border
+                Background="{DynamicResource ThemeBackgroundBrush}"
+                BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="12">
+                <Image
+                    Height="320"
+                    MaxHeight="320"
+                    MaxWidth="320"
+                    Source="{Binding Picture, Converter={StaticResource ByteArrayToBitmapConverter}}"
+                    Stretch="Uniform"
+                    Width="320" />
+            </Border>
+        </Flyout>
     </UserControl.Resources>
     <UserControl.Styles>
         <Style Selector="DockPanel &gt; Border">
@@ -38,12 +54,37 @@
                                 Grid.ColumnSpan="2"
                                 Grid.Row="0"
                                 Spacing="5">
-                                <u:Avatar
+                                <Border
+                                    Background="Transparent"
+                                    BorderBrush="{DynamicResource AppTextPrimary}"
+                                    BorderThickness="4"
+                                    CornerRadius="60"
+                                    FlyoutBase.AttachedFlyout="{StaticResource AvatarPreviewFlyout}"
                                     Height="120"
                                     HorizontalAlignment="Left"
                                     Margin="0,0,0,10"
-                                    Source="{Binding Picture, Converter={StaticResource ByteArrayToBitmapConverter}}"
-                                    Width="120" />
+                                    Padding="4"
+                                    Tapped="OnAvatarPreviewTapped"
+                                    Width="120">
+                                    <Grid>
+                                        <u:Avatar
+                                            Height="112"
+                                            HorizontalAlignment="Stretch"
+                                            IsVisible="{Binding HasPicture}"
+                                            Source="{Binding Picture, Converter={StaticResource ByteArrayToBitmapConverter}}"
+                                            Width="112" />
+                                        <Border
+                                            Background="{DynamicResource AppCardBackground}"
+                                            CornerRadius="56"
+                                            IsVisible="{Binding HasPicture, Converter={StaticResource InvertBoolToEnabledConverter}}" />
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            IsVisible="{Binding HasPicture, Converter={StaticResource InvertBoolToEnabledConverter}}"
+                                            Opacity="0.7"
+                                            Text="No photo"
+                                            VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
                                 <StackPanel Orientation="Horizontal" Spacing="5">
                                     <Button
                                         Command="{Binding ChangeAvatarCommand}"

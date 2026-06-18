@@ -1,91 +1,59 @@
 <UserControl
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    d:DesignHeight="420"
+    d:DesignWidth="620"
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Members.Components.MemberRegistrationView"
     x:DataType="vm:MemberRegistrationViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="https://irihi.tech/ursa"
     xmlns:vm="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <StackPanel>
-        <ExperimentalAcrylicBorder IsHitTestVisible="False">
-            <ExperimentalAcrylicBorder.Material>
-                <ExperimentalAcrylicMaterial
-                    BackgroundSource="Digger"
-                    MaterialOpacity="0.65"
-                    TintColor="Black"
-                    TintOpacity="0.6" />
-            </ExperimentalAcrylicBorder.Material>
-        </ExperimentalAcrylicBorder>
-        <Border Classes="box" Padding="8">
-            <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-                <TextBlock
-                    Classes="form label"
-                    Grid.Column="0"
-                    Grid.Row="0"
-                    Text="First Name" />
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <u:Form Margin="0,0,8,0">
+            <u:FormItem IsRequired="True" Label="First Name">
                 <TextBox
                     Classes="form field"
-                    Grid.Column="1"
-                    Grid.Row="0"
-                    Text="{Binding FirstName}"
+                    Text="{Binding FirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     x:Name="FirstNameField" />
+            </u:FormItem>
 
-                <TextBlock
-                    Classes="form label"
-                    Grid.Column="0"
-                    Grid.Row="1"
-                    Text="Middle Name" />
+            <u:FormItem Label="Middle Name">
                 <TextBox
                     Classes="form field"
-                    Grid.Column="1"
-                    Grid.Row="1"
-                    Text="{Binding MiddleName}" />
+                    Text="{Binding MiddleName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </u:FormItem>
 
-                <TextBlock
-                    Classes="form label"
-                    Grid.Column="0"
-                    Grid.Row="2"
-                    Text="Last Name" />
+            <u:FormItem IsRequired="True" Label="Last Name">
                 <TextBox
                     Classes="form field"
-                    Grid.Column="1"
-                    Grid.Row="2"
-                    Text="{Binding LastName}" />
+                    Text="{Binding LastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </u:FormItem>
 
-                <TextBlock
-                    Classes="form label"
-                    Grid.Column="0"
-                    Grid.Row="3"
-                    Text="Gender" />
+            <u:FormItem Label="Gender">
                 <ComboBox
                     Classes="form field"
-                    Grid.Column="1"
-                    Grid.Row="3"
                     ItemsSource="{Binding GenderOptions}"
-                    SelectedItem="{Binding Mode=TwoWay, Path=SelectedGender}">
+                    SelectedItem="{Binding SelectedGender, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <TextBlock
-                    Classes="form label"
-                    Grid.Column="0"
-                    Grid.Row="4"
-                    Text="Member Since" />
+            </u:FormItem>
+
+            <u:FormItem Label="Member Since">
                 <CalendarDatePicker
                     Classes="form field"
                     CustomDateFormatString="dd.MMM.yyyy"
                     DisplayDate="{Binding RegistrationBegin, Mode=TwoWay}"
-                    Grid.Column="1"
-                    Grid.Row="4"
-                    SelectedDate="{Binding RegistrationBegin}"
+                    SelectedDate="{Binding RegistrationBegin, Mode=TwoWay}"
                     SelectedDateFormat="Custom" />
-            </Grid>
-        </Border>
-    </StackPanel>
+            </u:FormItem>
+        </u:Form>
+    </ScrollViewer>
 </UserControl>
