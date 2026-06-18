@@ -7,6 +7,7 @@ using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using Jamaa.Application.Shared.Logging;
 using Jamaa.Application.Users.Services;
 using Jamaa.Data.Configuration;
@@ -48,7 +49,7 @@ public static partial class InitializationService
     private static ServiceProvider? _serviceProvider;
     private static SparkleUpdater? _sparkle;
     private static IClassicDesktopStyleApplicationLifetime? _lifeTime;
-    private static readonly BehaviorSubject<string> StatusSubject = new("Initializing application...");
+    private static readonly BehaviorSubject<string> StatusSubject = new("Getting Jamaa ready...");
     private static readonly BehaviorSubject<double> ProgressSubject = new(0);
     public static IObservable<string> Status => StatusSubject.AsObservable();
     public static IObservable<double> Progress => ProgressSubject.AsObservable();
@@ -57,38 +58,40 @@ public static partial class InitializationService
     public static async Task<Shell> InitializeAsync(IClassicDesktopStyleApplicationLifetime lifeTime)
     {
         _lifeTime = lifeTime;
-        await UpdateStatus("Setting up logging...", 5);
+        TraceStartup("InitializeAsync:start");
+        await UpdateStatus("Preparing your workspace...", 20);
+        TraceStartup("SetupLogging");
         SetupLogging();
 
-        await UpdateStatus("Building configuration...", 15);
+        TraceStartup("BuildConfiguration");
         var configuration = BuildConfiguration();
 
-        await UpdateStatus("Creating service provider...", 30);
+        TraceStartup("CreateServiceProvider");
         _serviceProvider = CreateServiceProvider(configuration, lifeTime);
 
+        TraceStartup("StartEmbeddedWebServerAsync");
         var embeddedWebServerTask = StartEmbeddedWebServerAsync(_serviceProvider);
 
-        await UpdateStatus("Verifying licenses...", 40);
+        await UpdateStatus("Loading features...", 45);
+        TraceStartup("InitializeSyncfusionLicense");
         InitializeSyncfusionLicense(_serviceProvider);
 
-        await UpdateStatus("Registering routes...", 45);
+        TraceStartup("RegisterRoutes");
         RegisterRoutes(_serviceProvider.GetRequiredService<IRouteRegistry>());
 
-        await UpdateStatus("Updating database...", 60);
-        UpdateDatabaseSafely(_serviceProvider);
+        await UpdateStatus("Starting services...", 70);
+        TraceStartup("StartActorServicesAsync");
+        await StartActorServicesAsync(_serviceProvider);
 
-        await UpdateStatus("Starting background services...", 75);
-        await StartBackgroundServicesAsync(_serviceProvider, embeddedWebServerTask);
-
-        await UpdateStatus($"started embedded server", 80);
-
-        await UpdateStatus("Setting up diagnostics...", 90);
-        SetupDiagnostics(_serviceProvider);
-
+        await UpdateStatus("Almost ready...", 90);
+        TraceStartup("SetApplicationCulture");
         SetApplicationCulture();
 
-        await UpdateStatus("Finalizing initialization...", 100);
-        var mainWindow = CreateAndConfigureMainWindow(_serviceProvider);
+        await UpdateStatus("Opening Jamaa...", 100);
+        TraceStartup("CreateAndConfigureMainWindow");
+        var mainWindow = await Dispatcher.UIThread.InvokeAsync(() => CreateAndConfigureMainWindow(_serviceProvider));
+        _ = RunDeferredStartupAsync(_serviceProvider, embeddedWebServerTask);
+        TraceStartup("InitializeAsync:done");
         mainWindow.Opened += (s, e) => CheckForUpdates(_serviceProvider!);
         return mainWindow;
     }
@@ -110,10 +113,12 @@ public static partial class InitializationService
 
     private static void UpdateDatabaseSafely(IServiceProvider serviceProvider)
     {
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        using var scope = serviceProvider.CreateScope();
+        var scopedProvider = scope.ServiceProvider;
+        var logger = scopedProvider.GetRequiredService<ILogger<Program>>();
         try
         {
-            UpdateDatabase(serviceProvider, logger);
+            UpdateDatabase(scopedProvider, logger);
         }
         catch (Exception ex)
         {
@@ -162,9 +167,15 @@ public static partial class InitializationService
 
     private static async Task UpdateStatus(string status, double progress)
     {
+        Log.Information("Startup status: {Status} ({Progress}%)", status, progress);
         StatusSubject.OnNext(status);
         ProgressSubject.OnNext(progress);
         await Task.Yield();
+    }
+
+    private static void TraceStartup(string step)
+    {
+        Log.Information("Startup step: {Step}", step);
     }
 
     private static void SetupLogging()
@@ -206,12 +217,38 @@ public static partial class InitializationService
         return embeddedWebServer.StartAsync(CancellationToken.None);
     }
 
-    private static async Task StartBackgroundServicesAsync(IServiceProvider serviceProvider, Task embeddedWebServerTask)
+    private static async Task StartActorServicesAsync(IServiceProvider serviceProvider)
     {
         var akkaService = serviceProvider.GetRequiredService<IHostedService>();
         await akkaService.StartAsync(CancellationToken.None);
+    }
 
-        await embeddedWebServerTask.ConfigureAwait(false);
+    private static async Task ObserveBackgroundServicesAsync(Task embeddedWebServerTask)
+    {
+        try
+        {
+            await embeddedWebServerTask.ConfigureAwait(false);
+            Log.Information("Embedded web server started.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to start embedded web server.");
+        }
+    }
+
+    private static async Task RunDeferredStartupAsync(IServiceProvider serviceProvider, Task embeddedWebServerTask)
+    {
+        await UpdateStatus("Final checks...", 60);
+        TraceStartup("UpdateDatabaseSafely");
+        UpdateDatabaseSafely(serviceProvider);
+
+        await UpdateStatus("Starting background tasks...", 75);
+        TraceStartup("ObserveBackgroundServicesAsync");
+        _ = ObserveBackgroundServicesAsync(embeddedWebServerTask);
+
+        await UpdateStatus("Finishing setup...", 90);
+        TraceStartup("SetupDiagnostics");
+        SetupDiagnostics(serviceProvider);
     }
 
     private static void InitializeSyncfusionLicense(IServiceProvider serviceProvider)

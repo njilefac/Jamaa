@@ -3,10 +3,13 @@
     Padding="10"
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Shared.ModulePageHeader"
+    x:DataType="nav:INavigationHost"
+    x:CompileBindings="False"
     xmlns="https://github.com/avaloniaui"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:nav="clr-namespace:Jamaa.Desktop.Services.Navigation.Interfaces"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
