@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Controls.Models.TreeDataGrid;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -57,6 +59,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
     private string _accountName = string.Empty;
 
     [ObservableProperty] private ObservableCollection<AccountItemViewModel> _accounts = [];
+    [ObservableProperty] private HierarchicalTreeDataGridSource<AccountItemViewModel>? _accountsSource;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddAccountCommand))]
@@ -168,6 +171,7 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
         Accounts.Clear();
         var rootAccounts = await BuildAccountTree(accounts, organisationId);
         foreach (var root in rootAccounts) Accounts.Add(root);
+        AccountsSource = BuildAccountsSource();
 
         RefreshFilteredParentAccounts();
         OnPropertyChanged(nameof(AllAccounts));
@@ -244,6 +248,27 @@ public partial class ChartOfAccountsViewModel : ValidatableFormViewModel, IAppli
 
         RecomputeParentOpeningBalances(roots);
         return roots;
+    }
+
+    private HierarchicalTreeDataGridSource<AccountItemViewModel> BuildAccountsSource()
+    {
+        return new HierarchicalTreeDataGridSource<AccountItemViewModel>(Accounts)
+        {
+            Columns =
+            {
+                new HierarchicalExpanderColumn<AccountItemViewModel>(
+                    new TextColumn<AccountItemViewModel, string>("Account", account => account.Name),
+                    account => account.SubAccounts),
+                new TextColumn<AccountItemViewModel, string>("Code", account => account.Code, new GridLength(90)),
+                new TextColumn<AccountItemViewModel, string>("Description", account => account.Description),
+                new TextColumn<AccountItemViewModel, string>("Type", account => account.TypeDisplay, new GridLength(120)),
+                new TextColumn<AccountItemViewModel, string>("Contra", account => account.ContraAccountDisplay, new GridLength(90)),
+                new TemplateColumn<AccountItemViewModel>("Opening Balance", "OpeningBalanceCellTemplate", width: new GridLength(170)),
+                new TemplateColumn<AccountItemViewModel>(string.Empty, "OpeningBalanceSaveTemplate", width: new GridLength(90)),
+                new TemplateColumn<AccountItemViewModel>(string.Empty, "AccountEditActionTemplate", width: new GridLength(80)),
+                new TemplateColumn<AccountItemViewModel>(string.Empty, "AccountToggleActionTemplate", width: new GridLength(110))
+            }
+        };
     }
 
     private void SelectOpeningBalancePeriod(FiscalCalendarData fiscalCalendar)

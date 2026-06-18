@@ -43,6 +43,7 @@
         <husk:HuskuiTheme Corner="Normal" />
         <semi:SemiTheme />
         <StyleInclude Source="avares://Semi.Avalonia.DataGrid/Index.axaml" />
+        <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
         <StyleInclude Source="avares://Jamaa/Styles/JamaaStyles.axaml" />
     </Application.Styles>
 

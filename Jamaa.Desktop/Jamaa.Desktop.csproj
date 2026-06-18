@@ -131,6 +131,7 @@
         <PackageReference Include="Serilog.Sinks.File" />
         <PackageReference Include="System.Reactive" />
         <PackageReference Include="System.Security.Cryptography.Xml" NoWarn="NU1510" />
+        <PackageReference Include="TreeDataGrid.Avalonia" />
         <PackageReference Remove="Microsoft.Maui.Controls" />
         <PackageReference Remove="Microsoft.Maui.Controls.Compatibility" />
         <PackageReference Include="Tmds.DBus.Protocol" />
