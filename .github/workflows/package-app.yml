@@ -112,25 +112,25 @@ jobs:
 
     steps:
       - name: Download macOS artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-dmg
           path: artifacts
 
       - name: Download Windows artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-installer
           path: artifacts
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-package
           path: artifacts
 
       - name: Upload Release Assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         with:
           files: |
@@ -169,19 +169,19 @@ jobs:
       # 💡 Note: Artifacts are placed into a single flat directory structure (site/downloads)
       # This allows NetSparkle's --binaries (-b) scan to cleanly process all extension types.
       - name: Download macOS artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-dmg
           path: site/downloads
 
       - name: Download Windows artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-installer
           path: site/downloads
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-package
           path: site/downloads
@@ -240,16 +240,15 @@ jobs:
           PLATFORMS_JSON='[{"name":"macOS","ext":".dmg"},{"name":"Windows","ext":".exe"},{"name":"Linux","ext":".deb"}]'
           
           JQ_QUERY='
-            . as $releases |
             to_entries[] | . as $entry | .value as $rel |
             ($rel.published_at | split("T")[0]) as $date |
             ($rel.body | if . == null then "No release notes provided." else . end | sub("\r\n"; "\n"; "g") | split("\n") | .[0:3] | join("\n") | if length > 200 then .[0:200] + "..." else . end) as $summary |
             "<div class=\"release-card\">
               <div class=\"release-header\">
                 <div>
-                  <span class=\"version-tag\">" + $rel.tag_name + "</span>
-                  " + (if $entry.key == 0 then "<span class=\"latest-badge\">Latest</span>" else "" end) + "
-                  <span class=\"release-date\">" + $date + "</span>
+                  <span class=\"version-tag\">" + $rel.tag_name + "</span>" +
+                  (if $entry.key == 0 then "<span class=\"latest-badge\">Latest</span>" else "" end) +
+                  "<span class=\"release-date\">" + $date + "</span>
                 </div>
                 <a href=\"" + $rel.html_url + "\" class=\"full-notes-link\" target=\"_blank\">Full Release Notes &rarr;</a>
               </div>
@@ -263,7 +262,7 @@ jobs:
                       <span>" + $p.ext + "</span>
                     </a>"
                   else "" end
-                ) | join("")) +
+                ] | join("")) +
               "</div>
             </div>"
           '
@@ -278,7 +277,7 @@ jobs:
           EOF_FOOTER
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
 
@@ -307,10 +306,10 @@ jobs:
           netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e deb -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os linux -p release-notes
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
