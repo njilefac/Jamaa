@@ -5,7 +5,7 @@ param (
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$solutionRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$solutionRoot = "$PSScriptRoot/.."
 $projectPath = Join-Path $solutionRoot 'Jamaa.Desktop/Jamaa.Desktop.csproj'
 $publishDir = Join-Path $solutionRoot 'publish/windows'
 $outputFile = Join-Path $PSScriptRoot "Jamaa-Installer-$Version.exe"
@@ -22,7 +22,7 @@ foreach ($path in @($publishDir, $stagingDir, $outputFile)) {
 }
 
 Write-Host "🚀 Publishing .NET project..." -ForegroundColor Cyan
-dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishReadyToRun=false -o $publishDir -p:Version=$Version
+dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishTrimmed=false -p:PublishReadyToRun=false -o $publishDir -p:Version=$Version
 
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed"
