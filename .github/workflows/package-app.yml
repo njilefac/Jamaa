@@ -240,7 +240,7 @@ jobs:
           PLATFORMS_JSON='[{"name":"macOS","ext":".dmg"},{"name":"Windows","ext":".exe"},{"name":"Linux","ext":".deb"}]'
           
           JQ_QUERY='
-            to_entries[] | . as $entry | .value as $rel |
+            .[0:5] | to_entries[] | . as $entry | .value as $rel |
             ($rel.published_at | split("T")[0]) as $date |
             ($rel.body | if . == null then "No release notes provided." else . end | sub("\r\n"; "\n"; "g") | split("\n") | .[0:3] | join("\n") | if length > 200 then .[0:200] + "..." else . end) as $summary |
             "<div class=\"release-card\">
