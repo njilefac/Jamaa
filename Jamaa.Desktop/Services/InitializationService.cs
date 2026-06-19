@@ -196,7 +196,7 @@ public static partial class InitializationService
 
         return new ConfigurationBuilder()
             .SetBasePath(baseDir)
-            .AddJsonFile("appSettings.json", true, true)
+            .AddJsonFile("appSettings.json", false, true)
             .AddJsonFile($"appSettings.{environment}.json", true, true)
             .AddEnvironmentVariables()
             .Build();

@@ -16,7 +16,7 @@ icon_path="$solution_root/Jamaa.Desktop/Assets/Icons/jamaa.png"
 
 rm -rf "$publish_dir" "$package_root" "$deb_file"
 
-dotnet publish "$project_path" -c Release -r linux-x64 --self-contained true -p:PublishReadyToRun=false -o "$publish_dir" -p:Version="$version"
+dotnet publish "$project_path" -c Release -r linux-x64 --self-contained true -p:PublishTrimmed=false -p:PublishReadyToRun=false -o "$publish_dir" -p:Version="$version"
 
 install -d \
   "$package_dir/DEBIAN" \
