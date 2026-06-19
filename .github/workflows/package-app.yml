@@ -5,9 +5,6 @@ on:
     types: [created]
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 permissions:
   contents: read
 
@@ -42,7 +39,7 @@ jobs:
         run: ./bundle/package-macos.ps1 -Version ${{ needs.prepare.outputs.version }}
 
       - name: Upload macOS artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7
         with:
           name: macos-dmg
           path: bundle/Jamaa-Installer-${{ needs.prepare.outputs.version }}.dmg
@@ -69,7 +66,7 @@ jobs:
         run: ./bundle/package-windows.ps1 -Version ${{ needs.prepare.outputs.version }}
 
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v4
         with:
           name: windows-installer
           path: bundle/Jamaa-Installer-${{ needs.prepare.outputs.version }}.exe
@@ -81,10 +78,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
@@ -95,7 +92,7 @@ jobs:
         run: chmod +x ./bundle/package-linux.sh && ./bundle/package-linux.sh ${{ needs.prepare.outputs.version }}
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v4
         with:
           name: linux-package
           path: bundle/jamaa_${{ needs.prepare.outputs.version }}_amd64.deb
@@ -133,7 +130,7 @@ jobs:
           path: artifacts
 
       - name: Upload Release Assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         with:
           files: |
@@ -144,6 +141,7 @@ jobs:
           make_latest: ${{ github.event_name == 'release' }}
           generate_release_notes: ${{ github.event_name == 'workflow_dispatch' }}
           append_body: true
+          fail_on_unmatched_files: true
           body: |
             ### Downloads
             - [macOS (DMG)](${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.event.release.tag_name || format('v{0}', needs.prepare.outputs.version) }}/Jamaa-Installer-${{ needs.prepare.outputs.version }}.dmg)
@@ -157,6 +155,7 @@ jobs:
       - package-macos
       - package-windows
       - package-linux
+      - publish-release
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -241,28 +240,29 @@ jobs:
           PLATFORMS_JSON='[{"name":"macOS","ext":".dmg"},{"name":"Windows","ext":".exe"},{"name":"Linux","ext":".deb"}]'
           
           JQ_QUERY='
-            . as $releases |
-            to_entries[] | . as $entry | .value as $rel |
+            .[0:5] | to_entries[] | . as $entry | .value as $rel |
             ($rel.published_at | split("T")[0]) as $date |
             ($rel.body | if . == null then "No release notes provided." else . end | sub("\r\n"; "\n"; "g") | split("\n") | .[0:3] | join("\n") | if length > 200 then .[0:200] + "..." else . end) as $summary |
             "<div class=\"release-card\">
               <div class=\"release-header\">
                 <div>
-                  <span class=\"version-tag\">" + $rel.tag_name + "</span>
-                  " + (if $entry.key == 0 then "<span class=\"latest-badge\">Latest</span>" else "" end) + "
-                  <span class=\"release-date\">" + $date + "</span>
+                  <span class=\"version-tag\">" + $rel.tag_name + "</span>" +
+                  (if $entry.key == 0 then "<span class=\"latest-badge\">Latest</span>" else "" end) +
+                  "<span class=\"release-date\">" + $date + "</span>
                 </div>
                 <a href=\"" + $rel.html_url + "\" class=\"full-notes-link\" target=\"_blank\">Full Release Notes &rarr;</a>
               </div>
               <div class=\"release-notes-summary\">" + ($summary | @html) + "</div>
               <div class=\"download-grid\">" +
-                ($platforms | map(. as $p | 
-                  ($rel.assets[] | select(.name | endswith($p.ext))) as $asset |
-                  "<a href=\"" + $asset.browser_download_url + "\" class=\"download-btn\">
-                    <b>" + $p.name + "</b>
-                    <span>" + $p.ext + "</span>
-                  </a>"
-                ) | join("")) +
+                ([$platforms[] | . as $p | 
+                  ([$rel.assets[] | select(.name | endswith($p.ext))] | first) as $asset |
+                  if $asset then
+                    "<a href=\"" + $asset.browser_download_url + "\" class=\"download-btn\">
+                      <b>" + $p.name + "</b>
+                      <span>" + $p.ext + "</span>
+                    </a>"
+                  else "" end
+                ] | join("")) +
               "</div>
             </div>"
           '
