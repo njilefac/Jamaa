@@ -26,4 +26,15 @@ public class VersionServiceTests
 
         comparable.ShouldBe(new Version(0, 0, 0));
     }
+
+    [Theory]
+    [InlineData("1.2.3+abc123", "1.2.3")]
+    [InlineData("1.2.3-beta.1", "1.2.3-beta.1")]
+    [InlineData("v1.2.3-beta+sha", "1.2.3-beta")]
+    public void GetDisplayVersion_ShouldKeepPrereleaseSuffix_AndDropBuildMetadata(string input, string expected)
+    {
+        var normalized = VersionService.GetDisplayVersion(input);
+
+        normalized.ShouldBe(expected);
+    }
 }

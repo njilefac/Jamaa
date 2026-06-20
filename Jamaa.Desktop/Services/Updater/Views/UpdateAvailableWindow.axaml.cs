@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using NetSparkleUpdater;
 using NetSparkleUpdater.Enums;
@@ -20,6 +22,7 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
     private Button? _remindLaterButton;
     private ScrollViewer? _releaseNotesScrollViewer;
     private Border? _releaseNotesBorder;
+    private bool _isUpdateAlreadyDownloaded;
 
     public UpdateAvailableWindow()
     {
@@ -32,6 +35,7 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
         InitializeComponent();
         SetupControls();
         Updates = updates;
+        _isUpdateAlreadyDownloaded = isUpdateAlreadyDownloaded;
 
         if (_versionText != null)
         {
@@ -40,8 +44,7 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
 
         if (_currentVersionText != null)
         {
-            var normalizedCurrentVersion = currentVersion.TrimStart('v', 'V');
-            _currentVersionText.Text = $"Installed version: v{normalizedCurrentVersion}";
+            _currentVersionText.Text = FormatInstalledVersionLabel(currentVersion);
         }
 
         if (_releaseNotesTextBlock != null)
@@ -51,7 +54,7 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
 
         if (_installButton != null)
         {
-            _installButton.Click += (s, e) => Respond(UpdateAvailableResult.InstallUpdate);
+            _installButton.Click += async (s, e) => await HandleInstallRequested();
         }
 
         if (_skipButton != null)
@@ -100,6 +103,7 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
 
     public void ShowUpdateAvailable(bool isUpdateAlreadyDownloaded)
     {
+        _isUpdateAlreadyDownloaded = isUpdateAlreadyDownloaded;
         Show();
     }
 
@@ -121,6 +125,44 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
     public void HideSkipButton()
     {
         if (_skipButton != null) _skipButton.IsVisible = false;
+    }
+
+    internal static string FormatInstalledVersionLabel(string? currentVersion)
+    {
+        return FormatInstalledVersionLabel(currentVersion, VersionService.GetDisplayVersion());
+    }
+
+    internal static string FormatInstalledVersionLabel(string? currentVersion, string? fallbackVersion)
+    {
+        var normalizedCurrentVersion = NormalizeVersionForDisplay(currentVersion);
+        if (string.IsNullOrWhiteSpace(normalizedCurrentVersion))
+        {
+            normalizedCurrentVersion = NormalizeVersionForDisplay(fallbackVersion);
+        }
+
+        if (string.IsNullOrWhiteSpace(normalizedCurrentVersion))
+        {
+            normalizedCurrentVersion = "0.0.0";
+        }
+
+        return $"Installed version: v{normalizedCurrentVersion}";
+    }
+
+    private static string NormalizeVersionForDisplay(string? version)
+    {
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            return string.Empty;
+        }
+
+        var normalizedVersion = version.Trim().TrimStart('v', 'V').Trim();
+        var plusIndex = normalizedVersion.IndexOf('+');
+        if (plusIndex > 0)
+        {
+            normalizedVersion = normalizedVersion.Substring(0, plusIndex);
+        }
+
+        return normalizedVersion;
     }
 
     private static string BuildReleaseNotes(IReadOnlyList<AppCastItem> updates)
@@ -162,6 +204,34 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
         return !string.IsNullOrWhiteSpace(latestReleaseNotesLink)
             ? $"Release notes: {latestReleaseNotesLink}"
             : "No release notes available.";
+    }
+
+    private async Task HandleInstallRequested()
+    {
+        if (Updates.Count == 0)
+        {
+            Respond(UpdateAvailableResult.InstallUpdate);
+            return;
+        }
+
+        var currentItem = CurrentItem;
+        var downloadPathTask = Updater?.GetDownloadPathForAppCastItem(currentItem);
+        var downloadPath = downloadPathTask == null ? null : await downloadPathTask;
+        if (!ShouldUseDownloadedInstaller(_isUpdateAlreadyDownloaded, downloadPath))
+        {
+            Respond(UpdateAvailableResult.InstallUpdate);
+            return;
+        }
+
+        await Updater!.InstallUpdate(currentItem, downloadPath);
+        Close();
+    }
+
+    internal static bool ShouldUseDownloadedInstaller(bool isUpdateAlreadyDownloaded, string? downloadPath)
+    {
+        return isUpdateAlreadyDownloaded
+               && !string.IsNullOrWhiteSpace(downloadPath)
+               && File.Exists(downloadPath);
     }
 
     private void InitializeComponent()
