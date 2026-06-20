@@ -134,8 +134,8 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
 
         foreach (var update in updates)
         {
-            var hasDescription = !string.IsNullOrWhiteSpace(update.Description);
-            if (!hasDescription)
+            var description = update.Description;
+            if (string.IsNullOrWhiteSpace(description))
             {
                 continue;
             }
@@ -150,7 +150,7 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
                 ? update.Version
                 : update.ShortVersion;
             notes.AppendLine($"v{version}");
-            notes.AppendLine(update.Description.Trim());
+            notes.AppendLine(description.Trim());
         }
 
         if (notes.Length > 0)
