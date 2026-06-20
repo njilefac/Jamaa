@@ -1,12 +1,12 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Avalonia.Controls;
 using NetSparkleUpdater;
 using NetSparkleUpdater.Enums;
 using NetSparkleUpdater.Interfaces;
 using Huskui.Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Jamaa.Desktop.Services;
 
 namespace Jamaa.Desktop.Services.Updater.Views;
 
@@ -27,7 +27,7 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
         SetupControls();
     }
 
-    public UpdateAvailableWindow(List<AppCastItem> updates, bool isUpdateAlreadyDownloaded, string releaseNotes)
+    public UpdateAvailableWindow(List<AppCastItem> updates, bool isUpdateAlreadyDownloaded, string currentVersion)
     {
         InitializeComponent();
         SetupControls();
@@ -40,12 +40,13 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
 
         if (_currentVersionText != null)
         {
-            _currentVersionText.Text = $"Installed version: {VersionService.GetVersion()}";
+            var normalizedCurrentVersion = currentVersion.TrimStart('v', 'V');
+            _currentVersionText.Text = $"Installed version: v{normalizedCurrentVersion}";
         }
 
         if (_releaseNotesTextBlock != null)
         {
-            _releaseNotesTextBlock.Text = releaseNotes;
+            _releaseNotesTextBlock.Text = BuildReleaseNotes(updates);
         }
 
         if (_installButton != null)
@@ -120,6 +121,47 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
     public void HideSkipButton()
     {
         if (_skipButton != null) _skipButton.IsVisible = false;
+    }
+
+    private static string BuildReleaseNotes(IReadOnlyList<AppCastItem> updates)
+    {
+        if (updates.Count == 0)
+        {
+            return "No release notes available.";
+        }
+
+        var notes = new StringBuilder();
+
+        foreach (var update in updates)
+        {
+            var description = update.Description;
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                continue;
+            }
+
+            if (notes.Length > 0)
+            {
+                notes.AppendLine();
+                notes.AppendLine();
+            }
+
+            var version = string.IsNullOrWhiteSpace(update.ShortVersion)
+                ? update.Version
+                : update.ShortVersion;
+            notes.AppendLine($"v{version}");
+            notes.AppendLine(description.Trim());
+        }
+
+        if (notes.Length > 0)
+        {
+            return notes.ToString();
+        }
+
+        var latestReleaseNotesLink = updates.FirstOrDefault()?.ReleaseNotesLink;
+        return !string.IsNullOrWhiteSpace(latestReleaseNotesLink)
+            ? $"Release notes: {latestReleaseNotesLink}"
+            : "No release notes available.";
     }
 
     private void InitializeComponent()

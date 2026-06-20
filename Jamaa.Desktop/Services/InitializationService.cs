@@ -34,6 +34,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.IO;
+using System.Reflection;
 using NetSparkleUpdater;
 using NetSparkleUpdater.Enums;
 using NetSparkleUpdater.SignatureVerifiers;
@@ -279,19 +281,20 @@ public static partial class InitializationService
 
         try
         {
-            _sparkle = new SparkleUpdater(settings.UpdateUrl, new DSAChecker(SecurityMode.UseIfPossible))
+            _sparkle = new SparkleUpdater(settings.UpdateUrl, new DSAChecker(SecurityMode.Unsafe))
             {
-                UIFactory = new JamaaUIFactory(),
+                UIFactory = new JamaaUiFactory(),
                 RelaunchAfterUpdate = true,
             };
-            
+            _sparkle.AppCastHelper.AppCastFilter = new InstalledVersionAppCastFilter();
+
             _sparkle.CloseApplication += () =>
             {
                 _lifeTime?.Shutdown();
             };
 
-            _sparkle.StartLoop(true, true, TimeSpan.FromHours(settings.UpdateIntervalHours));
-            logger.LogInformation("Update check initiated with interval of {Interval} hours.", settings.UpdateIntervalHours);
+            _sparkle.StartLoop(true, true, TimeSpan.FromMinutes(settings.UpdateIntervalMinutes));
+            logger.LogInformation("Update check initiated with interval of {Interval} hours.", settings.UpdateIntervalMinutes);
         }
         catch (Exception ex)
         {
