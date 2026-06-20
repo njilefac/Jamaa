@@ -34,8 +34,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.IO;
-using System.Reflection;
 using NetSparkleUpdater;
 using NetSparkleUpdater.Enums;
 using NetSparkleUpdater.SignatureVerifiers;
@@ -55,7 +53,6 @@ public static partial class InitializationService
     private static readonly BehaviorSubject<double> ProgressSubject = new(0);
     public static IObservable<string> Status => StatusSubject.AsObservable();
     public static IObservable<double> Progress => ProgressSubject.AsObservable();
-    public static ServiceProvider? ServiceProvider => _serviceProvider;
 
     public static async Task<Shell> InitializeAsync(IClassicDesktopStyleApplicationLifetime lifeTime)
     {
@@ -293,8 +290,8 @@ public static partial class InitializationService
                 _lifeTime?.Shutdown();
             };
 
-            _sparkle.StartLoop(true, true, TimeSpan.FromMinutes(settings.UpdateIntervalMinutes));
-            logger.LogInformation("Update check initiated with interval of {Interval} hours.", settings.UpdateIntervalMinutes);
+            _sparkle.StartLoop(true, true, TimeSpan.FromHours(settings.UpdateIntervalHours));
+            logger.LogInformation("Update check initiated with interval of {Interval} hours.", settings.UpdateIntervalHours);
         }
         catch (Exception ex)
         {
