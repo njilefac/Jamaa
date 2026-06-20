@@ -290,6 +290,18 @@ jobs:
           RELEASE_NOTES: ${{ github.event.release.body }}
         run: |
           export PATH="$PATH:$HOME/.dotnet/tools"
+
+          TARGET_BRANCH="${{ github.ref_name }}"
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            TARGET_BRANCH="${{ github.event.release.target_commitish }}"
+          fi
+
+          CHANNEL="beta"
+          if [[ "$TARGET_BRANCH" == "main" || "$TARGET_BRANCH" == release/* || "$TARGET_BRANCH" == hotfix/* ]]; then
+            CHANNEL="stable"
+          fi
+
+          CHANNEL_ARGS=(--channel "$CHANNEL")
           
           # Create release notes file for embedding
           mkdir -p release-notes
@@ -301,9 +313,9 @@ jobs:
 
           # Use --file-version and --file-extract-version to ensure the version matches the release tag.
           # We use --reparse-existing for subsequent OSs to merge them into the same cast file.
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e exe -r -f true --file-version ${{ needs.prepare.outputs.version }} --os windows -p release-notes
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e dmg -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os macos -p release-notes
-          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e deb -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os linux -p release-notes
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e exe -r -f true --file-version ${{ needs.prepare.outputs.version }} --os windows -p release-notes "${CHANNEL_ARGS[@]}"
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e dmg -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os macos -p release-notes "${CHANNEL_ARGS[@]}"
+          netsparkle-generate-appcast -a site/ --output-file-name cast -n Jamaa -b site/downloads -u "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/downloads" -e deb -r --reparse-existing -f true --file-version ${{ needs.prepare.outputs.version }} --os linux -p release-notes "${CHANNEL_ARGS[@]}"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
