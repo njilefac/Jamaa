@@ -56,7 +56,7 @@
                     Name="SearchTermTextBox"
                     Text="{Binding SearchTerm}"
                     VerticalAlignment="Center"
-                    Watermark="Find members">
+                    PlaceholderText="Find members">
                     <TextBox.InnerLeftContent>
                         <Image
                             Height="40"

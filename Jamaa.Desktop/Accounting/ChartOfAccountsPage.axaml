@@ -35,7 +35,7 @@
                     IsReadOnly="{Binding IsOpeningBalanceLocked}"
                     IsVisible="{Binding IsLeafAccount}"
                     Text="{Binding OpeningBalanceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    Watermark="0.00" />
+                    PlaceholderText="0.00" />
                 <TextBlock
                     Grid.ColumnSpan="2"
                     HorizontalAlignment="Right"
@@ -157,12 +157,12 @@
 
                             <StackPanel Spacing="4">
                                 <TextBlock Classes="form label" Text="Account Code *" />
-                                <TextBox Text="{Binding AccountCode}" Watermark="e.g. 1001" />
+                                <TextBox Text="{Binding AccountCode}" PlaceholderText="e.g. 1001" />
                             </StackPanel>
 
                             <StackPanel Spacing="4">
                                 <TextBlock Classes="form label" Text="Account Name *" />
-                                <TextBox Text="{Binding AccountName}" Watermark="e.g. Cash and Bank" />
+                                <TextBox Text="{Binding AccountName}" PlaceholderText="e.g. Cash and Bank" />
                             </StackPanel>
 
                             <StackPanel Spacing="4">
@@ -172,7 +172,7 @@
                                     MinHeight="64"
                                     Text="{Binding AccountDescription}"
                                     TextWrapping="Wrap"
-                                    Watermark="Optional account description" />
+                                    PlaceholderText="Optional account description" />
                             </StackPanel>
 
                             <CheckBox

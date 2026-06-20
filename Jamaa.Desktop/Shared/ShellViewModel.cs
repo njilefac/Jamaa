@@ -39,7 +39,7 @@ public partial class ShellViewModel : ObservableObject,
     public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService,
         IRouteResolver routeResolver, ILogger<ShellViewModel> logger)
     {
-        _version = VersionService.GetVersion();
+        _version = $"v{VersionService.GetDisplayVersion()}";
         _setupService = setupService;
         _routeResolver = routeResolver;
         _logger = logger;

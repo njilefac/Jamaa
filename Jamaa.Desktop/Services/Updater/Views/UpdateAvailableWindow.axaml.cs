@@ -1,12 +1,14 @@
-using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using NetSparkleUpdater;
 using NetSparkleUpdater.Enums;
 using NetSparkleUpdater.Interfaces;
 using Huskui.Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Jamaa.Desktop.Services;
 
 namespace Jamaa.Desktop.Services.Updater.Views;
 
@@ -20,6 +22,7 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
     private Button? _remindLaterButton;
     private ScrollViewer? _releaseNotesScrollViewer;
     private Border? _releaseNotesBorder;
+    private bool _isUpdateAlreadyDownloaded;
 
     public UpdateAvailableWindow()
     {
@@ -27,11 +30,12 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
         SetupControls();
     }
 
-    public UpdateAvailableWindow(List<AppCastItem> updates, bool isUpdateAlreadyDownloaded, string releaseNotes)
+    public UpdateAvailableWindow(List<AppCastItem> updates, bool isUpdateAlreadyDownloaded, string currentVersion)
     {
         InitializeComponent();
         SetupControls();
         Updates = updates;
+        _isUpdateAlreadyDownloaded = isUpdateAlreadyDownloaded;
 
         if (_versionText != null)
         {
@@ -40,17 +44,17 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
 
         if (_currentVersionText != null)
         {
-            _currentVersionText.Text = $"Installed version: {VersionService.GetVersion()}";
+            _currentVersionText.Text = FormatInstalledVersionLabel(currentVersion);
         }
 
         if (_releaseNotesTextBlock != null)
         {
-            _releaseNotesTextBlock.Text = releaseNotes;
+            _releaseNotesTextBlock.Text = BuildReleaseNotes(updates);
         }
 
         if (_installButton != null)
         {
-            _installButton.Click += (s, e) => Respond(UpdateAvailableResult.InstallUpdate);
+            _installButton.Click += async (s, e) => await HandleInstallRequested();
         }
 
         if (_skipButton != null)
@@ -99,6 +103,7 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
 
     public void ShowUpdateAvailable(bool isUpdateAlreadyDownloaded)
     {
+        _isUpdateAlreadyDownloaded = isUpdateAlreadyDownloaded;
         Show();
     }
 
@@ -120,6 +125,113 @@ public partial class UpdateAvailableWindow : AppWindow, IUpdateAvailable
     public void HideSkipButton()
     {
         if (_skipButton != null) _skipButton.IsVisible = false;
+    }
+
+    internal static string FormatInstalledVersionLabel(string? currentVersion)
+    {
+        return FormatInstalledVersionLabel(currentVersion, VersionService.GetDisplayVersion());
+    }
+
+    internal static string FormatInstalledVersionLabel(string? currentVersion, string? fallbackVersion)
+    {
+        var normalizedCurrentVersion = NormalizeVersionForDisplay(currentVersion);
+        if (string.IsNullOrWhiteSpace(normalizedCurrentVersion))
+        {
+            normalizedCurrentVersion = NormalizeVersionForDisplay(fallbackVersion);
+        }
+
+        if (string.IsNullOrWhiteSpace(normalizedCurrentVersion))
+        {
+            normalizedCurrentVersion = "0.0.0";
+        }
+
+        return $"Installed version: v{normalizedCurrentVersion}";
+    }
+
+    private static string NormalizeVersionForDisplay(string? version)
+    {
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            return string.Empty;
+        }
+
+        var normalizedVersion = version.Trim().TrimStart('v', 'V').Trim();
+        var plusIndex = normalizedVersion.IndexOf('+');
+        if (plusIndex > 0)
+        {
+            normalizedVersion = normalizedVersion.Substring(0, plusIndex);
+        }
+
+        return normalizedVersion;
+    }
+
+    private static string BuildReleaseNotes(IReadOnlyList<AppCastItem> updates)
+    {
+        if (updates.Count == 0)
+        {
+            return "No release notes available.";
+        }
+
+        var notes = new StringBuilder();
+
+        foreach (var update in updates)
+        {
+            var description = update.Description;
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                continue;
+            }
+
+            if (notes.Length > 0)
+            {
+                notes.AppendLine();
+                notes.AppendLine();
+            }
+
+            var version = string.IsNullOrWhiteSpace(update.ShortVersion)
+                ? update.Version
+                : update.ShortVersion;
+            notes.AppendLine($"v{version}");
+            notes.AppendLine(description.Trim());
+        }
+
+        if (notes.Length > 0)
+        {
+            return notes.ToString();
+        }
+
+        var latestReleaseNotesLink = updates.FirstOrDefault()?.ReleaseNotesLink;
+        return !string.IsNullOrWhiteSpace(latestReleaseNotesLink)
+            ? $"Release notes: {latestReleaseNotesLink}"
+            : "No release notes available.";
+    }
+
+    private async Task HandleInstallRequested()
+    {
+        if (Updates.Count == 0)
+        {
+            Respond(UpdateAvailableResult.InstallUpdate);
+            return;
+        }
+
+        var currentItem = CurrentItem;
+        var downloadPathTask = Updater?.GetDownloadPathForAppCastItem(currentItem);
+        var downloadPath = downloadPathTask == null ? null : await downloadPathTask;
+        if (!ShouldUseDownloadedInstaller(_isUpdateAlreadyDownloaded, downloadPath))
+        {
+            Respond(UpdateAvailableResult.InstallUpdate);
+            return;
+        }
+
+        await Updater!.InstallUpdate(currentItem, downloadPath);
+        Close();
+    }
+
+    internal static bool ShouldUseDownloadedInstaller(bool isUpdateAlreadyDownloaded, string? downloadPath)
+    {
+        return isUpdateAlreadyDownloaded
+               && !string.IsNullOrWhiteSpace(downloadPath)
+               && File.Exists(downloadPath);
     }
 
     private void InitializeComponent()

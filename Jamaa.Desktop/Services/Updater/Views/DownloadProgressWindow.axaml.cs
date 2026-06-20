@@ -21,12 +21,12 @@ public partial class DownloadProgressWindow : AppWindow, IDownloadProgress
         SetupControls();
     }
 
-    public DownloadProgressWindow(string title, string fileName)
+    public DownloadProgressWindow(string title, string afterDownloadButtonTitle)
     {
         InitializeComponent();
         SetupControls();
         Title = title;
-        if (_fileNameText != null) _fileNameText.Text = fileName;
+        if (_fileNameText != null) _fileNameText.Text = afterDownloadButtonTitle;
         
         if (_cancelButton != null) _cancelButton.Click += (s, e) => Close();
         if (_installButton != null) _installButton.Click += (s, e) =>

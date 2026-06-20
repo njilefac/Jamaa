@@ -1,7 +1,7 @@
 <husk:AppWindow
     Classes="splash-window"
     Icon="avares://Jamaa/Assets/Icons/jamaa.ico"
-    SystemDecorations="None"
+    WindowDecorations="None"
     x:Class="Jamaa.Desktop.Shared.SplashWindow"
     x:DataType="shared:SplashViewModel"
     xmlns="https://github.com/avaloniaui"

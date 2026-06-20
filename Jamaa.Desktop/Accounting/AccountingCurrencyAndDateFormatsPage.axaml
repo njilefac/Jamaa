@@ -186,11 +186,11 @@
                                         <TextBox
                                             MinWidth="120"
                                             Text="{Binding NewCurrencyCode, Mode=TwoWay}"
-                                            Watermark="e.g. UGX" />
+                                            PlaceholderText="e.g. UGX" />
                                         <TextBox
                                             MinWidth="120"
                                             Text="{Binding NewCurrencySymbol, Mode=TwoWay}"
-                                            Watermark="e.g. Ush" />
+                                            PlaceholderText="e.g. Ush" />
                                         <Button Command="{Binding AddCurrencyCommand}" Content="Add currency" />
                                     </WrapPanel>
                                 </StackPanel>

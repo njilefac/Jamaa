@@ -53,7 +53,6 @@ public static partial class InitializationService
     private static readonly BehaviorSubject<double> ProgressSubject = new(0);
     public static IObservable<string> Status => StatusSubject.AsObservable();
     public static IObservable<double> Progress => ProgressSubject.AsObservable();
-    public static ServiceProvider? ServiceProvider => _serviceProvider;
 
     public static async Task<Shell> InitializeAsync(IClassicDesktopStyleApplicationLifetime lifeTime)
     {
@@ -279,12 +278,13 @@ public static partial class InitializationService
 
         try
         {
-            _sparkle = new SparkleUpdater(settings.UpdateUrl, new DSAChecker(SecurityMode.UseIfPossible))
+            _sparkle = new SparkleUpdater(settings.UpdateUrl, new DSAChecker(SecurityMode.Unsafe))
             {
-                UIFactory = new JamaaUIFactory(),
+                UIFactory = new JamaaUiFactory(),
                 RelaunchAfterUpdate = true,
             };
-            
+            _sparkle.AppCastHelper.AppCastFilter = new InstalledVersionAppCastFilter();
+
             _sparkle.CloseApplication += () =>
             {
                 _lifeTime?.Shutdown();
