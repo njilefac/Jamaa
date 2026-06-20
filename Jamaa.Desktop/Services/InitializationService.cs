@@ -293,8 +293,8 @@ public static partial class InitializationService
                 _lifeTime?.Shutdown();
             };
 
-            _sparkle.StartLoop(true, true, TimeSpan.FromMinutes(settings.UpdateIntervalMinutes));
-            logger.LogInformation("Update check initiated with interval of {Interval} hours.", settings.UpdateIntervalMinutes);
+            _sparkle.StartLoop(true, true, TimeSpan.FromHours(settings.UpdateIntervalHours));
+            logger.LogInformation("Update check initiated with interval of {Interval} hours.", settings.UpdateIntervalHours);
         }
         catch (Exception ex)
         {
