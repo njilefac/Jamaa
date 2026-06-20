@@ -19,7 +19,7 @@ public partial class SplashViewModel : ObservableObject, IDisposable
 
     public SplashViewModel()
     {
-        _version = VersionService.GetVersion();
+        _version = $"v{VersionService.GetVersion()}";
         _statusSubscription = InitializationService.Status
             .Subscribe(status => Dispatcher.UIThread.Post(() => Status = status));
         _progressSubscription = InitializationService.Progress
