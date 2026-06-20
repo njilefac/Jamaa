@@ -14,28 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_version.outputs.version }}
-      channel: ${{ steps.get_version.outputs.channel }}
     steps:
       - id: get_version
         run: |
           VERSION="${{ github.event.release.tag_name || '1.0.0' }}"
           VERSION="${VERSION#v}"
-
-          TARGET_BRANCH="${{ github.ref_name }}"
-          if [[ "${{ github.event_name }}" == "release" ]]; then
-            TARGET_BRANCH="${{ github.event.release.target_commitish }}"
-          fi
-
-          CHANNEL="beta"
-          if [[ "$TARGET_BRANCH" == "main" || "$TARGET_BRANCH" == release/* || "$TARGET_BRANCH" == hotfix/* ]]; then
-            CHANNEL="stable"
-          fi
-
-          if [[ "$CHANNEL" == "beta" && "$VERSION" != *-beta ]]; then
-            VERSION="${VERSION}-beta"
-          fi
-
-          echo "channel=$CHANNEL" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
   package-macos:
@@ -308,7 +291,16 @@ jobs:
         run: |
           export PATH="$PATH:$HOME/.dotnet/tools"
 
-          CHANNEL="${{ needs.prepare.outputs.channel }}"
+          TARGET_BRANCH="${{ github.ref_name }}"
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            TARGET_BRANCH="${{ github.event.release.target_commitish }}"
+          fi
+
+          CHANNEL="beta"
+          if [[ "$TARGET_BRANCH" == "main" || "$TARGET_BRANCH" == release/* || "$TARGET_BRANCH" == hotfix/* ]]; then
+            CHANNEL="stable"
+          fi
+
           CHANNEL_ARGS=(--channel "$CHANNEL")
           
           # Create release notes file for embedding
