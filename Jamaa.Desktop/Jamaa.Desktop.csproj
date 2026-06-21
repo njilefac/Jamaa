@@ -27,7 +27,6 @@
         <TrimMode>none</TrimMode>
         <GenerateResourceDesignerFiles>true</GenerateResourceDesignerFiles>
         <DefaultItemExcludes>$(DefaultItemExcludes);Logs\**</DefaultItemExcludes>
-        <CefGlueTargetPlatform></CefGlueTargetPlatform>
     </PropertyGroup>
     <ItemGroup>
         <Content Include="Assets\Icons\jamaa.icns" CopyToPublishDirectory="Always" />
@@ -36,6 +35,7 @@
     <Target Name="CopyIconToBundle" AfterTargets="BundleApp">
         <Copy SourceFiles="$(PublishDir)Assets/Icons/jamaa.icns" DestinationFiles="$(PublishDir)$(CFBundleName).app/Contents/Resources/jamaa.icns" />
     </Target>
+
     <ItemGroup>
         <AvaloniaResource Include="Assets\Icons\**" />
         <AvaloniaResource Include="Assets\Styles\**" />
@@ -88,6 +88,7 @@
         <PackageReference Include="Avalonia.Labs.Notifications" />
         <PackageReference Include="Avalonia.Labs.Panels" />
         <PackageReference Include="Avalonia.Labs.Qr" />
+        <PackageReference Include="Avalonia.Controls.WebView" />
         <PackageReference Include="Avalonia.Themes.Fluent" />
         <PackageReference Include="Avalonia" />
         <PackageReference Include="Avalonia.Desktop" />
@@ -134,7 +135,6 @@
         <PackageReference Include="System.Reactive" />
         <PackageReference Include="System.Security.Cryptography.Xml" NoWarn="NU1510" />
         <PackageReference Include="TreeDataGrid.Avalonia" />
-        <PackageReference Include="WebViewControl-Avalonia" />
         <PackageReference Remove="Microsoft.Maui.Controls" />
         <PackageReference Remove="Microsoft.Maui.Controls.Compatibility" />
         <PackageReference Include="Tmds.DBus.Protocol" />
@@ -171,8 +171,269 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Accounting\ChartOfAccountsViewModel.cs">
-        <DependentUpon>ChartOfAccountsPage.axaml</DependentUpon>
-      </Compile>
+        <Compile Update="App.axaml.cs">
+            <DependentUpon>App.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountLedgerPage.axaml.cs">
+            <DependentUpon>AccountLedgerPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountLedgerViewModel.cs">
+            <DependentUpon>AccountLedgerPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountingConfigurationPage.axaml.cs">
+            <DependentUpon>AccountingConfigurationPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountingConfigurationViewModel.cs">
+            <DependentUpon>AccountingConfigurationPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountingCurrencyAndDateFormatsPage.axaml.cs">
+            <DependentUpon>AccountingCurrencyAndDateFormatsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountingCurrencyAndDateFormatsViewModel.cs">
+            <DependentUpon>AccountingCurrencyAndDateFormatsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountingDashboard.axaml.cs">
+            <DependentUpon>AccountingDashboard.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountingDashboardViewModel.cs">
+            <DependentUpon>AccountingDashboard.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountingReportsPage.axaml.cs">
+            <DependentUpon>AccountingReportsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountingReportsViewModel.cs">
+            <DependentUpon>AccountingReportsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AutomationRulesPage.axaml.cs">
+            <DependentUpon>AutomationRulesPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AutomationRulesViewModel.cs">
+            <DependentUpon>AutomationRulesPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\BankReconciliationPage.axaml.cs">
+            <DependentUpon>BankReconciliationPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\BankReconciliationViewModel.cs">
+            <DependentUpon>BankReconciliationPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\ChartOfAccountsPage.axaml.cs">
+            <DependentUpon>ChartOfAccountsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\ChartOfAccountsViewModel.cs">
+            <DependentUpon>ChartOfAccountsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\FiscalCalendarAndPeriodsPage.axaml.cs">
+            <DependentUpon>FiscalCalendarAndPeriodsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\FiscalCalendarAndPeriodsViewModel.cs">
+            <DependentUpon>FiscalCalendarAndPeriodsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\JournalEntriesPage.axaml.cs">
+            <DependentUpon>JournalEntriesPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\JournalEntriesViewModel.cs">
+            <DependentUpon>JournalEntriesPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\TaxGroupsAndAuthoritiesPage.axaml.cs">
+            <DependentUpon>TaxGroupsAndAuthoritiesPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\TaxGroupsAndAuthoritiesViewModel.cs">
+            <DependentUpon>TaxGroupsAndAuthoritiesPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\UserRolesAndApprovalsPage.axaml.cs">
+            <DependentUpon>UserRolesAndApprovalsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\UserRolesAndApprovalsViewModel.cs">
+            <DependentUpon>UserRolesAndApprovalsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\Wizard\AccountingSetupWizardPage.axaml.cs">
+            <DependentUpon>AccountingSetupWizardPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\Wizard\AccountingSetupWizardViewModel.cs">
+            <DependentUpon>AccountingSetupWizardPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\Wizard\FinalReviewStepView.axaml.cs">
+            <DependentUpon>FinalReviewStepView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\Wizard\FinalReviewStepViewModel.cs">
+            <DependentUpon>FinalReviewStepView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\Wizard\FiscalCalendarAndCurrencyStepView.axaml.cs">
+            <DependentUpon>FiscalCalendarAndCurrencyStepView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\Wizard\FiscalCalendarAndCurrencyStepViewModel.cs">
+            <DependentUpon>FiscalCalendarAndCurrencyStepView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\AlertsAndNotificationsWidgetView.axaml.cs">
+            <DependentUpon>AlertsAndNotificationsWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\AlertsAndNotificationsWidgetViewModel.cs">
+            <DependentUpon>AlertsAndNotificationsWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\BookkeepingWidgetView.axaml.cs">
+            <DependentUpon>BookkeepingWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\BookkeepingWidgetViewModel.cs">
+            <DependentUpon>BookkeepingWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\CalendarScheduleWidgetView.axaml.cs">
+            <DependentUpon>CalendarScheduleWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\CalendarScheduleWidgetViewModel.cs">
+            <DependentUpon>CalendarScheduleWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\Dashboard.axaml.cs">
+            <DependentUpon>Dashboard.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\DashboardViewModel.cs">
+            <DependentUpon>Dashboard.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\MembershipStatsWidgetView.axaml.cs">
+            <DependentUpon>MembershipStatsWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\MembershipStatsWidgetViewModel.cs">
+            <DependentUpon>MembershipStatsWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\QuickActionsWidgetView.axaml.cs">
+            <DependentUpon>QuickActionsWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\QuickActionsWidgetViewModel.cs">
+            <DependentUpon>QuickActionsWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\RecentActivityFeedWidgetView.axaml.cs">
+            <DependentUpon>RecentActivityFeedWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\RecentActivityFeedWidgetViewModel.cs">
+            <DependentUpon>RecentActivityFeedWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\ReportingAndAnalyticsWidgetView.axaml.cs">
+            <DependentUpon>ReportingAndAnalyticsWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Dashboard\ReportingAndAnalyticsWidgetViewModel.cs">
+            <DependentUpon>ReportingAndAnalyticsWidgetView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Events\EventOverviewPage.axaml.cs">
+            <DependentUpon>EventOverviewPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Events\EventsOverviewPageViewModel.cs">
+            <DependentUpon>EventOverviewPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Groups\GroupManagementScreen.axaml.cs">
+            <DependentUpon>GroupManagementScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Groups\GroupManagementViewModel.cs">
+            <DependentUpon>GroupManagementScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Members\Components\MemberEndRegistrationView.axaml.cs">
+            <DependentUpon>MemberEndRegistrationView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Members\Components\MemberEndRegistrationViewModel.cs">
+            <DependentUpon>MemberEndRegistrationView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Members\Components\MemberRegistrationView.axaml.cs">
+            <DependentUpon>MemberRegistrationView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Members\Components\MemberRegistrationViewModel.cs">
+            <DependentUpon>MemberRegistrationView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Members\Pages\MemberProfilePage.axaml.cs">
+            <DependentUpon>MemberProfilePage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Members\Pages\MemberProfileViewModel.cs">
+            <DependentUpon>MemberProfilePage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Members\Pages\MembersOverviewPage.axaml.cs">
+            <DependentUpon>MembersOverviewPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Members\Pages\MembersOverviewViewModel.cs">
+            <DependentUpon>MembersOverviewPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Security\LoginScreen.axaml.cs">
+            <DependentUpon>LoginScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Security\LoginScreenViewModel.cs">
+            <DependentUpon>LoginScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Settings\SettingsPage.axaml.cs">
+            <DependentUpon>SettingsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Settings\SettingsViewModel.cs">
+            <DependentUpon>SettingsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Setup\CreateOrganisationScreen.axaml.cs">
+            <DependentUpon>CreateOrganisationScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Setup\CreateOrganisationViewModel.cs">
+            <DependentUpon>CreateOrganisationScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Setup\CreateSuperUserScreen.axaml.cs">
+            <DependentUpon>CreateSuperUserScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Setup\CreateSuperUserViewModel.cs">
+            <DependentUpon>CreateSuperUserScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Setup\OrganisationContactDetailsScreen.axaml.cs">
+            <DependentUpon>OrganisationContactDetailsScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Setup\OrganisationContactDetailsViewModel.cs">
+            <DependentUpon>OrganisationContactDetailsScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Shared\MainMenu.axaml.cs">
+            <DependentUpon>MainMenu.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Shared\MainMenuViewModel.cs">
+            <DependentUpon>MainMenu.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Shared\MainWindow.axaml.cs">
+            <DependentUpon>MainWindow.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Shared\MainWindowViewModel.cs">
+            <DependentUpon>MainWindow.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Shared\Shell.axaml.cs">
+            <DependentUpon>Shell.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Shared\ShellViewModel.cs">
+            <DependentUpon>Shell.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Shared\SplashWindow.axaml.cs">
+            <DependentUpon>SplashWindow.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Shared\SplashViewModel.cs">
+            <DependentUpon>SplashWindow.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Users\AddUserScreen.axaml.cs">
+            <DependentUpon>AddUserScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Users\AddUserScreenViewModel.cs">
+            <DependentUpon>AddUserScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Users\UserManagementScreen.axaml.cs">
+            <DependentUpon>UserManagementScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Users\UserManagementViewModel.cs">
+            <DependentUpon>UserManagementScreen.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountingConfigurationCardViewModel.cs">
+          <DependentUpon>AccountingConfigurationPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\JournalEntryListItemViewModel.cs">
+          <DependentUpon>JournalEntriesPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\FiscalYearEditorItemViewModel.cs">
+          <DependentUpon>FiscalCalendarAndPeriodsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountItemViewModel.cs">
+          <DependentUpon>ChartOfAccountsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\AccountingPeriodItemViewModel.cs">
+          <DependentUpon>FiscalCalendarAndPeriodsPage.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\DashboardMetricCardViewModel.cs">
+          <DependentUpon>AccountingDashboard.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Accounting\DashboardShortcutViewModel.cs">
+          <DependentUpon>AccountingDashboard.axaml</DependentUpon>
+        </Compile>
     </ItemGroup>
 </Project>

@@ -7,7 +7,6 @@
         <OutputType>Library</OutputType>
         <LangVersion>latestmajor</LangVersion>
         <Nullable>enable</Nullable>
-        <CefGlueTargetPlatform></CefGlueTargetPlatform>
     </PropertyGroup>
 
     <ItemGroup>

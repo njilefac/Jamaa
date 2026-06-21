@@ -1,6 +1,7 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Jamaa.Desktop.Accounting.Navigation;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Shared;
 

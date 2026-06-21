@@ -1,5 +1,6 @@
 using System.Linq;
 using Jamaa.Desktop.Accounting;
+using Jamaa.Desktop.Accounting.Navigation;
 using Shouldly;
 using Xunit;
 

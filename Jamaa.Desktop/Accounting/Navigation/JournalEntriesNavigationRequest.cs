@@ -1,4 +1,4 @@
-namespace Jamaa.Desktop.Accounting;
+namespace Jamaa.Desktop.Accounting.Navigation;
 
 /// <summary>
 ///     Operation: Carries navigation filter intent into the Journal Entries workspace.
