@@ -27,6 +27,7 @@
         <TrimMode>none</TrimMode>
         <GenerateResourceDesignerFiles>true</GenerateResourceDesignerFiles>
         <DefaultItemExcludes>$(DefaultItemExcludes);Logs\**</DefaultItemExcludes>
+        <CefGlueTargetPlatform></CefGlueTargetPlatform>
     </PropertyGroup>
     <ItemGroup>
         <Content Include="Assets\Icons\jamaa.icns" CopyToPublishDirectory="Always" />
@@ -133,6 +134,7 @@
         <PackageReference Include="System.Reactive" />
         <PackageReference Include="System.Security.Cryptography.Xml" NoWarn="NU1510" />
         <PackageReference Include="TreeDataGrid.Avalonia" />
+        <PackageReference Include="WebViewControl-Avalonia" />
         <PackageReference Remove="Microsoft.Maui.Controls" />
         <PackageReference Remove="Microsoft.Maui.Controls.Compatibility" />
         <PackageReference Include="Tmds.DBus.Protocol" />
@@ -166,5 +168,11 @@
         <EmbeddedResource Update="Assets\Resources\Messages.fr-fr.resx">
             <DependentUpon>Messages.resx</DependentUpon>
         </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Accounting\ChartOfAccountsViewModel.cs">
+        <DependentUpon>ChartOfAccountsPage.axaml</DependentUpon>
+      </Compile>
     </ItemGroup>
 </Project>

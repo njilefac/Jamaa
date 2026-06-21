@@ -7,6 +7,7 @@
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     xmlns:sharedControls="clr-namespace:Jamaa.Desktop.Shared.Controls"
     xmlns:u="https://irihi.tech/ursa"
+    xmlns:webViewControl="clr-namespace:WebViewControl;assembly=WebViewControl.Avalonia"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.PreviewWith>
         <Border Padding="20">
@@ -130,6 +131,20 @@
     <Style Selector="sharedControls|StepTimeline TextBlock.step-description">
         <Setter Property="Foreground" Value="{DynamicResource WizardStepUncompletedForegroundBrush}" />
         <Setter Property="Opacity" Value="0.7" />
+    </Style>
+
+    <Style Selector="sharedControls|AngularHostControl">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Background="{DynamicResource AppSurfaceColor}"
+                    BorderBrush="{DynamicResource AppBorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource ControlCornerRadius}">
+                    <webViewControl:WebView x:Name="PART_WebView" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
     </Style>
 
     <Style Selector="TextBlock.form.label">
