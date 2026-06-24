@@ -25,6 +25,7 @@
     <controls:FADialogHost>
         <controls:FANavigationView
             Header="{Binding}"
+            HorizontalContentAlignment="Stretch"
             IsSettingsVisible="True"
             Margin="0"
             MenuItemsSource="{Binding MenuItems}"
@@ -32,10 +33,19 @@
             PaneDisplayMode="Auto"
             SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
             SelectionChanged="OnNavigationSelectionChanged"
-            VerticalAlignment="Stretch">
+            VerticalAlignment="Stretch"
+            VerticalContentAlignment="Stretch">
             <controls:FANavigationView.Content>
-                <Border Background="{DynamicResource AppLayerBackground}">
-                    <ContentControl Content="{Binding ActiveModule}" />
+                <Border
+                    Background="{DynamicResource AppLayerBackground}"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
+                    <ContentControl
+                        Content="{Binding ActiveModule}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        VerticalContentAlignment="Stretch" />
                 </Border>
             </controls:FANavigationView.Content>
 

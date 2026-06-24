@@ -1,6 +1,8 @@
 <UserControl
     HorizontalAlignment="Stretch"
     HorizontalContentAlignment="Stretch"
+    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+    ScrollViewer.VerticalScrollBarVisibility="Disabled"
     VerticalAlignment="Stretch"
     VerticalContentAlignment="Stretch"
     d:DesignHeight="450"
@@ -17,19 +19,11 @@
     <Grid
         HorizontalAlignment="Stretch"
         Margin="20"
+        RowDefinitions="*"
         VerticalAlignment="Stretch">
-        <Border
-            Background="{DynamicResource AppCardBackground}"
-            BorderBrush="{DynamicResource AppBorderColor}"
-            BorderThickness="1"
-            CornerRadius="{DynamicResource ControlCornerRadius}"
+        <sharedControls:EmbeddedBrowser
             HorizontalAlignment="Stretch"
-            Padding="10"
-            VerticalAlignment="Stretch">
-            <sharedControls:EmbeddedBrowser
-                HorizontalAlignment="Stretch"
-                TargetUrl="{Binding ElsaStudioUrl}"
-                VerticalAlignment="Stretch" />
-        </Border>
+            TargetUrl="{Binding ElsaStudioUrl}"
+            VerticalAlignment="Stretch" />
     </Grid>
 </UserControl>

@@ -155,6 +155,15 @@ public static class ElsaWebApplicationBuilder
                         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
                         <title>Elsa Studio - Embedded</title>
                         <base href="/"/>
+                        <style>
+                            html, body, #app {
+                                width: 100%;
+                                height: 100%;
+                                margin: 0;
+                                padding: 0;
+                                overflow: hidden;
+                            }
+                        </style>
                         <link rel="apple-touch-icon" sizes="180x180" href="{{basePath}}/_content/Elsa.Studio.Shell/apple-touch-icon.png">
                         <link rel="icon" type="image/png" sizes="32x32" href="{{basePath}}/_content/Elsa.Studio.Shell/favicon-32x32.png">
                         <link rel="icon" type="image/png" sizes="16x16" href="{{basePath}}/_content/Elsa.Studio.Shell/favicon-16x16.png">

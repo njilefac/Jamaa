@@ -698,6 +698,16 @@
         <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="0" />
     </Style>
+    <Style Selector="controls|FANavigationView /template/ ContentPresenter">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="controls|FANavigationView /template/ ScrollContentPresenter">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
 
     <Style Selector="husk|AppWindow.splash-window">
         <Setter Property="Height" Value="400" />

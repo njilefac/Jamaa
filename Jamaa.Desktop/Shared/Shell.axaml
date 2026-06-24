@@ -21,12 +21,13 @@
     <controls:FADialogHost>
         <Grid ColumnDefinitions="*" RowDefinitions="Auto,*,35">
             <shared:MainMenu Content="{Binding MainMenu}" Grid.Row="0" />
-            <Panel Grid.Row="1">
-                <ContentControl
-                    Content="{Binding ActiveContent}"
-                    HorizontalContentAlignment="Stretch"
-                    VerticalContentAlignment="Stretch" />
-            </Panel>
+            <ContentControl
+                Content="{Binding ActiveContent}"
+                Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Stretch" />
             <Border
                 Background="{DynamicResource AppHeaderBackground}"
                 BorderBrush="{DynamicResource ControlElevationBorderBrush}"

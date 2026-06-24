@@ -32,6 +32,7 @@ public class EmbeddedBrowser : ContentControl
     private static readonly ILogger Logger = Log.ForContext<EmbeddedBrowser>();
 
     private NativeWebView? _webView;
+    private Border? _fallbackMessage;
 
     static EmbeddedBrowser()
     {
@@ -78,6 +79,7 @@ public class EmbeddedBrowser : ContentControl
         HorizontalContentAlignment = HorizontalAlignment.Stretch;
         VerticalContentAlignment = VerticalAlignment.Stretch;
         MinHeight = 320;
+        ClipToBounds = true;
         BuildContent();
     }
 
@@ -85,6 +87,15 @@ public class EmbeddedBrowser : ContentControl
     {
         base.OnAttachedToVisualTree(e);
         ApplyTargetUrl();
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        if (Content is Control child)
+        {
+            child.Arrange(new Rect(finalSize));
+        }
+        return base.ArrangeOverride(finalSize);
     }
 
     private void ApplyTargetUrl()
@@ -103,6 +114,7 @@ public class EmbeddedBrowser : ContentControl
             return;
         }
 
+        TriggerLayoutStabilizerInjection();
         TriggerErrorBridgeInjection();
         if (!InjectInitialDataOnNavigation) return;
         TriggerInitialDataInjection();
@@ -162,6 +174,11 @@ public class EmbeddedBrowser : ContentControl
     private void TriggerInitialDataInjection()
     {
         _ = InjectInitialDataAsync();
+    }
+
+    private void TriggerLayoutStabilizerInjection()
+    {
+        _ = StabilizeEmbeddedLayoutAsync();
     }
 
     private async Task InstallErrorBridgeAsync()
@@ -233,6 +250,43 @@ public class EmbeddedBrowser : ContentControl
         }
     }
 
+    private async Task StabilizeEmbeddedLayoutAsync()
+    {
+        if (_webView == null) return;
+
+        const string script = """
+                              (() => {
+                                const ensureViewportRoot = () => {
+                                  const app = document.getElementById("app");
+                                  document.documentElement.style.height = "100%";
+                                  document.documentElement.style.width = "100%";
+                                  document.body.style.height = "100%";
+                                  document.body.style.width = "100%";
+                                  document.body.style.margin = "0";
+                                  document.body.style.overflow = "hidden";
+                                  if (app) {
+                                    app.style.height = "100%";
+                                    app.style.width = "100%";
+                                    app.style.overflow = "hidden";
+                                  }
+                                };
+
+                                ensureViewportRoot();
+                                globalThis.setTimeout(ensureViewportRoot, 0);
+                                globalThis.setTimeout(ensureViewportRoot, 250);
+                              })();
+                              """;
+
+        try
+        {
+            await _webView.InvokeScript(script);
+        }
+        catch (Exception exception)
+        {
+            Logger.Warning(exception, "EmbeddedBrowser failed to inject layout stabilizer script for {TargetUrl}", TargetUrl);
+        }
+    }
+
     private async Task InjectInitialDataAsync()
     {
         if (_webView == null || InitialData == null) return;
@@ -273,7 +327,8 @@ public class EmbeddedBrowser : ContentControl
             {
                 Source = new Uri("about:blank"),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch
+                VerticalAlignment = VerticalAlignment.Stretch,
+                IsHitTestVisible = true
             };
             _webView.NavigationCompleted += OnWebViewNavigationCompleted;
             _webView.WebMessageReceived += OnWebViewMessageReceived;
@@ -293,7 +348,7 @@ public class EmbeddedBrowser : ContentControl
     {
         if (_webView != null) return;
 
-        Content = new Border
+        _fallbackMessage = new Border
         {
             BorderThickness = new Thickness(1),
             BorderBrush = Brushes.IndianRed,
@@ -306,5 +361,6 @@ public class EmbeddedBrowser : ContentControl
                 TextWrapping = TextWrapping.Wrap
             }
         };
+        Content = _fallbackMessage;
     }
 }
