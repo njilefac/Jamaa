@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using Domain.Organisation.Requests;
 using Domain.Organisation.Values;
 using FluentAvalonia.UI.Controls;
@@ -83,6 +84,12 @@ public partial class MembersList : UserControl, IDisposable
             interaction.SetOutput(Unit.Default);
             return Task.CompletedTask;
         }));
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        SearchTermTextBox?.Focus();
     }
 
     private static async Task<bool> ShowDialogAsync(

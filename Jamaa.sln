@@ -20,8 +20,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jamaa.Application", "Jamaa.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jamaa.Elsa.Server", "Jamaa.Elsa.Server\Jamaa.Elsa.Server.csproj", "{1AC2EE29-DA77-4D7D-8BC7-06B98F861745}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jamaa.Elsa.Studio", "Jamaa.Elsa.Studio\Jamaa.Elsa.Studio.csproj", "{63289A2E-5FC9-4B18-82B4-18A00B1B727C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|anycpu = Debug|anycpu

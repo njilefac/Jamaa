@@ -3,10 +3,9 @@
     d:DesignWidth="800"
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Members.Components.MembersGrid"
-    x:DataType="components:MemberListViewModel"
     x:CompileBindings="False"
+    x:DataType="components:MemberListViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -23,10 +22,9 @@
             ItemsSource="{Binding Members}"
             Name="MembersDataGrid"
             SelectedItem="{Binding Selection.SelectedItem, Mode=TwoWay}"
-            SelectionMode="Single">
-            <Interaction.Behaviors>
-                <behaviors:DataGridEnterBehavior Command="{Binding ShowMemberProfileCommand}" />
-            </Interaction.Behaviors>
+            SelectionMode="Single"
+            DoubleTapped="OnMembersDataGridDoubleTapped"
+            KeyDown="OnMembersDataGridKeyDown">
             <DataGrid.Styles>
                 <Style Selector="DataGridRow">
                     <Setter Property="ContextMenu">
@@ -78,18 +76,6 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}">
                                 <Panel Background="Transparent">
-                                    <Interaction.Behaviors>
-                                        <EventTriggerBehavior EventName="DoubleTapped">
-                                            <InvokeCommandAction Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}">
-                                                <InvokeCommandAction.CommandParameter>
-                                                    <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
-                                                        <Binding />
-                                                        <Binding Source="General" />
-                                                    </MultiBinding>
-                                                </InvokeCommandAction.CommandParameter>
-                                            </InvokeCommandAction>
-                                        </EventTriggerBehavior>
-                                    </Interaction.Behaviors>
                                     <ContentPresenter
                                         Content="{TemplateBinding Content}"
                                         ContentTemplate="{TemplateBinding ContentTemplate}"

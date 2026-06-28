@@ -41,7 +41,7 @@ public sealed partial class EmbeddedWebServer(
             var managementConnStr = BuildElsaConnectionString(sqliteDatabaseConnection.Value, "elsa-management.db");
             var runtimeConnStr = BuildElsaConnectionString(sqliteDatabaseConnection.Value, "elsa-runtime.db");
 
-            logger.LogInformation("EmbeddedWebServer: Building Elsa + Studio WebApplication");
+            logger.LogInformation("EmbeddedWebServer: Building Elsa WebApplication");
             _application = ElsaWebApplicationBuilder.BuildElsaWebApplication(logger, managementConnStr, runtimeConnStr, configuration);
 
             logger.LogInformation("EmbeddedWebServer: Starting WebApplication");

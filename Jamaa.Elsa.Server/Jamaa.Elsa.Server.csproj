@@ -1,8 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <ItemGroup>
-    <ProjectReference Include="..\Jamaa.Elsa.Studio\Jamaa.Elsa.Studio.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Elsa" />

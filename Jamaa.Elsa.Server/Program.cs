@@ -2,7 +2,6 @@ using Elsa.Persistence.EFCore.Extensions;
 using Elsa.Persistence.EFCore.Modules.Management;
 using Elsa.Persistence.EFCore.Modules.Runtime;
 using Elsa.Extensions;
-using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseStaticWebAssets();
@@ -18,20 +17,31 @@ services
             identity.UseAdminUserProvider();
         })
         .UseDefaultAuthentication()
-        .UseWorkflowManagement(management => management.UseEntityFrameworkCore(ef => ef.UseSqlite()))
-        .UseWorkflowRuntime(runtime => runtime.UseEntityFrameworkCore(ef => ef.UseSqlite()))
+        .UseWorkflowManagement(management => management.UseEntityFrameworkCore(ef => 
+        {
+            ef.RunMigrations = true;
+            ef.UseSqlite();
+        }))
+        .UseWorkflowRuntime(runtime => runtime.UseEntityFrameworkCore(ef => 
+        {
+            ef.RunMigrations = true;
+            ef.UseSqlite();
+        }))
         .UseScheduling()
         .UseJavaScript()
         .UseLiquid()
         .UseCSharp()
-        .UseHttp(http => http.ConfigureHttpOptions = options => configuration.GetSection("Http").Bind(options))
+        .UseHttp(http => http.ConfigureHttpOptions = options => 
+        {
+            configuration.GetSection("Http").Bind(options);
+            options.BasePath = "/elsa/api/";
+        })
         .UseWorkflowsApi()
         .AddActivitiesFrom<Program>()
         .AddWorkflowsFrom<Program>()
     );
 
 services.AddCors(cors => cors.AddDefaultPolicy(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().WithExposedHeaders("*")));
-services.AddRazorPages(options => options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute()));
 
 var app = builder.Build();
 
@@ -42,13 +52,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.MapStaticAssets();
 app.UseRouting();
 app.UseCors();
-app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseWorkflowsApi();
 app.UseWorkflows();
-app.MapFallbackToPage("/");
 app.Run();

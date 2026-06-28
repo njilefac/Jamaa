@@ -27,16 +27,11 @@
             Spacing="8"
             VerticalAlignment="Stretch">
             <Button
+                Command="{Binding RegisterMemberCommand}"
                 Content="Add Member"
                 Height="40"
                 IsEnabled="{Binding IsOperationInFlight, Converter={StaticResource InvertBoolToEnabledConverter}}"
-                Width="150">
-                <Interaction.Behaviors>
-                    <EventTriggerBehavior EventName="Click">
-                        <InvokeCommandAction Command="{Binding RegisterMemberCommand}" />
-                    </EventTriggerBehavior>
-                </Interaction.Behaviors>
-            </Button>
+                Width="150" />
         </StackPanel>
 
         <shared:OperationStatusBanner

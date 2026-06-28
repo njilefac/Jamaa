@@ -5,21 +5,12 @@
     x:Class="Jamaa.Desktop.Dashboard.WidgetView"
     x:DataType="dashboard:WidgetViewModelBase"
     xmlns="https://github.com/avaloniaui"
-    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <UserControl.Resources>
-        <behaviors:WidgetDropHandler x:Key="WidgetDropHandler" />
-    </UserControl.Resources>
     <Grid Margin="8" x:Name="WidgetContainer">
-        <Border Classes="dashboard widget container">
-            <Interaction.Behaviors>
-                <ContextDragBehavior Context="{Binding}" />
-                <ContextDropBehavior Handler="{StaticResource WidgetDropHandler}" />
-            </Interaction.Behaviors>
-
+        <Border Classes="dashboard widget container" x:Name="WidgetBorder">
             <Grid RowDefinitions="Auto, *">
                 <Grid
                     ColumnDefinitions="*,Auto"

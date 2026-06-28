@@ -21,9 +21,6 @@
         Margin="20"
         RowDefinitions="*"
         VerticalAlignment="Stretch">
-        <sharedControls:EmbeddedBrowser
-            HorizontalAlignment="Stretch"
-            TargetUrl="{Binding ElsaStudioUrl}"
-            VerticalAlignment="Stretch" />
+        <sharedControls:WorkflowEditor HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
     </Grid>
 </UserControl>

@@ -8,8 +8,8 @@
     xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
     xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
     xmlns:events-View-Models="clr-namespace:Jamaa.Desktop.Events"
-    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:fav="using:FluentAvalonia.Styling"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:pages="clr-namespace:Jamaa.Desktop.Members.Pages"
     xmlns:security="clr-namespace:Jamaa.Desktop.Security"
     xmlns:semi="clr-namespace:Semi.Avalonia;assembly=Semi.Avalonia"
@@ -48,6 +48,7 @@
         <StyleInclude Source="avares://Semi.Avalonia.DataGrid/Index.axaml" />
         <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
         <StyleInclude Source="avares://Jamaa/Styles/JamaaStyles.axaml" />
+        <StyleInclude Source="avares://NodeEditorAvalonia/Themes/NodeEditorTheme.axaml" />
     </Application.Styles>
 
     <Application.DataTemplates>

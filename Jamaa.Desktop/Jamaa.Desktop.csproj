@@ -49,13 +49,13 @@
         <PackageReference Include="Elsa.Activities.Temporal.Hangfire" />
         <PackageReference Include="Elsa.Activities.Webhooks" />
         <PackageReference Include="Elsa.Agents.Persistence.EntityFrameworkCore.Sqlite" />
+        <PackageReference Include="NodeEditorAvalonia" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.SemanticKernel.Core" />
         <PackageReference Include="Elsa.CSharp" />
         <PackageReference Include="Elsa.Email" />
         <PackageReference Include="Elsa.EntityFrameworkCore.Sqlite" />
         <PackageReference Include="Elsa.Expressions" />
-        <PackageReference Include="Elsa.Expressions.CSharp" />
         <PackageReference Include="Elsa.FileStorage" />
         <PackageReference Include="Elsa.Hosting.Management" />
         <PackageReference Include="Elsa.JavaScript" />
@@ -65,17 +65,6 @@
         <PackageReference Include="Elsa.Scheduling" />
         <PackageReference Include="Elsa.Server.Api" />
         <PackageReference Include="Elsa.Server.Hangfire" />
-        <PackageReference Include="Elsa.Studio" />
-        <PackageReference Include="Elsa.Studio.Authentication.ElsaIdentity.BlazorWasm" />
-        <PackageReference Include="Elsa.Studio.Authentication.ElsaIdentity.UI" />
-        <PackageReference Include="Elsa.Studio.Core.BlazorServer" />
-        <PackageReference Include="Elsa.Studio.Core.BlazorWasm" />
-        <PackageReference Include="Elsa.Studio.Environments" />
-        <PackageReference Include="Elsa.Studio.Labels" />
-        <PackageReference Include="Elsa.Studio.Localization" />
-        <PackageReference Include="Elsa.Studio.Localization.BlazorServer" />
-        <PackageReference Include="Elsa.Studio.Login" />
-        <PackageReference Include="Elsa.Studio.Shell" />
         <PackageReference Include="Elsa.Tenants.AspNetCore" />
         <PackageReference Include="Elsa.WorkflowContexts" />
         <PackageReference Include="Elsa.Workflows.Api" />
@@ -110,7 +99,6 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" />
         <PackageReference Include="Microsoft.Data.Sqlite" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
-        <PackageReference Include="Mvvm.CommonInteractions.Avalonia" />
         <PackageReference Include="Rebus.ServiceProvider" />
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
         <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" />
@@ -138,8 +126,6 @@
         <PackageReference Remove="Microsoft.Maui.Controls" />
         <PackageReference Remove="Microsoft.Maui.Controls.Compatibility" />
         <PackageReference Include="Tmds.DBus.Protocol" />
-        <PackageReference Include="Xaml.Behaviors.Avalonia" />
-        <PackageReference Include="Xaml.Behaviors.Interactions.DragAndDrop.DataGrid" />
     </ItemGroup>
 
     <ItemGroup>
@@ -155,7 +141,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Jamaa.Elsa.Studio\Jamaa.Elsa.Studio.csproj" />
         <ProjectReference Include="..\Jamaa.Application\Jamaa.Application.csproj" />
         <ProjectReference Include="..\Jamaa.Data\Jamaa.Data.csproj" />
         <ProjectReference Include="..\Jamaa.Domain\Jamaa.Domain.csproj" />
