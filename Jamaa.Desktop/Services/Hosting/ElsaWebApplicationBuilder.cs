@@ -105,19 +105,12 @@ public static class ElsaWebApplicationBuilder
             elsa.Configure(new System.Action<global::Elsa.CSharp.Features.CSharpFeature>(options => { }));
         });
 
-        // CORS
-        services.AddCors(cors => cors.AddDefaultPolicy(policy =>
-            policy
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowAnyOrigin()
-                .WithExposedHeaders("*")));
+        // No external access required: omit CORS configuration
     }
 
     private static void ConfigureMiddleware(WebApplication app)
     {
         app.UseRouting();
-        app.UseCors();
 
         // Authentication & Authorization
         app.UseAuthentication();
