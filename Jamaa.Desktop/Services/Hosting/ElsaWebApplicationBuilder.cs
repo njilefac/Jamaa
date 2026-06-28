@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using System.Threading.Tasks;
 using Elsa.EntityFrameworkCore;
 using Elsa.EntityFrameworkCore.Extensions;
 using Elsa.EntityFrameworkCore.Modules.Management;
@@ -10,7 +9,6 @@ using Elsa.Tenants.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,7 +34,6 @@ public static class ElsaWebApplicationBuilder
             Args = [],
             ContentRootPath = AppContext.BaseDirectory
         });
-        builder.WebHost.UseStaticWebAssets();
 
         // Configure logging (reuse the app-wide Serilog instance and sinks).
         logger.LogInformation("ElsaWebApplicationBuilder: Configuring Serilog");
@@ -103,9 +100,9 @@ public static class ElsaWebApplicationBuilder
             .AddWorkflowsFrom<Program>();
             
             // Scripting support (JavaScript, Liquid, CSharp)
-            elsa.Configure(new System.Action<Elsa.JavaScript.Features.JavaScriptFeature>(options => { }));
-            elsa.Configure(new System.Action<Elsa.Liquid.Features.LiquidFeature>(options => { }));
-            elsa.Configure(new System.Action<Elsa.CSharp.Features.CSharpFeature>(options => { }));
+            elsa.Configure(new System.Action<global::Elsa.JavaScript.Features.JavaScriptFeature>(options => { }));
+            elsa.Configure(new System.Action<global::Elsa.Liquid.Features.LiquidFeature>(options => { }));
+            elsa.Configure(new System.Action<global::Elsa.CSharp.Features.CSharpFeature>(options => { }));
         });
 
         // CORS

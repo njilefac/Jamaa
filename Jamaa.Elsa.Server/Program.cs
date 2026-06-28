@@ -4,7 +4,6 @@ using Elsa.Persistence.EFCore.Modules.Runtime;
 using Elsa.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseStaticWebAssets();
 
 var services = builder.Services;
 var configuration = builder.Configuration;

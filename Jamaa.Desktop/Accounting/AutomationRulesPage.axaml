@@ -1,8 +1,6 @@
 <UserControl
     HorizontalAlignment="Stretch"
     HorizontalContentAlignment="Stretch"
-    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-    ScrollViewer.VerticalScrollBarVisibility="Disabled"
     VerticalAlignment="Stretch"
     VerticalContentAlignment="Stretch"
     d:DesignHeight="450"
@@ -16,11 +14,5 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sharedControls="clr-namespace:Jamaa.Desktop.Shared.Controls"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid
-        HorizontalAlignment="Stretch"
-        Margin="20"
-        RowDefinitions="*"
-        VerticalAlignment="Stretch">
-        <sharedControls:WorkflowEditor HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-    </Grid>
+    <sharedControls:WorkflowEditor />
 </UserControl>

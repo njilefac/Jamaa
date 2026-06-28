@@ -10,7 +10,7 @@ This guide helps AI coding agents understand the Jamaa codebase architecture, co
 - **Architecture**: Clean Architecture + Domain-Driven Design (DDD)
 - **Build Target**: macOS first (packaged via PowerShell scripts in `/bundle`), cross-platform UI
 - **Key Pattern**: Integration/Operation split (IOSP) for all methods; Command-Query separation via actors
-- **Workflow Tooling**: Elsa 3.7 is used in two shapes: standalone via `Jamaa.Elsa.Server` + `Jamaa.Elsa.Studio`, and embedded inside the desktop app via `Jamaa.Desktop/Services/Hosting/`
+- **Workflow Tooling**: Elsa 3.7 provides workflow APIs/runtime via `Jamaa.Elsa.Server` and the embedded desktop host in `Jamaa.Desktop/Services/Hosting/`; workflow editing is native Avalonia via `WorkflowEditor`
 
 ---
 
@@ -45,8 +45,7 @@ Jamaa.Domain (Pure Business Logic)
 
 Workflow tooling (solution-adjacent)
     ├─ Jamaa.Elsa.Server (standalone ASP.NET Core Elsa host)
-    ├─ Jamaa.Elsa.Studio (Blazor WASM workflow designer)
-    └─ Jamaa.Desktop/Services/Hosting (embedded Elsa + Studio host on loopback)
+    └─ Jamaa.Desktop/Services/Hosting (embedded Elsa API/runtime host on loopback)
 ```
 
 `Jamaa.WorkflowStudio/` exists in the repository but is not part of `Jamaa.sln`; treat it as inactive unless a task explicitly targets it.
@@ -59,7 +58,7 @@ Workflow tooling (solution-adjacent)
 
 **Desktop consumes via MVVM**: ViewModels dispatch commands and listen to events. UI changes flow through ViewModels, never directly from Application layer.
 
-**Workflow authoring has two active hosts**: the standalone `Jamaa.Elsa.Server` + `Jamaa.Elsa.Studio` pair, and the desktop's embedded loopback host in `Jamaa.Desktop/Services/Hosting/`. When changing workflow APIs, auth, tenancy headers, or static asset hosting, compare `Jamaa.Elsa.Server/Program.cs`, `Jamaa.Elsa.Studio/Program.cs`, and `Jamaa.Desktop/Services/Hosting/ElsaWebApplicationBuilder.cs` together.
+**Workflow authoring is native Avalonia**: the desktop workflow editor is `Jamaa.Desktop/Shared/Controls/WorkflowEditor.cs`. Elsa remains the workflow API/runtime layer through `Jamaa.Elsa.Server` and the desktop embedded loopback host. When changing workflow APIs, auth, tenancy headers, or embedded hosting, compare `Jamaa.Elsa.Server/Program.cs` and `Jamaa.Desktop/Services/Hosting/ElsaWebApplicationBuilder.cs` together.
 
 ---
 
@@ -253,7 +252,7 @@ Uses Castle DynamicProxy to wrap interfaces with authorization checks.
 The desktop app starts an in-process workflow host during `InitializationService.InitializeAsync()`:
 
 - `EmbeddedWebServer` starts before other background services complete startup and exposes `Started`, `BaseAddress`, and `Port`
-- `ElsaWebApplicationBuilder` hosts Elsa APIs and the Studio WASM assets on `127.0.0.1` using a dynamic port
+- `ElsaWebApplicationBuilder` hosts Elsa APIs/runtime endpoints on `127.0.0.1` using a dynamic port
 - Elsa persistence uses sibling SQLite files (`elsa-management.db`, `elsa-runtime.db`) next to the main Jamaa SQLite database
 - Tenancy for embedded workflows is routed via the `x-tenant` header in `ElsaWebApplicationBuilder`
 
@@ -347,11 +346,11 @@ dotnet test
 # Run desktop app
 dotnet run --project Jamaa.Desktop/Jamaa.Desktop.csproj
 
-# Run standalone Elsa host + Studio
+# Run standalone Elsa host
 dotnet run --project Jamaa.Elsa.Server --urls https://localhost:5001
 ```
 
-Desktop startup already launches the embedded Elsa host via `Jamaa.Desktop/Services/InitializationService.cs`; use `Jamaa.Elsa.Server` only when working on the standalone workflow host or Studio shell directly.
+Desktop startup already launches the embedded Elsa host via `Jamaa.Desktop/Services/InitializationService.cs`; use `Jamaa.Elsa.Server` only when working on the standalone workflow API/runtime host directly.
 
 ### Packaging (macOS)
 ```powershell
@@ -412,7 +411,7 @@ Located in `Tests/` as `.feature` files:
 - **Avalonia UI**: Cross-platform; Skia renderer
 - **Akka.NET**: Actor model, distributed (currently single-node SQLite backend)
 - **Entity Framework Core**: ORM for read models, domain persistence
-- **Elsa Workflows / Elsa Studio**: Workflow engine + designer used both as standalone projects and inside the desktop embedded host
+- **Elsa Workflows**: Workflow engine, API, and runtime services used by the standalone server and desktop embedded host
 - **CommunityToolkit.Mvvm**: ObservableProperty, RelayCommand generators
 - **Castle DynamicProxy**: Runtime interception for auth/logging
 - **Serilog**: Shared structured logging across desktop startup, Akka, and the embedded workflow host
@@ -437,7 +436,7 @@ When assigned a task:
 - [ ] If adding application logic: **Create operations first, then integration**
 - [ ] If adding UI: Create view + viewmodel pair; use existing styles
 - [ ] Enforce strict MVVM: no control/template/style composition in ViewModels
-- [ ] If touching workflows: inspect both standalone and embedded hosts (`Jamaa.Elsa.Server`, `Jamaa.Elsa.Studio`, `Jamaa.Desktop/Services/Hosting/`)
+- [ ] If touching workflow runtime/API behavior: inspect both standalone and embedded hosts (`Jamaa.Elsa.Server`, `Jamaa.Desktop/Services/Hosting/`)
 - [ ] If modifying commands: Update aggregate handlers + tests
 - [ ] If adding a domain event: Add handler in aggregate `Apply()` method
 - [ ] **Crucial**: Tag new events in `JamaaEventTagger.cs` for projection
@@ -453,7 +452,6 @@ When assigned a task:
 ## References
 
 - **Existing guidelines**: See `.junie/guidelines.md` for JetBrains-specific notes
-- **Workflow setup**: See `ELSA_SETUP.md` and `ELSA_EMBEDDED_INTEGRATION.md` for standalone vs embedded Elsa details
+- **Workflow editor**: See `Jamaa.Desktop/Shared/Controls/WorkflowEditor.cs` for native Avalonia workflow editing
 - **Product idea**: `Product Idea.md` documents business requirements
 - **Project structure**: See `Jamaa.sln` and workspace folders
-

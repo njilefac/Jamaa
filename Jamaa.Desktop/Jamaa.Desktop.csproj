@@ -49,7 +49,7 @@
         <PackageReference Include="Elsa.Activities.Temporal.Hangfire" />
         <PackageReference Include="Elsa.Activities.Webhooks" />
         <PackageReference Include="Elsa.Agents.Persistence.EntityFrameworkCore.Sqlite" />
-        <PackageReference Include="NodeEditorAvalonia" />
+        <PackageReference Include="NodifyM.Avalonia" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.SemanticKernel.Core" />
         <PackageReference Include="Elsa.CSharp" />
@@ -68,7 +68,6 @@
         <PackageReference Include="Elsa.Tenants.AspNetCore" />
         <PackageReference Include="Elsa.WorkflowContexts" />
         <PackageReference Include="Elsa.Workflows.Api" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
         <PackageReference Include="NetSparkleUpdater.UI.Avalonia" />
         <PackageReference Include="OpenTelemetry.Api" />
         <PackageReference Include="Akka.Persistence.Hosting" />

@@ -57,19 +57,6 @@
     <PackageVersion Include="Elsa.Scheduling" Version="3.7.1" />
     <PackageVersion Include="Elsa.Server.Api" Version="2.17.0" />
     <PackageVersion Include="Elsa.Server.Hangfire" Version="2.17.0" />
-    <PackageVersion Include="Elsa.Studio" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Authentication.ElsaIdentity.BlazorWasm" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Authentication.ElsaIdentity.UI" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Authentication.OpenIdConnect.BlazorWasm" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Core.BlazorServer" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Core.BlazorWasm" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Environments" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Labels" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Localization" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Localization.BlazorServer" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Localization.BlazorWasm" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Login" Version="3.7.0" />
-    <PackageVersion Include="Elsa.Studio.Shell" Version="3.7.0" />
     <PackageVersion Include="Elsa.Tenants.AspNetCore" Version="3.7.1" />
     <PackageVersion Include="Elsa.WorkflowContexts" Version="3.7.1" />
     <PackageVersion Include="Elsa.Workflows.Api" Version="3.7.1" />
@@ -89,9 +76,6 @@
     <PackageVersion Include="Irihi.Ursa" Version="2.0.1" />
     <PackageVersion Include="Irihi.Ursa.Themes.Semi" Version="2.0.1" />
     <PackageVersion Include="JetBrains.Annotations" Version="2026.2.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.9" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
@@ -156,7 +140,7 @@
     <PackageVersion Include="Xaml.Behaviors.Interactions" Version="12.0.0.1" />
     <PackageVersion Include="Xaml.Behaviors.Interactions.Custom" Version="12.0.0.1" />
     <PackageVersion Include="Xaml.Behaviors.Interactions.DragAndDrop" Version="12.0.0.1" />
-    <PackageVersion Include="NodeEditorAvalonia" Version="12.0.0" />
+    <PackageVersion Include="NodifyM.Avalonia" Version="12.0.0" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="itext" Version="9.6.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
