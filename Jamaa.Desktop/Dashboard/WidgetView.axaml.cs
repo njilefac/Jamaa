@@ -9,6 +9,9 @@ namespace Jamaa.Desktop.Dashboard;
 
 public partial class WidgetView : UserControl
 {
+    private static readonly Cursor DragCursor = new(StandardCursorType.DragMove);
+
+    private WidgetViewModelBase? _currentDropTarget;
     private WidgetViewModelBase? _draggedWidget;
     private bool _isDragging;
     private Point _dragStartPoint;
@@ -46,14 +49,20 @@ public partial class WidgetView : UserControl
 
     private void OnPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (_isDragging || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             return;
 
-        var currentPoint = e.GetPosition(this);
-        if (Math.Abs(currentPoint.X - _dragStartPoint.X) < 6 && Math.Abs(currentPoint.Y - _dragStartPoint.Y) < 6)
-            return;
+        if (!_isDragging)
+        {
+            var currentPoint = e.GetPosition(this);
+            if (Math.Abs(currentPoint.X - _dragStartPoint.X) < 6 && Math.Abs(currentPoint.Y - _dragStartPoint.Y) < 6)
+                return;
 
-        _isDragging = true;
+            _isDragging = true;
+            Cursor = DragCursor;
+        }
+
+        UpdateDropTarget(e);
     }
 
     private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -61,15 +70,19 @@ public partial class WidgetView : UserControl
         if (_isDragging)
             TrySwapWithHitWidget(e);
 
+        ClearDropTarget();
         e.Pointer.Capture(null);
         _draggedWidget = null;
         _isDragging = false;
+        Cursor = null;
     }
 
     private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
     {
+        ClearDropTarget();
         _draggedWidget = null;
         _isDragging = false;
+        Cursor = null;
     }
 
     private static void SwapWidgets(WidgetViewModelBase dragged, WidgetViewModelBase target)
@@ -92,13 +105,52 @@ public partial class WidgetView : UserControl
         if (_draggedWidget is null)
             return;
 
-        var topLevel = TopLevel.GetTopLevel(this);
-        var hit = topLevel?.InputHitTest(e.GetPosition(topLevel));
-        var targetView = (hit as Visual)?.FindAncestorOfType<WidgetView>(includeSelf: true);
-        var target = targetView?.DataContext as WidgetViewModelBase;
+        var target = _currentDropTarget ?? GetDropTarget(e);
 
         if (ValidateDrop(_draggedWidget, target) && target is not null)
             SwapWidgets(_draggedWidget, target);
+    }
+
+    private void UpdateDropTarget(PointerEventArgs e)
+    {
+        if (_draggedWidget is null)
+            return;
+
+        var target = GetDropTarget(e);
+        if (ReferenceEquals(target, _currentDropTarget))
+        {
+            if (target is not null)
+                target.IsValidDrop = ValidateDrop(_draggedWidget, target);
+
+            return;
+        }
+
+        ClearDropTarget();
+
+        _currentDropTarget = target;
+        if (_currentDropTarget is null)
+            return;
+
+        _currentDropTarget.IsDraggingOver = true;
+        _currentDropTarget.IsValidDrop = ValidateDrop(_draggedWidget, _currentDropTarget);
+    }
+
+    private WidgetViewModelBase? GetDropTarget(PointerEventArgs e)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        var hit = topLevel?.InputHitTest(e.GetPosition(topLevel));
+        var targetView = (hit as Visual)?.FindAncestorOfType<WidgetView>(includeSelf: true);
+        return targetView?.DataContext as WidgetViewModelBase;
+    }
+
+    private void ClearDropTarget()
+    {
+        if (_currentDropTarget is null)
+            return;
+
+        _currentDropTarget.IsDraggingOver = false;
+        _currentDropTarget.IsValidDrop = false;
+        _currentDropTarget = null;
     }
 
     private static bool ValidateDrop(WidgetViewModelBase? dragged, WidgetViewModelBase? target)
