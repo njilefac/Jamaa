@@ -4,6 +4,7 @@
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
+    xmlns:primitives="clr-namespace:FluentAvalonia.UI.Controls.Primitives;assembly=FluentAvalonia"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
     xmlns:sharedControls="clr-namespace:Jamaa.Desktop.Shared.Controls"
     xmlns:u="https://irihi.tech/ursa"
@@ -656,18 +657,30 @@
         </Setter>
     </Style>
     <Style Selector="controls|FANavigationViewItem /template/ controls|FAIconSourceElement">
-        <Setter Property="Width" Value="32" />
-        <Setter Property="Height" Value="32" />
-        <Setter Property="RenderTransform" Value="scale(1.15)" />
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Height" Value="24" />
     </Style>
 
     <Style Selector="controls|FANavigationViewItem /template/ Viewbox#IconBox">
-        <Setter Property="Width" Value="32" />
-        <Setter Property="Height" Value="32" />
-        <Setter Property="RenderTransform" Value="scale(1.15)" />
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Height" Value="24" />
+    </Style>
+
+    <Style Selector="primitives|FANavigationViewItemPresenter /template/ controls|FAIconSourceElement">
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Height" Value="24" />
+    </Style>
+
+    <Style Selector="primitives|FANavigationViewItemPresenter /template/ Viewbox#IconBox">
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Height" Value="24" />
     </Style>
 
     <Style Selector="controls|FANavigationViewItem /template/ controls|FAIconSourceElement Image">
+        <Setter Property="Stretch" Value="Uniform" />
+    </Style>
+
+    <Style Selector="primitives|FANavigationViewItemPresenter /template/ controls|FAIconSourceElement Image">
         <Setter Property="Stretch" Value="Uniform" />
     </Style>
 

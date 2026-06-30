@@ -7,7 +7,6 @@
     d:DesignWidth="800"
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Accounting.AutomationRulesPage"
-    x:CompileBindings="False"
     x:DataType="accounting:AutomationRulesViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
@@ -15,21 +14,23 @@
     xmlns:converters="clr-namespace:NodifyM.Avalonia.Converters;assembly=NodifyM.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sharedControls="clr-namespace:Jamaa.Desktop.Shared.Controls"
     xmlns:viewModelBase="clr-namespace:NodifyM.Avalonia.ViewModelBase;assembly=NodifyM.Avalonia"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <controls:NodifyEditor
-        AllowAlign="True"
-        Background="#F8FAFC"
-        Connections="{Binding Connections}"
-        DisconnectConnectorCommand="{Binding DisconnectConnectorCommand}"
-        HorizontalAlignment="Stretch"
-        ItemsSource="{Binding Nodes}"
-        OffsetX="-40"
-        OffsetY="-40"
-        PendingConnection="{Binding PendingConnection}"
-        SelectedItems="{Binding SelectedNodes}"
-        VerticalAlignment="Stretch"
-        Zoom="0.95">
+    <sharedControls:FiniteMeasureDecorator ClipToBounds="True">
+        <controls:NodifyEditor
+            AllowAlign="True"
+            Background="#F8FAFC"
+            Connections="{Binding Connections}"
+            DisconnectConnectorCommand="{Binding DisconnectConnectorCommand}"
+            HorizontalAlignment="Stretch"
+            ItemsSource="{Binding Nodes}"
+            OffsetX="-40"
+            OffsetY="-40"
+            PendingConnection="{Binding PendingConnection}"
+            SelectedItems="{Binding SelectedNodes}"
+            VerticalAlignment="Stretch"
+            Zoom="0.95">
 
         <controls:NodifyEditor.Resources>
             <converters:FlowToDirectionConverter x:Key="FlowToDirectionConverter" />
@@ -127,5 +128,6 @@
                 </controls:Node>
             </DataTemplate>
         </controls:NodifyEditor.ItemTemplate>
-    </controls:NodifyEditor>
+        </controls:NodifyEditor>
+    </sharedControls:FiniteMeasureDecorator>
 </UserControl>

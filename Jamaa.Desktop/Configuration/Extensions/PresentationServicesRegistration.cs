@@ -53,6 +53,10 @@ public static class PresentationServicesRegistration
                 .AsSelfWithInterfaces()
                 .WithTransientLifetime());
 
+            // Ensure view models that do not inherit from ObservableObject are still resolvable via DI.
+            // Nodify editor view model base may not derive from ObservableObject, so register it explicitly.
+            services.AddTransient<Jamaa.Desktop.Accounting.AutomationRulesViewModel>();
+
             return services;
         }
     }

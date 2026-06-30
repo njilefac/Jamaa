@@ -9,7 +9,8 @@ namespace Jamaa.Desktop.Dashboard;
 
 public partial class WidgetView : UserControl
 {
-    private static readonly Cursor DragCursor = new(StandardCursorType.DragMove);
+    private static readonly Cursor InvalidDropCursor = new(StandardCursorType.No);
+    private static readonly Cursor ValidDropCursor = new(StandardCursorType.DragMove);
 
     private WidgetViewModelBase? _currentDropTarget;
     private WidgetViewModelBase? _draggedWidget;
@@ -59,7 +60,7 @@ public partial class WidgetView : UserControl
                 return;
 
             _isDragging = true;
-            Cursor = DragCursor;
+            Cursor = InvalidDropCursor;
         }
 
         UpdateDropTarget(e);
@@ -120,7 +121,15 @@ public partial class WidgetView : UserControl
         if (ReferenceEquals(target, _currentDropTarget))
         {
             if (target is not null)
-                target.IsValidDrop = ValidateDrop(_draggedWidget, target);
+            {
+                var isValidDrop = ValidateDrop(_draggedWidget, target);
+                target.IsValidDrop = isValidDrop;
+                ApplyDropCursor(isValidDrop);
+            }
+            else
+            {
+                ApplyDropCursor(false);
+            }
 
             return;
         }
@@ -129,10 +138,20 @@ public partial class WidgetView : UserControl
 
         _currentDropTarget = target;
         if (_currentDropTarget is null)
+        {
+            ApplyDropCursor(false);
             return;
+        }
 
         _currentDropTarget.IsDraggingOver = true;
-        _currentDropTarget.IsValidDrop = ValidateDrop(_draggedWidget, _currentDropTarget);
+        var isValidTarget = ValidateDrop(_draggedWidget, _currentDropTarget);
+        _currentDropTarget.IsValidDrop = isValidTarget;
+        ApplyDropCursor(isValidTarget);
+    }
+
+    private void ApplyDropCursor(bool isValidDrop)
+    {
+        Cursor = isValidDrop ? ValidDropCursor : InvalidDropCursor;
     }
 
     private WidgetViewModelBase? GetDropTarget(PointerEventArgs e)
