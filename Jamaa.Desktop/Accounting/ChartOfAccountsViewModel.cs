@@ -16,6 +16,7 @@ using Domain.Accounting.Values;
 using Jamaa.Application.Accounting;
 using Jamaa.Application.Accounting.Models;
 using Jamaa.Application.Users.Services;
+using Jamaa.Desktop.Accounting.Navigation;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Values;
 using Jamaa.Desktop.Services.Notifications;

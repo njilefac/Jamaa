@@ -5,10 +5,11 @@
     d:DesignWidth="800"
     mc:Ignorable="d"
     x:Class="Jamaa.Desktop.Members.Components.MemberCard"
-    x:DataType="vm:MemberViewModel"
     x:CompileBindings="False"
+    x:DataType="vm:MemberViewModel"
+    DoubleTapped="OnDoubleTapped"
+    KeyDown="OnKeyDown"
     xmlns="https://github.com/avaloniaui"
-    xmlns:behaviors="clr-namespace:Jamaa.Desktop.Shared.Behaviors"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
@@ -21,28 +22,6 @@
             <TransformOperationsTransition Duration="0:0:0.1" Property="RenderTransform" />
         </Transitions>
     </UserControl.Transitions>
-    <Interaction.Behaviors>
-        <BehaviorCollection>
-            <behaviors:DataGridEnterBehavior Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}">
-                <behaviors:DataGridEnterBehavior.CommandParameter>
-                    <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
-                        <Binding />
-                        <Binding Source="General" />
-                    </MultiBinding>
-                </behaviors:DataGridEnterBehavior.CommandParameter>
-            </behaviors:DataGridEnterBehavior>
-            <EventTriggerBehavior EventName="DoubleTapped">
-                <InvokeCommandAction Command="{Binding $parent[components:MembersList].DataContext.ShowMemberProfileCommand}">
-                    <InvokeCommandAction.CommandParameter>
-                        <MultiBinding Converter="{StaticResource MemberProfileCommandArgsConverter}">
-                            <Binding />
-                            <Binding Source="General" />
-                        </MultiBinding>
-                    </InvokeCommandAction.CommandParameter>
-                </InvokeCommandAction>
-            </EventTriggerBehavior>
-        </BehaviorCollection>
-    </Interaction.Behaviors>
     <husk:Card Classes="memberlist member-card">
         <husk:Card.ContextMenu>
             <ContextMenu>

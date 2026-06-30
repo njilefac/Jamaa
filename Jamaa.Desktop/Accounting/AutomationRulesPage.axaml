@@ -1,4 +1,8 @@
 <UserControl
+    HorizontalAlignment="Stretch"
+    HorizontalContentAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    VerticalContentAlignment="Stretch"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d"
@@ -6,30 +10,124 @@
     x:DataType="accounting:AutomationRulesViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
+    xmlns:controls="clr-namespace:NodifyM.Avalonia.Controls;assembly=NodifyM.Avalonia"
+    xmlns:converters="clr-namespace:NodifyM.Avalonia.Converters;assembly=NodifyM.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sharedControls="clr-namespace:Jamaa.Desktop.Shared.Controls"
+    xmlns:viewModelBase="clr-namespace:NodifyM.Avalonia.ViewModelBase;assembly=NodifyM.Avalonia"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid RowDefinitions="Auto, *">
-        <husk:Card Margin="10">
-            <TextBlock Classes="page.box.header" Text="Automation Rules" />
-        </husk:Card>
+    <sharedControls:FiniteMeasureDecorator ClipToBounds="True">
+        <controls:NodifyEditor
+            AllowAlign="True"
+            Background="#F8FAFC"
+            Connections="{Binding Connections}"
+            DisconnectConnectorCommand="{Binding DisconnectConnectorCommand}"
+            HorizontalAlignment="Stretch"
+            ItemsSource="{Binding Nodes}"
+            OffsetX="-40"
+            OffsetY="-40"
+            PendingConnection="{Binding PendingConnection}"
+            SelectedItems="{Binding SelectedNodes}"
+            VerticalAlignment="Stretch"
+            Zoom="0.95">
 
-        <husk:Card Grid.Row="1" Margin="10">
-            <StackPanel
-                HorizontalAlignment="Center"
-                Spacing="20"
-                VerticalAlignment="Center">
-                <TextBlock
-                    FontSize="24"
-                    FontWeight="Bold"
-                    HorizontalAlignment="Center"
-                    Text="Automation Rules" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    Opacity="0.5"
-                    Text="Manage automation rules for accounting workflows from this page." />
-            </StackPanel>
-        </husk:Card>
-    </Grid>
+        <controls:NodifyEditor.Resources>
+            <converters:FlowToDirectionConverter x:Key="FlowToDirectionConverter" />
+        </controls:NodifyEditor.Resources>
+
+        <controls:NodifyEditor.GridLineTemplate>
+            <DataTemplate>
+                <controls:LargeGridLine
+                    Brush="#D5DDE8"
+                    Height="{Binding $parent[controls:NodifyEditor].Bounds.Height}"
+                    OffsetX="{Binding $parent[controls:NodifyEditor].OffsetX}"
+                    OffsetY="{Binding $parent[controls:NodifyEditor].OffsetY}"
+                    Spacing="32"
+                    Thickness="0.5"
+                    Width="{Binding $parent[controls:NodifyEditor].Bounds.Width}"
+                    ZIndex="-2"
+                    Zoom="{Binding $parent[controls:NodifyEditor].Zoom}" />
+            </DataTemplate>
+        </controls:NodifyEditor.GridLineTemplate>
+
+        <controls:NodifyEditor.ConnectionTemplate>
+            <DataTemplate DataType="{x:Type viewModelBase:ConnectionViewModelBase}">
+                <controls:Connection
+                    Direction="{Binding ., Converter={StaticResource FlowToDirectionConverter}}"
+                    DisconnectCommand="{Binding DisconnectConnectionCommand}"
+                    Source="{Binding Source.Anchor}"
+                    SplitCommand="{Binding SplitConnectionCommand}"
+                    Stroke="#5B6B7F"
+                    StrokeThickness="2"
+                    Target="{Binding Target.Anchor}"
+                    Text="{Binding Text}"
+                    TextBrush="#253449"
+                    TextPoint="50%,50%" />
+            </DataTemplate>
+        </controls:NodifyEditor.ConnectionTemplate>
+
+        <controls:NodifyEditor.PendingConnectionTemplate>
+            <DataTemplate DataType="{x:Type viewModelBase:PendingConnectionViewModelBase}">
+                <controls:PendingConnection
+                    CompletedCommand="{Binding FinishCommand}"
+                    Direction="{Binding Source.Flow, Converter={StaticResource FlowToDirectionConverter}}"
+                    EnablePreview="True"
+                    EnableSnapping="True"
+                    PreviewTarget="{Binding PreviewTarget, Mode=OneWayToSource}"
+                    StartedCommand="{Binding StartCommand}"
+                    Stroke="#2563EB"
+                    StrokeThickness="2" />
+            </DataTemplate>
+        </controls:NodifyEditor.PendingConnectionTemplate>
+
+        <controls:NodifyEditor.ItemTemplate>
+            <DataTemplate DataType="{x:Type viewModelBase:NodeViewModelBase}">
+                <controls:Node
+                    Footer="{Binding Footer}"
+                    Header="{Binding Title}"
+                    Input="{Binding Input}"
+                    IsResize="False"
+                    Location="{Binding Location, Mode=TwoWay}"
+                    MinHeight="96"
+                    MinWidth="210"
+                    Output="{Binding Output}">
+                    <controls:Node.ContentBrush>
+                        <SolidColorBrush Color="#253449" />
+                    </controls:Node.ContentBrush>
+
+                    <controls:Node.InputConnectorTemplate>
+                        <DataTemplate DataType="{x:Type viewModelBase:ConnectorViewModelBase}">
+                            <controls:NodeInput
+                                Anchor="{Binding Anchor, Mode=OneWayToSource}"
+                                Header="{Binding Title}"
+                                IsConnected="{Binding IsConnected}" />
+                        </DataTemplate>
+                    </controls:Node.InputConnectorTemplate>
+
+                    <controls:Node.OutputConnectorTemplate>
+                        <DataTemplate DataType="{x:Type viewModelBase:ConnectorViewModelBase}">
+                            <controls:NodeOutput
+                                Anchor="{Binding Anchor, Mode=OneWayToSource}"
+                                Header="{Binding Title}"
+                                IsConnected="{Binding IsConnected}" />
+                        </DataTemplate>
+                    </controls:Node.OutputConnectorTemplate>
+
+                    <StackPanel Margin="12,8" Spacing="4">
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#1D2939"
+                            Text="{Binding Title}" />
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="#667085"
+                            Text="{Binding Footer}" />
+                    </StackPanel>
+                </controls:Node>
+            </DataTemplate>
+        </controls:NodifyEditor.ItemTemplate>
+        </controls:NodifyEditor>
+    </sharedControls:FiniteMeasureDecorator>
 </UserControl>

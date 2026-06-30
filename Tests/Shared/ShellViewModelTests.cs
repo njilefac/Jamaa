@@ -7,6 +7,7 @@ using Jamaa.Data.Models.Organisation;
 using Jamaa.Desktop.Dashboard;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Values;
+using Jamaa.Desktop.Services.Updater;
 using Jamaa.Desktop.Shared;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -30,9 +31,11 @@ public class ShellViewModelTests
         setupService.GetSuperUser().Returns(superUser.Task);
 
         var userSessionService = Substitute.For<IUserSessionService>();
+        var updateService = Substitute.For<IApplicationUpdateService>();
+        var mainMenu = new MainMenuViewModel(userSessionService, updateService);
         var logger = Substitute.For<ILogger<ShellViewModel>>();
 
-        using var viewModel = new ShellViewModel(setupService, userSessionService, routeResolver,
+        using var viewModel = new ShellViewModel(setupService, userSessionService, mainMenu, updateService, routeResolver,
             logger);
 
         routeResolver.DidNotReceive().Resolve(Routes.Login, Arg.Any<object?>());

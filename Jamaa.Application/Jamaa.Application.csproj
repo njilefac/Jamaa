@@ -8,6 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Akka.Analyzers" />
+        <PackageReference Include="Akka.DistributedData" />
         <PackageReference Include="OpenTelemetry.Api" />
         <PackageReference Include="Akka.Hosting" />
         <PackageReference Include="Akka.Logger.Serilog" />

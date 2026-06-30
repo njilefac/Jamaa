@@ -262,11 +262,12 @@ jobs:
           JQ_QUERY='
             .[0:5] | to_entries[] | . as $entry | .value as $rel |
             ($rel.published_at | split("T")[0]) as $date |
+            (($rel.name // $rel.tag_name) | if $rel.prerelease and (test("-beta($|[.+-])") | not) then . + "-beta" else . end) as $title |
             ($rel.body | if . == null then "No release notes provided." else . end | sub("\r\n"; "\n"; "g") | split("\n") | .[0:3] | join("\n") | if length > 200 then .[0:200] + "..." else . end) as $summary |
             "<div class=\"release-card\">
               <div class=\"release-header\">
                 <div>
-                  <span class=\"version-tag\">" + $rel.tag_name + "</span>" +
+                  <span class=\"version-tag\">" + ($title | @html) + "</span>" +
                   (if $entry.key == 0 then "<span class=\"latest-badge\">Latest</span>" else "" end) +
                   "<span class=\"release-date\">" + $date + "</span>
                 </div>

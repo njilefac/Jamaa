@@ -25,13 +25,7 @@
             x:Name="MembersListBox">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel>
-                        <Interaction.Behaviors>
-                            <BehaviorCollection>
-                                <AutoFocusBehavior />
-                            </BehaviorCollection>
-                        </Interaction.Behaviors>
-                    </WrapPanel>
+                    <WrapPanel />
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>

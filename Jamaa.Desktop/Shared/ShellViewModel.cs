@@ -11,6 +11,7 @@ using Jamaa.Desktop.Security.Events;
 using Jamaa.Desktop.Services;
 using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Values;
+using Jamaa.Desktop.Services.Updater;
 using Jamaa.Desktop.Setup;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ public partial class ShellViewModel : ObservableObject,
     IRecipient<UserLoggedOut>, IDisposable
 {
     private const string ApplicationName = "Jamaa Desktop";
+    private readonly IApplicationUpdateService _updateService;
     private readonly ILogger<ShellViewModel> _logger;
     private readonly IRouteResolver _routeResolver;
     private readonly ISetupService _setupService;
@@ -37,13 +39,16 @@ public partial class ShellViewModel : ObservableObject,
     [ObservableProperty] private string _version;
 
     public ShellViewModel(ISetupService setupService, IUserSessionService userSessionService,
+        MainMenuViewModel mainMenuViewModel,
+        IApplicationUpdateService updateService,
         IRouteResolver routeResolver, ILogger<ShellViewModel> logger)
     {
         _version = $"v{VersionService.GetDisplayVersion()}";
         _setupService = setupService;
+        _updateService = updateService;
         _routeResolver = routeResolver;
         _logger = logger;
-        _mainMenu = new MainMenuViewModel(userSessionService);
+        _mainMenu = mainMenuViewModel;
 
         WeakReferenceMessenger.Default.RegisterAll(this);
 
@@ -82,6 +87,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(UserAuthenticated message)
     {
+        _updateService.ScheduleAutomaticCheckAfterLogin();
         Dispatcher.UIThread.Post(() => { ActiveContent = GetViewModelForRoute(Routes.Home); });
     }
 

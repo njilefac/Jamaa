@@ -7,6 +7,7 @@ using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Services;
 using Jamaa.Desktop.Services.Hosting;
 using Jamaa.Desktop.Services.Notifications;
+using Jamaa.Desktop.Services.Updater;
 using Jamaa.Desktop.Shared;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,6 +34,8 @@ public static class PresentationServicesRegistration
             services.AddSingleton<IEmbeddedWebServer, EmbeddedWebServer>();
             services.AddSingleton<AvaloniaNotificationService>();
             services.AddSingleton<INotificationService>(sp => sp.GetRequiredService<AvaloniaNotificationService>());
+            services.AddSingleton<JamaaUiFactory>();
+            services.AddSingleton<IApplicationUpdateService, ApplicationUpdateService>();
             services.AddSingleton<Shell>();
 
             // Ensure DashboardViewModel is a singleton to persist its state and handle shutdown/logout correctly
@@ -52,6 +55,10 @@ public static class PresentationServicesRegistration
                     && t != typeof(DashboardViewModel))) // Exclude DashboardViewModel as it's registered as singleton
                 .AsSelfWithInterfaces()
                 .WithTransientLifetime());
+
+            // Ensure view models that do not inherit from ObservableObject are still resolvable via DI.
+            // Nodify editor view model base may not derive from ObservableObject, so register it explicitly.
+            services.AddTransient<Jamaa.Desktop.Accounting.AutomationRulesViewModel>();
 
             return services;
         }

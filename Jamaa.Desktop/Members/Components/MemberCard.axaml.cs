@@ -2,6 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
+using Jamaa.Desktop.Members.Messages;
+using Jamaa.Desktop.Members.ViewModels;
 
 namespace Jamaa.Desktop.Members.Components;
 
@@ -64,6 +67,35 @@ public partial class MemberCard : UserControl
             _isPressed = false;
             PseudoClasses.Set(":pressed", false);
         }
+    }
+
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter)
+            return;
+
+        ShowMemberProfile();
+        e.Handled = true;
+    }
+
+    private void OnDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        ShowMemberProfile();
+        e.Handled = true;
+    }
+
+    private void ShowMemberProfile()
+    {
+        if (DataContext is not MemberViewModel member)
+            return;
+
+        var membersList = this.FindAncestorOfType<MembersList>();
+        if (membersList?.DataContext is not MemberListViewModel vm)
+            return;
+
+        var args = new MemberProfileNavigationArgs(MemberListViewModel.MapToData(member), "General");
+        if (vm.ShowMemberProfileCommand.CanExecute(args))
+            vm.ShowMemberProfileCommand.Execute(args);
     }
 
     private void InitializeComponent()

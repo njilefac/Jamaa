@@ -57,6 +57,8 @@
         <ContentControl
             Content="{Binding ActiveContent}"
             Grid.Row="1"
-            IsVisible="{Binding IsSubPageVisible}" />
+            HorizontalContentAlignment="Stretch"
+            IsVisible="{Binding IsSubPageVisible}"
+            VerticalContentAlignment="Stretch" />
     </Grid>
 </UserControl>

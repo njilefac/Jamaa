@@ -15,12 +15,6 @@
     xmlns:values="clr-namespace:Jamaa.Desktop.Members.Values"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Interaction.Behaviors>
-        <EventTriggerBehavior EventName="AttachedToVisualTree">
-            <FocusControlAction TargetControl="{Binding #SearchTermTextBox}" />
-        </EventTriggerBehavior>
-    </Interaction.Behaviors>
-
     <UserControl.KeyBindings>
         <KeyBinding Command="{Binding FocusSearchFieldCommand}" Gesture="Ctrl+F" />
         <KeyBinding Command="{Binding FocusSearchFieldCommand}" Gesture="Cmd+F" />
@@ -54,9 +48,9 @@
                     HorizontalAlignment="Center"
                     HorizontalContentAlignment="Center"
                     Name="SearchTermTextBox"
+                    PlaceholderText="Find members"
                     Text="{Binding SearchTerm}"
-                    VerticalAlignment="Center"
-                    PlaceholderText="Find members">
+                    VerticalAlignment="Center">
                     <TextBox.InnerLeftContent>
                         <Image
                             Height="40"

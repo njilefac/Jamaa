@@ -5,19 +5,20 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:accounting="clr-namespace:Jamaa.Desktop.Accounting"
     xmlns:components="clr-namespace:Jamaa.Desktop.Members.Components"
+    xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
     xmlns:converters="clr-namespace:Jamaa.Desktop.Services.Converters"
     xmlns:dashboard="clr-namespace:Jamaa.Desktop.Dashboard"
     xmlns:events-View-Models="clr-namespace:Jamaa.Desktop.Events"
-    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:fav="using:FluentAvalonia.Styling"
+    xmlns:husk="https://github.com/d3ara1n/Huskui.Avalonia"
     xmlns:pages="clr-namespace:Jamaa.Desktop.Members.Pages"
     xmlns:security="clr-namespace:Jamaa.Desktop.Security"
     xmlns:semi="clr-namespace:Semi.Avalonia;assembly=Semi.Avalonia"
     xmlns:settings="clr-namespace:Jamaa.Desktop.Settings"
     xmlns:setup="clr-namespace:Jamaa.Desktop.Setup"
     xmlns:shared="clr-namespace:Jamaa.Desktop.Shared"
-    xmlns:u="https://irihi.tech/ursa"
-    xmlns:u-semi="clr-namespace:Ursa.Themes.Semi;assembly=Ursa.Themes.Semi"
+    xmlns:primitives="clr-namespace:FluentAvalonia.UI.Controls.Primitives;assembly=FluentAvalonia"
+    xmlns:u-Semi="clr-namespace:Ursa.Themes.Semi;assembly=Ursa.Themes.Semi"
     xmlns:wizard="clr-namespace:Jamaa.Desktop.Accounting.Wizard"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -25,6 +26,8 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="/Themes/JamaaTheme.axaml" />
+                <!--  NodifyM.Avalonia provides a ResourceDictionary, merge it here  -->
+                <ResourceInclude Source="avares://NodifyM.Avalonia/ResourceDictionaries/Nodify.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:MemberProfileCommandArgsConverter x:Key="MemberProfileCommandArgsConverter" />
             <converters:MultiValueConverter x:Key="MultiValueConverter" />
@@ -33,20 +36,44 @@
             <converters:IncrementConverter x:Key="IncrementConverter" />
             <converters:HalfWidthConverter x:Key="HalfWidthConverter" />
             <converters:StepStateConverter x:Key="StepStateConverter" />
+            <x:Double x:Key="NavigationViewItemOnLeftIconBoxHeight">24</x:Double>
         </ResourceDictionary>
     </Application.Resources>
 
     <Application.Styles>
         <FluentTheme />
         <fav:FluentAvaloniaTheme />
-        <u-semi:UrsaSemiTheme />
+        <u-Semi:UrsaSemiTheme />
         <husk:HuskuiTheme Corner="Normal" />
         <semi:SemiTheme />
-        <Style Selector=":is(Control)">
+        <!--
+            Note: Avoid setting TextElement.FontFamily on all Controls because it overrides
+            icon fonts used by FluentAvalonia (e.g., NavigationView pane toggle hamburger icon).
+            Scope font family to textual controls only.
+        -->
+        <Style Selector="TextBlock">
             <Setter Property="TextElement.FontFamily" Value="Inter, Segoe UI, Noto Sans, Arial" />
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="TextElement.FontFamily" Value="Inter, Segoe UI, Noto Sans, Arial" />
+        </Style>
+        <!--  Restore FluentAvalonia symbol font that may be overridden by the global TextBlock style  -->
+        <Style Selector="controls|FAIconSourceElement TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        </Style>
+        <!--  Specifically ensure the NavigationView pane toggle (hamburger) uses the icon font  -->
+        <Style Selector="controls|FANavigationView /template/ Button#TogglePaneButton /template/ TextBlock#Icon">
+            <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        </Style>
+        <Style Selector="controls|FANavigationView /template/ Button#PaneToggleButton /template/ TextBlock#Icon">
+            <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        </Style>
+        <Style Selector="primitives|FANavigationViewItemPresenter /template/ Panel#ExpandCollapseChevron TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
         </Style>
         <StyleInclude Source="avares://Semi.Avalonia.DataGrid/Index.axaml" />
         <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
+        <StyleInclude Source="avares://NodifyM.Avalonia/Styles/ControlStyles.axaml" />
         <StyleInclude Source="avares://Jamaa/Styles/JamaaStyles.axaml" />
     </Application.Styles>
 
