@@ -100,6 +100,7 @@
         <PackageReference Include="Avalonia" />
         <PackageReference Include="Avalonia.Desktop" />
         <PackageReference Include="Avalonia.MonoMac" />
+        <PackageReference Include="Xaml.Behaviors.Interactivity" />
         <PackageReference Include="CalendarControl.Avalonia" />
         <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="DynamicData" />

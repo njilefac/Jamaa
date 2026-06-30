@@ -34,9 +34,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NetSparkleUpdater;
-using NetSparkleUpdater.Enums;
-using NetSparkleUpdater.SignatureVerifiers;
 using Jamaa.Desktop.Services.Updater;
 using Syncfusion.Licensing;
 using Serilog;
@@ -47,7 +44,6 @@ namespace Jamaa.Desktop.Services;
 public static partial class InitializationService
 {
     private static ServiceProvider? _serviceProvider;
-    private static SparkleUpdater? _sparkle;
     private static IClassicDesktopStyleApplicationLifetime? _lifeTime;
     private static readonly BehaviorSubject<string> StatusSubject = new("Getting Jamaa ready...");
     private static readonly BehaviorSubject<double> ProgressSubject = new(0);
@@ -91,7 +87,7 @@ public static partial class InitializationService
         var mainWindow = await Dispatcher.UIThread.InvokeAsync(() => CreateAndConfigureMainWindow(_serviceProvider));
         _ = RunDeferredStartupAsync(_serviceProvider, embeddedWebServerTask);
         TraceStartup("InitializeAsync:done");
-        mainWindow.Opened += (s, e) => CheckForUpdates(_serviceProvider!);
+        ConfigureUpdater(_serviceProvider);
         return mainWindow;
     }
 
@@ -102,8 +98,7 @@ public static partial class InitializationService
 
         _serviceProvider = null;
 
-        _sparkle?.StopLoop();
-        _sparkle = null;
+        serviceProvider.GetService<IApplicationUpdateService>()?.Stop();
 
         await SaveDashboardLayoutAsync(serviceProvider);
         await StopBackgroundServicesAsync(serviceProvider);
@@ -265,38 +260,10 @@ public static partial class InitializationService
         logger.LogInformation("Syncfusion license initialized.");
     }
 
-    private static void CheckForUpdates(IServiceProvider serviceProvider)
+    private static void ConfigureUpdater(IServiceProvider serviceProvider)
     {
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-        var settings = serviceProvider.GetRequiredService<IOptions<UpdaterSettings>>().Value;
-
-        if (string.IsNullOrWhiteSpace(settings.UpdateUrl))
-        {
-            logger.LogWarning("Update URL is not configured.");
-            return;
-        }
-
-        try
-        {
-            _sparkle = new SparkleUpdater(settings.UpdateUrl, new DSAChecker(SecurityMode.Unsafe))
-            {
-                UIFactory = new JamaaUiFactory(),
-                RelaunchAfterUpdate = true,
-            };
-            _sparkle.AppCastHelper.AppCastFilter = new InstalledVersionAppCastFilter();
-
-            _sparkle.CloseApplication += () =>
-            {
-                _lifeTime?.Shutdown();
-            };
-
-            _sparkle.StartLoop(true, true, TimeSpan.FromHours(settings.UpdateIntervalHours));
-            logger.LogInformation("Update check initiated with interval of {Interval} hours.", settings.UpdateIntervalHours);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to initiate update check.");
-        }
+        var updateService = serviceProvider.GetRequiredService<IApplicationUpdateService>();
+        updateService.ConfigureCloseApplication(() => _lifeTime?.Shutdown());
     }
 
     private static void SetupDiagnostics(IServiceProvider serviceProvider)

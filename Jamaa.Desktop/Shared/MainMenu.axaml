@@ -22,6 +22,11 @@
                 <MenuItem Header="Financial Transactions" IsSubMenuOpen="True" />
             </MenuItem>
         </MenuItem>
+        <MenuItem Header="Help">
+            <MenuItem Command="{Binding CheckForUpdatesCommand}" Header="Check for Updates" />
+            <Separator />
+            <MenuItem Click="ShowAboutDialog" Header="About Jamaa" />
+        </MenuItem>
     </Menu>
 
 </UserControl>

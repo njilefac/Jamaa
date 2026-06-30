@@ -7,6 +7,7 @@ using Jamaa.Desktop.Services.Navigation.Interfaces;
 using Jamaa.Desktop.Services.Navigation.Services;
 using Jamaa.Desktop.Services.Hosting;
 using Jamaa.Desktop.Services.Notifications;
+using Jamaa.Desktop.Services.Updater;
 using Jamaa.Desktop.Shared;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,6 +34,8 @@ public static class PresentationServicesRegistration
             services.AddSingleton<IEmbeddedWebServer, EmbeddedWebServer>();
             services.AddSingleton<AvaloniaNotificationService>();
             services.AddSingleton<INotificationService>(sp => sp.GetRequiredService<AvaloniaNotificationService>());
+            services.AddSingleton<JamaaUiFactory>();
+            services.AddSingleton<IApplicationUpdateService, ApplicationUpdateService>();
             services.AddSingleton<Shell>();
 
             // Ensure DashboardViewModel is a singleton to persist its state and handle shutdown/logout correctly

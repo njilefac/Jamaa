@@ -5,13 +5,16 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Jamaa.Application.Users.Services;
 using Jamaa.Desktop.Security.Events;
+using Jamaa.Desktop.Services.Updater;
 using JetBrains.Annotations;
 using static System.Threading.Tasks.Task;
 
 namespace Jamaa.Desktop.Shared;
 
 [UsedImplicitly]
-public partial class MainMenuViewModel(IUserSessionService userSessionService)
+public partial class MainMenuViewModel(
+    IUserSessionService userSessionService,
+    IApplicationUpdateService updateService)
     : ObservableObject
 {
     public bool IsLoggedIn => userSessionService.CurrentUserSession?.IsAuthenticated ?? false;
@@ -30,5 +33,11 @@ public partial class MainMenuViewModel(IUserSessionService userSessionService)
         if (Avalonia.Application.Current?.ApplicationLifetime is ClassicDesktopStyleApplicationLifetime desktop)
             desktop.Shutdown();
         return CompletedTask;
+    }
+
+    [RelayCommand]
+    private Task CheckForUpdates()
+    {
+        return updateService.CheckForUpdatesAtUserRequestAsync();
     }
 }
